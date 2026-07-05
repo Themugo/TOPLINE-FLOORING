@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://toplineflooring.co.ke/sitemap.xml
