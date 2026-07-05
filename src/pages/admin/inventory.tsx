@@ -13,9 +13,16 @@ export default function AdminInventory() {
   const [showAdjustment, setShowAdjustment] = useState(false);
   const [adjustmentForm, setAdjustmentForm] = useState({ product_id: '', quantity: 0, type: 'in' as 'in' | 'out' | 'adjustment', notes: '' });
 
-  useEffect(() => { fetchData(); }, []);
+  useEffect(() => {
+    if (!supabase) {
+      setLoading(false);
+      return;
+    }
+    fetchData();
+  }, [supabase]);
 
   const fetchData = async () => {
+    if (!supabase) return;
     const [alertsRes, movementsRes, productsRes] = await Promise.all([
       supabase.from('inventory_alerts').select('*, product:products(id, name, sku)').eq('is_resolved', false).order('created_at', { ascending: false }),
       supabase.from('inventory_movements').select('*, product:products(name)').order('created_at', { ascending: false }).limit(50),
@@ -29,6 +36,7 @@ export default function AdminInventory() {
 
   const handleAdjustment = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!supabase) return;
     const product = products.find(p => p.id === adjustmentForm.product_id);
     if (!product) return;
 
@@ -63,6 +71,7 @@ export default function AdminInventory() {
   };
 
   const resolveAlert = async (id: string) => {
+    if (!supabase) return;
     await supabase.from('inventory_alerts').update({ is_resolved: true, resolved_at: new Date().toISOString() }).eq('id', id);
     fetchData();
   };
