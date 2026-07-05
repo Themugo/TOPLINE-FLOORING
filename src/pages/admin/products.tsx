@@ -17,12 +17,14 @@ import { Plus, Pencil, Trash2, Search, ShieldCheck, Package, Wrench } from "luci
 type ProductForm = {
   name: string; slug: string; description: string; price: string; unit: string;
   image_url: string; category_id: string; product_type: "service" | "material";
-  in_stock: boolean; featured: boolean;
+  in_stock: boolean; featured: boolean; sku: string; stock_quantity: string;
+  low_stock_threshold: string; meta_title: string; meta_description: string;
 };
 
 const emptyForm: ProductForm = {
   name: "", slug: "", description: "", price: "", unit: "", image_url: "",
   category_id: "", product_type: "service", in_stock: true, featured: false,
+  sku: "", stock_quantity: "0", low_stock_threshold: "5", meta_title: "", meta_description: "",
 };
 
 function toSlug(s: string) { return s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, ""); }
@@ -57,6 +59,8 @@ export default function AdminProducts() {
       name: p.name, slug: p.slug, description: p.description ?? "", price: String(p.price),
       unit: p.unit ?? "", image_url: p.image_url ?? "", category_id: String(p.category_id ?? ""),
       product_type: p.product_type as "service" | "material", in_stock: p.in_stock, featured: p.featured,
+      sku: p.sku ?? "", stock_quantity: String(p.stock_quantity ?? 0), low_stock_threshold: String(p.low_stock_threshold ?? 5),
+      meta_title: p.meta_title ?? "", meta_description: p.meta_description ?? "",
     });
     setOpen(true);
   };
@@ -69,6 +73,8 @@ export default function AdminProducts() {
       category_id: form.category_id ? Number(form.category_id) : null,
       product_type: form.product_type,
       in_stock: form.in_stock, featured: form.featured,
+      sku: form.sku || null, stock_quantity: Number(form.stock_quantity), low_stock_threshold: Number(form.low_stock_threshold),
+      meta_title: form.meta_title || null, meta_description: form.meta_description || null,
     };
     if (editId) {
       updateProduct.mutate({ id: editId, data: data as ProductUpdate }, { onSuccess: () => { invalidate(); setOpen(false); } });
@@ -247,6 +253,18 @@ export default function AdminProducts() {
                 <Label className="text-xs uppercase tracking-widest font-sans">Unit</Label>
                 <Input value={form.unit} onChange={e => setF("unit", e.target.value)} className="mt-1 rounded-sm" placeholder={form.product_type === "material" ? "per bag, per roll..." : "per sqm, per service..."} />
               </div>
+              <div>
+                <Label className="text-xs uppercase tracking-widest font-sans">SKU</Label>
+                <Input value={form.sku} onChange={e => setF("sku", e.target.value)} className="mt-1 rounded-sm" placeholder="PROD-001" />
+              </div>
+              <div>
+                <Label className="text-xs uppercase tracking-widest font-sans">Stock Quantity</Label>
+                <Input type="number" value={form.stock_quantity} onChange={e => setF("stock_quantity", e.target.value)} className="mt-1 rounded-sm" min={0} />
+              </div>
+              <div>
+                <Label className="text-xs uppercase tracking-widest font-sans">Low Stock Threshold</Label>
+                <Input type="number" value={form.low_stock_threshold} onChange={e => setF("low_stock_threshold", e.target.value)} className="mt-1 rounded-sm" min={0} />
+              </div>
               <div className="col-span-2">
                 <Label className="text-xs uppercase tracking-widest font-sans">Description</Label>
                 <Textarea value={form.description} onChange={e => setF("description", e.target.value)} className="mt-1 rounded-sm" rows={3} />
@@ -263,6 +281,14 @@ export default function AdminProducts() {
               <div className="flex items-center gap-3">
                 <Switch checked={form.featured} onCheckedChange={v => setF("featured", v)} id="featured" />
                 <Label htmlFor="featured" className="text-sm">Featured</Label>
+              </div>
+              <div className="col-span-2">
+                <Label className="text-xs uppercase tracking-widest font-sans">SEO Title</Label>
+                <Input value={form.meta_title} onChange={e => setF("meta_title", e.target.value)} className="mt-1 rounded-sm" placeholder="Page title for SEO" />
+              </div>
+              <div className="col-span-2">
+                <Label className="text-xs uppercase tracking-widest font-sans">SEO Description</Label>
+                <Textarea value={form.meta_description} onChange={e => setF("meta_description", e.target.value)} className="mt-1 rounded-sm" rows={2} placeholder="Meta description for search engines" />
               </div>
             </div>
             <DialogFooter>
