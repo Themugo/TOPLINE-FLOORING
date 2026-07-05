@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Plus, Pencil, Trash2, X, Megaphone, Calendar } from 'lucide-react';
+import { Plus, Pencil, Trash2, X } from 'lucide-react';
 import { AdminLayout } from '@/components/layout/AdminLayout';
 import { supabase } from '@/lib/supabase';
 import { useToast } from '@/hooks/use-toast';
@@ -30,9 +30,16 @@ export default function AdminPromotions() {
     text_color: '',
   });
 
-  useEffect(() => { fetchPromotions(); }, []);
+  useEffect(() => {
+    if (!supabase) {
+      setLoading(false);
+      return;
+    }
+    fetchPromotions();
+  }, [supabase]);
 
   const fetchPromotions = async () => {
+    if (!supabase) return;
     const { data } = await supabase.from('promotions').select('*').order('display_order');
     setPromotions(data || []);
     setLoading(false);
@@ -46,6 +53,7 @@ export default function AdminPromotions() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!supabase) return;
     const data = {
       ...form,
       start_date: form.start_date || null,
@@ -66,6 +74,7 @@ export default function AdminPromotions() {
 
   const handleDelete = async (id: string) => {
     if (!confirm('Are you sure?')) return;
+    if (!supabase) return;
     await supabase.from('promotions').delete().eq('id', id);
     fetchPromotions();
   };
@@ -94,10 +103,10 @@ export default function AdminPromotions() {
 
   const typeLabels: Record<string, string> = { banner: 'Banner', flash_sale: 'Flash Sale', featured: 'Featured', announcement: 'Announcement', popup: 'Popup' };
 
-  if (loading) return <AdminLayout title="Promotions"><div className="text-center py-12">Loading...</div></AdminLayout>;
+  if (loading) return <AdminLayout><div className="text-center py-12">Loading...</div></AdminLayout>;
 
   return (
-    <AdminLayout title="Promotions">
+    <AdminLayout>
       <div className="mb-4">
         <button onClick={() => setShowForm(true)} className="btn-primary flex items-center gap-2">
           <Plus className="w-4 h-4" /> Add Promotion
