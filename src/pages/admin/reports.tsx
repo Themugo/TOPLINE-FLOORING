@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { TrendingUp, TrendingDown, DollarSign, ShoppingCart, Users, FileText, Package, AlertTriangle, BarChart3, PieChart, Calendar, Download } from 'lucide-react';
-import { AdminLayout } from '@/pages/admin/dashboard';
+import { AdminLayout } from '@/components/layout/AdminLayout';
 import { supabase } from '@/lib/supabase';
 
 export default function AdminReports() {

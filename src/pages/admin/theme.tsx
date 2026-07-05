@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Palette, Check, Eye } from 'lucide-react';
-import { AdminLayout } from './dashboard';
+import { AdminLayout } from '@/components/layout/AdminLayout';
 import { supabase } from '@/lib/supabase';
 import { useToast } from '@/hooks/use-toast';
 import type { ThemeSetting } from '@/lib/types';

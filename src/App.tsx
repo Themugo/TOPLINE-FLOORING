@@ -15,6 +15,8 @@ import OrderConfirmation from "@/pages/order-confirmation";
 import CheckoutSuccess from "@/pages/checkout-success";
 import Contact from "@/pages/contact";
 import Quotation from "@/pages/quotation";
+import Services from "@/pages/services";
+import Portfolio from "@/pages/portfolio";
 import AdminLogin from "@/pages/admin/login";
 import Dashboard from "@/pages/admin/dashboard";
 import AdminOrders from "@/pages/admin/orders";
@@ -26,6 +28,17 @@ import AdminTestimonials from "@/pages/admin/testimonials";
 import AdminPartners from "@/pages/admin/partners";
 import AdminQuotations from "@/pages/admin/quotations";
 import AdminSettings from "@/pages/admin/settings";
+import AdminCoupons from "@/pages/admin/coupons";
+import AdminDeliveryZones from "@/pages/admin/delivery-zones";
+import AdminHomepageBuilder from "@/pages/admin/homepage-builder";
+import AdminInventory from "@/pages/admin/inventory";
+import AdminMediaLibrary from "@/pages/admin/media-library";
+import AdminProjects from "@/pages/admin/projects";
+import AdminPromotions from "@/pages/admin/promotions";
+import AdminReports from "@/pages/admin/reports";
+import AdminSeo from "@/pages/admin/seo";
+import AdminSiteSettings from "@/pages/admin/site-settings";
+import AdminTheme from "@/pages/admin/theme";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -42,6 +55,8 @@ function Router() {
       <Route path="/" component={Home} />
       <Route path="/shop" component={Shop} />
       <Route path="/shop/:id" component={ShopDetail} />
+      <Route path="/services" component={Services} />
+      <Route path="/portfolio" component={Portfolio} />
       <Route path="/cart" component={Cart} />
       <Route path="/order-confirmation/:id" component={OrderConfirmation} />
       <Route path="/checkout/success" component={CheckoutSuccess} />
@@ -108,6 +123,83 @@ function Router() {
         {() => (
           <AdminAuthGuard>
             <AdminQuotations />
+          </AdminAuthGuard>
+        )}
+      </Route>
+      <Route path="/admin/coupons">
+        {() => (
+          <AdminAuthGuard>
+            <AdminCoupons />
+          </AdminAuthGuard>
+        )}
+      </Route>
+      <Route path="/admin/delivery-zones">
+        {() => (
+          <AdminAuthGuard>
+            <AdminDeliveryZones />
+          </AdminAuthGuard>
+        )}
+      </Route>
+      <Route path="/admin/homepage-builder">
+        {() => (
+          <AdminAuthGuard>
+            <AdminHomepageBuilder />
+          </AdminAuthGuard>
+        )}
+      </Route>
+      <Route path="/admin/inventory">
+        {() => (
+          <AdminAuthGuard>
+            <AdminInventory />
+          </AdminAuthGuard>
+        )}
+      </Route>
+      <Route path="/admin/media-library">
+        {() => (
+          <AdminAuthGuard>
+            <AdminMediaLibrary />
+          </AdminAuthGuard>
+        )}
+      </Route>
+      <Route path="/admin/projects">
+        {() => (
+          <AdminAuthGuard>
+            <AdminProjects />
+          </AdminAuthGuard>
+        )}
+      </Route>
+      <Route path="/admin/promotions">
+        {() => (
+          <AdminAuthGuard>
+            <AdminPromotions />
+          </AdminAuthGuard>
+        )}
+      </Route>
+      <Route path="/admin/reports">
+        {() => (
+          <AdminAuthGuard>
+            <AdminReports />
+          </AdminAuthGuard>
+        )}
+      </Route>
+      <Route path="/admin/seo">
+        {() => (
+          <AdminAuthGuard>
+            <AdminSeo />
+          </AdminAuthGuard>
+        )}
+      </Route>
+      <Route path="/admin/site-settings">
+        {() => (
+          <AdminAuthGuard>
+            <AdminSiteSettings />
+          </AdminAuthGuard>
+        )}
+      </Route>
+      <Route path="/admin/theme">
+        {() => (
+          <AdminAuthGuard>
+            <AdminTheme />
           </AdminAuthGuard>
         )}
       </Route>

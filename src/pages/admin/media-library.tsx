@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { FolderOpen, Upload, Search, Image, File, Trash2, Edit2, FolderPlus, ChevronRight, X, Check, Move } from 'lucide-react';
-import { AdminLayout } from '@/pages/admin/dashboard';
+import { AdminLayout } from '@/components/layout/AdminLayout';
 import { supabase } from '@/lib/supabase';
 import { useToast } from '@/hooks/use-toast';
 import type { MediaFolder, MediaFile } from '@/lib/types';

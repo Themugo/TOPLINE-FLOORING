@@ -20,3 +20,10 @@ export function formatDate(dateString: string) {
     timeStyle: 'short',
   }).format(new Date(dateString));
 }
+
+export function formatDateTime(dateString: string) {
+  return new Intl.DateTimeFormat('en-KE', {
+    dateStyle: 'medium',
+    timeStyle: 'short',
+  }).format(new Date(dateString));
+}

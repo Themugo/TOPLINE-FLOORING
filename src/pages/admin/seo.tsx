@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Search, Globe, Save, AlertCircle } from 'lucide-react';
-import { AdminLayout } from '@/pages/admin/dashboard';
+import { AdminLayout } from '@/components/layout/AdminLayout';
 import { supabase } from '@/lib/supabase';
 import { useToast } from '@/hooks/use-toast';
 import type { SeoPage } from '@/lib/types';

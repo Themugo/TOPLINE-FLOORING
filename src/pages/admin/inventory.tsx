@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { AlertTriangle, Package, TrendingDown, History } from 'lucide-react';
-import { AdminLayout } from './dashboard';
+import { AdminLayout } from '@/components/layout/AdminLayout';
 import { supabase } from '@/lib/supabase';
 import { formatKES, formatDateTime } from '@/lib/utils';
 import type { InventoryAlert, InventoryMovement, Product } from '@/lib/types';
