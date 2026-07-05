@@ -25,10 +25,15 @@ export default function AdminTheme() {
   const { toast } = useToast();
 
   useEffect(() => {
+    if (!supabase) {
+      setLoading(false);
+      return;
+    }
     fetchTheme();
-  }, []);
+  }, [supabase]);
 
   const fetchTheme = async () => {
+    if (!supabase) return;
     const { data } = await supabase.from('theme_settings').select('*').eq('is_active', true).single();
     setTheme(data || null);
     setLoading(false);
@@ -41,7 +46,7 @@ export default function AdminTheme() {
   };
 
   const handleSave = async () => {
-    if (!theme) return;
+    if (!theme || !supabase) return;
     setSaving(true);
     try {
       await supabase.from('theme_settings').update({ ...theme, updated_at: new Date().toISOString() }).eq('id', theme.id);
