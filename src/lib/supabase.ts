@@ -3,9 +3,15 @@ import { createClient } from '@supabase/supabase-js';
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
+// Debug: Log env vars in development
+if (import.meta.env.DEV) {
+  console.log('Supabase URL:', supabaseUrl ? 'SET' : 'NOT SET');
+  console.log('Supabase Anon Key:', supabaseAnonKey ? 'SET' : 'NOT SET');
+}
+
 export const isConfigured = !!(supabaseUrl && supabaseAnonKey);
 
-export const supabase = isConfigured 
+export const supabase = isConfigured
   ? createClient(supabaseUrl, supabaseAnonKey)
   : null;
 
