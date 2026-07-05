@@ -7,7 +7,7 @@ import type { SeoPage } from '@/lib/types';
 
 export default function AdminSeo() {
   return (
-    <AdminLayout title="SEO Manager">
+    <AdminLayout>
       <SeoContent />
     </AdminLayout>
   );
@@ -21,6 +21,10 @@ function SeoContent() {
   const { toast } = useToast();
 
   const fetchSeoPages = useCallback(async () => {
+    if (!supabase) {
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     const { data, error } = await supabase
       .from('seo_pages')
@@ -41,7 +45,7 @@ function SeoContent() {
   }, []);
 
   const handleSave = async () => {
-    if (!selectedPage) return;
+    if (!selectedPage || !supabase) return;
     setSaving(true);
 
     const { error } = await supabase
@@ -62,9 +66,9 @@ function SeoContent() {
 
     setSaving(false);
     if (error) {
-      toast({ type: 'error', message: 'Failed to save SEO settings' });
+      toast({ title: 'Failed to save SEO settings', variant: 'destructive' });
     } else {
-      toast({ type: 'success', message: 'SEO settings saved' });
+      toast({ title: 'SEO settings saved' });
       fetchSeoPages();
     }
   };
