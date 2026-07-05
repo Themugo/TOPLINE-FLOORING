@@ -9,6 +9,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useCart } from "@/hooks/use-cart";
 import { formatKES } from "@/lib/utils";
 import { ArrowRight, ChevronLeft, ChevronRight, Package, Phone, Shield, Zap, Users, Star, Lightbulb, TrendingUp, MessageCircle } from "lucide-react";
+import type { HomepageSection } from "@/lib/types";
 
 type HeroSlide = Tables<'hero_slides'>;
 type Testimonial = Tables<'testimonials'>;
@@ -39,6 +40,7 @@ export default function Home() {
   const [heroSlides, setHeroSlides] = useState<HeroSlide[]>([]);
   const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
   const [partners, setPartners] = useState<Partner[]>([]);
+  const [homepageSections, setHomepageSections] = useState<HomepageSection[]>([]);
   const [touchStartX, setTouchStartX] = useState(0);
   const [touchEndX, setTouchEndX] = useState(0);
 
@@ -46,13 +48,14 @@ export default function Home() {
   const { data: featuredMaterials, isLoading: matLoading } = useListProducts({ featured: true, productType: "material" });
   const { addToCart } = useCart();
 
-  // Fetch hero slides, testimonials, and partners
+  // Fetch hero slides, testimonials, partners, and homepage sections
   useEffect(() => {
     const fetchContent = async () => {
-      const [slidesRes, testimonialsRes, partnersRes] = await Promise.all([
+      const [slidesRes, testimonialsRes, partnersRes, sectionsRes] = await Promise.all([
         supabase.from('hero_slides').select('*').eq('is_active', true).order('sort_order'),
         supabase.from('testimonials').select('*').eq('is_active', true).order('sort_order'),
         supabase.from('partners').select('*').eq('is_active', true).order('sort_order'),
+        supabase.from('homepage_sections').select('*').order('display_order'),
       ]);
 
       if (slidesRes.data && slidesRes.data.length > 0) {
@@ -69,6 +72,7 @@ export default function Home() {
 
       if (testimonialsRes.data) setTestimonials(testimonialsRes.data);
       if (partnersRes.data) setPartners(partnersRes.data);
+      if (sectionsRes.data) setHomepageSections(sectionsRes.data);
     };
 
     fetchContent();
@@ -96,18 +100,30 @@ export default function Home() {
     else if (touchEndX - touchStartX > 75) goToSlide((slide - 1 + heroSlides.length) % heroSlides.length);
   };
 
+  // Check if a section should be visible based on homepage_sections config
+  const isSectionVisible = (sectionType: string) => {
+    const section = homepageSections.find(s => s.section_type === sectionType);
+    return section ? section.is_active : true; // Default to visible if not configured
+  };
+
+  // Get section configuration
+  const getSectionConfig = (sectionType: string) => {
+    return homepageSections.find(s => s.section_type === sectionType);
+  };
+
   return (
     <CustomerLayout>
       {/* Hero Slider */}
-      <section
-        className="relative w-full overflow-hidden"
-        style={{ height: "60vh", minHeight: 350, maxHeight: 600 }}
-        onMouseEnter={() => setPaused(true)}
-        onMouseLeave={() => setPaused(false)}
-        onTouchStart={handleTouchStart}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={handleTouchEnd}
-      >
+      {isSectionVisible('hero') && (
+        <section
+          className="relative w-full overflow-hidden"
+          style={{ height: "60vh", minHeight: 350, maxHeight: 600 }}
+          onMouseEnter={() => setPaused(true)}
+          onMouseLeave={() => setPaused(false)}
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
+        >
         {heroSlides.length > 0 && (
           <>
             <div
@@ -175,8 +191,10 @@ export default function Home() {
           </>
         )}
       </section>
+      )}
 
       {/* Services Section */}
+      {isSectionVisible('services') && (
       <section className="py-16 md:py-24 bg-white">
         <div className="container mx-auto px-6 md:px-12">
           <div className="text-center mb-12">
@@ -237,8 +255,10 @@ export default function Home() {
           </div>
         </div>
       </section>
+      )}
 
       {/* Who We Are */}
+      {isSectionVisible('about') && (
       <section className="py-16 md:py-24 bg-muted">
         <div className="container mx-auto px-6 md:px-12 max-w-4xl">
           <ValuesRow values={VALUES_1} banner="DELIVERY" />
@@ -255,8 +275,10 @@ export default function Home() {
           <ValuesRow values={VALUES_2} banner="VALUES" />
         </div>
       </section>
+      )}
 
       {/* Materials Section */}
+      {isSectionVisible('products') && (
       <section className="py-16 md:py-24 bg-white">
         <div className="container mx-auto px-6 md:px-12">
           <div className="text-center mb-12">
@@ -338,9 +360,10 @@ export default function Home() {
           </div>
         </div>
       </section>
+      )}
 
       {/* Partners */}
-      {partners.length > 0 && (
+      {isSectionVisible('partners') && partners.length > 0 && (
         <section className="py-16 md:py-24 bg-muted">
           <div className="container mx-auto px-6 md:px-12">
             <div className="text-center mb-10">
@@ -371,7 +394,7 @@ export default function Home() {
       )}
 
       {/* Testimonials */}
-      {testimonials.length > 0 && (
+      {isSectionVisible('testimonials') && testimonials.length > 0 && (
         <section className="py-20 md:py-28 bg-secondary text-secondary-foreground relative overflow-hidden">
           <div className="absolute left-0 top-0 h-full w-[3px] bg-gradient-to-b from-transparent via-primary/60 to-transparent" />
           <div className="container mx-auto px-6 md:px-12">
@@ -404,6 +427,7 @@ export default function Home() {
       )}
 
       {/* CTA */}
+      {isSectionVisible('cta') && (
       <section className="py-20 bg-primary relative overflow-hidden">
         <div className="absolute inset-0 opacity-[0.06]" style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg width='80' height='80' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M80 0L0 0 0 80' fill='none' stroke='white' stroke-width='0.6'/%3E%3C/svg%3E\")" }} />
         <div className="relative container mx-auto px-6 md:px-12 text-center">
@@ -430,6 +454,7 @@ export default function Home() {
           </div>
         </div>
       </section>
+      )}
     </CustomerLayout>
   );
 }
