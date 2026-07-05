@@ -1,6 +1,6 @@
 import { Link, useLocation } from "wouter";
 import { useGetAdminMe, useAdminLogout } from "@/lib/api";
-import { LayoutDashboard, Package, Tags, ShoppingCart, Users, LogOut, Loader2, Menu, X, Image, Star, Building2, FileText, Settings } from "lucide-react";
+import { LayoutDashboard, Package, Tags, ShoppingCart, Users, LogOut, Loader2, Menu, X, Image, Star, Building2, FileText, Settings, Percent, Truck, Home, FolderOpen, BarChart3, Globe, Palette, Megaphone, TrendingUp } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
@@ -45,19 +45,42 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
 
   const links = [
     { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
+    { divider: true },
+    { section: "Sales" },
     { href: "/admin/orders", label: "Orders", icon: ShoppingCart },
     { href: "/admin/quotations", label: "Quotations", icon: FileText },
-    { href: "/admin/products", label: "Products", icon: Package },
-    { href: "/admin/categories", label: "Categories", icon: Tags },
     { href: "/admin/customers", label: "Customers", icon: Users },
     { divider: true },
+    { section: "Products" },
+    { href: "/admin/products", label: "Products", icon: Package },
+    { href: "/admin/categories", label: "Categories", icon: Tags },
+    { href: "/admin/inventory", label: "Inventory", icon: TrendingUp },
+    { divider: true },
+    { section: "Marketing" },
+    { href: "/admin/promotions", label: "Promotions", icon: Megaphone },
+    { href: "/admin/coupons", label: "Coupons", icon: Percent },
+    { divider: true },
     { section: "Content" },
+    { href: "/admin/homepage-builder", label: "Homepage", icon: Home },
     { href: "/admin/hero-slides", label: "Hero Slides", icon: Image },
     { href: "/admin/testimonials", label: "Testimonials", icon: Star },
     { href: "/admin/partners", label: "Partners", icon: Building2 },
+    { href: "/admin/projects", label: "Projects", icon: Building2 },
     { divider: true },
-    { section: "Configuration" },
-    { href: "/admin/settings", label: "Site Settings", icon: Settings },
+    { section: "Media" },
+    { href: "/admin/media-library", label: "Media Library", icon: FolderOpen },
+    { divider: true },
+    { section: "Delivery" },
+    { href: "/admin/delivery-zones", label: "Delivery Zones", icon: Truck },
+    { divider: true },
+    { section: "Analytics" },
+    { href: "/admin/reports", label: "Reports", icon: BarChart3 },
+    { divider: true },
+    { section: "Settings" },
+    { href: "/admin/seo", label: "SEO", icon: Globe },
+    { href: "/admin/theme", label: "Theme", icon: Palette },
+    { href: "/admin/site-settings", label: "Site Settings", icon: Settings },
+    { href: "/admin/settings", label: "Profile", icon: Settings },
   ];
 
   return (
