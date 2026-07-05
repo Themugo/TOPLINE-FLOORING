@@ -4,6 +4,8 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { CartProvider } from "@/hooks/use-cart";
 import { AdminAuthGuard } from "@/components/admin/AdminAuthGuard";
+import { InitializationScreen } from "@/components/InitializationScreen";
+import { isConfigured } from "@/lib/supabase";
 import NotFound from "@/pages/not-found";
 import Home from "@/pages/home";
 import Shop from "@/pages/shop";
@@ -122,6 +124,10 @@ function Router() {
 }
 
 function App() {
+  if (!isConfigured) {
+    return <InitializationScreen />;
+  }
+
   return (
     <QueryClientProvider client={queryClient}>
       <CartProvider>
