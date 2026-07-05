@@ -1,7 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { Link } from "wouter";
-import { supabase } from "@/lib/supabase";
-import type { Tables } from "@/lib/supabase";
+import { supabase, isConfigured } from "@/lib/supabase";
 import { useListProducts } from "@/lib/api";
 import { CustomerLayout } from "@/components/layout/CustomerLayout";
 import { Button } from "@/components/ui/button";
@@ -9,11 +8,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useCart } from "@/hooks/use-cart";
 import { formatKES } from "@/lib/utils";
 import { ArrowRight, ChevronLeft, ChevronRight, Package, Phone, Shield, Zap, Users, Star, Lightbulb, TrendingUp, MessageCircle } from "lucide-react";
-import type { HomepageSection } from "@/lib/types";
-
-type HeroSlide = Tables<'hero_slides'>;
-type Testimonial = Tables<'testimonials'>;
-type Partner = Tables<'partner'>;
+import type { HomepageSection, HeroSlide, Testimonial, Partner } from "@/lib/types";
 
 const SERVICE_FALLBACK_IMAGES = [
   "https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=800&q=80",
@@ -50,16 +45,21 @@ export default function Home() {
 
   // Fetch hero slides, testimonials, partners, and homepage sections
   useEffect(() => {
+    if (!supabase) return;
+    
     const fetchContent = async () => {
+      const client = supabase;
+      if (!client) return;
+      
       const [slidesRes, testimonialsRes, partnersRes, sectionsRes] = await Promise.all([
-        supabase.from('hero_slides').select('*').eq('is_active', true).order('sort_order'),
-        supabase.from('testimonials').select('*').eq('is_active', true).order('sort_order'),
-        supabase.from('partners').select('*').eq('is_active', true).order('sort_order'),
-        supabase.from('homepage_sections').select('*').order('display_order'),
+        client.from('hero_slides').select('*').eq('is_active', true).order('sort_order'),
+        client.from('testimonials').select('*').eq('is_active', true).order('sort_order'),
+        client.from('partners').select('*').eq('is_active', true).order('sort_order'),
+        client.from('homepage_sections').select('*').order('display_order'),
       ]);
 
       if (slidesRes.data && slidesRes.data.length > 0) {
-        setHeroSlides(slidesRes.data);
+        setHeroSlides(slidesRes.data as any);
       } else {
         // Fallback slides
         setHeroSlides([
@@ -67,16 +67,16 @@ export default function Home() {
           { id: '2', title: 'Epoxy Flooring Solutions', subtitle: 'Durable, decorative flooring for industries, warehouses and commercial spaces', image_url: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?auto=format&fit=crop&w=1400&q=80', button_text: 'Learn More', button_link: '/shop?type=service', sort_order: 2, is_active: true, created_at: '' },
           { id: '3', title: 'Basement & Foundation Waterproofing', subtitle: 'Complete below-grade protection for lasting structural integrity', image_url: 'https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&w=1400&q=80', button_text: 'Get Quote', button_link: '/quotation', sort_order: 3, is_active: true, created_at: '' },
           { id: '4', title: 'Roof Coating & Repair', subtitle: 'Restore and protect your roof with advanced coating systems', image_url: 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=1400&q=80', button_text: 'Contact Us', button_link: '/contact', sort_order: 4, is_active: true, created_at: '' },
-        ]);
+        ] as any);
       }
 
-      if (testimonialsRes.data) setTestimonials(testimonialsRes.data);
-      if (partnersRes.data) setPartners(partnersRes.data);
-      if (sectionsRes.data) setHomepageSections(sectionsRes.data);
+      if (testimonialsRes.data) setTestimonials(testimonialsRes.data as any);
+      if (partnersRes.data) setPartners(partnersRes.data as any);
+      if (sectionsRes.data) setHomepageSections(sectionsRes.data as any);
     };
 
     fetchContent();
-  }, []);
+  }, [supabase]);
 
   const goToSlide = useCallback((idx: number) => {
     setFading(true);
@@ -106,18 +106,13 @@ export default function Home() {
     return section ? section.is_active : true; // Default to visible if not configured
   };
 
-  // Get section configuration
-  const getSectionConfig = (sectionType: string) => {
-    return homepageSections.find(s => s.section_type === sectionType);
-  };
-
   return (
     <CustomerLayout>
       {/* Hero Slider */}
       {isSectionVisible('hero') && (
         <section
           className="relative w-full overflow-hidden"
-          style={{ height: "60vh", minHeight: 350, maxHeight: 600 }}
+          style={{ height: "50vh", minHeight: 300, maxHeight: 500 }}
           onMouseEnter={() => setPaused(true)}
           onMouseLeave={() => setPaused(false)}
           onTouchStart={handleTouchStart}
