@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Plus, Pencil, Trash2, X, Truck } from 'lucide-react';
+import { Plus, Pencil, Trash2, X } from 'lucide-react';
 import { AdminLayout } from '@/components/layout/AdminLayout';
 import { supabase } from '@/lib/supabase';
 import { useToast } from '@/hooks/use-toast';
@@ -24,10 +24,15 @@ export default function AdminDeliveryZones() {
   });
 
   useEffect(() => {
+    if (!supabase) {
+      setLoading(false);
+      return;
+    }
     fetchZones();
-  }, []);
+  }, [supabase]);
 
   const fetchZones = async () => {
+    if (!supabase) return;
     const { data } = await supabase.from('delivery_zones').select('*').order('display_order');
     setZones(data || []);
     setLoading(false);
@@ -41,6 +46,7 @@ export default function AdminDeliveryZones() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!supabase) return;
     const data = {
       zone_name: form.zone_name,
       regions: form.regions.split(',').map(r => r.trim()).filter(Boolean),
@@ -63,6 +69,7 @@ export default function AdminDeliveryZones() {
 
   const handleDelete = async (id: string) => {
     if (!confirm('Are you sure?')) return;
+    if (!supabase) return;
     await supabase.from('delivery_zones').delete().eq('id', id);
     fetchZones();
   };
@@ -81,10 +88,10 @@ export default function AdminDeliveryZones() {
     setShowForm(true);
   };
 
-  if (loading) return <AdminLayout title="Delivery Zones"><div className="text-center py-12">Loading...</div></AdminLayout>;
+  if (loading) return <AdminLayout><div className="text-center py-12">Loading...</div></AdminLayout>;
 
   return (
-    <AdminLayout title="Delivery Zones">
+    <AdminLayout>
       <div className="mb-4">
         <button onClick={() => setShowForm(true)} className="btn-primary flex items-center gap-2">
           <Plus className="w-4 h-4" /> Add Zone
