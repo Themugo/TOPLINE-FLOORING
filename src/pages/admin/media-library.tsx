@@ -26,6 +26,7 @@ function MediaLibraryContent() {
   const { toast } = useToast();
 
   const fetchFolders = useCallback(async () => {
+    if (!supabase) return;
     const { data, error } = await supabase
       .from('media_folders')
       .select('*')
@@ -36,6 +37,7 @@ function MediaLibraryContent() {
   }, []);
 
   const fetchFiles = useCallback(async (folderId: string | null) => {
+    if (!supabase) return;
     setLoading(true);
     let query = supabase
       .from('media_files')
@@ -69,6 +71,7 @@ function MediaLibraryContent() {
 
   const handleDeleteFile = async (fileId: string) => {
     if (!confirm('Are you sure you want to delete this file?')) return;
+    if (!supabase) return;
 
     const { error } = await supabase
       .from('media_files')
@@ -87,6 +90,7 @@ function MediaLibraryContent() {
   const handleBulkDelete = async () => {
     if (selectedFiles.length === 0) return;
     if (!confirm(`Delete ${selectedFiles.length} selected files?`)) return;
+    if (!supabase) return;
 
     const { error } = await supabase
       .from('media_files')
@@ -358,6 +362,7 @@ function NewFolderModal({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim()) return;
+    if (!supabase) return;
 
     setSaving(true);
     const { error } = await supabase
@@ -427,6 +432,7 @@ function UploadModal({
 
   const handleUpload = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!supabase) return;
 
     const urlList = urls.split('\n').filter(url => url.trim());
     if (urlList.length === 0) {
@@ -535,6 +541,7 @@ function MoveModal({
   const { toast } = useToast();
 
   const handleMove = async () => {
+    if (!supabase) return;
     setMoving(true);
     const { error } = await supabase
       .from('media_files')
