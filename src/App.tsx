@@ -25,6 +25,7 @@ const About = lazy(() => import("@/pages/about"));
 const Industries = lazy(() => import("@/pages/industries"));
 const FAQ = lazy(() => import("@/pages/faq"));
 const TrackOrder = lazy(() => import("@/pages/track-order"));
+const Market = lazy(() => import("@/pages/market"));
 const AdminLogin = lazy(() => import("@/pages/admin/login"));
 const Dashboard = lazy(() => import("@/pages/admin/dashboard"));
 const AdminOrders = lazy(() => import("@/pages/admin/orders"));
@@ -95,6 +96,7 @@ function Router() {
         <Route path="/" component={Home} />
         <Route path="/shop" component={Shop} />
         <Route path="/shop/:id" component={ShopDetail} />
+        <Route path="/market" component={Market} />
         <Route path="/services" component={Services} />
         <Route path="/services/:slug" component={ServiceDetail} />
         <Route path="/portfolio" component={Portfolio} />

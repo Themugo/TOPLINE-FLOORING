@@ -141,10 +141,10 @@ export default function Home() {
       <section className="py-16 md:py-24 bg-white">
         <div className="container mx-auto px-6 md:px-12">
           <div className="text-center mb-12">
-            <h2 className="font-display text-2xl md:text-3xl font-bold text-primary uppercase tracking-wide mb-3">
+            <h2 className="font-display text-3xl md:text-4xl font-bold text-primary uppercase tracking-wide mb-3">
               Our Services
             </h2>
-            <p className="text-muted-foreground text-sm md:text-base font-sans max-w-2xl mx-auto">
+            <p className="text-muted-foreground text-base md:text-lg font-sans max-w-2xl mx-auto">
               Professional flooring and waterproofing solutions for industrial, commercial, and residential projects across Kenya and East Africa.
             </p>
             <div className="mt-4 flex items-center justify-center gap-3">
@@ -211,10 +211,10 @@ export default function Home() {
             <ValuesRow values={VALUES_1} banner="DELIVERY" />
 
             <div className="text-center mt-12 mb-10">
-              <h2 className="font-display text-xl md:text-2xl font-bold text-primary uppercase tracking-wide mb-4">
+              <h2 className="font-display text-2xl md:text-3xl font-bold text-primary uppercase tracking-wide mb-4">
                 {aboutTitle}
               </h2>
-              <p className="text-muted-foreground text-sm md:text-base leading-relaxed font-sans max-w-xl mx-auto">
+              <p className="text-muted-foreground text-base md:text-lg leading-relaxed font-sans max-w-xl mx-auto">
                 {aboutText}
               </p>
             </div>
@@ -235,10 +235,10 @@ export default function Home() {
         <section className="py-16 md:py-24 bg-white">
           <div className="container mx-auto px-6 md:px-12">
             <div className="text-center mb-12">
-              <h2 className="font-display text-2xl md:text-3xl font-bold text-primary uppercase tracking-wide mb-3">
+              <h2 className="font-display text-3xl md:text-4xl font-bold text-primary uppercase tracking-wide mb-3">
                 {title}
               </h2>
-              <p className="text-muted-foreground text-sm md:text-base font-sans max-w-2xl mx-auto">
+              <p className="text-muted-foreground text-base md:text-lg font-sans max-w-2xl mx-auto">
                 {subtitle}
               </p>
               <div className="mt-4 flex items-center justify-center gap-3">
@@ -280,10 +280,10 @@ export default function Home() {
           <div className="absolute inset-0 opacity-[0.04]" style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg width='80' height='80' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M80 0L0 0 0 80' fill='none' stroke='white' stroke-width='0.6'/%3E%3C/svg%3E\")" }} />
           <div className="relative container mx-auto px-6 md:px-12">
             <div className="text-center mb-12">
-              <h2 className="font-display text-2xl md:text-3xl font-bold text-primary-foreground uppercase tracking-wide mb-3">
+              <h2 className="font-display text-3xl md:text-4xl font-bold text-primary-foreground uppercase tracking-wide mb-3">
                 {title}
               </h2>
-              <p className="text-primary-foreground/70 text-sm md:text-base font-sans max-w-2xl mx-auto">
+              <p className="text-primary-foreground/70 text-base md:text-lg font-sans max-w-2xl mx-auto">
                 {subtitle}
               </p>
               <div className="mt-4 flex items-center justify-center gap-3">
