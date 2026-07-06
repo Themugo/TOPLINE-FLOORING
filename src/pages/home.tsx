@@ -7,8 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useCart } from "@/hooks/use-cart";
 import { formatKES } from "@/lib/utils";
-import { ArrowRight, ChevronLeft, ChevronRight, Package, Phone, Shield, Zap, Users, Star, Lightbulb, TrendingUp, MessageCircle } from "lucide-react";
-import type { HomepageSection, Testimonial, Partner } from "@/lib/types";
+import { ArrowRight, ChevronLeft, ChevronRight, Package, Phone, Shield, Zap, Users, Star, Lightbulb, TrendingUp, MessageCircle, Award, Clock, ThumbsUp, Wrench, HeartHandshake, BarChart3, Building2, CheckCircle2, ChevronDown } from "lucide-react";
+import type { HomepageSection, Testimonial, Partner, Project, ProjectImage } from "@/lib/types";
 
 const FALLBACK_SLIDES = [
   { id: '1', title: 'APP Bituminous Membrane Waterproofing', subtitle: 'Building Trust and Protection, One Surface at a Time', image_url: 'https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=1400&q=80', button_text: 'View Services', button_link: '/shop?type=service' },
@@ -35,6 +35,36 @@ const VALUES_2 = [
   { icon: TrendingUp, label: "Excellence", color: "bg-slate-800", iconColor: "text-white" },
 ];
 
+const ICON_MAP: Record<string, React.ComponentType<any>> = {
+  Shield, Award, Clock, ThumbsUp, Wrench, HeartHandshake,
+  BarChart3, Building2, Users, CheckCircle2, Zap, Star, Lightbulb, TrendingUp,
+};
+
+const DEFAULT_REASONS = [
+  { icon: "Shield", title: "Certified Quality", description: "All our work meets rigorous industry standards for safety, durability, and performance." },
+  { icon: "Award", title: "10+ Years Experience", description: "Over a decade of delivering professional flooring and waterproofing solutions across Kenya." },
+  { icon: "ThumbsUp", title: "100% Satisfaction", description: "We guarantee your satisfaction with every project, big or small." },
+  { icon: "Wrench", title: "Expert Craftsmanship", description: "Our skilled technicians use advanced techniques and premium materials." },
+  { icon: "HeartHandshake", title: "Reliable Partnerships", description: "We build lasting relationships through trust, transparency, and results." },
+  { icon: "Clock", title: "On-Time Delivery", description: "We respect your timeline and deliver every project on schedule." },
+];
+
+const DEFAULT_STATS = [
+  { label: "Years Experience", value: 10, suffix: "+" },
+  { label: "Projects Completed", value: 500, suffix: "+" },
+  { label: "Happy Clients", value: 300, suffix: "+" },
+  { label: "Partners", value: 15, suffix: "+" },
+];
+
+const DEFAULT_FAQS = [
+  { question: "What types of waterproofing do you offer?", answer: "We provide a full range of waterproofing solutions including APP/SBS bituminous membranes, liquid-applied polyurethane, cementitious coatings, basement tanking, roof coatings, and injection grouting for structural cracks." },
+  { question: "What flooring services are available?", answer: "Our flooring solutions include epoxy coatings, polyurethane floor systems, self-leveling screeds, industrial floor hardeners, vinyl flooring, and polished concrete for commercial and industrial applications." },
+  { question: "Do you offer free quotations?", answer: "Yes, we provide free site visits and quotations for all projects. Contact us to schedule an assessment, and our team will prepare a detailed proposal tailored to your needs." },
+  { question: "What areas do you serve?", answer: "We serve clients across Kenya and the East African region, including Nairobi, Mombasa, Kisumu, Nakuru, Eldoret, and surrounding areas." },
+  { question: "How long does a typical project take?", answer: "Project timelines vary based on scope and complexity. Minor waterproofing repairs can be completed in a day, while large-scale industrial flooring may take several weeks. We provide a clear timeline with every quotation." },
+  { question: "Do you supply materials for DIY projects?", answer: "Yes, we stock premium waterproofing and flooring materials from trusted global brands. Visit our Materials Shop to purchase supplies for your project." },
+];
+
 export default function Home() {
   const [slide, setSlide] = useState(0);
   const [fading, setFading] = useState(false);
@@ -44,6 +74,7 @@ export default function Home() {
   const [homepageSections, setHomepageSections] = useState<HomepageSection[]>([]);
   const [touchStartX, setTouchStartX] = useState(0);
   const [touchEndX, setTouchEndX] = useState(0);
+  const [projects, setProjects] = useState<Project[]>([]);
 
   const { data: featuredServices, isLoading: featLoading } = useListProducts({ featured: true, productType: "service" });
   const { data: featuredMaterials, isLoading: matLoading } = useListProducts({ featured: true, productType: "material" });
@@ -68,23 +99,25 @@ export default function Home() {
     }));
   }, [featuredServices, featuredMaterials]);
 
-  // Fetch testimonials, partners, and homepage sections
+  // Fetch testimonials, partners, homepage sections, and featured projects
   useEffect(() => {
     if (!supabase) return;
-    
+
     const fetchContent = async () => {
       const client = supabase;
       if (!client) return;
-      
-      const [testimonialsRes, partnersRes, sectionsRes] = await Promise.all([
+
+      const [testimonialsRes, partnersRes, sectionsRes, projectsRes] = await Promise.all([
         client.from('testimonials').select('*').eq('is_active', true).order('sort_order'),
         client.from('partners').select('*').eq('is_active', true).order('sort_order'),
         client.from('homepage_sections').select('*').order('display_order'),
+        client.from('projects').select('*, project_images(*)').eq('featured', true).eq('is_active', true).order('display_order'),
       ]);
 
       if (testimonialsRes.data) setTestimonials(testimonialsRes.data as any);
       if (partnersRes.data) setPartners(partnersRes.data as any);
       if (sectionsRes.data) setHomepageSections(sectionsRes.data as any);
+      if (projectsRes.data) setProjects(projectsRes.data as any);
     };
 
     fetchContent();
@@ -303,6 +336,96 @@ export default function Home() {
         );
       })()}
 
+      {/* Why Choose Us */}
+      {isSectionVisible('why-choose-us') && (() => {
+        const sec = homepageSections.find(s => s.section_type === 'why-choose-us');
+        const title = sec?.title || 'Why Choose Us';
+        const subtitle = sec?.subtitle || 'What sets Topline Flooring & Waterproofing apart from the rest';
+        const reasons = (sec?.content?.reasons || DEFAULT_REASONS) as { icon: string; title: string; description: string }[];
+        return (
+        <section className="py-16 md:py-24 bg-white">
+          <div className="container mx-auto px-6 md:px-12">
+            <div className="text-center mb-12">
+              <h2 className="font-display text-3xl md:text-4xl font-bold text-primary uppercase tracking-widest mb-3">
+                {title}
+              </h2>
+              <p className="text-muted-foreground text-sm md:text-base font-sans max-w-2xl mx-auto">
+                {subtitle}
+              </p>
+              <div className="mt-4 flex items-center justify-center gap-3">
+                <div className="h-px w-12 bg-primary/30" />
+                <div className="h-1.5 w-1.5 rounded-full bg-primary/40" />
+                <div className="h-px w-12 bg-primary/30" />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+              {reasons.map((reason, i) => {
+                const IconComp = ICON_MAP[reason.icon] || Shield;
+                return (
+                  <div key={i} className="flex gap-4 p-6 rounded-sm border border-border hover:border-primary/40 hover:shadow-lg transition-all duration-300 group">
+                    <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center shrink-0 group-hover:bg-primary group-hover:text-white transition-colors duration-300">
+                      <IconComp className="h-6 w-6 text-primary group-hover:text-white transition-colors duration-300" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-display font-semibold text-foreground mb-1">{reason.title}</h3>
+                      <p className="text-sm text-muted-foreground font-light leading-relaxed">{reason.description}</p>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </section>
+        );
+      })()}
+
+      {/* Statistics */}
+      {isSectionVisible('statistics') && (() => {
+        const sec = homepageSections.find(s => s.section_type === 'statistics');
+        const title = sec?.title || 'By the Numbers';
+        const subtitle = sec?.subtitle || 'Our track record speaks for itself';
+        const stats = (sec?.content?.stats || DEFAULT_STATS) as { label: string; value: number; suffix: string }[];
+        return (
+        <section className="py-16 md:py-24 bg-primary relative overflow-hidden">
+          <div className="absolute inset-0 opacity-[0.04]" style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg width='80' height='80' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M80 0L0 0 0 80' fill='none' stroke='white' stroke-width='0.6'/%3E%3C/svg%3E\")" }} />
+          <div className="relative container mx-auto px-6 md:px-12">
+            <div className="text-center mb-12">
+              <h2 className="font-display text-3xl md:text-4xl font-bold text-primary-foreground uppercase tracking-widest mb-3">
+                {title}
+              </h2>
+              <p className="text-primary-foreground/70 text-sm md:text-base font-sans max-w-2xl mx-auto">
+                {subtitle}
+              </p>
+              <div className="mt-4 flex items-center justify-center gap-3">
+                <div className="h-px w-12 bg-white/30" />
+                <div className="h-1.5 w-1.5 rounded-full bg-white/40" />
+                <div className="h-px w-12 bg-white/30" />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 md:gap-12 max-w-4xl mx-auto">
+              {stats.map((stat, i) => {
+                const statIcons = [Award, BarChart3, Users, Building2];
+                const StatIcon = statIcons[i] || BarChart3;
+                return (
+                  <div key={i} className="text-center">
+                    <div className="h-14 w-14 rounded-full bg-white/10 flex items-center justify-center mx-auto mb-4">
+                      <StatIcon className="h-7 w-7 text-primary-foreground" />
+                    </div>
+                    <div className="font-display text-4xl md:text-5xl font-bold text-primary-foreground mb-1">
+                      {stat.value}{stat.suffix}
+                    </div>
+                    <p className="text-primary-foreground/80 text-sm font-sans font-light uppercase tracking-wider">{stat.label}</p>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </section>
+        );
+      })()}
+
       {/* Materials Section */}
       {isSectionVisible('products') && (
       <section className="py-16 md:py-24 bg-white">
@@ -388,9 +511,87 @@ export default function Home() {
       </section>
       )}
 
+      {/* Featured Projects */}
+      {isSectionVisible('featured-projects') && projects.length > 0 && (
+      <section className="py-16 md:py-24 bg-muted">
+        <div className="container mx-auto px-6 md:px-12">
+          <div className="text-center mb-12">
+            <h2 className="font-display text-3xl md:text-4xl font-bold text-primary uppercase tracking-widest mb-3">
+              Featured Projects
+            </h2>
+            <p className="text-muted-foreground text-sm md:text-base font-sans max-w-2xl mx-auto">
+              See the transformation for yourself. Browse our before-and-after project gallery.
+            </p>
+            <div className="mt-4 flex items-center justify-center gap-3">
+              <div className="h-px w-12 bg-primary/30" />
+              <div className="h-1.5 w-1.5 rounded-full bg-primary/40" />
+              <div className="h-px w-12 bg-primary/30" />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {projects.slice(0, 6).map((project) => {
+              const beforeImage = (project.images || []).find(img => img.image_type === 'before');
+              const afterImage = (project.images || []).find(img => img.image_type === 'after');
+              const hasBoth = beforeImage && afterImage;
+              return (
+                <Link key={project.id} href={`/projects/${project.slug}`} className="group block">
+                  <div className="rounded-sm overflow-hidden border border-border hover:border-primary/40 hover:shadow-xl transition-all duration-300 bg-white">
+                    <div className="relative">
+                      {hasBoth ? (
+                        <div className="grid grid-cols-2 gap-0">
+                          <div className="relative overflow-hidden">
+                            <img src={beforeImage!.image_url} alt="Before" className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-500" />
+                            <span className="absolute top-2 left-2 px-2 py-0.5 text-[9px] uppercase tracking-widest font-sans font-medium bg-black/60 text-white rounded-sm">Before</span>
+                          </div>
+                          <div className="relative overflow-hidden">
+                            <img src={afterImage!.image_url} alt="After" className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-500" />
+                            <span className="absolute top-2 left-2 px-2 py-0.5 text-[9px] uppercase tracking-widest font-sans font-medium bg-primary text-white rounded-sm">After</span>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="h-48 bg-muted flex items-center justify-center overflow-hidden">
+                          {afterImage ? (
+                            <img src={afterImage.image_url} alt={project.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                          ) : beforeImage ? (
+                            <img src={beforeImage.image_url} alt={project.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                          ) : (
+                            <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
+                              <Wrench className="h-6 w-6 text-primary/40" />
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                    <div className="p-4">
+                      <h3 className="font-display font-semibold text-foreground group-hover:text-primary transition-colors">{project.title}</h3>
+                      {project.location && (
+                        <p className="text-xs text-muted-foreground font-sans mt-1">{project.location}</p>
+                      )}
+                      {project.description && (
+                        <p className="text-sm text-muted-foreground font-light mt-2 line-clamp-2">{project.description}</p>
+                      )}
+                    </div>
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+
+          <div className="mt-10 text-center">
+            <Link href="/projects">
+              <Button variant="outline" className="border-primary text-primary hover:bg-primary hover:text-white rounded-sm font-sans uppercase tracking-widest text-xs h-11 px-10">
+                View All Projects <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </section>
+      )}
+
       {/* Partners */}
       {isSectionVisible('partners') && partners.length > 0 && (
-        <section className="py-16 md:py-24 bg-muted">
+        <section className="py-16 md:py-24 bg-white">
           <div className="container mx-auto px-6 md:px-12">
             <div className="text-center mb-10">
               <h2 className="font-display text-3xl md:text-4xl font-bold text-primary uppercase tracking-widest mb-3">
@@ -404,7 +605,7 @@ export default function Home() {
             </div>
 
             <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-              {partners.map(partner => (
+              {[...partners].sort((a, b) => (a.featured === b.featured ? 0 : a.featured ? -1 : 1)).map(partner => (
                 <div
                   key={partner.id}
                   className="flex flex-col items-center justify-center p-6 rounded-sm border-2 h-24 font-sans font-bold text-xl tracking-wider transition-transform hover:scale-105"
@@ -451,6 +652,39 @@ export default function Home() {
           </div>
         </section>
       )}
+
+      {/* FAQ */}
+      {isSectionVisible('faq') && (() => {
+        const sec = homepageSections.find(s => s.section_type === 'faq');
+        const title = sec?.title || 'Frequently Asked Questions';
+        const subtitle = sec?.subtitle || 'Got questions? We have answers.';
+        const faqs = (sec?.content?.faqs || DEFAULT_FAQS) as { question: string; answer: string }[];
+        return (
+        <section className="py-16 md:py-24 bg-white">
+          <div className="container mx-auto px-6 md:px-12 max-w-3xl">
+            <div className="text-center mb-12">
+              <h2 className="font-display text-3xl md:text-4xl font-bold text-primary uppercase tracking-widest mb-3">
+                {title}
+              </h2>
+              <p className="text-muted-foreground text-sm md:text-base font-sans max-w-xl mx-auto">
+                {subtitle}
+              </p>
+              <div className="mt-4 flex items-center justify-center gap-3">
+                <div className="h-px w-12 bg-primary/30" />
+                <div className="h-1.5 w-1.5 rounded-full bg-primary/40" />
+                <div className="h-px w-12 bg-primary/30" />
+              </div>
+            </div>
+
+            <div className="space-y-3">
+              {faqs.map((faq, i) => (
+                <FaqItem key={i} question={faq.question} answer={faq.answer} />
+              ))}
+            </div>
+          </div>
+        </section>
+        );
+      })()}
 
       {/* CTA */}
       {isSectionVisible('cta') && (() => {
@@ -522,6 +756,28 @@ function ValuesRow({ values, banner }: { values: typeof VALUES_1; banner: string
           <span className="text-primary">*</span>
           {banner}
           <span className="text-primary">*</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function FaqItem({ question, answer }: { question: string; answer: string }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="border border-border rounded-sm overflow-hidden">
+      <button
+        onClick={() => setOpen(!open)}
+        className="w-full flex items-center justify-between px-5 py-4 text-left bg-card hover:bg-muted/50 transition-colors"
+      >
+        <span className="font-display font-medium text-foreground text-sm pr-4">{question}</span>
+        <ChevronDown className={`h-4 w-4 text-muted-foreground shrink-0 transition-transform duration-200 ${open ? "rotate-180" : ""}`} />
+      </button>
+      <div
+        className={`overflow-hidden transition-all duration-300 ${open ? "max-h-96 opacity-100" : "max-h-0 opacity-0"}`}
+      >
+        <div className="px-5 pb-4 text-sm text-muted-foreground font-light leading-relaxed">
+          {answer}
         </div>
       </div>
     </div>

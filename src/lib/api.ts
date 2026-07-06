@@ -430,6 +430,12 @@ export function useAdminLogin() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['adminMe'] });
+      supabase?.from('activity_logs').insert({
+        action: 'admin_login',
+        entity_type: 'admin_session',
+        details: { username },
+        user_agent: typeof navigator !== 'undefined' ? navigator.userAgent : null,
+      }).then(() => {});
     },
   });
 }

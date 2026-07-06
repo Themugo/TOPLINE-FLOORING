@@ -1,6 +1,22 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from './supabase';
 
+// ============== ACTIVITY LOGGING ==============
+
+export async function logAdminAction(action: string, entityType?: string, entityId?: string, details?: Record<string, any>) {
+  try {
+    await supabase.from('activity_logs').insert({
+      action,
+      entity_type: entityType || null,
+      entity_id: entityId || null,
+      details: details || {},
+      user_agent: typeof navigator !== 'undefined' ? navigator.userAgent : null,
+    });
+  } catch (e) {
+    // Silently fail
+  }
+}
+
 // Hero Slides
 export function useListHeroSlides() {
   return useQuery({
@@ -28,7 +44,10 @@ export function useCreateHeroSlide() {
       if (error) throw error;
       return result;
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['heroSlides'] }),
+    onSuccess: (result) => {
+      queryClient.invalidateQueries({ queryKey: ['heroSlides'] });
+      logAdminAction('create_hero_slide', 'hero_slides', result?.id, { title: result?.title });
+    },
   });
 }
 
@@ -45,7 +64,10 @@ export function useUpdateHeroSlide() {
       if (error) throw error;
       return result;
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['heroSlides'] }),
+    onSuccess: (result) => {
+      queryClient.invalidateQueries({ queryKey: ['heroSlides'] });
+      logAdminAction('update_hero_slide', 'hero_slides', result?.id, { title: result?.title });
+    },
   });
 }
 
@@ -56,7 +78,10 @@ export function useDeleteHeroSlide() {
       const { error } = await supabase.from('hero_slides').delete().eq('id', id);
       if (error) throw error;
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['heroSlides'] }),
+    onSuccess: (_data, id) => {
+      queryClient.invalidateQueries({ queryKey: ['heroSlides'] });
+      logAdminAction('delete_hero_slide', 'hero_slides', String(id));
+    },
   });
 }
 
@@ -87,7 +112,10 @@ export function useCreateTestimonial() {
       if (error) throw error;
       return result;
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['testimonials'] }),
+    onSuccess: (result) => {
+      queryClient.invalidateQueries({ queryKey: ['testimonials'] });
+      logAdminAction('create_testimonial', 'testimonials', result?.id, { name: result?.name });
+    },
   });
 }
 
@@ -104,7 +132,10 @@ export function useUpdateTestimonial() {
       if (error) throw error;
       return result;
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['testimonials'] }),
+    onSuccess: (result) => {
+      queryClient.invalidateQueries({ queryKey: ['testimonials'] });
+      logAdminAction('update_testimonial', 'testimonials', result?.id, { name: result?.name });
+    },
   });
 }
 
@@ -115,7 +146,10 @@ export function useDeleteTestimonial() {
       const { error } = await supabase.from('testimonials').delete().eq('id', id);
       if (error) throw error;
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['testimonials'] }),
+    onSuccess: (_data, id) => {
+      queryClient.invalidateQueries({ queryKey: ['testimonials'] });
+      logAdminAction('delete_testimonial', 'testimonials', String(id));
+    },
   });
 }
 
@@ -146,7 +180,10 @@ export function useCreatePartner() {
       if (error) throw error;
       return result;
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['partners'] }),
+    onSuccess: (result) => {
+      queryClient.invalidateQueries({ queryKey: ['partners'] });
+      logAdminAction('create_partner', 'partners', result?.id, { name: result?.name });
+    },
   });
 }
 
@@ -163,7 +200,10 @@ export function useUpdatePartner() {
       if (error) throw error;
       return result;
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['partners'] }),
+    onSuccess: (result) => {
+      queryClient.invalidateQueries({ queryKey: ['partners'] });
+      logAdminAction('update_partner', 'partners', result?.id, { name: result?.name });
+    },
   });
 }
 
@@ -174,7 +214,10 @@ export function useDeletePartner() {
       const { error } = await supabase.from('partners').delete().eq('id', id);
       if (error) throw error;
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['partners'] }),
+    onSuccess: (_data, id) => {
+      queryClient.invalidateQueries({ queryKey: ['partners'] });
+      logAdminAction('delete_partner', 'partners', String(id));
+    },
   });
 }
 
@@ -229,9 +272,10 @@ export function useUpdateQuotation() {
       if (error) throw error;
       return result;
     },
-    onSuccess: () => {
+    onSuccess: (result) => {
       queryClient.invalidateQueries({ queryKey: ['quotations'] });
       queryClient.invalidateQueries({ queryKey: ['quotation'] });
+      logAdminAction('update_quotation', 'quotations', result?.id, { status: result?.status });
     },
   });
 }
@@ -245,7 +289,6 @@ export function useListSettings() {
         .from('site_settings')
         .select('*');
       if (error) throw error;
-      // Convert to key-value object
       const settings: Record<string, string> = {};
       (data || []).forEach((s: any) => {
         settings[s.key] = s.value || '';
@@ -264,7 +307,10 @@ export function useUpdateSetting() {
         .upsert({ key, value, updated_at: new Date().toISOString() });
       if (error) throw error;
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['siteSettings'] }),
+    onSuccess: (_data, vars) => {
+      queryClient.invalidateQueries({ queryKey: ['siteSettings'] });
+      logAdminAction('update_setting', 'site_settings', vars.key);
+    },
   });
 }
 
@@ -283,6 +329,9 @@ export function useUpdateMultipleSettings() {
         .upsert(updates);
       if (error) throw error;
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['siteSettings'] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['siteSettings'] });
+      logAdminAction('update_multiple_settings', 'site_settings');
+    },
   });
 }

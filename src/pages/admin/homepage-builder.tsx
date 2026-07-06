@@ -1,9 +1,18 @@
 import { useState, useEffect } from 'react';
-import { GripVertical, Eye, EyeOff, Settings2, Save } from 'lucide-react';
+import { GripVertical, Eye, EyeOff, Settings2, Save, Plus, Trash2 } from 'lucide-react';
 import { AdminLayout } from '@/components/layout/AdminLayout';
 import { supabase } from '@/lib/supabase';
 import { useToast } from '@/hooks/use-toast';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Button } from '@/components/ui/button';
 import type { HomepageSection } from '@/lib/types';
+
+const LUCIDE_ICONS = [
+  'ShieldCheck', 'Truck', 'Star', 'ThumbsUp', 'Wrench', 'Paintbrush',
+  'DollarSign', 'Clock', 'Leaf', 'Home', 'Building2', 'Award',
+  'CheckCircle', 'Heart', 'Sparkles', 'Hammer', 'Ruler', 'Palette',
+];
 
 export default function AdminHomepageBuilder() {
   const [sections, setSections] = useState<HomepageSection[]>([]);
@@ -55,6 +64,9 @@ export default function AdminHomepageBuilder() {
     testimonials: 'Testimonials',
     partners: 'Partners',
     cta: 'Call to Action',
+    'why-choose-us': 'Why Choose Us',
+    statistics: 'Statistics',
+    faq: 'FAQ',
   };
 
   if (loading) return <AdminLayout title="Homepage Builder"><div className="text-center py-12">Loading...</div></AdminLayout>;
@@ -140,6 +152,10 @@ function SectionEditor({ section, onSave, onClose }: { section: HomepageSection;
     content: section.content || {},
   });
 
+  const setContent = (updater: (prev: Record<string, any>) => Record<string, any>) => {
+    setForm(prev => ({ ...prev, content: updater(prev.content) }));
+  };
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
       <div className="bg-white rounded-xl max-w-lg w-full p-6 max-h-[90vh] overflow-y-auto">
@@ -147,20 +163,16 @@ function SectionEditor({ section, onSave, onClose }: { section: HomepageSection;
         <div className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
-            <input
-              type="text"
+            <Input
               value={form.title}
               onChange={(e) => setForm({ ...form, title: e.target.value })}
-              className="input"
             />
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Subtitle</label>
-            <input
-              type="text"
+            <Input
               value={form.subtitle}
               onChange={(e) => setForm({ ...form, subtitle: e.target.value })}
-              className="input"
             />
           </div>
           <div>
@@ -168,7 +180,7 @@ function SectionEditor({ section, onSave, onClose }: { section: HomepageSection;
             <select
               value={form.background_color}
               onChange={(e) => setForm({ ...form, background_color: e.target.value })}
-              className="input"
+              className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-sm md:text-sm"
             >
               <option value="">None (transparent)</option>
               <option value="#ffffff">White</option>
@@ -183,7 +195,7 @@ function SectionEditor({ section, onSave, onClose }: { section: HomepageSection;
             <select
               value={form.padding}
               onChange={(e) => setForm({ ...form, padding: e.target.value })}
-              className="input"
+              className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-sm md:text-sm"
             >
               <option value="py-0">None</option>
               <option value="py-8">Small</option>
@@ -197,30 +209,28 @@ function SectionEditor({ section, onSave, onClose }: { section: HomepageSection;
             <>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Slide Interval (ms)</label>
-                <input
+                <Input
                   type="number"
                   value={form.content.slide_interval || 6000}
-                  onChange={(e) => setForm({ ...form, content: { ...form.content, slide_interval: parseInt(e.target.value) } })}
-                  className="input"
+                  onChange={(e) => setContent(prev => ({ ...prev, slide_interval: parseInt(e.target.value) }))}
                 />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Overlay Opacity (%)</label>
-                <input
+                <Input
                   type="number"
                   min={0}
                   max={100}
                   value={form.content.overlay_opacity || 60}
-                  onChange={(e) => setForm({ ...form, content: { ...form.content, overlay_opacity: parseInt(e.target.value) } })}
-                  className="input"
+                  onChange={(e) => setContent(prev => ({ ...prev, overlay_opacity: parseInt(e.target.value) }))}
                 />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Transition</label>
                 <select
                   value={form.content.transition || 'fade'}
-                  onChange={(e) => setForm({ ...form, content: { ...form.content, transition: e.target.value } })}
-                  className="input"
+                  onChange={(e) => setContent(prev => ({ ...prev, transition: e.target.value }))}
+                  className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-sm md:text-sm"
                 >
                   <option value="fade">Fade</option>
                   <option value="slide">Slide</option>
@@ -230,7 +240,7 @@ function SectionEditor({ section, onSave, onClose }: { section: HomepageSection;
                 <input
                   type="checkbox"
                   checked={form.content.show_featured_products !== false}
-                  onChange={(e) => setForm({ ...form, content: { ...form.content, show_featured_products: e.target.checked } })}
+                  onChange={(e) => setContent(prev => ({ ...prev, show_featured_products: e.target.checked }))}
                 />
                 <span className="text-sm">Show Featured Products</span>
               </label>
@@ -238,7 +248,7 @@ function SectionEditor({ section, onSave, onClose }: { section: HomepageSection;
                 <input
                   type="checkbox"
                   checked={form.content.show_featured_services !== false}
-                  onChange={(e) => setForm({ ...form, content: { ...form.content, show_featured_services: e.target.checked } })}
+                  onChange={(e) => setContent(prev => ({ ...prev, show_featured_services: e.target.checked }))}
                 />
                 <span className="text-sm">Show Featured Services</span>
               </label>
@@ -250,8 +260,8 @@ function SectionEditor({ section, onSave, onClose }: { section: HomepageSection;
               <label className="block text-sm font-medium text-gray-700 mb-1">Products to Show</label>
               <select
                 value={form.content.limit || 6}
-                onChange={(e) => setForm({ ...form, content: { ...form.content, limit: parseInt(e.target.value) } })}
-                className="input"
+                onChange={(e) => setContent(prev => ({ ...prev, limit: parseInt(e.target.value) }))}
+                className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-sm md:text-sm"
               >
                 <option value={3}>3</option>
                 <option value={6}>6</option>
@@ -265,33 +275,244 @@ function SectionEditor({ section, onSave, onClose }: { section: HomepageSection;
             <>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">CTA Text</label>
-                <input
-                  type="text"
+                <Input
                   value={form.content.cta_text || ''}
-                  onChange={(e) => setForm({ ...form, content: { ...form.content, cta_text: e.target.value } })}
-                  className="input"
+                  onChange={(e) => setContent(prev => ({ ...prev, cta_text: e.target.value }))}
                 />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">CTA Link</label>
-                <input
-                  type="text"
+                <Input
                   value={form.content.cta_link || ''}
-                  onChange={(e) => setForm({ ...form, content: { ...form.content, cta_link: e.target.value } })}
-                  className="input"
+                  onChange={(e) => setContent(prev => ({ ...prev, cta_link: e.target.value }))}
                 />
               </div>
             </>
           )}
 
+          {section.section_type === 'why-choose-us' && <WhyChooseUsEditor content={form.content} setContent={setContent} />}
+          {section.section_type === 'statistics' && <StatisticsEditor content={form.content} setContent={setContent} />}
+          {section.section_type === 'faq' && <FaqEditor content={form.content} setContent={setContent} />}
+
           <div className="flex gap-3 pt-4">
-            <button onClick={onClose} className="btn-secondary flex-1">Cancel</button>
-            <button onClick={() => onSave(form)} className="btn-primary flex-1 flex items-center justify-center gap-2">
+            <Button variant="outline" onClick={onClose} className="flex-1">Cancel</Button>
+            <Button onClick={() => onSave(form)} className="flex-1 flex items-center justify-center gap-2">
               <Save className="w-4 h-4" /> Save
-            </button>
+            </Button>
           </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+function WhyChooseUsEditor({ content, setContent }: { content: Record<string, any>; setContent: (updater: (prev: Record<string, any>) => Record<string, any>) => void }) {
+  const reasons = content.reasons?.length ? content.reasons : [
+    { icon: 'ShieldCheck', title: 'Quality Materials', description: 'We use only the finest flooring materials sourced from trusted manufacturers.' },
+    { icon: 'Truck', title: 'Free Delivery', description: 'Complimentary delivery within our service area for all orders over $500.' },
+  ];
+
+  const addReason = () => {
+    setContent(prev => ({ ...prev, reasons: [...reasons, { icon: 'Star', title: '', description: '' }] }));
+  };
+
+  const removeReason = (idx: number) => {
+    setContent(prev => ({ ...prev, reasons: reasons.filter((_: any, i: number) => i !== idx) }));
+  };
+
+  const updateReason = (idx: number, field: string, value: string) => {
+    setContent(prev => ({
+      ...prev,
+      reasons: reasons.map((r: any, i: number) => i === idx ? { ...r, [field]: value } : r),
+    }));
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <label className="block text-sm font-medium text-gray-700">Reasons</label>
+        <Button type="button" variant="outline" size="sm" onClick={addReason}>
+          <Plus className="w-3 h-3 mr-1" /> Add Reason
+        </Button>
+      </div>
+      {reasons.map((reason: any, idx: number) => (
+        <div key={idx} className="border rounded-lg p-3 space-y-2 relative">
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="absolute top-1 right-1 text-red-500 hover:text-red-700"
+            onClick={() => removeReason(idx)}
+          >
+            <Trash2 className="w-3.5 h-3.5" />
+          </Button>
+          <div>
+            <label className="block text-xs text-gray-500 mb-0.5">Icon</label>
+            <select
+              value={reason.icon}
+              onChange={(e) => updateReason(idx, 'icon', e.target.value)}
+              className="flex h-8 w-full rounded-md border border-input bg-transparent px-2 py-1 text-sm"
+            >
+              {LUCIDE_ICONS.map(icon => (
+                <option key={icon} value={icon}>{icon}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="block text-xs text-gray-500 mb-0.5">Title</label>
+            <Input
+              value={reason.title}
+              onChange={(e) => updateReason(idx, 'title', e.target.value)}
+              className="h-8 text-sm"
+            />
+          </div>
+          <div>
+            <label className="block text-xs text-gray-500 mb-0.5">Description</label>
+            <Textarea
+              value={reason.description}
+              onChange={(e) => updateReason(idx, 'description', e.target.value)}
+              className="min-h-[60px] text-sm"
+            />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function StatisticsEditor({ content, setContent }: { content: Record<string, any>; setContent: (updater: (prev: Record<string, any>) => Record<string, any>) => void }) {
+  const stats = content.stats?.length ? content.stats : [
+    { label: 'Years of Experience', value: 15, suffix: '+' },
+    { label: 'Projects Completed', value: 2500, suffix: '+' },
+    { label: 'Happy Clients', value: 1800, suffix: '+' },
+    { label: 'Products Available', value: 500, suffix: '+' },
+  ];
+
+  const addStat = () => {
+    setContent(prev => ({ ...prev, stats: [...stats, { label: '', value: 0, suffix: '' }] }));
+  };
+
+  const removeStat = (idx: number) => {
+    setContent(prev => ({ ...prev, stats: stats.filter((_: any, i: number) => i !== idx) }));
+  };
+
+  const updateStat = (idx: number, field: string, value: any) => {
+    setContent(prev => ({
+      ...prev,
+      stats: stats.map((s: any, i: number) => i === idx ? { ...s, [field]: value } : s),
+    }));
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <label className="block text-sm font-medium text-gray-700">Statistics</label>
+        <Button type="button" variant="outline" size="sm" onClick={addStat}>
+          <Plus className="w-3 h-3 mr-1" /> Add Stat
+        </Button>
+      </div>
+      {stats.map((stat: any, idx: number) => (
+        <div key={idx} className="border rounded-lg p-3 space-y-2 relative">
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="absolute top-1 right-1 text-red-500 hover:text-red-700"
+            onClick={() => removeStat(idx)}
+          >
+            <Trash2 className="w-3.5 h-3.5" />
+          </Button>
+          <div>
+            <label className="block text-xs text-gray-500 mb-0.5">Label</label>
+            <Input
+              value={stat.label}
+              onChange={(e) => updateStat(idx, 'label', e.target.value)}
+              className="h-8 text-sm"
+            />
+          </div>
+          <div className="flex gap-2">
+            <div className="flex-1">
+              <label className="block text-xs text-gray-500 mb-0.5">Value</label>
+              <Input
+                type="number"
+                value={stat.value}
+                onChange={(e) => updateStat(idx, 'value', parseInt(e.target.value) || 0)}
+                className="h-8 text-sm"
+              />
+            </div>
+            <div className="flex-1">
+              <label className="block text-xs text-gray-500 mb-0.5">Suffix</label>
+              <Input
+                value={stat.suffix}
+                onChange={(e) => updateStat(idx, 'suffix', e.target.value)}
+                className="h-8 text-sm"
+              />
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function FaqEditor({ content, setContent }: { content: Record<string, any>; setContent: (updater: (prev: Record<string, any>) => Record<string, any>) => void }) {
+  const faqs = content.faqs?.length ? content.faqs : [
+    { question: 'What types of flooring do you offer?', answer: 'We offer a wide range including hardwood, laminate, vinyl, tile, and carpet.' },
+    { question: 'Do you provide installation services?', answer: 'Yes, we offer professional installation services for all our flooring products.' },
+  ];
+
+  const addFaq = () => {
+    setContent(prev => ({ ...prev, faqs: [...faqs, { question: '', answer: '' }] }));
+  };
+
+  const removeFaq = (idx: number) => {
+    setContent(prev => ({ ...prev, faqs: faqs.filter((_: any, i: number) => i !== idx) }));
+  };
+
+  const updateFaq = (idx: number, field: string, value: string) => {
+    setContent(prev => ({
+      ...prev,
+      faqs: faqs.map((f: any, i: number) => i === idx ? { ...f, [field]: value } : f),
+    }));
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <label className="block text-sm font-medium text-gray-700">FAQ Items</label>
+        <Button type="button" variant="outline" size="sm" onClick={addFaq}>
+          <Plus className="w-3 h-3 mr-1" /> Add Question
+        </Button>
+      </div>
+      {faqs.map((faq: any, idx: number) => (
+        <div key={idx} className="border rounded-lg p-3 space-y-2 relative">
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="absolute top-1 right-1 text-red-500 hover:text-red-700"
+            onClick={() => removeFaq(idx)}
+          >
+            <Trash2 className="w-3.5 h-3.5" />
+          </Button>
+          <div>
+            <label className="block text-xs text-gray-500 mb-0.5">Question</label>
+            <Input
+              value={faq.question}
+              onChange={(e) => updateFaq(idx, 'question', e.target.value)}
+              className="h-8 text-sm"
+            />
+          </div>
+          <div>
+            <label className="block text-xs text-gray-500 mb-0.5">Answer</label>
+            <Textarea
+              value={faq.answer}
+              onChange={(e) => updateFaq(idx, 'answer', e.target.value)}
+              className="min-h-[60px] text-sm"
+            />
+          </div>
+        </div>
+      ))}
     </div>
   );
 }

@@ -16,6 +16,7 @@ import CheckoutSuccess from "@/pages/checkout-success";
 import Contact from "@/pages/contact";
 import Quotation from "@/pages/quotation";
 import Services from "@/pages/services";
+import ServiceDetail from "@/pages/service-detail";
 import Portfolio from "@/pages/portfolio";
 import About from "@/pages/about";
 import Industries from "@/pages/industries";
@@ -61,6 +62,7 @@ function Router() {
       <Route path="/shop" component={Shop} />
       <Route path="/shop/:id" component={ShopDetail} />
       <Route path="/services" component={Services} />
+      <Route path="/services/:slug" component={ServiceDetail} />
       <Route path="/portfolio" component={Portfolio} />
       <Route path="/cart" component={Cart} />
       <Route path="/order-confirmation/:id" component={OrderConfirmation} />
