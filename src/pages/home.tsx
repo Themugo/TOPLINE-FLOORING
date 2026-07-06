@@ -121,10 +121,12 @@ export default function Home() {
   return (
     <CustomerLayout>
       {/* Hero Slider */}
-      {isSectionVisible('hero') && (
+      {isSectionVisible('hero') && (() => {
+        const heroSec = homepageSections.find(s => s.section_type === 'hero');
+        const overlayOpacity = heroSec?.content?.overlay_opacity ?? 60;
+        return (
         <section
-          className="relative w-full overflow-hidden"
-          style={{ height: "50vh", minHeight: 300, maxHeight: 500 }}
+          className="relative w-full overflow-hidden h-[50vh] sm:h-[60vh] md:h-[70vh] lg:h-[80vh] min-h-[350px] md:min-h-[450px] lg:min-h-[500px] max-h-[900px]"
           onMouseEnter={() => setPaused(true)}
           onMouseLeave={() => setPaused(false)}
           onTouchStart={handleTouchStart}
@@ -133,33 +135,45 @@ export default function Home() {
         >
         {heroSlides.length > 0 && (
           <>
+            {heroSlides.map((s, i) => (
+              <div
+                key={s.id}
+                className="absolute inset-0 bg-cover bg-center bg-no-repeat transition-opacity duration-700"
+                style={{
+                  backgroundImage: `url(${s.image_url})`,
+                  opacity: i === slide && !fading ? 1 : 0,
+                  zIndex: i === slide ? 1 : 0,
+                }}
+              />
+            ))}
             <div
-              className="absolute inset-0 bg-cover bg-center transition-opacity duration-500"
-              style={{ backgroundImage: `url(${heroSlides[slide].image_url})`, opacity: fading ? 0 : 1 }}
+              className="absolute inset-0 z-10"
+              style={{ background: `linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,${overlayOpacity/100*0.5}) 50%, rgba(0,0,0,${overlayOpacity/100*0.3}) 100%)` }}
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-black/30" />
 
-            <div className="absolute inset-0 flex flex-col justify-end pb-12 md:pb-16 px-6 md:px-16">
-              <div className={`transition-all duration-300 ${fading ? "opacity-0 translate-y-2" : "opacity-100 translate-y-0"}`}>
-                <p className="text-primary text-xs sm:text-sm uppercase tracking-[0.2em] font-sans font-medium mb-2">Topline Flooring & Waterproofing</p>
-                <h2 className="font-display text-2xl sm:text-3xl md:text-4xl font-bold text-white leading-tight mb-3 max-w-3xl">
+            <div className="absolute inset-0 z-20 flex flex-col justify-center lg:justify-end pb-8 sm:pb-12 lg:pb-20 px-6 md:px-16">
+              <div className={`max-w-4xl transition-all duration-500 ${fading ? "opacity-0 translate-y-4" : "opacity-100 translate-y-0"}`}>
+                <p className="text-primary text-xs sm:text-sm uppercase tracking-[0.25em] font-sans font-medium mb-3 drop-shadow-sm">
+                  Topline Flooring & Waterproofing
+                </p>
+                <h1 className="font-display text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-white leading-tight mb-3 max-w-4xl drop-shadow-lg">
                   {heroSlides[slide].title}
-                </h2>
+                </h1>
                 {heroSlides[slide].subtitle && (
-                  <p className="text-white/80 text-sm sm:text-base md:text-lg font-sans font-light max-w-xl mb-6">
+                  <p className="text-white/80 text-sm sm:text-base md:text-lg font-sans font-light max-w-2xl mb-6 drop-shadow">
                     {heroSlides[slide].subtitle}
                   </p>
                 )}
                 <div className="flex flex-wrap gap-3">
                   {heroSlides[slide].button_link && heroSlides[slide].button_text && (
                     <Link href={heroSlides[slide].button_link}>
-                      <Button className="bg-primary hover:bg-primary/90 text-primary-foreground font-sans font-medium px-6 h-10 rounded-sm tracking-wide text-sm">
+                      <Button className="bg-primary hover:bg-primary/90 text-primary-foreground font-sans font-medium px-7 h-11 rounded-sm tracking-wide text-sm shadow-lg">
                         {heroSlides[slide].button_text} <ArrowRight className="ml-2 h-4 w-4" />
                       </Button>
                     </Link>
                   )}
                   <a href="tel:0720859737">
-                    <Button variant="outline" className="border-white/40 text-white hover:bg-white/10 font-sans font-medium px-5 h-10 rounded-sm tracking-wide backdrop-blur-sm text-sm">
+                    <Button variant="outline" className="border-white/40 text-white hover:bg-white/10 font-sans font-medium px-6 h-11 rounded-sm tracking-wide backdrop-blur-sm text-sm shadow-lg">
                       <Phone className="mr-2 h-4 w-4 text-primary" />
                       0720 859 737
                     </Button>
@@ -171,26 +185,26 @@ export default function Home() {
             {/* Navigation Arrows */}
             <button
               onClick={() => goToSlide((slide - 1 + heroSlides.length) % heroSlides.length)}
-              className="absolute left-4 md:left-8 top-1/2 -translate-y-1/2 h-10 w-10 rounded-full bg-black/40 hover:bg-primary text-white flex items-center justify-center transition-all backdrop-blur-sm md:flex hidden"
+              className="absolute left-4 md:left-8 top-1/2 -translate-y-1/2 h-10 w-10 rounded-full bg-black/30 hover:bg-primary text-white flex items-center justify-center transition-all backdrop-blur-sm z-30 hover:scale-110"
               aria-label="Previous slide"
             >
               <ChevronLeft className="h-5 w-5" />
             </button>
             <button
               onClick={() => goToSlide((slide + 1) % heroSlides.length)}
-              className="absolute right-4 md:right-8 top-1/2 -translate-y-1/2 h-10 w-10 rounded-full bg-black/40 hover:bg-primary text-white flex items-center justify-center transition-all backdrop-blur-sm md:flex hidden"
+              className="absolute right-4 md:right-8 top-1/2 -translate-y-1/2 h-10 w-10 rounded-full bg-black/30 hover:bg-primary text-white flex items-center justify-center transition-all backdrop-blur-sm z-30 hover:scale-110"
               aria-label="Next slide"
             >
               <ChevronRight className="h-5 w-5" />
             </button>
 
             {/* Dots */}
-            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-1.5">
+            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-30">
               {heroSlides.map((_, i) => (
                 <button
                   key={i}
                   onClick={() => goToSlide(i)}
-                  className={`h-1.5 rounded-full transition-all duration-300 ${i === slide ? "w-6 bg-primary" : "w-1.5 bg-white/40 hover:bg-white/60"}`}
+                  className={`rounded-full transition-all duration-300 ${i === slide ? "w-8 h-2 bg-primary" : "w-2 h-2 bg-white/40 hover:bg-white/70"}`}
                   aria-label={`Go to slide ${i + 1}`}
                 />
               ))}
@@ -198,7 +212,7 @@ export default function Home() {
           </>
         )}
       </section>
-      )}
+      )})()}
 
       {/* Services Section */}
       {isSectionVisible('services') && (

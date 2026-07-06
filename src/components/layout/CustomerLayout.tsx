@@ -1,6 +1,6 @@
 import { Link, useLocation } from "wouter";
 import { useCart } from "@/hooks/use-cart";
-import { ShoppingCart, Menu, X, Phone, MessageCircle, Search, ChevronDown, FileText } from "lucide-react";
+import { ShoppingCart, Menu, X, Phone, MessageCircle, Search, ChevronDown, FileText, LogIn } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
@@ -161,6 +161,14 @@ export function CustomerLayout({ children }: { children: React.ReactNode }) {
                 </Link>
               )
             )}
+            <Link
+              href="/admin/login"
+              className="flex items-center gap-1.5 px-3 py-2 text-sm font-sans font-medium transition-colors tracking-wide uppercase text-[11px] rounded-sm text-muted-foreground hover:text-foreground hover:bg-muted ml-2"
+              aria-label="Admin Login"
+            >
+              <LogIn className="h-3.5 w-3.5" />
+              Login
+            </Link>
           </nav>
 
           <div className="flex items-center gap-2">
