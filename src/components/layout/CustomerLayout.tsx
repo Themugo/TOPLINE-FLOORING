@@ -1,6 +1,6 @@
 import { Link, useLocation } from "wouter";
 import { useCart } from "@/hooks/use-cart";
-import { ShoppingCart, Menu, X, Phone, MessageCircle, Search, ChevronDown, FileText, LogIn } from "lucide-react";
+import { ShoppingCart, Menu, X, Phone, MessageCircle, Search, ChevronDown, FileText, LogIn, MoreHorizontal } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
@@ -30,7 +30,7 @@ export function CustomerLayout({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const navLinks = [
+  const primaryLinks: ({ href: string; label: string } | { label: string; dropdown: { href: string; label: string }[] })[] = [
     { href: "/", label: "Home" },
     { href: "/about", label: "About" },
     {
@@ -52,10 +52,14 @@ export function CustomerLayout({ children }: { children: React.ReactNode }) {
       ],
     },
     { href: "/portfolio", label: "Projects" },
+    { href: "/contact", label: "Contact" },
+  ];
+
+  const moreLinks = [
     { href: "/industries", label: "Industries" },
     { href: "/faq", label: "FAQs" },
     { href: "/quotation", label: "Get a Quote" },
-    { href: "/contact", label: "Contact" },
+    { href: "/admin/login", label: "Admin Login", icon: LogIn },
   ];
 
   const handleDropdownEnter = (label: string) => {
@@ -105,7 +109,7 @@ export function CustomerLayout({ children }: { children: React.ReactNode }) {
 
           {/* Desktop Nav */}
           <nav className="hidden lg:flex items-center gap-1">
-            {navLinks.map((link) =>
+            {primaryLinks.map((link) =>
               "dropdown" in link ? (
                 <div
                   key={link.label}
@@ -161,14 +165,47 @@ export function CustomerLayout({ children }: { children: React.ReactNode }) {
                 </Link>
               )
             )}
-            <Link
-              href="/admin/login"
-              className="flex items-center gap-1.5 px-3 py-2 text-sm font-sans font-medium transition-colors tracking-wide uppercase text-[11px] rounded-sm text-muted-foreground hover:text-foreground hover:bg-muted ml-2"
-              aria-label="Admin Login"
+
+            {/* More dropdown */}
+            <div
+              className="relative"
+              onMouseEnter={() => handleDropdownEnter("more")}
+              onMouseLeave={handleDropdownLeave}
             >
-              <LogIn className="h-3.5 w-3.5" />
-              Login
-            </Link>
+              <button
+                className={cn(
+                  "flex items-center gap-1 px-3 py-2 text-sm font-sans font-medium transition-colors tracking-wide uppercase text-[11px] rounded-sm",
+                  openDropdown === "more"
+                    ? "text-primary"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                <MoreHorizontal className="h-4 w-4" />
+              </button>
+              {openDropdown === "more" && (
+                <div
+                  className="absolute top-full right-0 mt-1 w-48 bg-background border border-border rounded-sm shadow-xl py-2 z-50"
+                  onMouseEnter={() => handleDropdownEnter("more")}
+                  onMouseLeave={handleDropdownLeave}
+                >
+                  {moreLinks.map((item) => (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      className={cn(
+                        "flex items-center gap-2 px-4 py-2 text-sm font-sans transition-colors",
+                        isActive(item.href)
+                          ? "text-primary bg-primary/5"
+                          : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                      )}
+                    >
+                      {"icon" in item && <LogIn className="h-3.5 w-3.5" />}
+                      {item.label}
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
           </nav>
 
           <div className="flex items-center gap-2">
@@ -239,7 +276,7 @@ export function CustomerLayout({ children }: { children: React.ReactNode }) {
                 </div>
               </form>
 
-              {navLinks.map((link) =>
+              {primaryLinks.map((link) =>
                 "dropdown" in link ? (
                   <div key={link.label}>
                     <span className="block px-3 py-2.5 text-sm font-sans uppercase tracking-widest font-semibold text-foreground/60">
@@ -273,6 +310,26 @@ export function CustomerLayout({ children }: { children: React.ReactNode }) {
                   </Link>
                 )
               )}
+
+              <div className="pt-2 mt-2 border-t border-border">
+                <span className="block px-3 py-2.5 text-sm font-sans uppercase tracking-widest font-semibold text-foreground/60">
+                  More
+                </span>
+                {moreLinks.map((item) => (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className={cn(
+                      "flex items-center gap-2 pl-6 pr-3 py-2 text-sm font-sans transition-colors",
+                      isActive(item.href) ? "text-primary" : "text-muted-foreground"
+                    )}
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    {"icon" in item && <LogIn className="h-3.5 w-3.5" />}
+                    {item.label}
+                  </Link>
+                ))}
+              </div>
 
               <div className="pt-3 mt-3 border-t border-border">
                 <a
