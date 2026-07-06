@@ -1,6 +1,6 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { Link } from "wouter";
-import { supabase, isConfigured } from "@/lib/supabase";
+import { supabase } from "@/lib/supabase";
 import { useListProducts } from "@/lib/api";
 import { CustomerLayout } from "@/components/layout/CustomerLayout";
 import { Button } from "@/components/ui/button";
@@ -8,7 +8,14 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useCart } from "@/hooks/use-cart";
 import { formatKES } from "@/lib/utils";
 import { ArrowRight, ChevronLeft, ChevronRight, Package, Phone, Shield, Zap, Users, Star, Lightbulb, TrendingUp, MessageCircle } from "lucide-react";
-import type { HomepageSection, HeroSlide, Testimonial, Partner } from "@/lib/types";
+import type { HomepageSection, Testimonial, Partner } from "@/lib/types";
+
+const FALLBACK_SLIDES = [
+  { id: '1', title: 'APP Bituminous Membrane Waterproofing', subtitle: 'Building Trust and Protection, One Surface at a Time', image_url: 'https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=1400&q=80', button_text: 'View Services', button_link: '/shop?type=service' },
+  { id: '2', title: 'Epoxy Flooring Solutions', subtitle: 'Durable, decorative flooring for industries, warehouses and commercial spaces', image_url: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?auto=format&fit=crop&w=1400&q=80', button_text: 'Learn More', button_link: '/shop?type=service' },
+  { id: '3', title: 'Basement & Foundation Waterproofing', subtitle: 'Complete below-grade protection for lasting structural integrity', image_url: 'https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&w=1400&q=80', button_text: 'Get Quote', button_link: '/quotation' },
+  { id: '4', title: 'Roof Coating & Repair', subtitle: 'Restore and protect your roof with advanced coating systems', image_url: 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=1400&q=80', button_text: 'Contact Us', button_link: '/contact' },
+];
 
 const SERVICE_FALLBACK_IMAGES = [
   "https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=800&q=80",
@@ -32,7 +39,6 @@ export default function Home() {
   const [slide, setSlide] = useState(0);
   const [fading, setFading] = useState(false);
   const [paused, setPaused] = useState(false);
-  const [heroSlides, setHeroSlides] = useState<HeroSlide[]>([]);
   const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
   const [partners, setPartners] = useState<Partner[]>([]);
   const [homepageSections, setHomepageSections] = useState<HomepageSection[]>([]);
@@ -43,7 +49,26 @@ export default function Home() {
   const { data: featuredMaterials, isLoading: matLoading } = useListProducts({ featured: true, productType: "material" });
   const { addToCart } = useCart();
 
-  // Fetch hero slides, testimonials, partners, and homepage sections
+  // Auto-generate hero slides from featured products
+  const heroSlides = useMemo(() => {
+    const featured = [
+      ...(featuredServices || []),
+      ...(featuredMaterials || []),
+    ];
+    if (featured.length === 0) {
+      return FALLBACK_SLIDES;
+    }
+    return featured.slice(0, 6).map((p) => ({
+      id: p.id,
+      title: p.name,
+      subtitle: p.description,
+      image_url: p.image_url || SERVICE_FALLBACK_IMAGES[0],
+      button_text: 'Learn More',
+      button_link: `/shop/${p.id}`,
+    }));
+  }, [featuredServices, featuredMaterials]);
+
+  // Fetch testimonials, partners, and homepage sections
   useEffect(() => {
     if (!supabase) return;
     
@@ -51,24 +76,11 @@ export default function Home() {
       const client = supabase;
       if (!client) return;
       
-      const [slidesRes, testimonialsRes, partnersRes, sectionsRes] = await Promise.all([
-        client.from('hero_slides').select('*').eq('is_active', true).order('sort_order'),
+      const [testimonialsRes, partnersRes, sectionsRes] = await Promise.all([
         client.from('testimonials').select('*').eq('is_active', true).order('sort_order'),
         client.from('partners').select('*').eq('is_active', true).order('sort_order'),
         client.from('homepage_sections').select('*').order('display_order'),
       ]);
-
-      if (slidesRes.data && slidesRes.data.length > 0) {
-        setHeroSlides(slidesRes.data as any);
-      } else {
-        // Fallback slides
-        setHeroSlides([
-          { id: '1', title: 'APP Bituminous Membrane Waterproofing', subtitle: 'Building Trust and Protection, One Surface at a Time', image_url: 'https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=1400&q=80', button_text: 'View Services', button_link: '/shop?type=service', sort_order: 1, is_active: true, created_at: '' },
-          { id: '2', title: 'Epoxy Flooring Solutions', subtitle: 'Durable, decorative flooring for industries, warehouses and commercial spaces', image_url: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?auto=format&fit=crop&w=1400&q=80', button_text: 'Learn More', button_link: '/shop?type=service', sort_order: 2, is_active: true, created_at: '' },
-          { id: '3', title: 'Basement & Foundation Waterproofing', subtitle: 'Complete below-grade protection for lasting structural integrity', image_url: 'https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&w=1400&q=80', button_text: 'Get Quote', button_link: '/quotation', sort_order: 3, is_active: true, created_at: '' },
-          { id: '4', title: 'Roof Coating & Repair', subtitle: 'Restore and protect your roof with advanced coating systems', image_url: 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=1400&q=80', button_text: 'Contact Us', button_link: '/contact', sort_order: 4, is_active: true, created_at: '' },
-        ] as any);
-      }
 
       if (testimonialsRes.data) setTestimonials(testimonialsRes.data as any);
       if (partnersRes.data) setPartners(partnersRes.data as any);

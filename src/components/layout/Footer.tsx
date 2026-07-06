@@ -74,18 +74,18 @@ export function Footer() {
             <h3 className="font-semibold text-white mb-4">Contact Info</h3>
             <div className="space-y-4">
               <a
-                href="tel:+254700123456"
+                href="tel:0720859737"
                 className="flex items-start gap-3 text-sm text-gray-400 hover:text-primary-400 transition-colors"
               >
                 <Phone className="w-4 h-4 mt-0.5 flex-shrink-0" />
-                <span>+254 700 123 456</span>
+                <span>0720 859 737</span>
               </a>
               <a
-                href="mailto:info@toplineflooring.co.ke"
+                href="mailto:toplineflooringandwaterproofin@gmail.com"
                 className="flex items-start gap-3 text-sm text-gray-400 hover:text-primary-400 transition-colors"
               >
                 <Mail className="w-4 h-4 mt-0.5 flex-shrink-0" />
-                <span>info@toplineflooring.co.ke</span>
+                <span>toplineflooringandwaterproofin@gmail.com</span>
               </a>
               <div className="flex items-start gap-3 text-sm text-gray-400">
                 <MapPin className="w-4 h-4 mt-0.5 flex-shrink-0" />
@@ -101,18 +101,21 @@ export function Footer() {
               <a
                 href="#"
                 className="w-9 h-9 rounded-full bg-navy-900 flex items-center justify-center text-gray-400 hover:bg-primary-500 hover:text-white transition-colors"
+                aria-label="Facebook"
               >
                 <Facebook className="w-4 h-4" />
               </a>
               <a
                 href="#"
                 className="w-9 h-9 rounded-full bg-navy-900 flex items-center justify-center text-gray-400 hover:bg-primary-500 hover:text-white transition-colors"
+                aria-label="Instagram"
               >
                 <Instagram className="w-4 h-4" />
               </a>
               <a
                 href="#"
                 className="w-9 h-9 rounded-full bg-navy-900 flex items-center justify-center text-gray-400 hover:bg-primary-500 hover:text-white transition-colors"
+                aria-label="LinkedIn"
               >
                 <Linkedin className="w-4 h-4" />
               </a>
