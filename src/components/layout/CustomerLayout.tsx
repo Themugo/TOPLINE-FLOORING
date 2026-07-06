@@ -81,10 +81,6 @@ const primaryLinks: NavLink[] = [
   { type: "megamenu", label: "Services", columns: servicesColumns },
   { type: "dropdown", label: "Materials", items: materialItems },
   { type: "dropdown", label: "Shop", items: shopItems },
-  { type: "link", href: "/portfolio", label: "Projects" },
-  { type: "link", href: "/gallery", label: "Gallery" },
-  { type: "link", href: "/testimonials", label: "Testimonials" },
-  { type: "link", href: "/partners", label: "Partners" },
   { type: "link", href: "/contact", label: "Contact" },
   { type: "link", href: "/quotation", label: "Request Quote" },
 ];
