@@ -122,8 +122,9 @@ WHERE NOT EXISTS (SELECT 1 FROM products WHERE slug = 'metallic-epoxy-system');
 INSERT INTO admin_settings (setting_key, setting_value) VALUES
   ('site_name', 'Topline Flooring & Waterproofing'),
   ('site_tagline', 'Professional flooring and waterproofing solutions'),
-  ('contact_email', 'info@toplineflooring.co.ke'),
-  ('contact_phone', '+254 700 123 456'),
-  ('contact_address', 'Industrial Area, Nairobi, Kenya'),
-  ('business_hours', 'Mon-Fri: 8AM-5PM, Sat: 9AM-1PM')
+  ('contact_email', 'toplineflooringandwaterproofin@gmail.com'),
+  ('contact_phone', '0720 859 737'),
+  ('contact_phone_alt', '0755 293 372'),
+  ('contact_address', 'Nairobi, Kenya'),
+  ('business_hours', 'Mon-Sat: 8AM-5PM')
 ON CONFLICT (setting_key) DO NOTHING;
