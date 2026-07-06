@@ -1,6 +1,6 @@
 import { Link, useLocation } from "wouter";
 import { useGetAdminMe, useAdminLogout } from "@/lib/api";
-import { LayoutDashboard, Package, Tags, ShoppingCart, Users, LogOut, Loader2, Menu, X, Image, Star, Building2, FileText, Settings, Percent, Truck, Home, FolderOpen, BarChart3, Globe, Palette, Megaphone, TrendingUp, MenuSquare, ClipboardList, Database } from "lucide-react";
+import { LayoutDashboard, Package, Tags, ShoppingCart, Users, LogOut, Loader2, Menu, X, Image, Star, Building2, FileText, Settings, Percent, Truck, Home, FolderOpen, BarChart3, Globe, Palette, Megaphone, TrendingUp, MenuSquare, ClipboardList, Database, Layers, FileText as FileDoc, ShieldCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
@@ -54,6 +54,11 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
     { section: "Products" },
     { href: "/admin/products", label: "Products", icon: Package },
     { href: "/admin/categories", label: "Categories", icon: Tags },
+    { href: "/admin/product-brands", label: "Brands", icon: ShieldCheck },
+    { href: "/admin/product-images", label: "Product Images", icon: Image },
+    { href: "/admin/product-specifications", label: "Specifications", icon: ClipboardList },
+    { href: "/admin/product-variants", label: "Variants", icon: Layers },
+    { href: "/admin/product-documents", label: "Documents", icon: FileDoc },
     { href: "/admin/inventory", label: "Inventory", icon: TrendingUp },
     { divider: true },
     { section: "Marketing" },

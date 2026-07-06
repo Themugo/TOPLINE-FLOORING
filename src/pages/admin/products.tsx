@@ -16,15 +16,19 @@ import { Plus, Pencil, Trash2, Search, ShieldCheck, Package, Wrench } from "luci
 
 type ProductForm = {
   name: string; slug: string; description: string; price: string; unit: string;
-  image_url: string; category_id: string; product_type: "service" | "material";
+  image_url: string; gallery_urls: string[]; category_id: string; product_type: "service" | "material";
   in_stock: boolean; featured: boolean; sku: string; stock_quantity: string;
   low_stock_threshold: string; meta_title: string; meta_description: string;
+  brand_id: string; specifications: { name: string; value: string }[];
+  documents: { name: string; url: string; type: string }[];
+  related_products: string[];
 };
 
 const emptyForm: ProductForm = {
-  name: "", slug: "", description: "", price: "", unit: "", image_url: "",
+  name: "", slug: "", description: "", price: "", unit: "", image_url: "", gallery_urls: [],
   category_id: "", product_type: "service", in_stock: true, featured: false,
   sku: "", stock_quantity: "0", low_stock_threshold: "5", meta_title: "", meta_description: "",
+  brand_id: "", specifications: [], documents: [], related_products: [],
 };
 
 function toSlug(s: string) { return s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, ""); }
