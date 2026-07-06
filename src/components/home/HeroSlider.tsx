@@ -115,7 +115,7 @@ export default function HeroSlider({
 
   return (
     <section
-      className="relative w-full overflow-hidden min-h-[40vh] md:min-h-[50vh] lg:min-h-[60vh] max-h-[900px]"
+      className="relative w-full overflow-hidden min-h-[50vh] sm:min-h-[60vh] md:min-h-[70vh] lg:min-h-[80vh] max-h-[900px]"
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
       onTouchStart={handleTouchStart}
@@ -146,33 +146,33 @@ export default function HeroSlider({
         }}
       />
 
-      <div className="absolute inset-0 z-20 flex flex-col justify-center lg:justify-end pb-8 sm:pb-12 lg:pb-20 px-6 md:px-16">
+      <div className="absolute inset-0 z-20 flex flex-col justify-center lg:justify-end pb-12 sm:pb-16 md:pb-20 lg:pb-24 px-4 sm:px-8 md:px-16">
         <div className="max-w-4xl transition-all duration-500 ease-in-out">
-          <p className="text-primary text-xs sm:text-sm uppercase tracking-[0.25em] font-sans font-medium mb-3 drop-shadow-sm">
+          <p className="text-primary text-xs sm:text-sm uppercase tracking-[0.25em] font-sans font-medium mb-2 sm:mb-3 drop-shadow-sm">
             Topline Flooring & Waterproofing
           </p>
-          <h1 className="font-display text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-white leading-tight mb-3 max-w-4xl drop-shadow-lg">
+          <h1 className="font-display text-xl sm:text-2xl md:text-3xl lg:text-5xl font-bold text-white leading-tight mb-2 sm:mb-3 max-w-4xl drop-shadow-lg">
             {slides[currentSlide].title}
           </h1>
           {slides[currentSlide].subtitle && (
-            <p className="text-white/80 text-sm sm:text-base md:text-lg font-sans font-light max-w-2xl mb-6 drop-shadow">
+            <p className="text-white/80 text-xs sm:text-sm md:text-base lg:text-lg font-sans font-light max-w-2xl mb-4 sm:mb-6 drop-shadow">
               {slides[currentSlide].subtitle}
             </p>
           )}
-          <div className="flex flex-wrap gap-3">
+          <div className="flex flex-wrap gap-2 sm:gap-3">
             {slides[currentSlide].button_link && slides[currentSlide].button_text && (
               <Link href={slides[currentSlide].button_link!}>
-                <Button className="bg-primary hover:bg-primary/90 text-primary-foreground font-sans font-medium px-7 h-11 rounded-sm tracking-wide text-sm shadow-lg">
-                  {slides[currentSlide].button_text} <ArrowRight className="ml-2 h-4 w-4" />
+                <Button className="bg-primary hover:bg-primary/90 text-primary-foreground font-sans font-medium px-5 sm:px-7 h-10 sm:h-11 rounded-sm tracking-wide text-xs sm:text-sm shadow-lg">
+                  {slides[currentSlide].button_text} <ArrowRight className="ml-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
                 </Button>
               </Link>
             )}
             <a href="tel:0720859737">
               <Button
                 variant="outline"
-                className="border-white/40 text-white hover:bg-white/10 font-sans font-medium px-6 h-11 rounded-sm tracking-wide backdrop-blur-sm text-sm shadow-lg"
+                className="border-white/40 text-white hover:bg-white/10 font-sans font-medium px-4 sm:px-6 h-10 sm:h-11 rounded-sm tracking-wide backdrop-blur-sm text-xs sm:text-sm shadow-lg"
               >
-                <Phone className="mr-2 h-4 w-4 text-primary" />
+                <Phone className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary" />
                 0720 859 737
               </Button>
             </a>
@@ -182,29 +182,29 @@ export default function HeroSlider({
 
       <button
         onClick={goToPrev}
-        className="absolute left-4 md:left-8 top-1/2 -translate-y-1/2 h-10 w-10 rounded-full bg-black/30 hover:bg-primary text-white flex items-center justify-center transition-all backdrop-blur-sm z-30 hover:scale-110"
+        className="absolute left-3 sm:left-4 md:left-8 top-1/2 -translate-y-1/2 h-9 w-9 sm:h-10 sm:w-10 rounded-full bg-black/30 hover:bg-primary text-white flex items-center justify-center transition-all backdrop-blur-sm z-30 hover:scale-110"
         aria-label="Previous slide"
       >
-        <ChevronLeft className="h-5 w-5" />
+        <ChevronLeft className="h-4 w-4 sm:h-5 sm:w-5" />
       </button>
 
       <button
         onClick={goToNext}
-        className="absolute right-4 md:right-8 top-1/2 -translate-y-1/2 h-10 w-10 rounded-full bg-black/30 hover:bg-primary text-white flex items-center justify-center transition-all backdrop-blur-sm z-30 hover:scale-110"
+        className="absolute right-3 sm:right-4 md:right-8 top-1/2 -translate-y-1/2 h-9 w-9 sm:h-10 sm:w-10 rounded-full bg-black/30 hover:bg-primary text-white flex items-center justify-center transition-all backdrop-blur-sm z-30 hover:scale-110"
         aria-label="Next slide"
       >
-        <ChevronRight className="h-5 w-5" />
+        <ChevronRight className="h-4 w-4 sm:h-5 sm:w-5" />
       </button>
 
-      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-30">
+      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-1.5 sm:gap-2 z-30">
         {slides.map((_, i) => (
           <button
             key={i}
             onClick={() => goToSlide(i)}
             className={`rounded-full transition-all duration-300 ${
               i === currentSlide
-                ? "w-8 h-2 bg-primary"
-                : "w-2 h-2 bg-white/40 hover:bg-white/70"
+                ? "w-6 h-1.5 sm:w-8 sm:h-2 bg-primary"
+                : "w-1.5 h-1.5 sm:w-2 sm:h-2 bg-white/40 hover:bg-white/70"
             }`}
             aria-label={`Go to slide ${i + 1}`}
           />

@@ -311,9 +311,9 @@ export function CustomerLayout({ children }: { children: React.ReactNode }) {
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     placeholder="Search products..."
-                    className="h-10 text-base rounded-sm pr-10"
+                    className="h-12 text-base rounded-sm pr-12"
                   />
-                  <button type="submit" className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground" aria-label="Search">
+                  <button type="submit" className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground" aria-label="Search">
                     <Search className="h-5 w-5" />
                   </button>
                 </div>
@@ -326,7 +326,7 @@ export function CustomerLayout({ children }: { children: React.ReactNode }) {
                   key={link.href}
                   href={link.href}
                   className={cn(
-                    "block px-4 py-3 text-base font-sans uppercase tracking-wide font-semibold transition-colors rounded-sm",
+                    "block px-4 py-4 text-lg font-sans uppercase tracking-wide font-semibold transition-colors rounded-sm",
                     isActive(link.href) ? "text-primary bg-primary/5" : "text-muted-foreground"
                   )}
                   onClick={closeMobile}
@@ -338,36 +338,36 @@ export function CustomerLayout({ children }: { children: React.ReactNode }) {
 
             {/* More section */}
             <div className="px-4 pb-2">
-              <div className="border-t border-border pt-3">
+              <div className="border-t border-border pt-4">
                 <span className="block px-3 py-2 text-xs uppercase tracking-widest font-semibold text-muted-foreground/60">
                   More
                 </span>
-                <div className="space-y-0.5">
+                <div className="space-y-1">
                   <Link
                     href="/admin/login"
-                    className="flex items-center gap-2 px-3 py-2.5 text-sm font-sans transition-colors text-muted-foreground hover:text-foreground rounded-sm"
+                    className="flex items-center gap-3 px-3 py-3 text-base font-sans transition-colors text-muted-foreground hover:text-foreground rounded-sm"
                     onClick={closeMobile}
                   >
-                    <LogIn className="h-4 w-4" />
+                    <LogIn className="h-5 w-5" />
                     Admin Login
                   </Link>
                   <Link
                     href="/industries"
-                    className="block px-3 py-2.5 text-sm font-sans transition-colors text-muted-foreground hover:text-foreground rounded-sm"
+                    className="block px-3 py-3 text-base font-sans transition-colors text-muted-foreground hover:text-foreground rounded-sm"
                     onClick={closeMobile}
                   >
                     Industries
                   </Link>
                   <Link
                     href="/faq"
-                    className="block px-3 py-2.5 text-sm font-sans transition-colors text-muted-foreground hover:text-foreground rounded-sm"
+                    className="block px-3 py-3 text-base font-sans transition-colors text-muted-foreground hover:text-foreground rounded-sm"
                     onClick={closeMobile}
                   >
                     FAQs
                   </Link>
                   <Link
                     href="/track-order"
-                    className="block px-3 py-2.5 text-sm font-sans transition-colors text-muted-foreground hover:text-foreground rounded-sm"
+                    className="block px-3 py-3 text-base font-sans transition-colors text-muted-foreground hover:text-foreground rounded-sm"
                     onClick={closeMobile}
                   >
                     Track Order
@@ -378,23 +378,23 @@ export function CustomerLayout({ children }: { children: React.ReactNode }) {
 
             {/* Contact info */}
             <div className="px-4 pb-6">
-              <div className="border-t border-border pt-3 space-y-1">
+              <div className="border-t border-border pt-4 space-y-2">
                 <a
                   href="tel:0720859737"
-                  className="flex items-center gap-2 px-3 py-2.5 text-sm text-muted-foreground hover:text-foreground transition-colors rounded-sm"
+                  className="flex items-center gap-3 px-3 py-3 text-base text-muted-foreground hover:text-foreground transition-colors rounded-sm"
                   onClick={closeMobile}
                 >
-                  <Phone className="h-4 w-4" />
+                  <Phone className="h-5 w-5" />
                   0720 859 737
                 </a>
                 <a
                   href="https://wa.me/254720859737"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-2 px-3 py-2.5 text-sm text-muted-foreground hover:text-[#25D366] transition-colors rounded-sm"
+                  className="flex items-center gap-3 px-3 py-3 text-base text-muted-foreground hover:text-[#25D366] transition-colors rounded-sm"
                   onClick={closeMobile}
                 >
-                  <MessageCircle className="h-4 w-4" />
+                  <MessageCircle className="h-5 w-5" />
                   WhatsApp
                 </a>
               </div>
