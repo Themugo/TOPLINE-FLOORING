@@ -61,8 +61,8 @@ export default function Services() {
       <Breadcrumbs items={[{ label: "Services" }]} />
       <section className="bg-gradient-to-br from-primary/90 to-primary py-16 lg:py-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h1 className="font-display text-3xl lg:text-4xl font-bold text-white mb-4">Our Services</h1>
-          <p className="text-primary-foreground/80 text-lg max-w-2xl mx-auto">
+          <h1 className="font-display text-2xl lg:text-3xl font-bold text-white mb-4">Our Services</h1>
+          <p className="text-primary-foreground/80 text-base max-w-2xl mx-auto">
             Professional flooring and waterproofing solutions for industrial, commercial, and residential projects across Kenya and East Africa.
           </p>
         </div>
@@ -101,7 +101,7 @@ export default function Services() {
                         )}
                         <span className="text-xs text-muted-foreground font-sans">{formatKES(service.price)}</span>
                       </div>
-                      <h2 className="font-display text-2xl lg:text-3xl font-bold text-foreground mb-4">{service.name}</h2>
+                      <h2 className="font-display text-xl lg:text-2xl font-bold text-foreground mb-4">{service.name}</h2>
                       <p className="text-muted-foreground mb-6 leading-relaxed">{service.description || 'No description available.'}</p>
                       {features.length > 0 && (
                         <ul className="space-y-2 mb-6">
@@ -140,7 +140,7 @@ export default function Services() {
       <section className="py-16 lg:py-24 bg-muted/30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-3xl mx-auto mb-12">
-            <h2 className="font-display text-3xl lg:text-4xl font-bold text-foreground mb-4">Our Process</h2>
+            <h2 className="font-display text-2xl lg:text-3xl font-bold text-foreground mb-4">Our Process</h2>
             <p className="text-muted-foreground">From initial consultation to project completion, we ensure quality at every step.</p>
           </div>
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">

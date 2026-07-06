@@ -47,7 +47,7 @@ export default function Shop() {
             <div className="h-px w-6 bg-primary" />
             <span className="text-primary text-xs uppercase tracking-[0.2em] font-sans font-medium">Catalog</span>
           </div>
-          <h1 className="font-display text-4xl md:text-6xl font-semibold text-white">Services &amp; Materials</h1>
+          <h1 className="font-display text-3xl md:text-5xl font-semibold text-white">Services &amp; Materials</h1>
           <p className="text-secondary-foreground/50 mt-3 font-light font-sans">Professional flooring and waterproofing solutions for every need</p>
         </div>
       </div>

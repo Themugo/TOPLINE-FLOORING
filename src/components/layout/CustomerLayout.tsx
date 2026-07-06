@@ -206,7 +206,16 @@ export function CustomerLayout({ children }: { children: React.ReactNode }) {
               )}
             </Link>
 
-            {/* More/Login dropdown */}
+            {/* Admin Login - direct link */}
+            <Link
+              href="/admin/login"
+              className="hidden md:inline-flex p-2 text-muted-foreground hover:text-primary transition-colors"
+              aria-label="Admin Login"
+            >
+              <LogIn className="h-4 w-4" />
+            </Link>
+
+            {/* More dropdown */}
             <div
               className="relative hidden lg:block"
               onMouseEnter={() => handleDropdownEnter("more")}
@@ -229,13 +238,6 @@ export function CustomerLayout({ children }: { children: React.ReactNode }) {
                   onMouseEnter={() => handleDropdownEnter("more")}
                   onMouseLeave={handleDropdownLeave}
                 >
-                  <Link
-                    href="/admin/login"
-                    className="flex items-center gap-2 px-4 py-2 text-sm font-sans transition-colors text-muted-foreground hover:text-foreground hover:bg-muted"
-                  >
-                    <LogIn className="h-3.5 w-3.5" />
-                    Admin Login
-                  </Link>
                   <Link
                     href="/industries"
                     className="block px-4 py-2 text-sm font-sans transition-colors text-muted-foreground hover:text-foreground hover:bg-muted"
