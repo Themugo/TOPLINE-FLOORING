@@ -4,6 +4,7 @@ import { ShoppingCart, Menu, X, Phone, MessageCircle, Search, FileText, LogIn, M
 import { useState, useRef, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
+import { useCmsContent } from "@/hooks/use-cms-content";
 
 const primaryLinks = [
   { href: "/", label: "Home" },
@@ -17,6 +18,7 @@ const primaryLinks = [
 
 export function CustomerLayout({ children }: { children: React.ReactNode }) {
   const { totalItems } = useCart();
+  const { content: footerContent } = useCmsContent("footer");
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -68,6 +70,35 @@ export function CustomerLayout({ children }: { children: React.ReactNode }) {
     setIsMobileOpen(false);
     setMobileExpanded(null);
   };
+
+  const footerCompanyDesc = footerContent.company?.description || "Building Trust and Protection, One Surface at a Time. Professional flooring and waterproofing solutions for industrial, commercial, and residential projects across Kenya and East Africa.";
+  const footerContact = footerContent.contact || { address: "Nairobi, Kenya", phone: "0720 859 737 / 0755 293 372", email: "toplineflooringandwaterproofin@gmail.com" };
+  
+  let footerLinks = [
+    { label: "About Us", href: "/about" },
+    { label: "Services", href: "/services" },
+    { label: "Shop", href: "/shop" },
+    { label: "Projects", href: "/portfolio" },
+    { label: "Industries", href: "/industries" },
+    { label: "FAQs", href: "/faq" },
+    { label: "Request Quote", href: "/quotation" },
+    { label: "Contact", href: "/contact" },
+  ];
+  
+  if (footerContent.links?.quick_links) {
+    try {
+      const parsed = typeof footerContent.links.quick_links === 'string' 
+        ? JSON.parse(footerContent.links.quick_links) 
+        : footerContent.links.quick_links;
+      if (Array.isArray(parsed)) {
+        footerLinks = parsed;
+      }
+    } catch (e) {
+      // Use default links if parsing fails
+    }
+  }
+  
+  const footerCredit = footerContent.copyright?.credit || "Web Design by frameworkstech.site";
 
   return (
     <div className="min-h-[100dvh] flex flex-col bg-background font-sans">
@@ -487,34 +518,29 @@ export function CustomerLayout({ children }: { children: React.ReactNode }) {
                 </div>
               </div>
               <p className="text-secondary-foreground/50 text-sm max-w-md leading-relaxed font-light mb-4">
-                Building Trust and Protection, One Surface at a Time. Professional flooring and waterproofing solutions for industrial, commercial, and residential projects across Kenya and East Africa.
+                {footerCompanyDesc}
               </p>
               <div className="flex items-center gap-3 text-sm text-secondary-foreground/60">
                 <Phone className="h-4 w-4 text-primary" />
-                <span>0720 859 737 / 0755 293 372</span>
+                <span>{footerContact.phone}</span>
               </div>
             </div>
 
             <div>
               <h3 className="font-display text-base font-semibold text-white mb-5">Quick Links</h3>
               <ul className="space-y-2 text-sm text-secondary-foreground/50 font-light">
-                <li><Link href="/about" className="hover:text-primary transition-colors">About Us</Link></li>
-                <li><Link href="/services" className="hover:text-primary transition-colors">Services</Link></li>
-                <li><Link href="/shop" className="hover:text-primary transition-colors">Shop</Link></li>
-                <li><Link href="/portfolio" className="hover:text-primary transition-colors">Projects</Link></li>
-                <li><Link href="/industries" className="hover:text-primary transition-colors">Industries</Link></li>
-                <li><Link href="/faq" className="hover:text-primary transition-colors">FAQs</Link></li>
-                <li><Link href="/quotation" className="hover:text-primary transition-colors">Request Quote</Link></li>
-                <li><Link href="/contact" className="hover:text-primary transition-colors">Contact</Link></li>
+                {footerLinks.map((link: { label: string; href: string }) => (
+                  <li key={link.href}><Link href={link.href} className="hover:text-primary transition-colors">{link.label}</Link></li>
+                ))}
               </ul>
             </div>
 
             <div>
               <h3 className="font-display text-base font-semibold text-white mb-5">Contact</h3>
               <address className="not-italic text-sm text-secondary-foreground/50 font-light space-y-2">
-                <p>Nairobi, Kenya</p>
-                <p>0720 859 737 / 0755 293 372</p>
-                <p className="break-all">toplineflooringandwaterproofin@gmail.com</p>
+                <p>{footerContact.address}</p>
+                <p>{footerContact.phone}</p>
+                <p className="break-all">{footerContact.email}</p>
                 <Link href="/contact" className="text-primary hover:underline block mt-3">Contact Page</Link>
               </address>
             </div>
@@ -526,7 +552,7 @@ export function CustomerLayout({ children }: { children: React.ReactNode }) {
             <p>&copy; {new Date().getFullYear()} Topline Flooring and Waterproofing. All rights reserved.</p>
             <div className="flex items-center gap-4">
               <Link href="/admin/login" className="hover:text-primary transition-colors">Admin</Link>
-              <span className="text-secondary-foreground/30">Web Design by frameworkstech.site</span>
+              <span className="text-secondary-foreground/30">{footerCredit}</span>
             </div>
           </div>
         </div>

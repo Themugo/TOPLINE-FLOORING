@@ -20,9 +20,22 @@ CREATE TABLE IF NOT EXISTS faq_items (
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- Contact messages table
+CREATE TABLE IF NOT EXISTS contact_messages (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  name TEXT NOT NULL,
+  email TEXT NOT NULL,
+  phone TEXT,
+  service_interest TEXT,
+  message TEXT NOT NULL,
+  status TEXT DEFAULT 'new' CHECK (status IN ('new', 'read', 'replied', 'archived')),
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
 -- Enable RLS
 ALTER TABLE cms_content ENABLE ROW LEVEL SECURITY;
 ALTER TABLE faq_items ENABLE ROW LEVEL SECURITY;
+ALTER TABLE contact_messages ENABLE ROW LEVEL SECURITY;
 
 -- Allow public read, only authenticated (admin) write
 CREATE POLICY IF NOT EXISTS "Public read access for cms_content"
@@ -39,6 +52,13 @@ CREATE POLICY IF NOT EXISTS "Admin full access for faq_items"
     EXISTS (SELECT 1 FROM admin_settings WHERE setting_key = 'username' AND setting_value = current_user)
   );
 
+CREATE POLICY IF NOT EXISTS "Public insert for contact_messages"
+  ON contact_messages FOR INSERT WITH CHECK (true);
+CREATE POLICY IF NOT EXISTS "Admin full access for contact_messages"
+  ON contact_messages FOR ALL USING (
+    EXISTS (SELECT 1 FROM admin_settings WHERE setting_key = 'username' AND setting_value = current_user)
+  );
+
 -- Insert default CMS content for about page
 INSERT INTO cms_content (page, section, content) VALUES
 ('about', 'hero', '{"title": "About Topline Flooring & Waterproofing", "subtitle": "Building Trust and Protection, One Surface at a Time"}'),
@@ -46,6 +66,20 @@ INSERT INTO cms_content (page, section, content) VALUES
 ('about', 'values', '{"items": ["Quality Craftsmanship: Every project meets the highest standards of excellence.", "Customer Focus: Your satisfaction is our top priority.", "Innovation: We use the latest materials and techniques.", "Integrity: Honest, transparent, and reliable service.", "Safety: Rigorous safety standards on every site.", "Sustainability: Environmentally responsible solutions."]}'),
 ('about', 'stats', '{"years": "10+", "projects": "500+", "clients": "300+", "satisfaction": "98%"}'),
 ('about', 'team', '{"title": "Our Expert Team", "description": "Our skilled professionals bring years of experience and technical expertise to every project."}')
+ON CONFLICT (page, section) DO NOTHING;
+
+-- Insert default CMS content for contact page
+INSERT INTO cms_content (page, section, content) VALUES
+('contact', 'hero', '{"title": "Contact Us", "subtitle": "Have a project in mind? We''d love to hear from you. Send us a message and we''ll respond as soon as possible."}'),
+('contact', 'info', '{"address": "Nairobi, Kenya", "phone1": "0720 859 737", "phone2": "0755 293 372", "email": "toplineflooringandwaterproofin@gmail.com", "hours": "Monday - Friday: 8:00 AM - 6:00 PM\nSaturday: 9:00 AM - 2:00 PM"}')
+ON CONFLICT (page, section) DO NOTHING;
+
+-- Insert default CMS content for footer
+INSERT INTO cms_content (page, section, content) VALUES
+('footer', 'company', '{"description": "Building Trust and Protection, One Surface at a Time. Professional flooring and waterproofing solutions for industrial, commercial, and residential projects across Kenya and East Africa."}'),
+('footer', 'links', '{"quick_links": [{"label": "About Us", "href": "/about"}, {"label": "Services", "href": "/services"}, {"label": "Shop", "href": "/shop"}, {"label": "Projects", "href": "/portfolio"}, {"label": "Industries", "href": "/industries"}, {"label": "FAQs", "href": "/faq"}, {"label": "Request Quote", "href": "/quotation"}, {"label": "Contact", "href": "/contact"}]}'),
+('footer', 'contact', '{"address": "Nairobi, Kenya", "phone": "0720 859 737 / 0755 293 372", "email": "toplineflooringandwaterproofin@gmail.com"}'),
+('footer', 'copyright', '{"credit": "Web Design by frameworkstech.site"}')
 ON CONFLICT (page, section) DO NOTHING;
 
 -- Insert default FAQ items

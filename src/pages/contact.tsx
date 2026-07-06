@@ -20,6 +20,14 @@ export default function Contact() {
 
   const heroTitle = content.hero?.title || "Contact Us";
   const heroSubtitle = content.hero?.subtitle || "Have a project in mind? We'd love to hear from you. Send us a message and we'll respond as soon as possible.";
+  
+  const contactInfo = content.info || {
+    address: "Nairobi, Kenya",
+    phone1: "0720 859 737",
+    phone2: "0755 293 372",
+    email: "toplineflooringandwaterproofin@gmail.com",
+    hours: "Monday - Friday: 8:00 AM - 6:00 PM\nSaturday: 9:00 AM - 2:00 PM"
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -149,7 +157,7 @@ export default function Contact() {
                 </div>
                 <div>
                   <p className="font-sans font-medium text-foreground">Address</p>
-                  <p className="text-muted-foreground font-light">Nairobi, Kenya</p>
+                  <p className="text-muted-foreground font-light">{contactInfo.address}</p>
                 </div>
               </div>
 
@@ -159,8 +167,8 @@ export default function Contact() {
                 </div>
                 <div>
                   <p className="font-sans font-medium text-foreground">Phone Numbers</p>
-                  <p className="text-muted-foreground font-light">0720 859 737</p>
-                  <p className="text-muted-foreground font-light">0755 293 372</p>
+                  <p className="text-muted-foreground font-light">{contactInfo.phone1}</p>
+                  <p className="text-muted-foreground font-light">{contactInfo.phone2}</p>
                 </div>
               </div>
 
@@ -170,7 +178,7 @@ export default function Contact() {
                 </div>
                 <div>
                   <p className="font-sans font-medium text-foreground">Email</p>
-                  <p className="text-muted-foreground font-light">toplineflooringandwaterproofin@gmail.com</p>
+                  <p className="text-muted-foreground font-light">{contactInfo.email}</p>
                 </div>
               </div>
 
@@ -180,8 +188,9 @@ export default function Contact() {
                 </div>
                 <div>
                   <p className="font-sans font-medium text-foreground">Business Hours</p>
-                  <p className="text-muted-foreground font-light">Monday - Friday: 8:00 AM - 6:00 PM</p>
-                  <p className="text-muted-foreground font-light">Saturday: 9:00 AM - 2:00 PM</p>
+                  {contactInfo.hours.split('\n').map((line, i) => (
+                    <p key={i} className="text-muted-foreground font-light">{line}</p>
+                  ))}
                 </div>
               </div>
             </div>
