@@ -1,88 +1,18 @@
 import { Link, useLocation } from "wouter";
 import { useCart } from "@/hooks/use-cart";
-import { ShoppingCart, Menu, X, Phone, MessageCircle, Search, ChevronDown, FileText, LogIn, MoreHorizontal } from "lucide-react";
+import { ShoppingCart, Menu, X, Phone, MessageCircle, Search, FileText, LogIn, MoreHorizontal } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 
-type SubItem = { href: string; label: string };
-type MegaMenuColumn = { heading: string; items: SubItem[] };
-
-type NavLink =
-  | { type: "link"; href: string; label: string }
-  | { type: "dropdown"; label: string; items: SubItem[] }
-  | { type: "megamenu"; label: string; columns: MegaMenuColumn[] };
-
-const serviceHref = (name: string) => `/shop?type=service&search=${encodeURIComponent(name)}`;
-const materialHref = (name: string) => `/shop?type=material&search=${encodeURIComponent(name)}`;
-
-const servicesColumns: MegaMenuColumn[] = [
-  {
-    heading: "Waterproofing",
-    items: [
-      { href: serviceHref("APP Bituminous Membrane"), label: "APP Bituminous Membrane" },
-      { href: serviceHref("Torch-On Membranes"), label: "Torch-On Membranes" },
-      { href: serviceHref("Liquid Waterproofing"), label: "Liquid Waterproofing" },
-      { href: serviceHref("Basement Waterproofing"), label: "Basement Waterproofing" },
-      { href: serviceHref("Roof Waterproofing"), label: "Roof Waterproofing" },
-      { href: serviceHref("Balcony Waterproofing"), label: "Balcony Waterproofing" },
-      { href: serviceHref("Bathroom Waterproofing"), label: "Bathroom Waterproofing" },
-      { href: serviceHref("Water Tank Waterproofing"), label: "Water Tank Waterproofing" },
-    ],
-  },
-  {
-    heading: "Flooring",
-    items: [
-      { href: serviceHref("Epoxy Flooring"), label: "Epoxy Flooring" },
-      { href: serviceHref("Industrial Epoxy"), label: "Industrial Epoxy" },
-      { href: serviceHref("Warehouse Flooring"), label: "Warehouse Flooring" },
-      { href: serviceHref("Garage Flooring"), label: "Garage Flooring" },
-      { href: serviceHref("Hospital Flooring"), label: "Hospital Flooring" },
-      { href: serviceHref("Polyurethane Flooring"), label: "Polyurethane Flooring" },
-      { href: serviceHref("Decorative Flooring"), label: "Decorative Flooring" },
-    ],
-  },
-  {
-    heading: "Repair & Maintenance",
-    items: [
-      { href: serviceHref("Concrete Repair"), label: "Concrete Repair" },
-      { href: serviceHref("Protective Coatings"), label: "Protective Coatings" },
-      { href: serviceHref("Floor Hardeners"), label: "Floor Hardeners" },
-      { href: serviceHref("Expansion Joint Systems"), label: "Expansion Joint Systems" },
-      { href: serviceHref("Sealants"), label: "Sealants" },
-      { href: serviceHref("Construction Chemicals"), label: "Construction Chemicals" },
-      { href: serviceHref("Floor Primers"), label: "Floor Primers" },
-      { href: serviceHref("Concrete Sealers"), label: "Concrete Sealers" },
-      { href: serviceHref("Roof Coatings"), label: "Roof Coatings" },
-    ],
-  },
-];
-
-const materialItems: SubItem[] = [
-  { href: materialHref("Industrial Flooring Accessories"), label: "Industrial Flooring Accessories" },
-  { href: materialHref("Floor Primers"), label: "Floor Primers" },
-  { href: materialHref("Concrete Sealers"), label: "Concrete Sealers" },
-  { href: materialHref("Roof Coatings"), label: "Roof Coatings" },
-  { href: materialHref("Sealants"), label: "Sealants" },
-  { href: materialHref("Construction Chemicals"), label: "Construction Chemicals" },
-  { href: "/shop?type=material", label: "View All" },
-];
-
-const shopItems: SubItem[] = [
-  { href: "/shop", label: "All Products" },
+const primaryLinks = [
+  { href: "/", label: "Home" },
+  { href: "/about", label: "About" },
+  { href: "/services", label: "Services" },
   { href: "/shop?type=material", label: "Materials" },
-  { href: "/shop?type=service", label: "Services" },
-  { href: "/shop?type=special", label: "Special Offers" },
-];
-
-const primaryLinks: NavLink[] = [
-  { type: "link", href: "/", label: "Home" },
-  { type: "link", href: "/about", label: "About" },
-  { type: "megamenu", label: "Services", columns: servicesColumns },
-  { type: "dropdown", label: "Materials", items: materialItems },
-  { type: "dropdown", label: "Shop", items: shopItems },
-  { type: "link", href: "/contact", label: "Contact" },
-  { type: "link", href: "/quotation", label: "Request Quote" },
+  { href: "/shop", label: "Shop" },
+  { href: "/contact", label: "Contact" },
+  { href: "/quotation", label: "Request Quote" },
 ];
 
 export function CustomerLayout({ children }: { children: React.ReactNode }) {
@@ -172,121 +102,20 @@ export function CustomerLayout({ children }: { children: React.ReactNode }) {
 
           {/* Desktop Nav */}
           <nav className="hidden lg:flex items-center gap-1">
-            {primaryLinks.map((link) => {
-              if (link.type === "link") {
-                return (
-                  <Link
-                    key={link.href}
-                    href={link.href}
-                    className={cn(
-                      "px-3 py-2 text-sm font-sans font-medium transition-colors tracking-wide uppercase text-[11px] rounded-sm",
-                      isActive(link.href)
-                        ? "text-primary bg-primary/5"
-                        : "text-muted-foreground hover:text-foreground hover:bg-muted"
-                    )}
-                  >
-                    {link.label}
-                  </Link>
-                );
-              }
-
-              if (link.type === "megamenu") {
-                return (
-                  <div
-                    key={link.label}
-                    className="relative"
-                    onMouseEnter={() => handleDropdownEnter(link.label)}
-                    onMouseLeave={handleDropdownLeave}
-                  >
-                    <button
-                      className={cn(
-                        "flex items-center gap-1 px-3 py-2 text-sm font-sans font-medium transition-colors tracking-wide uppercase text-[11px] rounded-sm",
-                        openDropdown === link.label
-                          ? "text-primary"
-                          : "text-muted-foreground hover:text-foreground"
-                      )}
-                    >
-                      {link.label} <ChevronDown className="h-3 w-3" />
-                    </button>
-                    {openDropdown === link.label && (
-                      <div
-                        className="absolute top-full left-1/2 -translate-x-1/2 mt-1 w-[600px] bg-background border border-border rounded-sm shadow-xl z-50 p-6"
-                        onMouseEnter={() => handleDropdownEnter(link.label)}
-                        onMouseLeave={handleDropdownLeave}
-                      >
-                        <div className="grid grid-cols-3 gap-4">
-                          {link.columns.map((col) => (
-                            <div key={col.heading}>
-                              <h4 className="text-[10px] uppercase tracking-widest font-semibold text-muted-foreground mb-3">
-                                {col.heading}
-                              </h4>
-                              <ul className="space-y-1">
-                                {col.items.map((item) => (
-                                  <li key={item.href}>
-                                    <Link
-                                      href={item.href}
-                                      className="block text-sm text-muted-foreground hover:text-foreground transition-colors py-0.5"
-                                    >
-                                      {item.label}
-                                    </Link>
-                                  </li>
-                                ))}
-                              </ul>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                );
-              }
-
-              if (link.type === "dropdown") {
-                return (
-                  <div
-                    key={link.label}
-                    className="relative"
-                    onMouseEnter={() => handleDropdownEnter(link.label)}
-                    onMouseLeave={handleDropdownLeave}
-                  >
-                    <button
-                      className={cn(
-                        "flex items-center gap-1 px-3 py-2 text-sm font-sans font-medium transition-colors tracking-wide uppercase text-[11px] rounded-sm",
-                        openDropdown === link.label
-                          ? "text-primary"
-                          : "text-muted-foreground hover:text-foreground"
-                      )}
-                    >
-                      {link.label} <ChevronDown className="h-3 w-3" />
-                    </button>
-                    {openDropdown === link.label && (
-                      <div
-                        className="absolute top-full left-0 mt-1 w-56 bg-background border border-border rounded-sm shadow-xl py-2 z-50"
-                        onMouseEnter={() => handleDropdownEnter(link.label)}
-                        onMouseLeave={handleDropdownLeave}
-                      >
-                        {link.items.map((item) => (
-                          <Link
-                            key={item.href}
-                            href={item.href}
-                            className={cn(
-                              "block px-4 py-2 text-sm font-sans transition-colors",
-                              isActive(item.href)
-                                ? "text-primary bg-primary/5"
-                                : "text-muted-foreground hover:text-foreground hover:bg-muted"
-                            )}
-                          >
-                            {item.label}
-                          </Link>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                );
-              }
-
-              return null;
-            })}
+            {primaryLinks.map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                className={cn(
+                  "px-3 py-2 text-sm font-sans font-medium transition-colors tracking-wide uppercase text-[11px] rounded-sm",
+                  isActive(link.href)
+                    ? "text-primary bg-primary/5"
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                )}
+              >
+                {link.label}
+              </Link>
+            ))}
           </nav>
 
           {/* Right side actions */}
