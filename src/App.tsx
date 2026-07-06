@@ -1,146 +1,287 @@
-import { lazy, Suspense } from "react";
-import { Switch, Route, Router as WouterRouter } from "wouter";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { Toaster } from "@/components/ui/toaster";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { CartProvider } from "@/hooks/use-cart";
-import { AdminAuthGuard } from "@/components/admin/AdminAuthGuard";
-import { InitializationScreen } from "@/components/InitializationScreen";
-import { isConfigured } from "@/lib/supabase";
-import { Loader2 } from "lucide-react";
-import NotFound from "@/pages/not-found";
-import Home from "@/pages/home";
+import { CartProvider } from '@/hooks/use-cart';
+import { AdminAuthGuard, AdminPublicRoute } from '@/components/admin/AdminGuard';
+import { ToastContainer } from '@/components/ui/Toast';
+import { useLocation } from 'wouter';
 
-const Shop = lazy(() => import("@/pages/shop"));
-const ShopDetail = lazy(() => import("@/pages/shop-detail"));
-const Cart = lazy(() => import("@/pages/cart"));
-const OrderConfirmation = lazy(() => import("@/pages/order-confirmation"));
-const CheckoutSuccess = lazy(() => import("@/pages/checkout-success"));
-const Contact = lazy(() => import("@/pages/contact"));
-const Quotation = lazy(() => import("@/pages/quotation"));
-const Services = lazy(() => import("@/pages/services"));
-const ServiceDetail = lazy(() => import("@/pages/service-detail"));
-const Portfolio = lazy(() => import("@/pages/portfolio"));
-const About = lazy(() => import("@/pages/about"));
-const Industries = lazy(() => import("@/pages/industries"));
-const FAQ = lazy(() => import("@/pages/faq"));
-const TrackOrder = lazy(() => import("@/pages/track-order"));
-const Market = lazy(() => import("@/pages/market"));
-const AdminLogin = lazy(() => import("@/pages/admin/login"));
-const Dashboard = lazy(() => import("@/pages/admin/dashboard"));
-const AdminOrders = lazy(() => import("@/pages/admin/orders"));
-const AdminProducts = lazy(() => import("@/pages/admin/products"));
-const AdminCategories = lazy(() => import("@/pages/admin/categories"));
-const AdminCustomers = lazy(() => import("@/pages/admin/customers"));
-const AdminHeroSlides = lazy(() => import("@/pages/admin/hero-slides"));
-const AdminTestimonials = lazy(() => import("@/pages/admin/testimonials"));
-const AdminPartners = lazy(() => import("@/pages/admin/partners"));
-const AdminQuotations = lazy(() => import("@/pages/admin/quotations"));
-const AdminSettings = lazy(() => import("@/pages/admin/settings"));
-const AdminCoupons = lazy(() => import("@/pages/admin/coupons"));
-const AdminDeliveryZones = lazy(() => import("@/pages/admin/delivery-zones"));
-const AdminHomepageBuilder = lazy(() => import("@/pages/admin/homepage-builder"));
-const AdminInventory = lazy(() => import("@/pages/admin/inventory"));
-const AdminMediaLibrary = lazy(() => import("@/pages/admin/media-library"));
-const AdminProjects = lazy(() => import("@/pages/admin/projects"));
-const AdminPromotions = lazy(() => import("@/pages/admin/promotions"));
-const AdminReports = lazy(() => import("@/pages/admin/reports"));
-const AdminSeo = lazy(() => import("@/pages/admin/seo"));
-const AdminSiteSettings = lazy(() => import("@/pages/admin/site-settings"));
-const AdminTheme = lazy(() => import("@/pages/admin/theme"));
-const AdminNavigation = lazy(() => import("@/pages/admin/navigation"));
-const AdminAuditLogs = lazy(() => import("@/pages/admin/audit-logs"));
-const AdminBackups = lazy(() => import("@/pages/admin/backups"));
+// Pages
+import Home from '@/pages/home';
+import Shop from '@/pages/shop';
+import ProductDetail from '@/pages/product-detail';
+import Cart from '@/pages/cart';
+import OrderConfirmation from '@/pages/order-confirmation';
+import Contact from '@/pages/contact';
+import Quotation from '@/pages/quotation';
+import Services from '@/pages/services';
+import Portfolio from '@/pages/portfolio';
 
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      retry: 1,
-      staleTime: 30_000,
-    },
-  },
-});
+// Admin Pages
+import AdminLogin from '@/pages/admin/login';
+import { DashboardPage } from '@/pages/admin/dashboard';
+import AdminOrders from '@/pages/admin/orders';
+import AdminProducts from '@/pages/admin/products';
+import AdminCategories from '@/pages/admin/categories';
+import AdminCustomers from '@/pages/admin/customers';
+import AdminQuotations from '@/pages/admin/quotations';
+import AdminHeroSlides from '@/pages/admin/hero-slides';
+import AdminTestimonials from '@/pages/admin/testimonials';
+import AdminPartners from '@/pages/admin/partners';
+import AdminSettings from '@/pages/admin/settings';
+import AdminSiteSettings from '@/pages/admin/site-settings';
+import AdminTheme from '@/pages/admin/theme';
+import AdminHomepageBuilder from '@/pages/admin/homepage-builder';
+import AdminDeliveryZones from '@/pages/admin/delivery-zones';
+import AdminProjects from '@/pages/admin/projects';
+import AdminPromotions from '@/pages/admin/promotions';
+import AdminInventory from '@/pages/admin/inventory';
+import AdminMediaLibrary from '@/pages/admin/media-library';
+import AdminReports from '@/pages/admin/reports';
+import AdminSeo from '@/pages/admin/seo';
+import AdminCoupons from '@/pages/admin/coupons';
 
-const adminRouteConfigs = [
-  { path: "/admin", Component: Dashboard },
-  { path: "/admin/orders", Component: AdminOrders },
-  { path: "/admin/products", Component: AdminProducts },
-  { path: "/admin/categories", Component: AdminCategories },
-  { path: "/admin/customers", Component: AdminCustomers },
-  { path: "/admin/hero-slides", Component: AdminHeroSlides },
-  { path: "/admin/testimonials", Component: AdminTestimonials },
-  { path: "/admin/partners", Component: AdminPartners },
-  { path: "/admin/quotations", Component: AdminQuotations },
-  { path: "/admin/coupons", Component: AdminCoupons },
-  { path: "/admin/delivery-zones", Component: AdminDeliveryZones },
-  { path: "/admin/homepage-builder", Component: AdminHomepageBuilder },
-  { path: "/admin/inventory", Component: AdminInventory },
-  { path: "/admin/media-library", Component: AdminMediaLibrary },
-  { path: "/admin/projects", Component: AdminProjects },
-  { path: "/admin/promotions", Component: AdminPromotions },
-  { path: "/admin/reports", Component: AdminReports },
-  { path: "/admin/seo", Component: AdminSeo },
-  { path: "/admin/site-settings", Component: AdminSiteSettings },
-  { path: "/admin/theme", Component: AdminTheme },
-  { path: "/admin/navigation", Component: AdminNavigation },
-  { path: "/admin/settings", Component: AdminSettings },
-  { path: "/admin/audit-logs", Component: AdminAuditLogs },
-  { path: "/admin/backups", Component: AdminBackups },
-  { path: "/admin/gallery", Component: AdminProjects },
-];
-
+// Simple router using wouter
 function Router() {
+  const [location] = useLocation();
+
+  // Admin routes
+  if (location === '/admin/login') {
+    return (
+      <AdminPublicRoute>
+        <AdminLogin />
+      </AdminPublicRoute>
+    );
+  }
+
+  if (location === '/admin' || location === '/admin/') {
+    return (
+      <AdminAuthGuard>
+        <DashboardPage />
+      </AdminAuthGuard>
+    );
+  }
+
+  if (location === '/admin/orders') {
+    return (
+      <AdminAuthGuard>
+        <AdminOrders />
+      </AdminAuthGuard>
+    );
+  }
+
+  if (location === '/admin/products') {
+    return (
+      <AdminAuthGuard>
+        <AdminProducts />
+      </AdminAuthGuard>
+    );
+  }
+
+  if (location === '/admin/categories') {
+    return (
+      <AdminAuthGuard>
+        <AdminCategories />
+      </AdminAuthGuard>
+    );
+  }
+
+  if (location === '/admin/customers') {
+    return (
+      <AdminAuthGuard>
+        <AdminCustomers />
+      </AdminAuthGuard>
+    );
+  }
+
+  if (location === '/admin/quotations') {
+    return (
+      <AdminAuthGuard>
+        <AdminQuotations />
+      </AdminAuthGuard>
+    );
+  }
+
+  if (location === '/admin/hero-slides') {
+    return (
+      <AdminAuthGuard>
+        <AdminHeroSlides />
+      </AdminAuthGuard>
+    );
+  }
+
+  if (location === '/admin/testimonials') {
+    return (
+      <AdminAuthGuard>
+        <AdminTestimonials />
+      </AdminAuthGuard>
+    );
+  }
+
+  if (location === '/admin/partners') {
+    return (
+      <AdminAuthGuard>
+        <AdminPartners />
+      </AdminAuthGuard>
+    );
+  }
+
+  if (location === '/admin/settings') {
+    return (
+      <AdminAuthGuard>
+        <AdminSettings />
+      </AdminAuthGuard>
+    );
+  }
+
+  if (location === '/admin/site-settings') {
+    return (
+      <AdminAuthGuard>
+        <AdminSiteSettings />
+      </AdminAuthGuard>
+    );
+  }
+
+  if (location === '/admin/theme') {
+    return (
+      <AdminAuthGuard>
+        <AdminTheme />
+      </AdminAuthGuard>
+    );
+  }
+
+  if (location === '/admin/homepage') {
+    return (
+      <AdminAuthGuard>
+        <AdminHomepageBuilder />
+      </AdminAuthGuard>
+    );
+  }
+
+  if (location === '/admin/delivery-zones') {
+    return (
+      <AdminAuthGuard>
+        <AdminDeliveryZones />
+      </AdminAuthGuard>
+    );
+  }
+
+  if (location === '/admin/projects') {
+    return (
+      <AdminAuthGuard>
+        <AdminProjects />
+      </AdminAuthGuard>
+    );
+  }
+
+  if (location === '/admin/promotions') {
+    return (
+      <AdminAuthGuard>
+        <AdminPromotions />
+      </AdminAuthGuard>
+    );
+  }
+
+  if (location === '/admin/inventory') {
+    return (
+      <AdminAuthGuard>
+        <AdminInventory />
+      </AdminAuthGuard>
+    );
+  }
+
+  if (location === '/admin/media-library') {
+    return (
+      <AdminAuthGuard>
+        <AdminMediaLibrary />
+      </AdminAuthGuard>
+    );
+  }
+
+  if (location === '/admin/reports') {
+    return (
+      <AdminAuthGuard>
+        <AdminReports />
+      </AdminAuthGuard>
+    );
+  }
+
+  if (location === '/admin/seo') {
+    return (
+      <AdminAuthGuard>
+        <AdminSeo />
+      </AdminAuthGuard>
+    );
+  }
+
+  if (location === '/admin/coupons') {
+    return (
+      <AdminAuthGuard>
+        <AdminCoupons />
+      </AdminAuthGuard>
+    );
+  }
+
+  // Customer routes
+  if (location === '/' || location === '') {
+    return <Home />;
+  }
+
+  if (location === '/shop') {
+    return <Shop />;
+  }
+
+  if (location === '/contact') {
+    return <Contact />;
+  }
+
+  if (location === '/quotation') {
+    return <Quotation />;
+  }
+
+  if (location === '/services') {
+    return <Services />;
+  }
+
+  if (location === '/portfolio') {
+    return <Portfolio />;
+  }
+
+  if (location === '/cart') {
+    return <Cart />;
+  }
+
+  if (location.startsWith('/product/')) {
+    return <ProductDetail />;
+  }
+
+  if (location.startsWith('/order-confirmation/')) {
+    return <OrderConfirmation />;
+  }
+
+  // 404
+  return <NotFound />;
+}
+
+function NotFound() {
+  const [, setLocation] = useLocation();
   return (
-    <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-background"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>}>
-      <Switch>
-        <Route path="/" component={Home} />
-        <Route path="/shop" component={Shop} />
-        <Route path="/shop/:id" component={ShopDetail} />
-        <Route path="/market" component={Market} />
-        <Route path="/services" component={Services} />
-        <Route path="/services/:slug" component={ServiceDetail} />
-        <Route path="/portfolio" component={Portfolio} />
-        <Route path="/cart" component={Cart} />
-        <Route path="/order-confirmation/:id" component={OrderConfirmation} />
-        <Route path="/checkout/success" component={CheckoutSuccess} />
-        <Route path="/contact" component={Contact} />
-        <Route path="/about" component={About} />
-        <Route path="/industries" component={Industries} />
-        <Route path="/faq" component={FAQ} />
-        <Route path="/track-order" component={TrackOrder} />
-        <Route path="/quotation" component={Quotation} />
-        <Route path="/admin/login" component={AdminLogin} />
-        {adminRouteConfigs.map(({ path, Component }) => (
-          <Route key={path} path={path}>
-            {() => (
-              <AdminAuthGuard>
-                <Component />
-              </AdminAuthGuard>
-            )}
-          </Route>
-        ))}
-        <Route component={NotFound} />
-      </Switch>
-    </Suspense>
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+      <div className="text-center">
+        <h1 className="font-display text-6xl font-bold text-gray-200 mb-4">404</h1>
+        <h2 className="font-semibold text-xl text-gray-900 mb-2">Page not found</h2>
+        <p className="text-gray-500 mb-6">The page you're looking for doesn't exist.</p>
+        <button onClick={() => setLocation('/')} className="btn-primary">
+          Go Home
+        </button>
+      </div>
+    </div>
   );
 }
 
 function App() {
-  if (!isConfigured) {
-    return <InitializationScreen />;
-  }
-
   return (
-    <QueryClientProvider client={queryClient}>
-      <CartProvider>
-        <TooltipProvider>
-          <WouterRouter>
-            <Router />
-          </WouterRouter>
-          <Toaster />
-        </TooltipProvider>
-      </CartProvider>
-    </QueryClientProvider>
+    <CartProvider>
+      <Router />
+      <ToastContainer />
+    </CartProvider>
   );
 }
 

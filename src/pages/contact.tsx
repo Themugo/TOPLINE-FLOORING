@@ -1,221 +1,273 @@
-import { useState } from "react";
-import { CustomerLayout } from "@/components/layout/CustomerLayout";
-import { Breadcrumbs } from "@/components/Breadcrumbs";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/lib/supabase";
-import { usePageVisit } from "@/hooks/use-page-visit";
-import { useCmsContent } from "@/hooks/use-cms-content";
-import { Phone, Mail, MapPin, Clock, Send, MessageCircle } from "lucide-react";
+import { useState } from 'react';
+import { Phone, Mail, MapPin, Clock, Send } from 'lucide-react';
+import { CustomerLayout } from '@/components/layout/CustomerLayout';
+import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/lib/supabase';
+
+interface FormData {
+  name: string;
+  email: string;
+  phone: string;
+  subject: string;
+  message: string;
+}
 
 export default function Contact() {
-  usePageVisit("/contact");
   const { toast } = useToast();
-  const { content } = useCmsContent("contact");
-  const [form, setForm] = useState({ name: "", email: "", phone: "", subject: "", message: "" });
-  const [loading, setLoading] = useState(false);
-
-  const heroTitle = content.hero?.title || "Contact Us";
-  const heroSubtitle = content.hero?.subtitle || "Have a project in mind? We'd love to hear from you. Send us a message and we'll respond as soon as possible.";
-  
-  const contactInfo = content.info || {
-    address: "Nairobi, Kenya",
-    phone1: "0720 859 737",
-    phone2: "0755 293 372",
-    email: "toplineflooringandwaterproofin@gmail.com",
-    hours: "Monday - Friday: 8:00 AM - 6:00 PM\nSaturday: 9:00 AM - 2:00 PM"
-  };
+  const [form, setForm] = useState<FormData>({
+    name: '',
+    email: '',
+    phone: '',
+    subject: '',
+    message: '',
+  });
+  const [submitting, setSubmitting] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
+    setSubmitting(true);
 
     try {
-      if (supabase) {
-        const { error } = await supabase.from("contact_messages").insert({
-          name: form.name,
-          email: form.email,
-          phone: form.phone || null,
-          service_interest: form.subject || null,
-          message: form.message,
-        });
-        if (error) throw error;
-      }
-
-      toast({
-        title: "Message Sent",
-        description: "Thank you for contacting us. We will respond within 24 hours.",
+      const { error } = await supabase.from('quotations').insert({
+        name: form.name,
+        email: form.email,
+        phone: form.phone,
+        project_type: form.subject,
+        message: form.message,
       });
 
-      setForm({ name: "", email: "", phone: "", subject: "", message: "" });
-    } catch (err) {
+      if (error) throw error;
+
       toast({
-        title: "Error",
-        description: "Something went wrong. Please try again later.",
-        variant: "destructive",
+        title: 'Message Sent',
+        description: 'We\'ll get back to you within 24 hours.',
+      });
+
+      setForm({
+        name: '',
+        email: '',
+        phone: '',
+        subject: '',
+        message: '',
+      });
+    } catch {
+      toast({
+        title: 'Error',
+        description: 'Failed to send message. Please try again.',
+        variant: 'destructive',
       });
     } finally {
-      setLoading(false);
+      setSubmitting(false);
     }
   };
 
+  const contactInfo = [
+    {
+      icon: Phone,
+      title: 'Phone',
+      value: '+254 700 123 456',
+      href: 'tel:+254700123456',
+    },
+    {
+      icon: Mail,
+      title: 'Email',
+      value: 'info@toplineflooring.co.ke',
+      href: 'mailto:info@toplineflooring.co.ke',
+    },
+    {
+      icon: MapPin,
+      title: 'Address',
+      value: 'Industrial Area, Nairobi, Kenya',
+      href: null,
+    },
+    {
+      icon: Clock,
+      title: 'Hours',
+      value: 'Mon-Fri: 8AM-5PM, Sat: 9AM-1PM',
+      href: null,
+    },
+  ];
+
   return (
     <CustomerLayout>
-      <Breadcrumbs items={[{ label: "Contact" }]} />
-      {/* Hero Section */}
-      <div className="bg-secondary text-secondary-foreground py-16 md:py-20 relative overflow-hidden">
-        <div className="absolute left-0 top-0 h-full w-[3px] bg-gradient-to-b from-transparent via-primary/60 to-transparent" />
-        <div className="container mx-auto px-6 md:px-12">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="h-px w-6 bg-primary" />
-            <span className="text-primary text-xs uppercase tracking-[0.2em] font-sans font-medium">Get In Touch</span>
+      <div className="min-h-screen">
+        {/* Hero */}
+        <section className="bg-gradient-to-br from-navy-900 to-navy-950 py-16 lg:py-24">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h1 className="font-display text-3xl lg:text-4xl font-bold text-white mb-4">
+              Contact Us
+            </h1>
+            <p className="text-gray-300 text-lg max-w-2xl mx-auto">
+              Have questions about our products or services? We're here to help.
+              Get in touch with our team.
+            </p>
           </div>
-          <h1 className="font-display text-4xl md:text-6xl font-semibold text-white mb-3">{heroTitle}</h1>
-          <p className="text-secondary-foreground/50 max-w-xl font-light">{heroSubtitle}</p>
-        </div>
-      </div>
+        </section>
 
-      <div className="container mx-auto px-6 md:px-12 py-16">
-        <div className="grid lg:grid-cols-2 gap-16">
-          {/* Contact Form */}
-          <div>
-            <h2 className="font-display text-2xl font-semibold text-foreground mb-8">Send Us a Message</h2>
-            <form onSubmit={handleSubmit} className="space-y-5">
-              <div className="grid sm:grid-cols-2 gap-4">
-                <div>
-                  <Label className="text-xs uppercase tracking-widest font-sans text-muted-foreground">Full Name *</Label>
-                  <Input
-                    value={form.name}
-                    onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
-                    className="mt-1.5 rounded-sm h-10"
-                    placeholder="John Doe"
-                    required
-                  />
+        <section className="py-12 lg:py-16 bg-gray-50">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="grid lg:grid-cols-3 gap-8">
+              {/* Contact Info */}
+              <div className="lg:col-span-1">
+                <div className="card p-6">
+                  <h2 className="font-display text-xl font-bold text-navy-900 mb-6">
+                    Get in Touch
+                  </h2>
+                  <div className="space-y-6">
+                    {contactInfo.map((info) => (
+                      <div key={info.title} className="flex items-start gap-4">
+                        <div className="w-10 h-10 rounded-lg bg-primary-100 flex items-center justify-center flex-shrink-0">
+                          <info.icon className="w-5 h-5 text-primary-600" />
+                        </div>
+                        <div>
+                          <p className="font-medium text-navy-900">{info.title}</p>
+                          {info.href ? (
+                            <a
+                              href={info.href}
+                              className="text-gray-600 hover:text-primary-500 transition-colors"
+                            >
+                              {info.value}
+                            </a>
+                          ) : (
+                            <p className="text-gray-600">{info.value}</p>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-                <div>
-                  <Label className="text-xs uppercase tracking-widest font-sans text-muted-foreground">Email *</Label>
-                  <Input
-                    type="email"
-                    value={form.email}
-                    onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
-                    className="mt-1.5 rounded-sm h-10"
-                    placeholder="john@example.com"
-                    required
-                  />
-                </div>
-              </div>
-              <div className="grid sm:grid-cols-2 gap-4">
-                <div>
-                  <Label className="text-xs uppercase tracking-widest font-sans text-muted-foreground">Phone</Label>
-                  <Input
-                    value={form.phone}
-                    onChange={e => setForm(f => ({ ...f, phone: e.target.value }))}
-                    className="mt-1.5 rounded-sm h-10"
-                    placeholder="0720 000 000"
-                  />
-                </div>
-                <div>
-                  <Label className="text-xs uppercase tracking-widest font-sans text-muted-foreground">Subject *</Label>
-                  <Input
-                    value={form.subject}
-                    onChange={e => setForm(f => ({ ...f, subject: e.target.value }))}
-                    className="mt-1.5 rounded-sm h-10"
-                    placeholder="Project Inquiry"
-                    required
-                  />
-                </div>
-              </div>
-              <div>
-                <Label className="text-xs uppercase tracking-widest font-sans text-muted-foreground">Message *</Label>
-                <Textarea
-                  value={form.message}
-                  onChange={e => setForm(f => ({ ...f, message: e.target.value }))}
-                  className="mt-1.5 rounded-sm"
-                  rows={5}
-                  placeholder="Tell us about your project..."
-                  required
-                />
-              </div>
-              <Button type="submit" className="rounded-sm font-sans uppercase tracking-widest text-xs h-12 px-10" disabled={loading}>
-                <Send className="h-4 w-4 mr-2" />
-                {loading ? "Sending..." : "Send Message"}
-              </Button>
-            </form>
-          </div>
 
-          {/* Contact Info */}
-          <div>
-            <h2 className="font-display text-2xl font-semibold text-foreground mb-8">Contact Information</h2>
-
-            <div className="space-y-6 mb-10">
-              <div className="flex items-start gap-4">
-                <div className="h-10 w-10 rounded-sm bg-primary/10 flex items-center justify-center shrink-0">
-                  <MapPin className="h-5 w-5 text-primary" />
-                </div>
-                <div>
-                  <p className="font-sans font-medium text-foreground">Address</p>
-                  <p className="text-muted-foreground font-light">{contactInfo.address}</p>
+                <div className="mt-6 card p-6">
+                  <h3 className="font-semibold text-navy-900 mb-4">Follow Us</h3>
+                  <div className="flex gap-3">
+                    {['Facebook', 'Instagram', 'LinkedIn'].map((platform) => (
+                      <a
+                        key={platform}
+                        href="#"
+                        className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center text-gray-600 hover:bg-primary-500 hover:text-white transition-colors"
+                      >
+                        <span className="sr-only">{platform}</span>
+                        <span className="text-sm font-medium">{platform[0]}</span>
+                      </a>
+                    ))}
+                  </div>
                 </div>
               </div>
 
-              <div className="flex items-start gap-4">
-                <div className="h-10 w-10 rounded-sm bg-primary/10 flex items-center justify-center shrink-0">
-                  <Phone className="h-5 w-5 text-primary" />
-                </div>
-                <div>
-                  <p className="font-sans font-medium text-foreground">Phone Numbers</p>
-                  <p className="text-muted-foreground font-light">{contactInfo.phone1}</p>
-                  <p className="text-muted-foreground font-light">{contactInfo.phone2}</p>
-                </div>
-              </div>
+              {/* Contact Form */}
+              <div className="lg:col-span-2">
+                <div className="card p-6 lg:p-8">
+                  <h2 className="font-display text-xl font-bold text-navy-900 mb-6">
+                    Send Us a Message
+                  </h2>
+                  <form onSubmit={handleSubmit} className="space-y-6">
+                    <div className="grid sm:grid-cols-2 gap-6">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Full Name *
+                        </label>
+                        <input
+                          type="text"
+                          required
+                          value={form.name}
+                          onChange={(e) => setForm({ ...form, name: e.target.value })}
+                          className="input"
+                          placeholder="John Doe"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Email *
+                        </label>
+                        <input
+                          type="email"
+                          required
+                          value={form.email}
+                          onChange={(e) => setForm({ ...form, email: e.target.value })}
+                          className="input"
+                          placeholder="john@example.com"
+                        />
+                      </div>
+                    </div>
 
-              <div className="flex items-start gap-4">
-                <div className="h-10 w-10 rounded-sm bg-primary/10 flex items-center justify-center shrink-0">
-                  <Mail className="h-5 w-5 text-primary" />
-                </div>
-                <div>
-                  <p className="font-sans font-medium text-foreground">Email</p>
-                  <p className="text-muted-foreground font-light">{contactInfo.email}</p>
-                </div>
-              </div>
+                    <div className="grid sm:grid-cols-2 gap-6">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Phone *
+                        </label>
+                        <input
+                          type="tel"
+                          required
+                          value={form.phone}
+                          onChange={(e) => setForm({ ...form, phone: e.target.value })}
+                          className="input"
+                          placeholder="+254 700 123 456"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Subject
+                        </label>
+                        <select
+                          value={form.subject}
+                          onChange={(e) => setForm({ ...form, subject: e.target.value })}
+                          className="input"
+                        >
+                          <option value="">Select a subject</option>
+                          <option value="General Inquiry">General Inquiry</option>
+                          <option value="Product Question">Product Question</option>
+                          <option value="Quotation Request">Quotation Request</option>
+                          <option value="Technical Support">Technical Support</option>
+                          <option value="Partnership">Partnership</option>
+                        </select>
+                      </div>
+                    </div>
 
-              <div className="flex items-start gap-4">
-                <div className="h-10 w-10 rounded-sm bg-primary/10 flex items-center justify-center shrink-0">
-                  <Clock className="h-5 w-5 text-primary" />
-                </div>
-                <div>
-                  <p className="font-sans font-medium text-foreground">Business Hours</p>
-                  {contactInfo.hours.split('\n').map((line, i) => (
-                    <p key={i} className="text-muted-foreground font-light">{line}</p>
-                  ))}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Message *
+                      </label>
+                      <textarea
+                        required
+                        value={form.message}
+                        onChange={(e) => setForm({ ...form, message: e.target.value })}
+                        className="input min-h-[150px] resize-none"
+                        placeholder="Tell us about your project or question..."
+                      />
+                    </div>
+
+                    <button
+                      type="submit"
+                      disabled={submitting}
+                      className="btn-primary flex items-center justify-center gap-2"
+                    >
+                      <Send className="w-4 h-4" />
+                      {submitting ? 'Sending...' : 'Send Message'}
+                    </button>
+                  </form>
                 </div>
               </div>
             </div>
-
-            {/* Map Placeholder */}
-            <div className="h-64 bg-muted rounded-sm border border-border flex items-center justify-center">
-              <div className="text-center">
-                <MapPin className="h-8 w-8 text-muted-foreground/40 mx-auto mb-2" />
-                <p className="text-muted-foreground font-light text-sm">Nairobi, Kenya</p>
-              </div>
-            </div>
-
-            {/* WhatsApp Button */}
-            <a
-              href="https://wa.me/254720859737?text=Hello%20Topline%2C%20I%27d%20like%20to%20enquire%20about%20your%20flooring%20and%20waterproofing%20services."
-              target="_blank"
-              rel="noopener noreferrer"
-              className="mt-6 block"
-            >
-              <Button className="w-full rounded-sm font-sans uppercase tracking-widest text-xs h-12 bg-[#25D366] hover:bg-[#22c55e]">
-                <MessageCircle className="h-4 w-4 mr-2" /> Chat on WhatsApp
-              </Button>
-            </a>
           </div>
-        </div>
+        </section>
+
+        {/* Map */}
+        <section className="py-8 bg-white">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="bg-gray-200 rounded-xl h-[300px] flex items-center justify-center overflow-hidden">
+              <iframe
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3988.8175872993013!2d36.8219!3d-1.2921!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMcKwMTcnMzEuNiJTIDM2wrA0OScyMC44IkU!5e0!3m2!1sen!2ske!4v1234567890"
+                width="100%"
+                height="300"
+                style={{ border: 0 }}
+                allowFullScreen
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+                title="Topline Flooring Location"
+              />
+            </div>
+          </div>
+        </section>
       </div>
     </CustomerLayout>
   );

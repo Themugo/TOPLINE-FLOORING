@@ -1,13 +1,13 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Search, Globe, Save, AlertCircle } from 'lucide-react';
-import { AdminLayout } from '@/components/layout/AdminLayout';
+import { AdminLayout } from '@/pages/admin/dashboard';
 import { supabase } from '@/lib/supabase';
 import { useToast } from '@/hooks/use-toast';
 import type { SeoPage } from '@/lib/types';
 
 export default function AdminSeo() {
   return (
-    <AdminLayout>
+    <AdminLayout title="SEO Manager">
       <SeoContent />
     </AdminLayout>
   );
@@ -21,10 +21,6 @@ function SeoContent() {
   const { toast } = useToast();
 
   const fetchSeoPages = useCallback(async () => {
-    if (!supabase) {
-      setLoading(false);
-      return;
-    }
     setLoading(true);
     const { data, error } = await supabase
       .from('seo_pages')
@@ -45,7 +41,7 @@ function SeoContent() {
   }, []);
 
   const handleSave = async () => {
-    if (!selectedPage || !supabase) return;
+    if (!selectedPage) return;
     setSaving(true);
 
     const { error } = await supabase
@@ -66,9 +62,9 @@ function SeoContent() {
 
     setSaving(false);
     if (error) {
-      toast({ title: 'Failed to save SEO settings', variant: 'destructive' });
+      toast({ type: 'error', message: 'Failed to save SEO settings' });
     } else {
-      toast({ title: 'SEO settings saved' });
+      toast({ type: 'success', message: 'SEO settings saved' });
       fetchSeoPages();
     }
   };

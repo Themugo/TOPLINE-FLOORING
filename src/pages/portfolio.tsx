@@ -1,8 +1,6 @@
 import { useState, useEffect } from 'react';
 import { X, MapPin, Building2, Calendar, Ruler, Loader2 } from 'lucide-react';
-import { usePageVisit } from '@/hooks/use-page-visit';
 import { CustomerLayout } from '@/components/layout/CustomerLayout';
-import { Breadcrumbs } from '@/components/Breadcrumbs';
 import { Link } from 'wouter';
 import { supabase } from '@/lib/supabase';
 import type { Project, ProjectImage } from '@/lib/types';
@@ -12,7 +10,6 @@ interface ProjectWithImages extends Project {
 }
 
 export default function Portfolio() {
-  usePageVisit("/portfolio");
   const [projects, setProjects] = useState<ProjectWithImages[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState('All');
@@ -50,14 +47,13 @@ export default function Portfolio() {
 
   return (
     <CustomerLayout>
-      <Breadcrumbs items={[{ label: "Projects" }]} />
       {/* Hero */}
-      <section className="bg-gradient-to-br from-primary-700 to-primary-900 py-16 lg:py-24">
+      <section className="bg-gradient-to-br from-navy-900 to-navy-950 py-16 lg:py-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h1 className="font-display text-3xl lg:text-4xl font-bold text-white mb-4">
             Our Portfolio
           </h1>
-          <p className="text-primary-100 text-lg max-w-2xl mx-auto">
+          <p className="text-gray-300 text-lg max-w-2xl mx-auto">
             Explore our completed projects across Kenya and East Africa. Every project
             showcases our commitment to quality and durability.
           </p>
@@ -75,7 +71,7 @@ export default function Portfolio() {
                   onClick={() => setSelectedCategory(cat || 'All')}
                   className={`px-4 py-2 text-sm font-medium rounded-full transition-all ${
                     selectedCategory === cat
-                      ? 'bg-primary-600 text-white'
+                      ? 'bg-primary-500 text-white shadow-lg'
                       : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                   }`}
                 >
@@ -92,7 +88,7 @@ export default function Portfolio() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {loading ? (
             <div className="text-center py-12">
-              <Loader2 className="w-8 h-8 text-primary-600 animate-spin mx-auto mb-4" />
+              <Loader2 className="w-8 h-8 text-primary-500 animate-spin mx-auto mb-4" />
               <p className="text-gray-500">Loading projects...</p>
             </div>
           ) : filteredProjects.length === 0 ? (
@@ -117,21 +113,21 @@ export default function Portfolio() {
                       alt={project.title}
                       className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-gray-900/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-navy-900/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                     <div className="absolute bottom-4 left-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
                       <p className="text-white text-sm font-medium">View Project</p>
                     </div>
                     {project.featured && (
-                      <span className="absolute top-4 left-4 px-2 py-1 bg-accent-500 text-white text-xs font-medium rounded">
+                      <span className="absolute top-4 left-4 px-2 py-1 bg-primary-500 text-white text-xs font-medium rounded shadow-lg">
                         Featured
                       </span>
                     )}
                   </div>
                   <div className="p-5">
-                    <p className="text-xs font-medium text-primary-600 uppercase tracking-wide mb-2">
+                    <p className="text-xs font-medium text-primary-500 uppercase tracking-wide mb-2">
                       {project.service_type || project.category}
                     </p>
-                    <h3 className="font-semibold text-gray-900 mb-2 group-hover:text-primary-600 transition-colors">
+                    <h3 className="font-semibold text-navy-900 mb-2 group-hover:text-primary-600 transition-colors">
                       {project.title}
                     </h3>
                     <div className="flex items-center gap-1 text-sm text-gray-500">
@@ -147,13 +143,13 @@ export default function Portfolio() {
       </section>
 
       {/* CTA */}
-      <section className="py-16 bg-white">
+      <section className="py-16 bg-navy-900">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <Building2 className="w-12 h-12 text-primary-600 mx-auto mb-4" />
-          <h2 className="font-display text-2xl font-bold text-gray-900 mb-4">
+          <Building2 className="w-12 h-12 text-primary-400 mx-auto mb-4" />
+          <h2 className="font-display text-2xl font-bold text-white mb-4">
             Want to See Your Project Here?
           </h2>
-          <p className="text-gray-600 mb-8 max-w-xl mx-auto">
+          <p className="text-gray-300 mb-8 max-w-xl mx-auto">
             Let's discuss your flooring and waterproofing needs. Our team is ready to
             bring your vision to life.
           </p>

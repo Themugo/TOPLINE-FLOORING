@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Plus, Pencil, Trash2, X, Star, ExternalLink, Image } from 'lucide-react';
-import { AdminLayout } from '@/components/layout/AdminLayout';
+import { AdminLayout } from './dashboard';
 import { supabase } from '@/lib/supabase';
 import { useToast } from '@/hooks/use-toast';
 import type { Project, ProjectImage } from '@/lib/types';

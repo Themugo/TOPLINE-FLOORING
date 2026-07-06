@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Save, Globe, Phone, Mail, MapPin, Clock, Image, Code } from 'lucide-react';
-import { AdminLayout } from '@/components/layout/AdminLayout';
+import { AdminLayout } from './dashboard';
 import { supabase } from '@/lib/supabase';
 import { useToast } from '@/hooks/use-toast';
 

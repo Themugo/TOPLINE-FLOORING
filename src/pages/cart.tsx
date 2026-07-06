@@ -1,31 +1,44 @@
-import { useState } from "react";
-import { Link, useLocation } from "wouter";
-import { useCreateOrder, useCreateCustomer } from "@/lib/api";
-import { CustomerLayout } from "@/components/layout/CustomerLayout";
-import { Breadcrumbs } from "@/components/Breadcrumbs";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { useCart } from "@/hooks/use-cart";
-import { formatKES } from "@/lib/utils";
-import { Trash2, ShoppingCart, ArrowLeft, Minus, Plus } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { useState } from 'react';
+import { Link, useLocation } from 'wouter';
+import { Trash2, ShoppingCart, ArrowLeft, Minus, Plus } from 'lucide-react';
+import { CustomerLayout } from '@/components/layout/CustomerLayout';
+import { useCart } from '@/hooks/use-cart';
+import { formatKES } from '@/lib/utils';
+import { supabase } from '@/lib/supabase';
+import { useToast } from '@/hooks/use-toast';
+
+interface FormData {
+  name: string;
+  email: string;
+  phone: string;
+  notes: string;
+}
+
+interface FormErrors {
+  name?: string;
+  email?: string;
+  phone?: string;
+}
 
 export default function Cart() {
   const { items, removeFromCart, updateQuantity, clearCart, totalPrice } = useCart();
   const [, setLocation] = useLocation();
-  const createOrder = useCreateOrder();
-  const createCustomer = useCreateCustomer();
   const { toast } = useToast();
-  const [form, setForm] = useState({ name: "", email: "", phone: "", notes: "" });
-  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [form, setForm] = useState<FormData>({
+    name: '',
+    email: '',
+    phone: '',
+    notes: '',
+  });
+  const [errors, setErrors] = useState<FormErrors>({});
+  const [submitting, setSubmitting] = useState(false);
 
-  const validate = () => {
-    const e: Record<string, string> = {};
-    if (!form.name.trim()) e.name = "Name is required";
-    if (!form.email.trim()) e.email = "Email is required";
-    if (!form.phone.trim()) e.phone = "Phone is required";
+  const validate = (): boolean => {
+    const e: FormErrors = {};
+    if (!form.name.trim()) e.name = 'Name is required';
+    if (!form.email.trim()) e.email = 'Email is required';
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) e.email = 'Invalid email';
+    if (!form.phone.trim()) e.phone = 'Phone is required';
     setErrors(e);
     return Object.keys(e).length === 0;
   };
@@ -34,54 +47,81 @@ export default function Cart() {
     e.preventDefault();
     if (!validate()) return;
 
+    setSubmitting(true);
     try {
-      // Create customer first
-      const customer = await createCustomer.mutateAsync({
-        name: form.name,
-        email: form.email,
-        phone: form.phone,
-      });
+      // Create customer
+      const { data: customer, error: customerError } = await supabase
+        .from('customers')
+        .insert({
+          name: form.name,
+          email: form.email,
+          phone: form.phone,
+        })
+        .select()
+        .single();
 
-      // Create order with items
-      const orderData = {
-        customer_id: customer.id,
-        customer_name: form.name,
-        customer_phone: form.phone,
-        customer_email: form.email,
-        total_amount: totalPrice,
-        notes: form.notes || null,
-      };
+      if (customerError) throw customerError;
 
-      const orderItems = items.map(i => ({
-        product_id: i.product.id,
-        product_name: i.product.name,
-        quantity: i.quantity,
-        unit_price: i.product.price,
+      // Create order
+      const { data: order, error: orderError } = await supabase
+        .from('orders')
+        .insert({
+          customer_id: customer.id,
+          customer_name: form.name,
+          customer_email: form.email,
+          customer_phone: form.phone,
+          total_amount: totalPrice,
+          notes: form.notes || null,
+          status: 'pending',
+        })
+        .select()
+        .single();
+
+      if (orderError) throw orderError;
+
+      // Create order items
+      const orderItems = items.map((item) => ({
+        order_id: order.id,
+        product_id: item.product.id,
+        product_name: item.product.name,
+        quantity: item.quantity,
+        unit_price: item.product.price,
       }));
 
-      const order = await createOrder.mutateAsync({
-        order: orderData,
-        items: orderItems,
-      });
+      const { error: itemsError } = await supabase.from('order_items').insert(orderItems);
+      if (itemsError) throw itemsError;
 
       clearCart();
       setLocation(`/order-confirmation/${order.id}`);
-    } catch {
-      toast({ title: "Order failed", description: "Something went wrong. Please try again.", variant: "destructive" });
+    } catch (err) {
+      toast({
+        title: 'Order Failed',
+        description: 'Something went wrong. Please try again.',
+        variant: 'destructive',
+      });
+    } finally {
+      setSubmitting(false);
     }
   };
 
   if (items.length === 0) {
     return (
       <CustomerLayout>
-        <Breadcrumbs items={[{ label: "Cart" }]} />
-        <div className="container mx-auto px-6 md:px-12 py-28 text-center">
-          <div className="h-16 w-16 border border-border flex items-center justify-center mx-auto mb-6 rounded-sm">
-            <ShoppingCart className="h-7 w-7 text-muted-foreground/30" />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-20">
+          <div className="text-center">
+            <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
+              <ShoppingCart className="w-8 h-8 text-gray-400" />
+            </div>
+            <h1 className="font-display text-2xl font-bold text-gray-900 mb-4">
+              Your cart is empty
+            </h1>
+            <p className="text-gray-500 mb-8">
+              Add some products to get started with your order.
+            </p>
+            <Link href="/shop" className="btn-primary">
+              Browse Products
+            </Link>
           </div>
-          <h2 className="font-display text-2xl font-semibold text-foreground mb-3">Your cart is empty</h2>
-          <p className="text-muted-foreground mb-8 font-light">Add some services to get started.</p>
-          <Link href="/shop"><Button className="rounded-sm font-sans uppercase tracking-widest text-xs px-8">Browse Services</Button></Link>
         </div>
       </CustomerLayout>
     );
@@ -89,100 +129,182 @@ export default function Cart() {
 
   return (
     <CustomerLayout>
-      <Breadcrumbs items={[{ label: "Cart" }]} />
-      <div className="container mx-auto px-6 md:px-12 py-14">
-        <Link href="/shop" className="inline-flex items-center gap-2 text-xs text-muted-foreground hover:text-primary mb-10 transition-colors font-sans uppercase tracking-widest">
-          <ArrowLeft className="h-3.5 w-3.5" /> Continue Shopping
-        </Link>
-        <h1 className="font-display text-4xl font-semibold text-foreground mb-10">Your Cart</h1>
+      <div className="bg-gray-50 min-h-screen">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
+          <Link
+            href="/shop"
+            className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 mb-8"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Continue Shopping
+          </Link>
 
-        <div className="grid lg:grid-cols-3 gap-12">
-          <div className="lg:col-span-2 space-y-3">
-            {items.map(({ product, quantity }) => (
-              <div key={product.id} className="bg-card border border-border rounded-sm p-5 flex items-center gap-4">
-                <div className="h-14 w-14 bg-muted rounded-sm flex items-center justify-center shrink-0 overflow-hidden">
-                  {product.imageUrl ? (
-                    <img src={product.imageUrl} alt={product.name} className="w-full h-full object-cover" />
-                  ) : (
-                    <ShoppingCart className="h-5 w-5 text-muted-foreground/30" />
-                  )}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <h3 className="font-display font-semibold text-foreground truncate">{product.name}</h3>
-                  <p className="text-xs text-muted-foreground font-sans mt-0.5">{formatKES(product.price)}{product.unit ? ` / ${product.unit}` : ""}</p>
-                </div>
-                <div className="flex items-center gap-3">
-                  <div className="flex items-center border border-border rounded-sm">
-                    <button
-                      className="px-2.5 py-2 hover:bg-muted transition-colors"
-                      onClick={() => updateQuantity(product.id, quantity - 1)}
-                      aria-label="Decrease quantity"
-                    >
-                      <Minus className="h-3 w-3" />
-                    </button>
-                    <span className="px-3 py-2 text-sm font-display font-semibold min-w-[2.5rem] text-center">{quantity}</span>
-                    <button
-                      className="px-2.5 py-2 hover:bg-muted transition-colors"
-                      onClick={() => updateQuantity(product.id, quantity + 1)}
-                      aria-label="Increase quantity"
-                    >
-                      <Plus className="h-3 w-3" />
-                    </button>
+          <div className="grid lg:grid-cols-3 gap-8">
+            {/* Cart Items */}
+            <div className="lg:col-span-2">
+              <h1 className="font-display text-2xl font-bold text-gray-900 mb-6">
+                Your Cart ({items.length} {items.length === 1 ? 'item' : 'items'})
+              </h1>
+
+              <div className="space-y-4">
+                {items.map(({ product, quantity }) => (
+                  <div key={product.id} className="bg-white rounded-xl p-4 sm:p-6 border border-gray-200">
+                    <div className="flex gap-4">
+                      <Link href={`/product/${product.slug}`} className="flex-shrink-0">
+                        <div className="w-24 h-24 sm:w-32 sm:h-32 rounded-lg overflow-hidden bg-gray-100">
+                          <img
+                            src={product.image_url || 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?auto=format&fit=crop&w=200&q=80'}
+                            alt={product.name}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                      </Link>
+                      <div className="flex-1 min-w-0">
+                        <Link
+                          href={`/product/${product.slug}`}
+                          className="font-semibold text-gray-900 hover:text-primary-600 line-clamp-2"
+                        >
+                          {product.name}
+                        </Link>
+                        <p className="text-sm text-gray-500 mt-1">
+                          {formatKES(product.price)} / {product.unit}
+                        </p>
+                        <div className="flex items-center gap-4 mt-4">
+                          <div className="flex items-center border border-gray-300 rounded-lg">
+                            <button
+                              onClick={() => updateQuantity(product.id, quantity - 1)}
+                              className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+                            >
+                              <Minus className="w-4 h-4" />
+                            </button>
+                            <span className="w-10 text-center text-sm font-medium">
+                              {quantity}
+                            </span>
+                            <button
+                              onClick={() => updateQuantity(product.id, quantity + 1)}
+                              className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+                            >
+                              <Plus className="w-4 h-4" />
+                            </button>
+                          </div>
+                          <p className="font-semibold text-gray-900">
+                            {formatKES(product.price * quantity)}
+                          </p>
+                          <button
+                            onClick={() => removeFromCart(product.id)}
+                            className="p-2 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg ml-auto"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
                   </div>
-                  <div className="min-w-[80px] text-right">
-                    <p className="font-display font-semibold text-sm">{formatKES(product.price * quantity)}</p>
-                  </div>
-                  <button className="text-muted-foreground hover:text-destructive transition-colors p-1" onClick={() => removeFromCart(product.id)} aria-label="Remove item">
-                    <Trash2 className="h-4 w-4" />
-                  </button>
-                </div>
+                ))}
               </div>
-            ))}
-
-            <div className="bg-secondary text-secondary-foreground rounded-sm p-5 flex items-center justify-between">
-              <span className="font-sans uppercase tracking-widest text-xs text-secondary-foreground/60">Order Total</span>
-              <span className="font-display font-semibold text-2xl">{formatKES(totalPrice)}</span>
             </div>
-          </div>
 
-          <div className="lg:col-span-1">
-            <div className="bg-card border border-border rounded-sm p-7 sticky top-24">
-              <h2 className="font-display text-2xl font-semibold text-foreground mb-7">Your Details</h2>
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div>
-                  <Label className="text-xs uppercase tracking-widest font-sans text-muted-foreground">Full Name *</Label>
-                  <Input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} className="mt-1.5 rounded-sm font-sans h-10" placeholder="John Doe" />
-                  {errors.name && <p className="text-xs text-destructive mt-1 font-sans">{errors.name}</p>}
-                </div>
-                <div>
-                  <Label className="text-xs uppercase tracking-widest font-sans text-muted-foreground">Email Address *</Label>
-                  <Input type="email" value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} className="mt-1.5 rounded-sm font-sans h-10" placeholder="john@example.com" />
-                  {errors.email && <p className="text-xs text-destructive mt-1 font-sans">{errors.email}</p>}
-                </div>
-                <div>
-                  <Label className="text-xs uppercase tracking-widest font-sans text-muted-foreground">Phone Number *</Label>
-                  <Input value={form.phone} onChange={e => setForm(f => ({ ...f, phone: e.target.value }))} className="mt-1.5 rounded-sm font-sans h-10" placeholder="0720 000 000" />
-                  {errors.phone && <p className="text-xs text-destructive mt-1 font-sans">{errors.phone}</p>}
-                </div>
-                <div>
-                  <Label className="text-xs uppercase tracking-widest font-sans text-muted-foreground">Additional Notes</Label>
-                  <Textarea value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} className="mt-1.5 rounded-sm font-sans" placeholder="Any special requirements..." rows={3} />
+            {/* Checkout Form */}
+            <div className="lg:col-span-1">
+              <div className="bg-white rounded-xl p-6 border border-gray-200 sticky top-24">
+                <h2 className="font-display text-lg font-bold text-gray-900 mb-4">
+                  Order Summary
+                </h2>
+
+                <div className="space-y-3 pb-4 border-b border-gray-200">
+                  {items.map(({ product, quantity }) => (
+                    <div key={product.id} className="flex justify-between text-sm">
+                      <span className="text-gray-600">
+                        {product.name} x {quantity}
+                      </span>
+                      <span className="font-medium">{formatKES(product.price * quantity)}</span>
+                    </div>
+                  ))}
                 </div>
 
-                <div className="h-px bg-border" />
-
-                <div className="flex justify-between items-center">
-                  <span className="text-xs uppercase tracking-widest font-sans text-muted-foreground">Total</span>
-                  <span className="font-display font-semibold text-xl">{formatKES(totalPrice)}</span>
+                <div className="py-4 border-b border-gray-200">
+                  <div className="flex justify-between text-lg font-bold">
+                    <span>Total</span>
+                    <span>{formatKES(totalPrice)}</span>
+                  </div>
                 </div>
 
-                <Button type="submit" className="w-full rounded-sm font-sans uppercase tracking-widest text-xs h-11" size="lg" disabled={createOrder.isPending || createCustomer.isPending}>
-                  {createOrder.isPending || createCustomer.isPending ? "Placing Order..." : "Place Order"}
-                </Button>
-                <p className="text-[11px] text-muted-foreground text-center font-sans leading-relaxed">
-                  Our team will contact you to confirm and schedule your project.
-                </p>
-              </form>
+                <form onSubmit={handleSubmit} className="mt-6 space-y-4">
+                  <h3 className="font-semibold text-gray-900">Your Details</h3>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Full Name *
+                    </label>
+                    <input
+                      type="text"
+                      value={form.name}
+                      onChange={(e) => setForm({ ...form, name: e.target.value })}
+                      className={`input ${errors.name ? 'border-red-500' : ''}`}
+                      placeholder="John Doe"
+                    />
+                    {errors.name && (
+                      <p className="text-red-500 text-xs mt-1">{errors.name}</p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Email *
+                    </label>
+                    <input
+                      type="email"
+                      value={form.email}
+                      onChange={(e) => setForm({ ...form, email: e.target.value })}
+                      className={`input ${errors.email ? 'border-red-500' : ''}`}
+                      placeholder="john@example.com"
+                    />
+                    {errors.email && (
+                      <p className="text-red-500 text-xs mt-1">{errors.email}</p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Phone *
+                    </label>
+                    <input
+                      type="tel"
+                      value={form.phone}
+                      onChange={(e) => setForm({ ...form, phone: e.target.value })}
+                      className={`input ${errors.phone ? 'border-red-500' : ''}`}
+                      placeholder="+254 700 123 456"
+                    />
+                    {errors.phone && (
+                      <p className="text-red-500 text-xs mt-1">{errors.phone}</p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Notes (optional)
+                    </label>
+                    <textarea
+                      value={form.notes}
+                      onChange={(e) => setForm({ ...form, notes: e.target.value })}
+                      className="input min-h-[80px] resize-none"
+                      placeholder="Delivery address, special instructions..."
+                    />
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={submitting}
+                    className="btn-primary w-full"
+                  >
+                    {submitting ? 'Processing...' : 'Place Order'}
+                  </button>
+
+                  <p className="text-xs text-gray-500 text-center">
+                    We'll contact you to confirm your order and arrange delivery.
+                  </p>
+                </form>
+              </div>
             </div>
           </div>
         </div>

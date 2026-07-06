@@ -1,129 +1,121 @@
-import { useState } from "react";
-import { useListCategories, useCreateCategory, useUpdateCategory, useDeleteCategory } from "@/lib/api";
-import type { Category, CategoryInsert, CategoryUpdate } from "@/lib/api";
-import { AdminLayout } from "@/components/layout/AdminLayout";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { useQueryClient } from "@tanstack/react-query";
-import { Plus, Pencil, Trash2, Tag } from "lucide-react";
-import { formatDate } from "@/lib/utils";
-
-type CatForm = { name: string; slug: string; description: string };
-const emptyForm: CatForm = { name: "", slug: "", description: "" };
-function toSlug(s: string) { return s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, ""); }
+import { useState } from 'react';
+import { Plus, Pencil, Trash2, X } from 'lucide-react';
+import { AdminLayout } from './dashboard';
+import { useCategories } from '@/hooks/use-data';
+import { supabase } from '@/lib/supabase';
+import type { Category } from '@/lib/types';
 
 export default function AdminCategories() {
-  const [open, setOpen] = useState(false);
-  const [editId, setEditId] = useState<number | null>(null);
-  const [form, setForm] = useState<CatForm>(emptyForm);
-  const queryClient = useQueryClient();
+  const { categories, loading, refetch } = useCategories();
+  const [editing, setEditing] = useState<Category | null>(null);
+  const [showForm, setShowForm] = useState(false);
+  const [form, setForm] = useState({ name: '', slug: '', description: '' });
 
-  const { data: categories, isLoading } = useListCategories();
-  const createCategory = useCreateCategory();
-  const updateCategory = useUpdateCategory();
-  const deleteCategory = useDeleteCategory();
-
-  const invalidate = () => queryClient.invalidateQueries({ queryKey: ['categories'] });
-
-  const openCreate = () => { setEditId(null); setForm(emptyForm); setOpen(true); };
-  const openEdit = (c: Category) => {
-    setEditId(c.id);
-    setForm({ name: c.name, slug: c.slug, description: c.description ?? "" });
-    setOpen(true);
+  const resetForm = () => {
+    setForm({ name: '', slug: '', description: '' });
+    setEditing(null);
+    setShowForm(false);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const data: CategoryInsert = { name: form.name, slug: form.slug, description: form.description || null };
-    if (editId) {
-      updateCategory.mutate({ id: editId, data: data as CategoryUpdate }, { onSuccess: () => { invalidate(); setOpen(false); } });
+    const slug = form.slug || form.name.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, '');
+
+    if (editing) {
+      const { error } = await supabase
+        .from('categories')
+        .update({ name: form.name, slug, description: form.description || null, updated_at: new Date().toISOString() })
+        .eq('id', editing.id);
+      if (!error) refetch();
     } else {
-      createCategory.mutate({ data }, { onSuccess: () => { invalidate(); setOpen(false); } });
+      const { error } = await supabase.from('categories').insert({ name: form.name, slug, description: form.description || null });
+      if (!error) refetch();
     }
+    resetForm();
   };
 
-  const handleDelete = (id: number) => {
-    if (!confirm("Delete this category? Products in this category will be affected.")) return;
-    deleteCategory.mutate(id, { onSuccess: invalidate });
+  const handleDelete = async (id: string) => {
+    if (!confirm('Are you sure?')) return;
+    const { error } = await supabase.from('categories').delete().eq('id', id);
+    if (!error) refetch();
   };
 
-  const setF = (k: keyof CatForm, v: string) => setForm(f => ({ ...f, [k]: v }));
+  const editCategory = (cat: Category) => {
+    setEditing(cat);
+    setForm({ name: cat.name, slug: cat.slug, description: cat.description || '' });
+    setShowForm(true);
+  };
 
   return (
-    <AdminLayout>
-      <div className="flex items-end justify-between mb-8">
-        <div>
-          <p className="text-[10px] uppercase tracking-[0.2em] text-primary font-sans font-medium mb-1">Catalog</p>
-          <h1 className="font-display text-3xl font-semibold text-foreground">Categories</h1>
+    <AdminLayout title="Categories">
+      <div className="mb-4">
+        <button onClick={() => setShowForm(true)} className="btn-primary flex items-center gap-2">
+          <Plus className="w-4 h-4" /> Add Category
+        </button>
+      </div>
+
+      {loading ? (
+        <div className="text-center py-12">Loading...</div>
+      ) : (
+        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+          <table className="w-full">
+            <thead className="bg-gray-50 border-b">
+              <tr>
+                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase">Name</th>
+                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase">Slug</th>
+                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase">Products</th>
+                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y">
+              {categories.map((cat) => (
+                <tr key={cat.id} className="hover:bg-gray-50">
+                  <td className="px-6 py-4 font-medium">{cat.name}</td>
+                  <td className="px-6 py-4 text-sm text-gray-500">{cat.slug}</td>
+                  <td className="px-6 py-4 text-sm text-gray-500">-</td>
+                  <td className="px-6 py-4">
+                    <button onClick={() => editCategory(cat)} className="p-2 text-gray-600 hover:text-gray-900">
+                      <Pencil className="w-4 h-4" />
+                    </button>
+                    <button onClick={() => handleDelete(cat.id)} className="p-2 text-red-500 hover:text-red-700">
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
-        <Button onClick={openCreate} className="rounded-sm font-sans uppercase tracking-widest text-xs h-9">
-          <Plus className="h-3.5 w-3.5 mr-2" /> Add Category
-        </Button>
-      </div>
+      )}
 
-      <div className="bg-card border border-border rounded-sm overflow-hidden">
-        {isLoading ? (
-          <div className="p-6 space-y-3">{Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-14 rounded-sm" />)}</div>
-        ) : categories && categories.length > 0 ? (
-          <div className="divide-y divide-border">
-            {categories.map(cat => (
-              <div key={cat.id} className="flex items-center gap-4 px-6 py-4 hover:bg-muted/20 transition-colors">
-                <div className="h-9 w-9 rounded-sm bg-primary/8 flex items-center justify-center shrink-0 overflow-hidden border border-primary/15">
-                  <Tag className="h-4 w-4 text-primary/50" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="font-display font-semibold text-foreground text-sm">{cat.name}</p>
-                  <p className="text-[10px] text-muted-foreground font-sans font-light mt-0.5">
-                    {cat.slug}{cat.created_at ? <> · Added {formatDate(cat.created_at)}</> : ""}
-                  </p>
-                  {cat.description && <p className="text-xs text-muted-foreground font-light mt-1 line-clamp-1">{cat.description}</p>}
-                </div>
-                <div className="flex gap-1 shrink-0">
-                  <Button size="sm" variant="ghost" className="h-7 w-7 p-0 rounded-sm" onClick={() => openEdit(cat)}><Pencil className="h-3.5 w-3.5" /></Button>
-                  <Button size="sm" variant="ghost" className="h-7 w-7 p-0 rounded-sm text-destructive hover:text-destructive" onClick={() => handleDelete(cat.id)}><Trash2 className="h-3.5 w-3.5" /></Button>
-                </div>
+      {showForm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
+          <div className="bg-white rounded-xl max-w-md w-full p-6">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="font-semibold text-lg">{editing ? 'Edit Category' : 'Add Category'}</h2>
+              <button onClick={resetForm}><X className="w-5 h-5" /></button>
+            </div>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Name *</label>
+                <input required value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="input" />
               </div>
-            ))}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Slug</label>
+                <input value={form.slug} onChange={(e) => setForm({ ...form, slug: e.target.value })} className="input" placeholder="Auto-generated if empty" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                <textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} className="input min-h-[60px]" />
+              </div>
+              <div className="flex gap-3 pt-2">
+                <button type="button" onClick={resetForm} className="btn-secondary flex-1">Cancel</button>
+                <button type="submit" className="btn-primary flex-1">{editing ? 'Update' : 'Create'}</button>
+              </div>
+            </form>
           </div>
-        ) : (
-          <div className="p-16 text-center text-muted-foreground font-light text-sm">
-            No categories yet. <button className="text-primary underline" onClick={openCreate}>Add one.</button>
-          </div>
-        )}
-      </div>
-
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-w-md rounded-sm">
-          <DialogHeader>
-            <p className="text-[10px] uppercase tracking-[0.2em] text-primary font-sans font-medium mb-1">Catalog</p>
-            <DialogTitle className="font-display text-xl">{editId ? "Edit Category" : "New Category"}</DialogTitle>
-          </DialogHeader>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <Label className="text-xs uppercase tracking-widest font-sans">Name *</Label>
-              <Input value={form.name} onChange={e => { setF("name", e.target.value); if (!editId) setF("slug", toSlug(e.target.value)); }} className="mt-1 rounded-sm" required />
-            </div>
-            <div>
-              <Label className="text-xs uppercase tracking-widest font-sans">Slug *</Label>
-              <Input value={form.slug} onChange={e => setF("slug", e.target.value)} className="mt-1 rounded-sm" required />
-            </div>
-            <div>
-              <Label className="text-xs uppercase tracking-widest font-sans">Description</Label>
-              <Textarea value={form.description} onChange={e => setF("description", e.target.value)} className="mt-1 rounded-sm" rows={2} />
-            </div>
-            <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => setOpen(false)} className="rounded-sm font-sans uppercase tracking-widest text-xs">Cancel</Button>
-              <Button type="submit" disabled={createCategory.isPending || updateCategory.isPending} className="rounded-sm font-sans uppercase tracking-widest text-xs">
-                {editId ? "Save Changes" : "Create Category"}
-              </Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
+        </div>
+      )}
     </AdminLayout>
   );
 }

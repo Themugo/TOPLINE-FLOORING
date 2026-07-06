@@ -1,13 +1,13 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Plus, Edit2, Trash2, Tag, Percent, DollarSign, Calendar, X, Check } from 'lucide-react';
-import { AdminLayout } from '@/components/layout/AdminLayout';
+import { Plus, Edit2, Trash2, Tag, Percent, DollarSign, Calendar, X, Check, AlertCircle } from 'lucide-react';
+import { AdminLayout } from '@/pages/admin/dashboard';
 import { supabase } from '@/lib/supabase';
 import { useToast } from '@/hooks/use-toast';
 import type { Coupon } from '@/lib/types';
 
 export default function AdminCoupons() {
   return (
-    <AdminLayout>
+    <AdminLayout title="Coupon Management">
       <CouponsContent />
     </AdminLayout>
   );
@@ -21,7 +21,6 @@ function CouponsContent() {
   const { toast } = useToast();
 
   const fetchCoupons = useCallback(async () => {
-    if (!supabase) return;
     setLoading(true);
     const { data, error } = await supabase
       .from('coupons')
@@ -40,7 +39,6 @@ function CouponsContent() {
 
   const handleDelete = async (id: string) => {
     if (!confirm('Are you sure you want to delete this coupon?')) return;
-    if (!supabase) return;
 
     const { error } = await supabase
       .from('coupons')
@@ -48,24 +46,23 @@ function CouponsContent() {
       .eq('id', id);
 
     if (error) {
-      toast({ title: 'Failed to delete coupon', variant: 'destructive' });
+      toast({ type: 'error', message: 'Failed to delete coupon' });
     } else {
-      toast({ title: 'Coupon deleted' });
+      toast({ type: 'success', message: 'Coupon deleted' });
       fetchCoupons();
     }
   };
 
   const handleToggleActive = async (coupon: Coupon) => {
-    if (!supabase) return;
     const { error } = await supabase
       .from('coupons')
       .update({ is_active: !coupon.is_active })
       .eq('id', coupon.id);
 
     if (error) {
-      toast({ title: 'Failed to update coupon', variant: 'destructive' });
+      toast({ type: 'error', message: 'Failed to update coupon' });
     } else {
-      toast({ title: `Coupon ${!coupon.is_active ? 'activated' : 'deactivated'}` });
+      toast({ type: 'success', message: `Coupon ${!coupon.is_active ? 'activated' : 'deactivated'}` });
       fetchCoupons();
     }
   };
@@ -249,28 +246,27 @@ function CouponModal({
   const [endDate, setEndDate] = useState(
     coupon?.end_date ? new Date(coupon.end_date).toISOString().split('T')[0] : ''
   );
-  const [appliesTo, setAppliesTo] = useState<'all' | 'products' | 'categories'>(coupon?.applies_to || 'all');
+  const [appliesTo, setAppliesTo] = useState(coupon?.applies_to || 'all');
   const [isActive, setIsActive] = useState(coupon?.is_active ?? true);
   const [saving, setSaving] = useState(false);
   const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!supabase) return;
 
     if (!code.trim()) {
-      toast({ title: 'Coupon code is required', variant: 'destructive' });
+      toast({ type: 'error', message: 'Coupon code is required' });
       return;
     }
 
     const discount = parseFloat(discountValue);
     if (isNaN(discount) || discount <= 0) {
-      toast({ title: 'Valid discount value is required', variant: 'destructive' });
+      toast({ type: 'error', message: 'Valid discount value is required' });
       return;
     }
 
     if (couponType === 'percentage' && discount > 100) {
-      toast({ title: 'Percentage discount cannot exceed 100%', variant: 'destructive' });
+      toast({ type: 'error', message: 'Percentage discount cannot exceed 100%' });
       return;
     }
 
@@ -306,12 +302,12 @@ function CouponModal({
 
     if (error) {
       if (error.code === '23505') {
-        toast({ title: 'Coupon code already exists', variant: 'destructive' });
+        toast({ type: 'error', message: 'Coupon code already exists' });
       } else {
-        toast({ title: 'Failed to save coupon', variant: 'destructive' });
+        toast({ type: 'error', message: 'Failed to save coupon' });
       }
     } else {
-      toast({ title: `Coupon ${coupon ? 'updated' : 'created'}` });
+      toast({ type: 'success', message: `Coupon ${coupon ? 'updated' : 'created'}` });
       onSuccess();
     }
   };
@@ -462,7 +458,7 @@ function CouponModal({
             <label className="block text-sm font-medium text-gray-700 mb-1">Applies To</label>
             <select
               value={appliesTo}
-              onChange={(e) => setAppliesTo(e.target.value as 'all' | 'products' | 'categories')}
+              onChange={(e) => setAppliesTo(e.target.value)}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
             >
               <option value="all">All Products</option>

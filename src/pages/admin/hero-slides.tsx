@@ -1,319 +1,110 @@
-import { useState } from "react";
-import { useListHeroSlides, useCreateHeroSlide, useUpdateHeroSlide, useDeleteHeroSlide } from "@/lib/admin-api";
-import { AdminLayout } from "@/components/layout/AdminLayout";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { useQueryClient } from "@tanstack/react-query";
-import { Plus, Pencil, Trash2, GripVertical, Image, Eye, EyeOff } from "lucide-react";
-
-type HeroSlideForm = {
-  title: string;
-  subtitle: string;
-  button_text: string;
-  button_link: string;
-  image_url: string;
-  sort_order: string;
-  is_active: boolean;
-};
-
-const emptyForm: HeroSlideForm = {
-  title: "",
-  subtitle: "",
-  button_text: "",
-  button_link: "",
-  image_url: "",
-  sort_order: "0",
-  is_active: true,
-};
+import { useState, useEffect } from 'react';
+import { Plus, Pencil, Trash2, X } from 'lucide-react';
+import { AdminLayout } from './dashboard';
+import { supabase } from '@/lib/supabase';
+import type { HeroSlide } from '@/lib/types';
 
 export default function AdminHeroSlides() {
-  const [open, setOpen] = useState(false);
-  const [editId, setEditId] = useState<number | null>(null);
-  const [form, setForm] = useState<HeroSlideForm>(emptyForm);
-  const queryClient = useQueryClient();
+  const [slides, setSlides] = useState<HeroSlide[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [editing, setEditing] = useState<HeroSlide | null>(null);
+  const [showForm, setShowForm] = useState(false);
+  const [form, setForm] = useState({
+    title: '',
+    subtitle: '',
+    description: '',
+    image_url: '',
+    button_text: '',
+    button_link: '',
+    display_order: 0,
+    is_active: true,
+  });
 
-  const { data: slides, isLoading } = useListHeroSlides();
-  const createSlide = useCreateHeroSlide();
-  const updateSlide = useUpdateHeroSlide();
-  const deleteSlide = useDeleteHeroSlide();
+  useEffect(() => {
+    fetchSlides();
+  }, []);
 
-  const invalidate = () => queryClient.invalidateQueries({ queryKey: ["heroSlides"] });
-
-  const openCreate = () => {
-    setEditId(null);
-    setForm({ ...emptyForm, sort_order: String(slides?.length ?? 0) });
-    setOpen(true);
+  const fetchSlides = async () => {
+    const { data } = await supabase.from('hero_slides').select('*').order('display_order');
+    setSlides(data || []);
+    setLoading(false);
   };
 
-  const openEdit = (slide: any) => {
-    setEditId(slide.id);
-    setForm({
-      title: slide.title ?? "",
-      subtitle: slide.subtitle ?? "",
-      button_text: slide.button_text ?? "",
-      button_link: slide.button_link ?? "",
-      image_url: slide.image_url ?? "",
-      sort_order: String(slide.sort_order ?? 0),
-      is_active: slide.is_active ?? true,
-    });
-    setOpen(true);
+  const resetForm = () => {
+    setForm({ title: '', subtitle: '', description: '', image_url: '', button_text: '', button_link: '', display_order: 0, is_active: true });
+    setEditing(null);
+    setShowForm(false);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const data = {
-      title: form.title || null,
-      subtitle: form.subtitle || null,
-      button_text: form.button_text || null,
-      button_link: form.button_link || null,
-      image_url: form.image_url || null,
-      sort_order: Number(form.sort_order),
-      is_active: form.is_active,
-    };
-    if (editId) {
-      updateSlide.mutate({ id: editId, data }, { onSuccess: () => { invalidate(); setOpen(false); } });
+    if (editing) {
+      await supabase.from('hero_slides').update({ ...form, updated_at: new Date().toISOString() }).eq('id', editing.id);
     } else {
-      createSlide.mutate({ data }, { onSuccess: () => { invalidate(); setOpen(false); } });
+      await supabase.from('hero_slides').insert(form);
     }
+    resetForm();
+    fetchSlides();
   };
 
-  const handleDelete = (id: number) => {
-    if (!confirm("Delete this hero slide?")) return;
-    deleteSlide.mutate(id, { onSuccess: invalidate });
+  const handleDelete = async (id: string) => {
+    if (!confirm('Are you sure?')) return;
+    await supabase.from('hero_slides').delete().eq('id', id);
+    fetchSlides();
   };
-
-  const toggleActive = (slide: any) => {
-    updateSlide.mutate(
-      { id: slide.id, data: { is_active: !slide.is_active } },
-      { onSuccess: invalidate }
-    );
-  };
-
-  const setF = (k: keyof HeroSlideForm, v: string | boolean) =>
-    setForm((f) => ({ ...f, [k]: v }));
 
   return (
-    <AdminLayout>
-      <div className="flex items-end justify-between mb-8">
-        <div>
-          <p className="text-[10px] uppercase tracking-[0.2em] text-primary font-sans font-medium mb-1">
-            Website Content
-          </p>
-          <h1 className="font-display text-3xl font-semibold text-foreground">Hero Slides</h1>
+    <AdminLayout title="Hero Slides">
+      <div className="mb-4">
+        <button onClick={() => setShowForm(true)} className="btn-primary flex items-center gap-2">
+          <Plus className="w-4 h-4" /> Add Slide
+        </button>
+      </div>
+
+      {loading ? <div className="text-center py-12">Loading...</div> : (
+        <div className="grid gap-4">
+          {slides.map((slide) => (
+            <div key={slide.id} className="bg-white rounded-xl p-4 border border-gray-200 flex gap-4">
+              <img src={slide.image_url} alt="" className="w-32 h-20 object-cover rounded" />
+              <div className="flex-1">
+                <h3 className="font-medium">{slide.title}</h3>
+                <p className="text-sm text-gray-500">{slide.subtitle}</p>
+              </div>
+              <div className="flex items-center gap-2">
+                <button onClick={() => { setEditing(slide); setForm({ ...slide }); setShowForm(true); }} className="p-2"><Pencil className="w-4 h-4" /></button>
+                <button onClick={() => handleDelete(slide.id)} className="p-2 text-red-500"><Trash2 className="w-4 h-4" /></button>
+              </div>
+            </div>
+          ))}
         </div>
-        <Button onClick={openCreate} className="rounded-sm font-sans uppercase tracking-widest text-xs h-9">
-          <Plus className="h-3.5 w-3.5 mr-2" /> Add Slide
-        </Button>
-      </div>
+      )}
 
-      <p className="text-sm text-muted-foreground font-light mb-6">
-        Manage the slides shown on the homepage hero section. Active slides appear in the rotation based on sort order.
-      </p>
-
-      <div className="bg-card border border-border rounded-sm overflow-hidden">
-        {isLoading ? (
-          <div className="p-6 space-y-3">
-            {Array.from({ length: 3 }).map((_, i) => (
-              <Skeleton key={i} className="h-24 rounded-sm" />
-            ))}
+      {showForm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
+          <div className="bg-white rounded-xl max-w-lg w-full p-6 max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="font-semibold text-lg">{editing ? 'Edit Slide' : 'Add Slide'}</h2>
+              <button onClick={resetForm}><X className="w-5 h-5" /></button>
+            </div>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <input required placeholder="Title *" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} className="input" />
+              <input placeholder="Subtitle" value={form.subtitle} onChange={(e) => setForm({ ...form, subtitle: e.target.value })} className="input" />
+              <textarea placeholder="Description" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} className="input min-h-[60px]" />
+              <input required placeholder="Image URL *" value={form.image_url} onChange={(e) => setForm({ ...form, image_url: e.target.value })} className="input" />
+              <input placeholder="Button Text" value={form.button_text} onChange={(e) => setForm({ ...form, button_text: e.target.value })} className="input" />
+              <input placeholder="Button Link" value={form.button_link} onChange={(e) => setForm({ ...form, button_link: e.target.value })} className="input" />
+              <label className="flex items-center gap-2">
+                <input type="checkbox" checked={form.is_active} onChange={(e) => setForm({ ...form, is_active: e.target.checked })} />
+                <span className="text-sm">Active</span>
+              </label>
+              <div className="flex gap-3">
+                <button type="button" onClick={resetForm} className="btn-secondary flex-1">Cancel</button>
+                <button type="submit" className="btn-primary flex-1">{editing ? 'Update' : 'Create'}</button>
+              </div>
+            </form>
           </div>
-        ) : slides && slides.length > 0 ? (
-          <div className="divide-y divide-border">
-            {slides.map((slide: any) => (
-              <div
-                key={slide.id}
-                className={`flex items-center gap-4 p-4 hover:bg-muted/20 transition-colors ${
-                  !slide.is_active ? "opacity-50" : ""
-                }`}
-              >
-                <div className="flex items-center gap-2 text-muted-foreground">
-                  <GripVertical className="h-4 w-4 cursor-grab" />
-                  <span className="text-xs font-sans w-6">{slide.sort_order}</span>
-                </div>
-
-                <div className="h-16 w-24 rounded-sm bg-muted flex items-center justify-center overflow-hidden shrink-0 border border-border">
-                  {slide.image_url ? (
-                    <img
-                      src={slide.image_url}
-                      alt={slide.title ?? "Slide"}
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <Image className="h-6 w-6 text-muted-foreground/30" />
-                  )}
-                </div>
-
-                <div className="flex-1 min-w-0">
-                  <h3 className="font-display font-semibold text-foreground truncate">
-                    {slide.title || "Untitled Slide"}
-                  </h3>
-                  {slide.subtitle && (
-                    <p className="text-xs text-muted-foreground truncate">{slide.subtitle}</p>
-                  )}
-                  {slide.button_text && (
-                    <span className="inline-block mt-1 px-2 py-0.5 text-[10px] uppercase tracking-wider font-sans bg-primary/10 text-primary rounded-sm">
-                      {slide.button_text}
-                    </span>
-                  )}
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    className="h-8 w-8 p-0 rounded-sm"
-                    onClick={() => toggleActive(slide)}
-                    title={slide.is_active ? "Deactivate" : "Activate"}
-                  >
-                    {slide.is_active ? (
-                      <Eye className="h-4 w-4 text-emerald-600" />
-                    ) : (
-                      <EyeOff className="h-4 w-4 text-muted-foreground" />
-                    )}
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    className="h-8 w-8 p-0 rounded-sm"
-                    onClick={() => openEdit(slide)}
-                  >
-                    <Pencil className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    className="h-8 w-8 p-0 rounded-sm text-destructive hover:text-destructive"
-                    onClick={() => handleDelete(slide.id)}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div className="p-16 text-center text-muted-foreground font-light text-sm">
-            No hero slides yet.{" "}
-            <button className="text-primary underline" onClick={openCreate}>
-              Add one.
-            </button>
-          </div>
-        )}
-      </div>
-
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto rounded-sm">
-          <DialogHeader>
-            <p className="text-[10px] uppercase tracking-[0.2em] text-primary font-sans font-medium mb-1">
-              Website Content
-            </p>
-            <DialogTitle className="font-display text-xl">
-              {editId ? "Edit Hero Slide" : "New Hero Slide"}
-            </DialogTitle>
-          </DialogHeader>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <Label className="text-xs uppercase tracking-widest font-sans">Title</Label>
-              <Input
-                value={form.title}
-                onChange={(e) => setF("title", e.target.value)}
-                className="mt-1 rounded-sm"
-                placeholder="e.g., Premium Flooring Solutions"
-              />
-            </div>
-            <div>
-              <Label className="text-xs uppercase tracking-widest font-sans">Subtitle</Label>
-              <Input
-                value={form.subtitle}
-                onChange={(e) => setF("subtitle", e.target.value)}
-                className="mt-1 rounded-sm"
-                placeholder="Brief description shown below the title"
-              />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label className="text-xs uppercase tracking-widest font-sans">Button Text</Label>
-                <Input
-                  value={form.button_text}
-                  onChange={(e) => setF("button_text", e.target.value)}
-                  className="mt-1 rounded-sm"
-                  placeholder="e.g., Get a Quote"
-                />
-              </div>
-              <div>
-                <Label className="text-xs uppercase tracking-widest font-sans">Button Link</Label>
-                <Input
-                  value={form.button_link}
-                  onChange={(e) => setF("button_link", e.target.value)}
-                  className="mt-1 rounded-sm"
-                  placeholder="e.g., /quotation"
-                />
-              </div>
-            </div>
-            <div>
-              <Label className="text-xs uppercase tracking-widest font-sans">Image URL *</Label>
-              <Input
-                value={form.image_url}
-                onChange={(e) => setF("image_url", e.target.value)}
-                className="mt-1 rounded-sm"
-                placeholder="https://..."
-                required
-              />
-              {form.image_url && (
-                <img
-                  src={form.image_url}
-                  alt=""
-                  className="mt-2 h-24 w-auto rounded-sm border border-border"
-                  onError={(e) => (e.currentTarget.style.display = "none")}
-                />
-              )}
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label className="text-xs uppercase tracking-widest font-sans">Sort Order</Label>
-                <Input
-                  type="number"
-                  value={form.sort_order}
-                  onChange={(e) => setF("sort_order", e.target.value)}
-                  className="mt-1 rounded-sm"
-                  min={0}
-                />
-              </div>
-              <div className="flex items-center gap-3 pt-6">
-                <Switch
-                  checked={form.is_active}
-                  onCheckedChange={(v) => setF("is_active", v)}
-                  id="is_active"
-                />
-                <Label htmlFor="is_active" className="text-sm">
-                  Active
-                </Label>
-              </div>
-            </div>
-            <DialogFooter>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setOpen(false)}
-                className="rounded-sm font-sans uppercase tracking-widest text-xs"
-              >
-                Cancel
-              </Button>
-              <Button
-                type="submit"
-                disabled={createSlide.isPending || updateSlide.isPending}
-                className="rounded-sm font-sans uppercase tracking-widest text-xs"
-              >
-                {editId ? "Save Changes" : "Create Slide"}
-              </Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
+        </div>
+      )}
     </AdminLayout>
   );
 }
