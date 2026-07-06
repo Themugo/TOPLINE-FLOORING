@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useSearch } from "wouter";
 import { useListProducts, useListCategories } from "@/lib/api";
 import { CustomerLayout } from "@/components/layout/CustomerLayout";
+import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -36,6 +37,7 @@ export default function Shop() {
 
   return (
     <CustomerLayout>
+      <Breadcrumbs items={[{ label: "Shop" }]} />
       <div className="bg-secondary text-secondary-foreground py-16 md:py-20 relative overflow-hidden">
         <div className="absolute left-0 top-0 h-full w-[3px] bg-gradient-to-b from-transparent via-primary/60 to-transparent" />
         <div className="container mx-auto px-6 md:px-12">

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { CustomerLayout } from "@/components/layout/CustomerLayout";
+import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -30,6 +31,7 @@ export default function Contact() {
 
   return (
     <CustomerLayout>
+      <Breadcrumbs items={[{ label: "Contact" }]} />
       {/* Hero Section */}
       <div className="bg-secondary text-secondary-foreground py-16 md:py-20 relative overflow-hidden">
         <div className="absolute left-0 top-0 h-full w-[3px] bg-gradient-to-b from-transparent via-primary/60 to-transparent" />

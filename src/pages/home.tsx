@@ -265,24 +265,29 @@ export default function Home() {
       )}
 
       {/* Who We Are */}
-      {isSectionVisible('about') && (
-      <section className="py-16 md:py-24 bg-muted">
-        <div className="container mx-auto px-6 md:px-12 max-w-4xl">
-          <ValuesRow values={VALUES_1} banner="DELIVERY" />
+      {isSectionVisible('about') && (() => {
+        const aboutSec = homepageSections.find(s => s.section_type === 'about');
+        const aboutTitle = aboutSec?.title || 'Who We Are';
+        const aboutText = aboutSec?.subtitle || 'For over 10 years, Topline Flooring and Waterproofing has been the trusted partner for professional flooring and waterproofing solutions across Kenya and East Africa. We deliver durable, cost-effective services that enhance the lifespan and performance of every structure.';
+        return (
+        <section className="py-16 md:py-24 bg-muted">
+          <div className="container mx-auto px-6 md:px-12 max-w-4xl">
+            <ValuesRow values={VALUES_1} banner="DELIVERY" />
 
-          <div className="text-center mt-12 mb-10">
-            <h2 className="font-display text-2xl md:text-3xl font-bold text-primary uppercase tracking-widest mb-4">
-              Who We Are
-            </h2>
-            <p className="text-muted-foreground text-sm md:text-base leading-relaxed font-sans max-w-xl mx-auto">
-              For over 10 years, Topline Flooring and Waterproofing has been the trusted partner for professional flooring and waterproofing solutions across Kenya and East Africa. We deliver durable, cost-effective services that enhance the lifespan and performance of every structure.
-            </p>
+            <div className="text-center mt-12 mb-10">
+              <h2 className="font-display text-2xl md:text-3xl font-bold text-primary uppercase tracking-widest mb-4">
+                {aboutTitle}
+              </h2>
+              <p className="text-muted-foreground text-sm md:text-base leading-relaxed font-sans max-w-xl mx-auto">
+                {aboutText}
+              </p>
+            </div>
+
+            <ValuesRow values={VALUES_2} banner="VALUES" />
           </div>
-
-          <ValuesRow values={VALUES_2} banner="VALUES" />
-        </div>
-      </section>
-      )}
+        </section>
+        );
+      })()}
 
       {/* Materials Section */}
       {isSectionVisible('products') && (
@@ -434,34 +439,41 @@ export default function Home() {
       )}
 
       {/* CTA */}
-      {isSectionVisible('cta') && (
-      <section className="py-20 bg-primary relative overflow-hidden">
-        <div className="absolute inset-0 opacity-[0.06]" style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg width='80' height='80' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M80 0L0 0 0 80' fill='none' stroke='white' stroke-width='0.6'/%3E%3C/svg%3E\")" }} />
-        <div className="relative container mx-auto px-6 md:px-12 text-center">
-          <h2 className="font-display text-4xl md:text-5xl font-semibold text-primary-foreground mb-5">Ready to Start Your Project?</h2>
-          <p className="text-primary-foreground/80 mb-10 max-w-lg mx-auto font-light text-base leading-relaxed font-sans">
-            Get in touch with our team for a free consultation and quotation. We transform spaces with professional flooring and waterproofing solutions.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="/quotation">
-              <Button size="lg" className="bg-secondary hover:bg-secondary/90 text-secondary-foreground font-sans font-medium px-12 h-12 rounded-sm tracking-wide">
-                Request a Quote <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
-            </Link>
-            <Link href="/contact">
-              <Button size="lg" variant="outline" className="border-white/40 text-white hover:bg-white/10 font-sans font-medium px-10 h-12 rounded-sm tracking-wide">
-                Contact Us
-              </Button>
-            </Link>
-            <a href="https://wa.me/254720859737" target="_blank" rel="noopener noreferrer">
-              <Button size="lg" variant="outline" className="border-white/40 text-white hover:bg-[#25D366] hover:border-[#25D366] font-sans font-medium px-10 h-12 rounded-sm tracking-wide">
-                <MessageCircle className="mr-2 h-4 w-4" /> WhatsApp
-              </Button>
-            </a>
+      {isSectionVisible('cta') && (() => {
+        const ctaSec = homepageSections.find(s => s.section_type === 'cta');
+        const ctaTitle = ctaSec?.title || 'Ready to Start Your Project?';
+        const ctaSub = ctaSec?.subtitle || 'Get in touch with our team for a free consultation and quotation. We transform spaces with professional flooring and waterproofing solutions.';
+        const ctaBtnText = ctaSec?.content?.cta_text || 'Request a Quote';
+        const ctaBtnLink = ctaSec?.content?.cta_link || '/quotation';
+        return (
+        <section className="py-20 bg-primary relative overflow-hidden">
+          <div className="absolute inset-0 opacity-[0.06]" style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg width='80' height='80' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M80 0L0 0 0 80' fill='none' stroke='white' stroke-width='0.6'/%3E%3C/svg%3E\")" }} />
+          <div className="relative container mx-auto px-6 md:px-12 text-center">
+            <h2 className="font-display text-4xl md:text-5xl font-semibold text-primary-foreground mb-5">{ctaTitle}</h2>
+            <p className="text-primary-foreground/80 mb-10 max-w-lg mx-auto font-light text-base leading-relaxed font-sans">
+              {ctaSub}
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Link href={ctaBtnLink}>
+                <Button size="lg" className="bg-secondary hover:bg-secondary/90 text-secondary-foreground font-sans font-medium px-12 h-12 rounded-sm tracking-wide">
+                  {ctaBtnText} <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+              </Link>
+              <Link href="/contact">
+                <Button size="lg" variant="outline" className="border-white/40 text-white hover:bg-white/10 font-sans font-medium px-10 h-12 rounded-sm tracking-wide">
+                  Contact Us
+                </Button>
+              </Link>
+              <a href="https://wa.me/254720859737" target="_blank" rel="noopener noreferrer">
+                <Button size="lg" variant="outline" className="border-white/40 text-white hover:bg-[#25D366] hover:border-[#25D366] font-sans font-medium px-10 h-12 rounded-sm tracking-wide">
+                  <MessageCircle className="mr-2 h-4 w-4" /> WhatsApp
+                </Button>
+              </a>
+            </div>
           </div>
-        </div>
-      </section>
-      )}
+        </section>
+        );
+      })()}
     </CustomerLayout>
   );
 }

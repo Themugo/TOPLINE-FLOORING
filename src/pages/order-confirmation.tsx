@@ -1,6 +1,7 @@
 import { useRoute, Link } from "wouter";
 import { useGetOrder } from "@/lib/api";
 import { CustomerLayout } from "@/components/layout/CustomerLayout";
+import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatKES, formatDate } from "@/lib/utils";
@@ -14,6 +15,7 @@ export default function OrderConfirmation() {
   if (isLoading) {
     return (
       <CustomerLayout>
+        <Breadcrumbs items={[{ label: "Order Confirmation" }]} />
         <div className="container mx-auto px-6 md:px-12 py-24 max-w-2xl">
           <Skeleton className="h-12 w-12 mx-auto mb-6 rounded-sm" />
           <Skeleton className="h-8 w-64 mx-auto mb-4 rounded-sm" />
@@ -27,6 +29,7 @@ export default function OrderConfirmation() {
   if (!order) {
     return (
       <CustomerLayout>
+        <Breadcrumbs items={[{ label: "Order Confirmation" }]} />
         <div className="container mx-auto px-6 md:px-12 py-24 text-center">
           <h2 className="font-display text-2xl font-semibold mb-5">Order not found</h2>
           <Link href="/"><Button className="rounded-sm font-sans">Go Home</Button></Link>
@@ -39,6 +42,7 @@ export default function OrderConfirmation() {
 
   return (
     <CustomerLayout>
+      <Breadcrumbs items={[{ label: "Order Confirmation" }]} />
       <div className="container mx-auto px-6 md:px-12 py-16 max-w-2xl">
         <div className="text-center mb-12">
           <div className="h-16 w-16 border-2 border-primary/30 bg-primary/10 flex items-center justify-center mx-auto mb-6 rounded-sm">

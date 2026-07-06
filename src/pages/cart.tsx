@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useLocation } from "wouter";
 import { useCreateOrder, useCreateCustomer } from "@/lib/api";
 import { CustomerLayout } from "@/components/layout/CustomerLayout";
+import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -73,6 +74,7 @@ export default function Cart() {
   if (items.length === 0) {
     return (
       <CustomerLayout>
+        <Breadcrumbs items={[{ label: "Cart" }]} />
         <div className="container mx-auto px-6 md:px-12 py-28 text-center">
           <div className="h-16 w-16 border border-border flex items-center justify-center mx-auto mb-6 rounded-sm">
             <ShoppingCart className="h-7 w-7 text-muted-foreground/30" />
@@ -87,6 +89,7 @@ export default function Cart() {
 
   return (
     <CustomerLayout>
+      <Breadcrumbs items={[{ label: "Cart" }]} />
       <div className="container mx-auto px-6 md:px-12 py-14">
         <Link href="/shop" className="inline-flex items-center gap-2 text-xs text-muted-foreground hover:text-primary mb-10 transition-colors font-sans uppercase tracking-widest">
           <ArrowLeft className="h-3.5 w-3.5" /> Continue Shopping

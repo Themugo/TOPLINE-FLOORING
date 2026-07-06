@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { Link } from "wouter";
 import { CustomerLayout } from "@/components/layout/CustomerLayout";
+import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { Button } from "@/components/ui/button";
 import { CheckCircle2, MessageCircle, Phone } from "lucide-react";
 import { useCart } from "@/hooks/use-cart";
@@ -18,6 +19,7 @@ export default function CheckoutSuccess() {
 
   return (
     <CustomerLayout>
+      <Breadcrumbs items={[{ label: "Order Complete" }]} />
       <div className="container mx-auto px-6 md:px-12 py-16 max-w-2xl">
         <div className="text-center mb-12">
           <div className="h-16 w-16 border-2 border-primary/30 bg-primary/10 flex items-center justify-center mx-auto mb-6 rounded-sm">

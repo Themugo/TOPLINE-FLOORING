@@ -1,6 +1,7 @@
 import { Link } from 'wouter';
 import { ArrowRight, CheckCircle } from 'lucide-react';
 import { CustomerLayout } from '@/components/layout/CustomerLayout';
+import { Breadcrumbs } from '@/components/Breadcrumbs';
 
 export default function Services() {
   const services = [
@@ -56,6 +57,7 @@ export default function Services() {
 
   return (
     <CustomerLayout>
+      <Breadcrumbs items={[{ label: "Services" }]} />
       {/* Hero */}
       <section className="bg-gradient-to-br from-primary-700 to-primary-900 py-16 lg:py-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">

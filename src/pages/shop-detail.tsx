@@ -1,12 +1,36 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRoute, Link } from "wouter";
-import { useGetProduct } from "@/lib/api";
+import { supabase } from "@/lib/supabase";
+import { useGetProduct, useListProducts } from "@/lib/api";
 import { CustomerLayout } from "@/components/layout/CustomerLayout";
+import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useCart } from "@/hooks/use-cart";
 import { formatKES } from "@/lib/utils";
-import { ShieldCheck, ArrowLeft, Plus, Minus } from "lucide-react";
+import { ShieldCheck, ArrowLeft, Plus, Minus, Clock, Package } from "lucide-react";
+
+const RECENTLY_VIEWED_KEY = "topline_recently_viewed";
+const MAX_RECENTLY_VIEWED = 6;
+
+function trackRecentlyViewed(id: number) {
+  try {
+    const raw = localStorage.getItem(RECENTLY_VIEWED_KEY);
+    const ids: number[] = raw ? JSON.parse(raw) : [];
+    const filtered = ids.filter((v) => v !== id);
+    const updated = [id, ...filtered].slice(0, MAX_RECENTLY_VIEWED);
+    localStorage.setItem(RECENTLY_VIEWED_KEY, JSON.stringify(updated));
+  } catch {}
+}
+
+function getRecentlyViewedIds(): number[] {
+  try {
+    const raw = localStorage.getItem(RECENTLY_VIEWED_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+}
 
 export default function ShopDetail() {
   const [, params] = useRoute("/shop/:id");
@@ -14,6 +38,42 @@ export default function ShopDetail() {
   const [qty, setQty] = useState(1);
   const { data: product, isLoading } = useGetProduct(id);
   const { addToCart } = useCart();
+  const [recentProducts, setRecentProducts] = useState<any[]>([]);
+
+  useEffect(() => {
+    if (!product) return;
+    const pid = Number(product.id);
+    trackRecentlyViewed(pid);
+    const ids = getRecentlyViewedIds().filter((v) => v !== pid);
+    if (ids.length === 0) {
+      setRecentProducts([]);
+      return;
+    }
+    const slice = ids.slice(0, 4);
+    supabase
+      .from("products")
+      .select("*, categories!left(name)")
+      .in("id", slice)
+      .then(({ data }) => {
+        if (!data) { setRecentProducts([]); return; }
+        const mapped = data.map((p: any) => ({
+          ...p,
+          category_name: p.categories?.name || null,
+        }));
+        const sorted = slice
+          .map((sid) => mapped.find((p: any) => Number(p.id) === sid))
+          .filter(Boolean);
+        setRecentProducts(sorted);
+      })
+      .catch(() => setRecentProducts([]));
+  }, [product?.id]);
+
+  const { data: related, isLoading: relatedLoading } = useListProducts(
+    product?.category_id ? { categoryId: Number(product.category_id) } : undefined
+  );
+  const relatedProducts = (related || [])
+    .filter((rp) => Number(rp.id) !== Number(product?.id))
+    .slice(0, 4);
 
   if (isLoading) {
     return (
@@ -47,6 +107,7 @@ export default function ShopDetail() {
 
   return (
     <CustomerLayout>
+      <Breadcrumbs items={[{ label: "Shop", href: "/shop" }, { label: product?.name || "Product Detail" }]} />
       <div className="container mx-auto px-6 md:px-12 py-14">
         <Link href="/shop" className="inline-flex items-center gap-2 text-xs text-muted-foreground hover:text-primary mb-12 transition-colors font-sans uppercase tracking-widest">
           <ArrowLeft className="h-3.5 w-3.5" /> Back to Services
@@ -118,6 +179,63 @@ export default function ShopDetail() {
               </div>
             )}
 
+            {product.category_id && (
+              <>
+                {relatedLoading ? (
+                  <div className="mt-10">
+                    <h3 className="font-display text-xl font-semibold mb-6">Related Products</h3>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                      {Array.from({ length: 2 }).map((_, i) => <Skeleton key={i} className="h-52 rounded-sm" />)}
+                    </div>
+                  </div>
+                ) : relatedProducts.length > 0 ? (
+                  <div className="mt-10">
+                    <h3 className="font-display text-xl font-semibold mb-6">Related Products</h3>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                      {relatedProducts.map((rp) => (
+                        <div key={rp.id} className="group bg-card border border-border hover:border-primary/40 hover:shadow-xl transition-all duration-300 rounded-sm overflow-hidden flex flex-col">
+                          <div className="h-32 bg-muted overflow-hidden">
+                            {rp.image_url ? (
+                              <img src={rp.image_url} alt={rp.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center">
+                                <ShieldCheck className="h-8 w-8 text-primary/20" />
+                              </div>
+                            )}
+                          </div>
+                          <div className="p-3 flex flex-col flex-1">
+                            {rp.category_name && (
+                              <p className="text-[10px] text-primary uppercase tracking-[0.15em] font-sans font-medium mb-1">{rp.category_name}</p>
+                            )}
+                            <h3 className="font-display text-sm font-semibold leading-tight mb-2">{rp.name}</h3>
+                            <div className="pt-3 border-t border-border mt-auto">
+                              <div className="flex items-center justify-between mb-2">
+                                <span className="font-display font-semibold text-foreground text-sm">{formatKES(rp.price)}</span>
+                                {rp.unit && <span className="text-[10px] text-muted-foreground font-sans">/ {rp.unit}</span>}
+                              </div>
+                              <Button
+                                size="sm"
+                                className="w-full text-[11px] rounded-sm h-8 font-sans"
+                                disabled={!rp.in_stock}
+                                onClick={() => addToCart({ id: rp.id, name: rp.name, price: rp.price, unit: rp.unit ?? null, imageUrl: rp.image_url ?? null }, 1)}
+                              >
+                                {rp.in_stock ? "Add to Cart" : "Out of Stock"}
+                              </Button>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="mt-10 p-5 bg-muted/60 rounded-sm border border-dashed border-primary/30 text-center">
+                    <Package className="h-8 w-8 text-primary/30 mx-auto mb-2" />
+                    <p className="text-sm text-muted-foreground font-sans">No related products found.</p>
+                  </div>
+                )}
+              </>
+            )}
+
             <div className="mt-10 p-5 bg-muted/60 rounded-sm border-l-2 border-primary/40">
               <p className="text-xs font-sans uppercase tracking-widest text-muted-foreground mb-2">Please Note</p>
               <p className="text-sm text-muted-foreground leading-relaxed font-light">
@@ -126,6 +244,33 @@ export default function ShopDetail() {
             </div>
           </div>
         </div>
+
+        {recentProducts.length > 0 && (
+          <section className="mt-16 border-t border-border pt-10">
+            <h2 className="font-display text-2xl font-semibold mb-6 flex items-center gap-2">
+              <Clock className="h-5 w-5" /> Recently Viewed
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+              {recentProducts.map((p) => (
+                <Link key={p.id} href={`/shop/${p.id}`} className="group block bg-card border border-border hover:border-primary/40 hover:shadow-xl transition-all duration-300 rounded-sm overflow-hidden">
+                  <div className="h-36 bg-muted overflow-hidden">
+                    {p.image_url ? (
+                      <img src={p.image_url} alt={p.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <ShieldCheck className="h-8 w-8 text-primary/20" />
+                      </div>
+                    )}
+                  </div>
+                  <div className="p-3">
+                    <h3 className="font-display text-sm font-semibold truncate">{p.name}</h3>
+                    <p className="font-display text-sm font-semibold mt-1 text-primary">{formatKES(p.price)}</p>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </section>
+        )}
       </div>
     </CustomerLayout>
   );

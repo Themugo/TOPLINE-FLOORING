@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { X, MapPin, Building2, Calendar, Ruler, Loader2 } from 'lucide-react';
 import { CustomerLayout } from '@/components/layout/CustomerLayout';
+import { Breadcrumbs } from '@/components/Breadcrumbs';
 import { Link } from 'wouter';
 import { supabase } from '@/lib/supabase';
 import type { Project, ProjectImage } from '@/lib/types';
@@ -47,6 +48,7 @@ export default function Portfolio() {
 
   return (
     <CustomerLayout>
+      <Breadcrumbs items={[{ label: "Projects" }]} />
       {/* Hero */}
       <section className="bg-gradient-to-br from-primary-700 to-primary-900 py-16 lg:py-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">

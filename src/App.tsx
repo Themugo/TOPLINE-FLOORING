@@ -17,6 +17,10 @@ import Contact from "@/pages/contact";
 import Quotation from "@/pages/quotation";
 import Services from "@/pages/services";
 import Portfolio from "@/pages/portfolio";
+import About from "@/pages/about";
+import Industries from "@/pages/industries";
+import FAQ from "@/pages/faq";
+import TrackOrder from "@/pages/track-order";
 import AdminLogin from "@/pages/admin/login";
 import Dashboard from "@/pages/admin/dashboard";
 import AdminOrders from "@/pages/admin/orders";
@@ -39,6 +43,7 @@ import AdminReports from "@/pages/admin/reports";
 import AdminSeo from "@/pages/admin/seo";
 import AdminSiteSettings from "@/pages/admin/site-settings";
 import AdminTheme from "@/pages/admin/theme";
+import AdminNavigation from "@/pages/admin/navigation";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -61,6 +66,10 @@ function Router() {
       <Route path="/order-confirmation/:id" component={OrderConfirmation} />
       <Route path="/checkout/success" component={CheckoutSuccess} />
       <Route path="/contact" component={Contact} />
+      <Route path="/about" component={About} />
+      <Route path="/industries" component={Industries} />
+      <Route path="/faq" component={FAQ} />
+      <Route path="/track-order" component={TrackOrder} />
       <Route path="/quotation" component={Quotation} />
       <Route path="/admin/login" component={AdminLogin} />
       <Route path="/admin">
@@ -200,6 +209,13 @@ function Router() {
         {() => (
           <AdminAuthGuard>
             <AdminTheme />
+          </AdminAuthGuard>
+        )}
+      </Route>
+      <Route path="/admin/navigation">
+        {() => (
+          <AdminAuthGuard>
+            <AdminNavigation />
           </AdminAuthGuard>
         )}
       </Route>
