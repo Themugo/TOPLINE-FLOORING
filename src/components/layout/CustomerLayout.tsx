@@ -7,11 +7,10 @@ import { Input } from "@/components/ui/input";
 import { useCmsContent } from "@/hooks/use-cms-content";
 
 const primaryLinks = [
-  { href: "/", label: "Home" },
-  { href: "/about", label: "About" },
+  { href: "/shop", label: "Shop" },
   { href: "/services", label: "Services" },
   { href: "/shop?type=material", label: "Materials" },
-  { href: "/shop", label: "Shop" },
+  { href: "/about", label: "About" },
   { href: "/contact", label: "Contact" },
   { href: "/quotation", label: "Request Quote" },
 ];
@@ -23,7 +22,6 @@ export function CustomerLayout({ children }: { children: React.ReactNode }) {
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
-  const [mobileExpanded, setMobileExpanded] = useState<string | null>(null);
   const [location, setLocation] = useLocation();
   const searchRef = useRef<HTMLInputElement>(null);
   const dropdownTimeout = useRef<ReturnType<typeof setTimeout>>();
@@ -68,7 +66,6 @@ export function CustomerLayout({ children }: { children: React.ReactNode }) {
 
   const closeMobile = () => {
     setIsMobileOpen(false);
-    setMobileExpanded(null);
   };
 
   const footerCompanyDesc = footerContent.company?.description || "Building Trust and Protection, One Surface at a Time. Professional flooring and waterproofing solutions for industrial, commercial, and residential projects across Kenya and East Africa.";
@@ -103,16 +100,16 @@ export function CustomerLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-[100dvh] flex flex-col bg-background font-sans">
       {/* Top bar */}
-      <div className="hidden md:block bg-secondary text-secondary-foreground/60 text-xs py-2 border-b border-white/5">
+      <div className="hidden md:block bg-secondary text-secondary-foreground/60 text-sm py-2.5 border-b border-white/5">
         <div className="container mx-auto px-6 md:px-12 flex items-center justify-between">
-          <span className="font-light tracking-wide">Professional Flooring & Waterproofing Solutions</span>
+          <span className="font-medium tracking-wide">Professional Flooring & Waterproofing Marketplace</span>
           <div className="flex items-center gap-4">
-            <a href="tel:0720859737" className="flex items-center gap-1.5 hover:text-primary transition-colors">
-              <Phone className="h-3 w-3" />
+            <a href="tel:0720859737" className="flex items-center gap-2 hover:text-primary transition-colors">
+              <Phone className="h-4 w-4" />
               0720 859 737
             </a>
-            <a href="https://wa.me/254720859737" target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 hover:text-primary transition-colors">
-              <MessageCircle className="h-3 w-3" />
+            <a href="https://wa.me/254720859737" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 hover:text-primary transition-colors">
+              <MessageCircle className="h-4 w-4" />
               WhatsApp
             </a>
           </div>
@@ -120,14 +117,14 @@ export function CustomerLayout({ children }: { children: React.ReactNode }) {
       </div>
 
       <header className="sticky top-0 z-50 w-full border-b border-border bg-background/98 backdrop-blur supports-[backdrop-filter]:bg-background/80">
-        <div className="container mx-auto px-6 md:px-12 h-16 flex items-center justify-between">
+        <div className="container mx-auto px-6 md:px-12 h-20 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-3 group shrink-0">
-            <div className="bg-primary text-primary-foreground h-9 w-9 flex items-center justify-center font-display font-bold text-sm rounded-sm group-hover:bg-primary/90 transition-colors">
+            <div className="bg-primary text-primary-foreground h-12 w-12 flex items-center justify-center font-display font-bold text-lg rounded-sm group-hover:bg-primary/90 transition-colors">
               TF
             </div>
             <div className="hidden sm:block">
-              <span className="font-display font-semibold text-lg tracking-tight text-foreground block leading-none">Topline Flooring</span>
-              <span className="text-[10px] text-muted-foreground uppercase tracking-[0.15em] font-sans">&amp; Waterproofing</span>
+              <span className="font-display font-bold text-xl tracking-tight text-foreground block leading-none">Topline Flooring</span>
+              <span className="text-xs text-muted-foreground uppercase tracking-[0.15em] font-sans font-medium">&amp; Waterproofing</span>
             </div>
           </Link>
 
@@ -138,7 +135,7 @@ export function CustomerLayout({ children }: { children: React.ReactNode }) {
                 key={link.href}
                 href={link.href}
                 className={cn(
-                  "px-3 py-2 text-sm font-sans font-medium transition-colors tracking-wide uppercase text-[11px] rounded-sm",
+                  "px-4 py-2.5 text-base font-sans font-semibold transition-colors tracking-wide uppercase rounded-sm",
                   isActive(link.href)
                     ? "text-primary bg-primary/5"
                     : "text-muted-foreground hover:text-foreground hover:bg-muted"
@@ -314,136 +311,63 @@ export function CustomerLayout({ children }: { children: React.ReactNode }) {
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     placeholder="Search products..."
-                    className="h-9 text-sm rounded-sm pr-9"
+                    className="h-10 text-base rounded-sm pr-10"
                   />
                   <button type="submit" className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground" aria-label="Search">
-                    <Search className="h-4 w-4" />
+                    <Search className="h-5 w-5" />
                   </button>
                 </div>
               </form>
             </div>
 
             <nav className="flex flex-col px-4 pb-4">
-              {primaryLinks.map((link) => {
-                if (link.type === "link") {
-                  return (
-                    <Link
-                      key={link.href}
-                      href={link.href}
-                      className={cn(
-                        "block px-3 py-2.5 text-sm font-sans uppercase tracking-widest font-medium transition-colors rounded-sm",
-                        isActive(link.href) ? "text-primary bg-primary/5" : "text-muted-foreground"
-                      )}
-                      onClick={closeMobile}
-                    >
-                      {link.label}
-                    </Link>
-                  );
-                }
-
-                const isExpanded = mobileExpanded === link.label;
-
-                if (link.type === "megamenu") {
-                  return (
-                    <div key={link.label}>
-                      <button
-                        onClick={() => setMobileExpanded(isExpanded ? null : link.label)}
-                        className="flex items-center justify-between w-full px-3 py-2.5 text-sm font-sans uppercase tracking-widest font-medium transition-colors rounded-sm text-muted-foreground"
-                      >
-                        {link.label}
-                        <ChevronDown className={cn("h-3.5 w-3.5 transition-transform", isExpanded && "rotate-180")} />
-                      </button>
-                      {isExpanded && (
-                        <div className="pl-4 pb-2 space-y-3">
-                          {link.columns.map((col) => (
-                            <div key={col.heading}>
-                              <span className="block text-[10px] uppercase tracking-widest font-semibold text-muted-foreground/60 px-3 py-1">
-                                {col.heading}
-                              </span>
-                              <div className="space-y-0.5">
-                                {col.items.map((item) => (
-                                  <Link
-                                    key={item.href}
-                                    href={item.href}
-                                    className="block px-3 py-1.5 text-sm font-sans transition-colors text-muted-foreground hover:text-foreground rounded-sm"
-                                    onClick={closeMobile}
-                                  >
-                                    {item.label}
-                                  </Link>
-                                ))}
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  );
-                }
-
-                if (link.type === "dropdown") {
-                  return (
-                    <div key={link.label}>
-                      <button
-                        onClick={() => setMobileExpanded(isExpanded ? null : link.label)}
-                        className="flex items-center justify-between w-full px-3 py-2.5 text-sm font-sans uppercase tracking-widest font-medium transition-colors rounded-sm text-muted-foreground"
-                      >
-                        {link.label}
-                        <ChevronDown className={cn("h-3.5 w-3.5 transition-transform", isExpanded && "rotate-180")} />
-                      </button>
-                      {isExpanded && (
-                        <div className="pl-4 pb-2 space-y-0.5">
-                          {link.items.map((item) => (
-                            <Link
-                              key={item.href}
-                              href={item.href}
-                              className="block px-3 py-1.5 text-sm font-sans transition-colors text-muted-foreground hover:text-foreground rounded-sm"
-                              onClick={closeMobile}
-                            >
-                              {item.label}
-                            </Link>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  );
-                }
-
-                return null;
-              })}
+              {primaryLinks.map((link) => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className={cn(
+                    "block px-4 py-3 text-base font-sans uppercase tracking-wide font-semibold transition-colors rounded-sm",
+                    isActive(link.href) ? "text-primary bg-primary/5" : "text-muted-foreground"
+                  )}
+                  onClick={closeMobile}
+                >
+                  {link.label}
+                </Link>
+              ))}
             </nav>
 
             {/* More section */}
             <div className="px-4 pb-2">
               <div className="border-t border-border pt-3">
-                <span className="block px-3 py-1.5 text-[10px] uppercase tracking-widest font-semibold text-muted-foreground/60">
+                <span className="block px-3 py-2 text-xs uppercase tracking-widest font-semibold text-muted-foreground/60">
                   More
                 </span>
                 <div className="space-y-0.5">
                   <Link
                     href="/admin/login"
-                    className="flex items-center gap-2 px-3 py-2 text-sm font-sans transition-colors text-muted-foreground hover:text-foreground rounded-sm"
+                    className="flex items-center gap-2 px-3 py-2.5 text-sm font-sans transition-colors text-muted-foreground hover:text-foreground rounded-sm"
                     onClick={closeMobile}
                   >
-                    <LogIn className="h-3.5 w-3.5" />
+                    <LogIn className="h-4 w-4" />
                     Admin Login
                   </Link>
                   <Link
                     href="/industries"
-                    className="block px-3 py-2 text-sm font-sans transition-colors text-muted-foreground hover:text-foreground rounded-sm"
+                    className="block px-3 py-2.5 text-sm font-sans transition-colors text-muted-foreground hover:text-foreground rounded-sm"
                     onClick={closeMobile}
                   >
                     Industries
                   </Link>
                   <Link
                     href="/faq"
-                    className="block px-3 py-2 text-sm font-sans transition-colors text-muted-foreground hover:text-foreground rounded-sm"
+                    className="block px-3 py-2.5 text-sm font-sans transition-colors text-muted-foreground hover:text-foreground rounded-sm"
                     onClick={closeMobile}
                   >
                     FAQs
                   </Link>
                   <Link
                     href="/track-order"
-                    className="block px-3 py-2 text-sm font-sans transition-colors text-muted-foreground hover:text-foreground rounded-sm"
+                    className="block px-3 py-2.5 text-sm font-sans transition-colors text-muted-foreground hover:text-foreground rounded-sm"
                     onClick={closeMobile}
                   >
                     Track Order
