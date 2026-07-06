@@ -7,14 +7,17 @@ import { supabase } from '@/lib/supabase';
 import type { Product } from '@/lib/types';
 
 export default function Services() {
-  const [services, setServices] = useState<Product[]>([]);
+  const [services, setServices] = useState<(Product & { category_name?: string })[]>([]);
+  const [heroSlides, setHeroSlides] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     loadServices();
+    loadHeroSlides();
   }, []);
 
   const loadServices = async () => {
+    if (!supabase) return;
     const { data } = await supabase
       .from('products')
       .select('*, categories!left(name)')
@@ -24,9 +27,30 @@ export default function Services() {
       .order('name');
 
     if (data) {
-      setServices(data.map((p: any) => ({ ...p, category_name: p.categories?.name || null })) as Product[]);
+      setServices(data.map((p: any) => ({ ...p, category_name: p.categories?.name || null })));
     }
     setLoading(false);
+  };
+
+  const loadHeroSlides = async () => {
+    if (!supabase) return;
+    const { data } = await supabase
+      .from('hero_slides')
+      .select('*')
+      .eq('is_active', true)
+      .order('display_order');
+    if (data) {
+      setHeroSlides(data);
+    }
+  };
+
+  const getServiceImage = (service: Product & { category_name?: string }, index: number) => {
+    if (service.image_url) return service.image_url;
+    // Use hero slide images as fallback
+    if (heroSlides.length > 0) {
+      return heroSlides[index % heroSlides.length].image_url;
+    }
+    return 'https://images.unsplash.com/photo-1504307651674-208930a97d63?auto=format&fit=crop&w=800&q=80';
   };
 
   const formatKES = (amount: number) =>
@@ -63,7 +87,7 @@ export default function Services() {
                   <div key={service.id} className={`grid lg:grid-cols-2 gap-8 lg:gap-12 items-center`}>
                     <div className={index % 2 === 1 ? 'lg:order-2' : ''}>
                       <img
-                        src={service.image_url || 'https://images.unsplash.com/photo-1504307651674-208930a97d63?auto=format&fit=crop&w=800&q=80'}
+                        src={getServiceImage(service, index)}
                         alt={service.name}
                         className="w-full rounded-sm shadow-lg aspect-video object-cover"
                       />
