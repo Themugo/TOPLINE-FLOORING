@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Plus, Pencil, Trash2, X } from 'lucide-react';
 import { AdminLayout } from './dashboard';
 import { supabase } from '@/lib/supabase';
+import { ImageUpload } from '@/components/ui/image-upload';
 import type { Testimonial } from '@/lib/types';
 
 export default function AdminTestimonials() {
@@ -9,7 +10,7 @@ export default function AdminTestimonials() {
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState<Testimonial | null>(null);
   const [showForm, setShowForm] = useState(false);
-  const [form, setForm] = useState({ name: '', role: '', company: '', content: '', rating: 5, is_active: true });
+  const [form, setForm] = useState<{ name: string; role: string | null; company: string | null; content: string; avatar_url: string | null; rating: number; is_active: boolean }>({ name: '', role: '', company: '', content: '', avatar_url: '', rating: 5, is_active: true });
 
   useEffect(() => { fetchTestimonials(); }, []);
 
@@ -20,7 +21,7 @@ export default function AdminTestimonials() {
   };
 
   const resetForm = () => {
-    setForm({ name: '', role: '', company: '', content: '', rating: 5, is_active: true });
+    setForm({ name: '', role: '', company: '', content: '', avatar_url: '', rating: 5, is_active: true });
     setEditing(null);
     setShowForm(false);
   };
@@ -87,12 +88,18 @@ export default function AdminTestimonials() {
             </div>
             <form onSubmit={handleSubmit} className="space-y-4">
               <input required placeholder="Name *" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="input" />
-              <input placeholder="Role" value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value })} className="input" />
-              <input placeholder="Company" value={form.company} onChange={(e) => setForm({ ...form, company: e.target.value })} className="input" />
+              <input placeholder="Role" value={form.role || ''} onChange={(e) => setForm({ ...form, role: e.target.value })} className="input" />
+              <input placeholder="Company" value={form.company || ''} onChange={(e) => setForm({ ...form, company: e.target.value })} className="input" />
               <textarea required placeholder="Content *" value={form.content} onChange={(e) => setForm({ ...form, content: e.target.value })} className="input min-h-[80px]" />
               <select value={form.rating} onChange={(e) => setForm({ ...form, rating: parseInt(e.target.value) })} className="input">
                 {[5,4,3,2,1].map(n => <option key={n} value={n}>{n} Stars</option>)}
               </select>
+              <ImageUpload
+                value={form.avatar_url || ''}
+                onChange={(url) => setForm({ ...form, avatar_url: url })}
+                label="Avatar"
+                folder="avatars"
+              />
               <label className="flex items-center gap-2">
                 <input type="checkbox" checked={form.is_active} onChange={(e) => setForm({ ...form, is_active: e.target.checked })} />
                 <span className="text-sm">Active</span>

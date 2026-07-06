@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Palette, Check, Eye } from 'lucide-react';
+import { Palette } from 'lucide-react';
 import { AdminLayout } from './dashboard';
 import { supabase } from '@/lib/supabase';
 import { useToast } from '@/hooks/use-toast';

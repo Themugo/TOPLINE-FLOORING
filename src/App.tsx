@@ -1,18 +1,19 @@
 import { CartProvider } from '@/hooks/use-cart';
 import { AdminAuthGuard, AdminPublicRoute } from '@/components/admin/AdminGuard';
-import { ToastContainer } from '@/components/ui/Toast';
+import { ToastContainer } from '@/components/ui/toast';
 import { useLocation } from 'wouter';
 
 // Pages
 import Home from '@/pages/home';
 import Shop from '@/pages/shop';
-import ProductDetail from '@/pages/product-detail';
+import ShopDetail from '@/pages/shop-detail';
 import Cart from '@/pages/cart';
 import OrderConfirmation from '@/pages/order-confirmation';
 import Contact from '@/pages/contact';
 import Quotation from '@/pages/quotation';
 import Services from '@/pages/services';
 import Portfolio from '@/pages/portfolio';
+import NotFound from '@/pages/not-found';
 
 // Admin Pages
 import AdminLogin from '@/pages/admin/login';
@@ -38,7 +39,6 @@ import AdminReports from '@/pages/admin/reports';
 import AdminSeo from '@/pages/admin/seo';
 import AdminCoupons from '@/pages/admin/coupons';
 
-// Simple router using wouter
 function Router() {
   const [location] = useLocation();
 
@@ -249,31 +249,14 @@ function Router() {
   }
 
   if (location.startsWith('/product/')) {
-    return <ProductDetail />;
+    return <ShopDetail />;
   }
 
   if (location.startsWith('/order-confirmation/')) {
     return <OrderConfirmation />;
   }
 
-  // 404
   return <NotFound />;
-}
-
-function NotFound() {
-  const [, setLocation] = useLocation();
-  return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-      <div className="text-center">
-        <h1 className="font-display text-6xl font-bold text-gray-200 mb-4">404</h1>
-        <h2 className="font-semibold text-xl text-gray-900 mb-2">Page not found</h2>
-        <p className="text-gray-500 mb-6">The page you're looking for doesn't exist.</p>
-        <button onClick={() => setLocation('/')} className="btn-primary">
-          Go Home
-        </button>
-      </div>
-    </div>
-  );
 }
 
 function App() {

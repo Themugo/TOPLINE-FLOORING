@@ -1,4 +1,4 @@
-import { X, CheckCircle, AlertCircle } from 'lucide-react';
+import { CheckCircle, AlertCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 export function ToastContainer() {
@@ -23,7 +23,9 @@ export function ToastContainer() {
             <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" />
           )}
           <div className="flex-1">
-            <p className="font-medium text-sm">{toast.title}</p>
+            {toast.title && (
+              <p className="font-medium text-sm">{toast.title}</p>
+            )}
             {toast.description && (
               <p className="text-sm text-gray-600 mt-1">{toast.description}</p>
             )}

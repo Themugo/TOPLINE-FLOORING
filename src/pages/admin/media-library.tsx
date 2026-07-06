@@ -1,5 +1,5 @@
-import { useState, useEffect, useCallback } from 'react';
-import { FolderOpen, Upload, Search, Image, File, Trash2, Edit2, FolderPlus, ChevronRight, X, Check, Move } from 'lucide-react';
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { FolderOpen, Upload, Search, Image, File, Trash2, FolderPlus, ChevronRight, X, Check, Move } from 'lucide-react';
 import { AdminLayout } from '@/pages/admin/dashboard';
 import { supabase } from '@/lib/supabase';
 import { useToast } from '@/hooks/use-toast';
@@ -124,7 +124,7 @@ function MediaLibraryContent() {
   };
 
   const getBreadcrumbs = () => {
-    const crumbs = [{ id: null, name: 'All Files' }];
+    const crumbs: { id: string | null; name: string }[] = [{ id: null, name: 'All Files' }];
     if (currentFolder && folders.length > 0) {
       const folder = folders.find(f => f.id === currentFolder);
       if (folder) {
@@ -422,56 +422,78 @@ function UploadModal({
 }) {
   const [selectedFolder, setSelectedFolder] = useState<string | null>(currentFolder);
   const [uploading, setUploading] = useState(false);
-  const [urls, setUrls] = useState('');
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [dragOver, setDragOver] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
   const handleUpload = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const urlList = urls.split('\n').filter(url => url.trim());
-    if (urlList.length === 0) {
-      toast({ type: 'error', message: 'Please enter at least one URL' });
+    if (selectedFiles.length === 0) {
+      toast({ type: 'error', message: 'Please select at least one file' });
       return;
     }
 
     setUploading(true);
 
-    const filesToInsert = urlList.map(url => {
-      const urlStr = url.trim();
-      const filename = urlStr.split('/').pop() || 'file';
-      const ext = filename.split('.').pop()?.toLowerCase() || '';
-      const imageExts = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'];
-      const fileType = imageExts.includes(ext) ? `image/${ext === 'svg' ? 'svg+xml' : ext}` : 'application/octet-stream';
+    const filesToInsert: any[] = [];
 
-      return {
-        folder_id: selectedFolder,
-        filename,
-        original_name: filename,
-        file_url: urlStr,
-        file_type: fileType,
-        is_public: true
-      };
-    });
+    for (const file of selectedFiles) {
+      try {
+        const ext = file.name.split('.').pop()?.toLowerCase() || 'jpg';
+        const storagePath = `media-library/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
 
-    const { error } = await supabase
-      .from('media_files')
-      .insert(filesToInsert);
+        const { error: uploadError } = await supabase.storage
+          .from('images')
+          .upload(storagePath, file, { cacheControl: '3600', upsert: false });
+
+        if (uploadError) throw uploadError;
+
+        const { data: urlData } = supabase.storage
+          .from('images')
+          .getPublicUrl(storagePath);
+
+        const imageExts = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'];
+        const fileType = imageExts.includes(ext)
+          ? `image/${ext === 'svg' ? 'svg+xml' : ext}`
+          : file.type || 'application/octet-stream';
+
+        filesToInsert.push({
+          folder_id: selectedFolder,
+          filename: storagePath.split('/').pop(),
+          original_name: file.name,
+          file_url: urlData.publicUrl,
+          file_type: fileType,
+          file_size: file.size,
+          is_public: true,
+        });
+      } catch (err) {
+        toast({ type: 'error', message: `Failed to upload ${file.name}` });
+      }
+    }
+
+    if (filesToInsert.length > 0) {
+      const { error } = await supabase
+        .from('media_files')
+        .insert(filesToInsert);
+
+      if (error) {
+        toast({ type: 'error', message: 'Failed to save file records' });
+      } else {
+        toast({ type: 'success', message: `${filesToInsert.length} file(s) uploaded` });
+        onSuccess();
+      }
+    }
 
     setUploading(false);
-
-    if (error) {
-      toast({ type: 'error', message: 'Failed to add files' });
-    } else {
-      toast({ type: 'success', message: `${filesToInsert.length} file(s) added` });
-      onSuccess();
-    }
   };
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-xl max-w-lg w-full p-6">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold">Add Files</h2>
+          <h2 className="text-lg font-semibold">Upload Files</h2>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
             <X className="w-5 h-5" />
           </button>
@@ -494,23 +516,58 @@ function UploadModal({
           </div>
 
           <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-1">Image URLs</label>
-            <p className="text-xs text-gray-500 mb-2">Enter one URL per line. Supports direct image links from any CDN.</p>
-            <textarea
-              value={urls}
-              onChange={(e) => setUrls(e.target.value)}
-              rows={6}
-              placeholder="https://example.com/image1.jpg&#10;https://example.com/image2.png"
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 font-mono text-sm"
-            />
+            <label className="block text-sm font-medium text-gray-700 mb-1">Select Files</label>
+            <div
+              onClick={() => !uploading && fileInputRef.current?.click()}
+              onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+              onDragLeave={() => setDragOver(false)}
+              onDrop={(e) => {
+                e.preventDefault();
+                setDragOver(false);
+                const dropped = Array.from(e.dataTransfer.files);
+                setSelectedFiles([...selectedFiles, ...dropped]);
+              }}
+              className={`w-full border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors ${
+                dragOver ? 'border-primary-500 bg-primary-50' : 'border-gray-300 hover:border-primary-400 hover:bg-gray-50'
+              }`}
+            >
+              <Upload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
+              <p className="text-sm text-gray-600">
+                {uploading ? 'Uploading...' : 'Click to select or drag & drop files here'}
+              </p>
+              <p className="text-xs text-gray-400 mt-1">PNG, JPG, WebP, GIF, SVG</p>
+            </div>
+
+            {selectedFiles.length > 0 && (
+              <div className="mt-3 space-y-2 max-h-40 overflow-y-auto">
+                {selectedFiles.map((file, i) => (
+                  <div key={i} className="flex items-center justify-between bg-gray-50 rounded-lg px-3 py-2">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <Image className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                      <span className="text-sm text-gray-700 truncate">{file.name}</span>
+                      <span className="text-xs text-gray-400 flex-shrink-0">
+                        ({(file.size / 1024).toFixed(0)} KB)
+                      </span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setSelectedFiles(selectedFiles.filter((_, idx) => idx !== i))}
+                      className="text-red-500 hover:text-red-600 flex-shrink-0"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           <div className="flex gap-3 justify-end">
             <button type="button" onClick={onClose} className="btn-secondary">
               Cancel
             </button>
-            <button type="submit" disabled={uploading || !urls.trim()} className="btn-primary">
-              {uploading ? 'Adding...' : 'Add Files'}
+            <button type="submit" disabled={uploading || selectedFiles.length === 0} className="btn-primary">
+              {uploading ? 'Uploading...' : `Upload ${selectedFiles.length || ''} File${selectedFiles.length === 1 ? '' : 's'}`}
             </button>
           </div>
         </form>

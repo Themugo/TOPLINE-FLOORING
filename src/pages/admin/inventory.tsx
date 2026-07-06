@@ -2,13 +2,13 @@ import { useState, useEffect } from 'react';
 import { AlertTriangle, Package, TrendingDown, History } from 'lucide-react';
 import { AdminLayout } from './dashboard';
 import { supabase } from '@/lib/supabase';
-import { formatKES, formatDateTime } from '@/lib/utils';
-import type { InventoryAlert, InventoryMovement, Product } from '@/lib/types';
+import { formatDateTime } from '@/lib/utils';
+import type { InventoryAlert, InventoryMovement } from '@/lib/types';
 
 export default function AdminInventory() {
   const [alerts, setAlerts] = useState<InventoryAlert[]>([]);
   const [movements, setMovements] = useState<InventoryMovement[]>([]);
-  const [products, setProducts] = useState<Product[]>([]);
+  const [products, setProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAdjustment, setShowAdjustment] = useState(false);
   const [adjustmentForm, setAdjustmentForm] = useState({ product_id: '', quantity: 0, type: 'in' as 'in' | 'out' | 'adjustment', notes: '' });

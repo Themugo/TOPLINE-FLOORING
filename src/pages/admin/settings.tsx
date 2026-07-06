@@ -11,7 +11,7 @@ interface Setting {
 }
 
 export default function AdminSettings() {
-  const [settings, setSettings] = useState<Setting[]>([]);
+  const [, setSettings] = useState<Setting[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const { toast } = useToast();

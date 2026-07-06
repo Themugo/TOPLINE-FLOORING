@@ -9,27 +9,18 @@ import type {
   Order,
   Customer,
   Quotation,
-  SiteSetting,
   NavigationMenu,
   ThemeSetting,
   HomepageSection,
   DeliveryZone,
-  Delivery,
   Promotion,
-  Coupon,
-  MediaFolder,
   MediaFile,
   Project,
-  ProjectImage,
   SeoPage,
   InventoryMovement,
   InventoryAlert,
   ProductBrand,
   ProductTag,
-  ProductImage,
-  ProductSpecification,
-  ProductVariant,
-  ProductDocument,
 } from '@/lib/types';
 
 // Site Settings
@@ -134,33 +125,34 @@ export function useProducts(options?: { categoryId?: string; featured?: boolean;
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    async function fetchProducts() {
-      try {
-        let query = supabase
-          .from('products')
-          .select('*, category:categories(*), brand:product_brands(*)')
-          .eq('is_active', true)
-          .order('display_order', { ascending: true });
+  const refetch = useCallback(async () => {
+    try {
+      let query = supabase
+        .from('products')
+        .select('*, category:categories(*), brand:product_brands(*)')
+        .eq('is_active', true)
+        .order('display_order', { ascending: true });
 
-        if (options?.categoryId) query = query.eq('category_id', options.categoryId);
-        if (options?.featured) query = query.eq('featured', true);
-        if (options?.brandId) query = query.eq('brand_id', options.brandId);
-        if (options?.limit) query = query.limit(options.limit);
+      if (options?.categoryId) query = query.eq('category_id', options.categoryId);
+      if (options?.featured) query = query.eq('featured', true);
+      if (options?.brandId) query = query.eq('brand_id', options.brandId);
+      if (options?.limit) query = query.limit(options.limit);
 
-        const { data, error: err } = await query;
-        if (err) throw err;
-        setProducts(data || []);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to load products');
-      } finally {
-        setLoading(false);
-      }
+      const { data, error: err } = await query;
+      if (err) throw err;
+      setProducts(data || []);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load products');
+    } finally {
+      setLoading(false);
     }
-    fetchProducts();
   }, [options?.categoryId, options?.featured, options?.limit, options?.brandId]);
 
-  return { products, loading, error };
+  useEffect(() => {
+    refetch();
+  }, [refetch]);
+
+  return { products, loading, error, refetch };
 }
 
 export function useProduct(slug: string) {
@@ -196,16 +188,17 @@ export function useCategories() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    async function fetchCategories() {
-      const { data } = await supabase.from('categories').select('*').eq('is_active', true).order('display_order');
-      setCategories(data || []);
-      setLoading(false);
-    }
-    fetchCategories();
+  const refetch = useCallback(async () => {
+    const { data } = await supabase.from('categories').select('*').eq('is_active', true).order('display_order');
+    setCategories(data || []);
+    setLoading(false);
   }, []);
 
-  return { categories, loading };
+  useEffect(() => {
+    refetch();
+  }, [refetch]);
+
+  return { categories, loading, refetch };
 }
 
 // Brands

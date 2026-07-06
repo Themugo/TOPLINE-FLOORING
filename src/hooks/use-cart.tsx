@@ -6,25 +6,31 @@ interface CartState {
 }
 
 type CartAction =
-  | { type: 'ADD_ITEM'; product: Product }
+  | { type: 'ADD_ITEM'; product: Product; quantity?: number }
   | { type: 'REMOVE_ITEM'; productId: string }
   | { type: 'UPDATE_QUANTITY'; productId: string; quantity: number }
   | { type: 'CLEAR_CART' }
   | { type: 'LOAD_CART'; items: CartItem[] };
 
-const CartContext = createContext<{
+interface CartContextValue {
+  items: CartItem[];
   state: CartState;
   addItem: (product: Product) => void;
+  addToCart: (product: Product, quantity?: number) => void;
   removeItem: (productId: string) => void;
+  removeFromCart: (productId: string) => void;
   updateQuantity: (productId: string, quantity: number) => void;
   clearCart: () => void;
   totalPrice: number;
   totalItems: number;
-} | null>(null);
+}
+
+const CartContext = createContext<CartContextValue | null>(null);
 
 function cartReducer(state: CartState, action: CartAction): CartState {
   switch (action.type) {
     case 'ADD_ITEM': {
+      const qty = action.quantity ?? 1;
       const existingItem = state.items.find(
         (item) => item.product.id === action.product.id
       );
@@ -33,14 +39,14 @@ function cartReducer(state: CartState, action: CartAction): CartState {
           ...state,
           items: state.items.map((item) =>
             item.product.id === action.product.id
-              ? { ...item, quantity: item.quantity + 1 }
+              ? { ...item, quantity: item.quantity + qty }
               : item
           ),
         };
       }
       return {
         ...state,
-        items: [...state.items, { product: action.product, quantity: 1 }],
+        items: [...state.items, { product: action.product, quantity: qty }],
       };
     }
     case 'REMOVE_ITEM':
@@ -97,6 +103,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
     dispatch({ type: 'ADD_ITEM', product });
   };
 
+  const addToCart = (product: Product, quantity: number = 1) => {
+    dispatch({ type: 'ADD_ITEM', product, quantity });
+  };
+
   const removeItem = (productId: string) => {
     dispatch({ type: 'REMOVE_ITEM', productId });
   };
@@ -122,9 +132,12 @@ export function CartProvider({ children }: { children: ReactNode }) {
   return (
     <CartContext.Provider
       value={{
+        items: state.items,
         state,
         addItem,
+        addToCart,
         removeItem,
+        removeFromCart: removeItem,
         updateQuantity,
         clearCart,
         totalPrice,

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Plus, Pencil, Trash2, X } from 'lucide-react';
 import { AdminLayout } from './dashboard';
 import { supabase } from '@/lib/supabase';
+import { ImageUpload } from '@/components/ui/image-upload';
 import type { HeroSlide } from '@/lib/types';
 
 export default function AdminHeroSlides() {
@@ -9,7 +10,16 @@ export default function AdminHeroSlides() {
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState<HeroSlide | null>(null);
   const [showForm, setShowForm] = useState(false);
-  const [form, setForm] = useState({
+  const [form, setForm] = useState<{
+    title: string;
+    subtitle: string | null;
+    description: string | null;
+    image_url: string;
+    button_text: string | null;
+    button_link: string | null;
+    display_order: number;
+    is_active: boolean;
+  }>({
     title: '',
     subtitle: '',
     description: '',
@@ -88,11 +98,16 @@ export default function AdminHeroSlides() {
             </div>
             <form onSubmit={handleSubmit} className="space-y-4">
               <input required placeholder="Title *" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} className="input" />
-              <input placeholder="Subtitle" value={form.subtitle} onChange={(e) => setForm({ ...form, subtitle: e.target.value })} className="input" />
-              <textarea placeholder="Description" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} className="input min-h-[60px]" />
-              <input required placeholder="Image URL *" value={form.image_url} onChange={(e) => setForm({ ...form, image_url: e.target.value })} className="input" />
-              <input placeholder="Button Text" value={form.button_text} onChange={(e) => setForm({ ...form, button_text: e.target.value })} className="input" />
-              <input placeholder="Button Link" value={form.button_link} onChange={(e) => setForm({ ...form, button_link: e.target.value })} className="input" />
+              <input placeholder="Subtitle" value={form.subtitle || ''} onChange={(e) => setForm({ ...form, subtitle: e.target.value })} className="input" />
+              <textarea placeholder="Description" value={form.description || ''} onChange={(e) => setForm({ ...form, description: e.target.value })} className="input min-h-[60px]" />
+              <ImageUpload
+                value={form.image_url || ''}
+                onChange={(url) => setForm({ ...form, image_url: url })}
+                label="Slide Image"
+                folder="hero-slides"
+              />
+              <input placeholder="Button Text" value={form.button_text || ''} onChange={(e) => setForm({ ...form, button_text: e.target.value })} className="input" />
+              <input placeholder="Button Link" value={form.button_link || ''} onChange={(e) => setForm({ ...form, button_link: e.target.value })} className="input" />
               <label className="flex items-center gap-2">
                 <input type="checkbox" checked={form.is_active} onChange={(e) => setForm({ ...form, is_active: e.target.checked })} />
                 <span className="text-sm">Active</span>

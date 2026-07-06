@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Plus, Edit2, Trash2, Tag, Percent, DollarSign, Calendar, X, Check, AlertCircle } from 'lucide-react';
+import { Plus, Edit2, Trash2, Tag, Percent, DollarSign, Calendar, X, Check } from 'lucide-react';
 import { AdminLayout } from '@/pages/admin/dashboard';
 import { supabase } from '@/lib/supabase';
 import { useToast } from '@/hooks/use-toast';
@@ -246,7 +246,7 @@ function CouponModal({
   const [endDate, setEndDate] = useState(
     coupon?.end_date ? new Date(coupon.end_date).toISOString().split('T')[0] : ''
   );
-  const [appliesTo, setAppliesTo] = useState(coupon?.applies_to || 'all');
+  const [appliesTo, setAppliesTo] = useState<string>(coupon?.applies_to || 'all');
   const [isActive, setIsActive] = useState(coupon?.is_active ?? true);
   const [saving, setSaving] = useState(false);
   const { toast } = useToast();

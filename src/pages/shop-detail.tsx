@@ -1,29 +1,27 @@
-import { useState, useEffect } from "react";
-import { useRoute, Link } from "wouter";
-import { supabase } from "@/lib/supabase";
-import { useGetProduct, useListProducts } from "@/lib/api";
-import { CustomerLayout } from "@/components/layout/CustomerLayout";
-import { Breadcrumbs } from "@/components/Breadcrumbs";
-import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
-import { useCart } from "@/hooks/use-cart";
-import { formatKES } from "@/lib/utils";
-import { ShieldCheck, ArrowLeft, Plus, Minus, Clock, Package } from "lucide-react";
+import { useState, useEffect } from 'react';
+import { Link, useLocation } from 'wouter';
+import { ShieldCheck, ArrowLeft, Plus, Minus } from 'lucide-react';
+import { CustomerLayout } from '@/components/layout/CustomerLayout';
+import { useProduct, useProducts } from '@/hooks/use-data';
+import { useCart } from '@/hooks/use-cart';
+import { formatKES } from '@/lib/utils';
 
-const RECENTLY_VIEWED_KEY = "topline_recently_viewed";
+const RECENTLY_VIEWED_KEY = 'topline_recently_viewed';
 const MAX_RECENTLY_VIEWED = 6;
 
-function trackRecentlyViewed(id: number) {
+function trackRecentlyViewed(slug: string) {
   try {
     const raw = localStorage.getItem(RECENTLY_VIEWED_KEY);
-    const ids: number[] = raw ? JSON.parse(raw) : [];
-    const filtered = ids.filter((v) => v !== id);
-    const updated = [id, ...filtered].slice(0, MAX_RECENTLY_VIEWED);
+    const slugs: string[] = raw ? JSON.parse(raw) : [];
+    const filtered = slugs.filter((v) => v !== slug);
+    const updated = [slug, ...filtered].slice(0, MAX_RECENTLY_VIEWED);
     localStorage.setItem(RECENTLY_VIEWED_KEY, JSON.stringify(updated));
-  } catch {}
+  } catch {
+    // ignore
+  }
 }
 
-function getRecentlyViewedIds(): number[] {
+function getRecentlyViewedSlugs(): string[] {
   try {
     const raw = localStorage.getItem(RECENTLY_VIEWED_KEY);
     return raw ? JSON.parse(raw) : [];
@@ -33,60 +31,45 @@ function getRecentlyViewedIds(): number[] {
 }
 
 export default function ShopDetail() {
-  const [, params] = useRoute("/shop/:id");
-  const id = params?.id ? Number(params.id) : 0;
+  const [location] = useLocation();
+  const slug = location.replace('/product/', '');
   const [qty, setQty] = useState(1);
-  const { data: product, isLoading } = useGetProduct(id);
-  const { addToCart } = useCart();
-  const [recentProducts, setRecentProducts] = useState<any[]>([]);
+  const { product, loading } = useProduct(slug);
+  const { addItem } = useCart();
+  const [, setRecentProducts] = useState<any[]>([]);
 
   useEffect(() => {
     if (!product) return;
-    const pid = Number(product.id);
-    trackRecentlyViewed(pid);
-    const ids = getRecentlyViewedIds().filter((v) => v !== pid);
-    if (ids.length === 0) {
+    trackRecentlyViewed(product.slug);
+  }, [product?.slug]);
+
+  useEffect(() => {
+    const slugs = getRecentlyViewedSlugs().filter((s) => s !== slug);
+    if (slugs.length === 0) {
       setRecentProducts([]);
       return;
     }
-    const slice = ids.slice(0, 4);
-    supabase
-      .from("products")
-      .select("*, categories!left(name)")
-      .in("id", slice)
-      .then(({ data }) => {
-        if (!data) { setRecentProducts([]); return; }
-        const mapped = data.map((p: any) => ({
-          ...p,
-          category_name: p.categories?.name || null,
-        }));
-        const sorted = slice
-          .map((sid) => mapped.find((p: any) => Number(p.id) === sid))
-          .filter(Boolean);
-        setRecentProducts(sorted);
-      })
-      .catch(() => setRecentProducts([]));
-  }, [product?.id]);
+  }, [slug]);
 
-  const { data: related, isLoading: relatedLoading } = useListProducts(
-    product?.category_id ? { categoryId: Number(product.category_id) } : undefined
+  const { products: relatedProductsRaw } = useProducts(
+    product?.category_id ? { categoryId: product.category_id } : undefined
   );
-  const relatedProducts = (related || [])
-    .filter((rp) => Number(rp.id) !== Number(product?.id))
+  const relatedProducts = (relatedProductsRaw || [])
+    .filter((rp) => rp.slug !== product?.slug)
     .slice(0, 4);
 
-  if (isLoading) {
+  if (loading) {
     return (
       <CustomerLayout>
-        <div className="container mx-auto px-6 md:px-12 py-14">
-          <Skeleton className="h-5 w-28 mb-10 rounded-sm" />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14">
+          <div className="h-5 w-28 bg-gray-200 rounded animate-pulse mb-10" />
           <div className="grid md:grid-cols-2 gap-16">
-            <Skeleton className="h-96 rounded-sm" />
+            <div className="h-96 bg-gray-200 rounded-lg animate-pulse" />
             <div className="space-y-5">
-              <Skeleton className="h-9 w-3/4 rounded-sm" />
-              <Skeleton className="h-5 w-1/3 rounded-sm" />
-              <Skeleton className="h-24 w-full rounded-sm" />
-              <Skeleton className="h-11 w-48 rounded-sm" />
+              <div className="h-9 w-3/4 bg-gray-200 rounded animate-pulse" />
+              <div className="h-5 w-1/3 bg-gray-200 rounded animate-pulse" />
+              <div className="h-24 w-full bg-gray-200 rounded animate-pulse" />
+              <div className="h-11 w-48 bg-gray-200 rounded animate-pulse" />
             </div>
           </div>
         </div>
@@ -97,9 +80,9 @@ export default function ShopDetail() {
   if (!product) {
     return (
       <CustomerLayout>
-        <div className="container mx-auto px-6 md:px-12 py-28 text-center">
-          <h2 className="font-display text-2xl font-semibold mb-5">Service not found</h2>
-          <Link href="/shop"><Button className="rounded-sm font-sans">Back to Shop</Button></Link>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-28 text-center">
+          <h2 className="font-display text-2xl font-semibold mb-5">Product not found</h2>
+          <Link href="/shop" className="btn-primary">Back to Shop</Link>
         </div>
       </CustomerLayout>
     );
@@ -107,170 +90,172 @@ export default function ShopDetail() {
 
   return (
     <CustomerLayout>
-      <Breadcrumbs items={[{ label: "Shop", href: "/shop" }, { label: product?.name || "Product Detail" }]} />
-      <div className="container mx-auto px-6 md:px-12 py-14">
-        <Link href="/shop" className="inline-flex items-center gap-2 text-xs text-muted-foreground hover:text-primary mb-12 transition-colors font-sans uppercase tracking-widest">
-          <ArrowLeft className="h-3.5 w-3.5" /> Back to Services
-        </Link>
+      <div className="bg-gray-50 min-h-screen">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
+          <Link
+            href="/shop"
+            className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 mb-8"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Back to Shop
+          </Link>
 
-        <div className="grid md:grid-cols-2 gap-16 lg:gap-24">
-          <div className="h-80 md:h-full min-h-[22rem] bg-muted rounded-sm flex items-center justify-center overflow-hidden">
-            {product.image_url ? (
-              <img src={product.image_url} alt={product.name} className="w-full h-full object-cover" />
-            ) : (
-              <div className="flex flex-col items-center gap-4">
-                <div className="h-20 w-20 border border-primary/20 bg-primary/8 flex items-center justify-center rounded-sm">
-                  <ShieldCheck className="h-10 w-10 text-primary/30" />
+          <div className="grid md:grid-cols-2 gap-8 lg:gap-16">
+            <div className="aspect-square bg-gray-100 rounded-xl overflow-hidden">
+              {product.image_url ? (
+                <img
+                  src={product.image_url}
+                  alt={product.name}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center">
+                  <ShieldCheck className="w-20 h-20 text-gray-300" />
                 </div>
-                <p className="text-xs text-muted-foreground font-sans uppercase tracking-widest">No image available</p>
-              </div>
-            )}
-          </div>
-
-          <div className="py-2">
-            {product.category_name && (
-              <p className="text-[11px] text-primary uppercase tracking-[0.2em] font-sans font-medium mb-4">{product.category_name}</p>
-            )}
-            <h1 className="font-display text-4xl md:text-5xl font-semibold text-foreground mb-6 leading-tight">{product.name}</h1>
-
-            <div className="flex items-baseline gap-3 mb-8">
-              <span className="font-display text-3xl font-semibold text-foreground">{formatKES(product.price)}</span>
-              {product.unit && <span className="text-muted-foreground font-sans text-sm">/ {product.unit}</span>}
-              {!product.in_stock && (
-                <span className="text-[10px] uppercase tracking-widest font-sans text-muted-foreground border border-border px-2 py-0.5 rounded-sm">Out of Stock</span>
               )}
             </div>
 
-            <div className="h-px bg-border mb-8" />
+            <div className="py-2">
+              {product.category && (
+                <p className="text-xs text-primary-600 uppercase tracking-wider font-medium mb-4">
+                  {product.category.name}
+                </p>
+              )}
+              <h1 className="font-display text-3xl lg:text-4xl font-bold text-navy-900 mb-6">
+                {product.name}
+              </h1>
 
-            {product.description && (
-              <p className="text-muted-foreground leading-relaxed mb-10 font-light">{product.description}</p>
-            )}
-
-            {product.in_stock && (
-              <div className="space-y-5">
-                <div className="flex items-center gap-4">
-                  <span className="text-xs font-sans uppercase tracking-widest text-muted-foreground">Quantity</span>
-                  <div className="flex items-center border border-border rounded-sm">
-                    <button
-                      className="px-3 py-2 hover:bg-muted transition-colors"
-                      onClick={() => setQty(q => Math.max(1, q - 1))}
-                      aria-label="Decrease quantity"
-                    >
-                      <Minus className="h-3 w-3" />
-                    </button>
-                    <span className="px-5 py-2 text-sm font-display font-semibold min-w-[3rem] text-center">{qty}</span>
-                    <button
-                      className="px-3 py-2 hover:bg-muted transition-colors"
-                      onClick={() => setQty(q => q + 1)}
-                      aria-label="Increase quantity"
-                    >
-                      <Plus className="h-3 w-3" />
-                    </button>
-                  </div>
-                </div>
-                <Button
-                  size="lg"
-                  className="px-12 rounded-sm font-sans uppercase tracking-widest text-xs h-12"
-                  onClick={() => addToCart({ id: product.id, name: product.name, price: product.price, unit: product.unit ?? null, imageUrl: product.image_url ?? null }, qty)}
-                >
-                  Add to Cart
-                </Button>
+              <div className="flex items-baseline gap-3 mb-8">
+                <span className="font-display text-3xl font-bold text-navy-900">
+                  {formatKES(product.price)}
+                </span>
+                {product.unit && (
+                  <span className="text-gray-500 text-sm">/ {product.unit}</span>
+                )}
+                {!product.in_stock && (
+                  <span className="text-xs uppercase tracking-wider text-gray-500 border border-gray-300 px-2 py-0.5 rounded">
+                    Out of Stock
+                  </span>
+                )}
               </div>
-            )}
 
-            {product.category_id && (
-              <>
-                {relatedLoading ? (
-                  <div className="mt-10">
-                    <h3 className="font-display text-xl font-semibold mb-6">Related Products</h3>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                      {Array.from({ length: 2 }).map((_, i) => <Skeleton key={i} className="h-52 rounded-sm" />)}
+              <div className="h-px bg-gray-200 mb-8" />
+
+              {product.description && (
+                <p className="text-gray-600 leading-relaxed mb-10">
+                  {product.description}
+                </p>
+              )}
+
+              {product.in_stock && (
+                <div className="space-y-5">
+                  <div className="flex items-center gap-4">
+                    <span className="text-sm text-gray-500">Quantity</span>
+                    <div className="flex items-center border border-gray-300 rounded-lg">
+                      <button
+                        className="px-3 py-2 hover:bg-gray-50 transition-colors"
+                        onClick={() => setQty((q) => Math.max(1, q - 1))}
+                        aria-label="Decrease quantity"
+                      >
+                        <Minus className="w-4 h-4" />
+                      </button>
+                      <span className="px-5 py-2 text-sm font-semibold min-w-[3rem] text-center">
+                        {qty}
+                      </span>
+                      <button
+                        className="px-3 py-2 hover:bg-gray-50 transition-colors"
+                        onClick={() => setQty((q) => q + 1)}
+                        aria-label="Increase quantity"
+                      >
+                        <Plus className="w-4 h-4" />
+                      </button>
                     </div>
                   </div>
-                ) : relatedProducts.length > 0 ? (
-                  <div className="mt-10">
-                    <h3 className="font-display text-xl font-semibold mb-6">Related Products</h3>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                      {relatedProducts.map((rp) => (
-                        <div key={rp.id} className="group bg-card border border-border hover:border-primary/40 hover:shadow-xl transition-all duration-300 rounded-sm overflow-hidden flex flex-col">
-                          <div className="h-32 bg-muted overflow-hidden">
-                            {rp.image_url ? (
-                              <img src={rp.image_url} alt={rp.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                            ) : (
-                              <div className="w-full h-full flex items-center justify-center">
-                                <ShieldCheck className="h-8 w-8 text-primary/20" />
-                              </div>
-                            )}
-                          </div>
-                          <div className="p-3 flex flex-col flex-1">
-                            {rp.category_name && (
-                              <p className="text-[10px] text-primary uppercase tracking-[0.15em] font-sans font-medium mb-1">{rp.category_name}</p>
-                            )}
-                            <h3 className="font-display text-sm font-semibold leading-tight mb-2">{rp.name}</h3>
-                            <div className="pt-3 border-t border-border mt-auto">
-                              <div className="flex items-center justify-between mb-2">
-                                <span className="font-display font-semibold text-foreground text-sm">{formatKES(rp.price)}</span>
-                                {rp.unit && <span className="text-[10px] text-muted-foreground font-sans">/ {rp.unit}</span>}
-                              </div>
-                              <Button
-                                size="sm"
-                                className="w-full text-[11px] rounded-sm h-8 font-sans"
-                                disabled={!rp.in_stock}
-                                onClick={() => addToCart({ id: rp.id, name: rp.name, price: rp.price, unit: rp.unit ?? null, imageUrl: rp.image_url ?? null }, 1)}
-                              >
-                                {rp.in_stock ? "Add to Cart" : "Out of Stock"}
-                              </Button>
+                  <button
+                    className="btn-primary"
+                    onClick={() => {
+                      for (let i = 0; i < qty; i++) addItem(product);
+                    }}
+                  >
+                    Add to Cart
+                  </button>
+                </div>
+              )}
+
+              {product.category_id && relatedProducts.length > 0 && (
+                <div className="mt-10">
+                  <h3 className="font-display text-xl font-bold text-navy-900 mb-6">
+                    Related Products
+                  </h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                    {relatedProducts.map((rp) => (
+                      <Link
+                        key={rp.id}
+                        href={`/product/${rp.slug}`}
+                        className="group bg-white border border-gray-200 hover:border-primary-300 hover:shadow-lg transition-all duration-300 rounded-xl overflow-hidden flex flex-col"
+                      >
+                        <div className="h-32 bg-gray-100 overflow-hidden">
+                          {rp.image_url ? (
+                            <img
+                              src={rp.image_url}
+                              alt={rp.name}
+                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center">
+                              <ShieldCheck className="w-8 h-8 text-gray-300" />
                             </div>
+                          )}
+                        </div>
+                        <div className="p-3 flex flex-col flex-1">
+                          {rp.category && (
+                            <p className="text-xs text-primary-600 uppercase tracking-wide font-medium mb-1">
+                              {rp.category.name}
+                            </p>
+                          )}
+                          <h4 className="font-semibold text-navy-900 text-sm leading-tight mb-2">
+                            {rp.name}
+                          </h4>
+                          <div className="pt-3 border-t border-gray-100 mt-auto">
+                            <div className="flex items-center justify-between mb-2">
+                              <span className="font-bold text-navy-900 text-sm">
+                                {formatKES(rp.price)}
+                              </span>
+                              {rp.unit && (
+                                <span className="text-xs text-gray-500">/ {rp.unit}</span>
+                              )}
+                            </div>
+                            <button
+                              className="w-full text-xs bg-primary-500 hover:bg-primary-600 text-white py-1.5 rounded transition-colors"
+                              disabled={!rp.in_stock}
+                              onClick={(e) => {
+                                e.preventDefault();
+                                addItem(rp);
+                              }}
+                            >
+                              {rp.in_stock ? 'Add to Cart' : 'Out of Stock'}
+                            </button>
                           </div>
                         </div>
-                      ))}
-                    </div>
+                      </Link>
+                    ))}
                   </div>
-                ) : (
-                  <div className="mt-10 p-5 bg-muted/60 rounded-sm border border-dashed border-primary/30 text-center">
-                    <Package className="h-8 w-8 text-primary/30 mx-auto mb-2" />
-                    <p className="text-sm text-muted-foreground font-sans">No related products found.</p>
-                  </div>
-                )}
-              </>
-            )}
+                </div>
+              )}
 
-            <div className="mt-10 p-5 bg-muted/60 rounded-sm border-l-2 border-primary/40">
-              <p className="text-xs font-sans uppercase tracking-widest text-muted-foreground mb-2">Please Note</p>
-              <p className="text-sm text-muted-foreground leading-relaxed font-light">
-                After placing your order, our team will contact you to discuss project specifics, conduct a site assessment, and finalise scheduling. Pricing shown is the base rate and may vary based on project scope and complexity.
-              </p>
+              <div className="mt-10 p-5 bg-gray-50 rounded-xl border-l-2 border-primary-400">
+                <p className="text-xs uppercase tracking-wider text-gray-500 mb-2">
+                  Please Note
+                </p>
+                <p className="text-sm text-gray-600 leading-relaxed">
+                  After placing your order, our team will contact you to discuss project
+                  specifics, conduct a site assessment, and finalise scheduling. Pricing
+                  shown is the base rate and may vary based on project scope and complexity.
+                </p>
+              </div>
             </div>
           </div>
         </div>
-
-        {recentProducts.length > 0 && (
-          <section className="mt-16 border-t border-border pt-10">
-            <h2 className="font-display text-2xl font-semibold mb-6 flex items-center gap-2">
-              <Clock className="h-5 w-5" /> Recently Viewed
-            </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-              {recentProducts.map((p) => (
-                <Link key={p.id} href={`/shop/${p.id}`} className="group block bg-card border border-border hover:border-primary/40 hover:shadow-xl transition-all duration-300 rounded-sm overflow-hidden">
-                  <div className="h-36 bg-muted overflow-hidden">
-                    {p.image_url ? (
-                      <img src={p.image_url} alt={p.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center">
-                        <ShieldCheck className="h-8 w-8 text-primary/20" />
-                      </div>
-                    )}
-                  </div>
-                  <div className="p-3">
-                    <h3 className="font-display text-sm font-semibold truncate">{p.name}</h3>
-                    <p className="font-display text-sm font-semibold mt-1 text-primary">{formatKES(p.price)}</p>
-                  </div>
-                </Link>
-              ))}
-            </div>
-          </section>
-        )}
       </div>
     </CustomerLayout>
   );

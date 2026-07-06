@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { TrendingUp, TrendingDown, DollarSign, ShoppingCart, Users, FileText, Package, AlertTriangle, BarChart3, PieChart, Calendar, Download } from 'lucide-react';
+import { TrendingUp, TrendingDown, DollarSign, ShoppingCart, Users, FileText, Package, BarChart3, PieChart, Calendar, Download } from 'lucide-react';
 import { AdminLayout } from '@/pages/admin/dashboard';
 import { supabase } from '@/lib/supabase';
 
@@ -91,8 +91,6 @@ function ReportsContent() {
 
     if (orders) {
       const totalRevenue = orders.reduce((sum, o) => sum + (o.total_amount || 0), 0);
-      const recentOrders = orders.filter(o => new Date(o.created_at) >= startDate);
-      const recentRevenue = recentOrders.reduce((sum, o) => sum + (o.total_amount || 0), 0);
 
       const statusCounts = orders.reduce((acc: Record<string, number>, o) => {
         acc[o.status] = (acc[o.status] || 0) + 1;

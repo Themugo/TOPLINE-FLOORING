@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Link } from 'wouter';
-import { ChevronLeft, ChevronRight, Star, ArrowRight, Phone, Mail, Megaphone } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Star, ArrowRight, Phone, Megaphone } from 'lucide-react';
 import { CustomerLayout } from '@/components/layout/CustomerLayout';
 import { useHeroSlides, useProducts, useTestimonials, usePartners, usePromotions, useHomepageSections, useServices } from '@/hooks/use-data';
 import { formatKES } from '@/lib/utils';
@@ -10,11 +10,11 @@ import type { Product } from '@/lib/types';
 interface HeroSlideData {
   id: string;
   title: string;
-  subtitle?: string;
-  description?: string;
+  subtitle?: string | null;
+  description?: string | null;
   image_url: string;
-  button_text?: string;
-  button_link?: string;
+  button_text?: string | null;
+  button_link?: string | null;
   source_type: 'hero_slide' | 'service' | 'product';
 }
 
@@ -33,7 +33,6 @@ export default function Home() {
   const heroSection = sections.find(s => s.section_type === 'hero');
   const slideInterval = heroSection?.content?.slide_interval || 6000;
   const overlayOpacity = heroSection?.content?.overlay_opacity || 70;
-  const showFeaturedProducts = heroSection?.content?.show_featured_products !== false;
 
   // Combine hero slides with services and featured products
   const allSlides: HeroSlideData[] = useMemo(() => {

@@ -4,6 +4,7 @@ import { AdminLayout } from './dashboard';
 import { useProducts, useCategories } from '@/hooks/use-data';
 import { formatKES } from '@/lib/utils';
 import { supabase } from '@/lib/supabase';
+import { ImageUpload } from '@/components/ui/image-upload';
 import type { Product } from '@/lib/types';
 
 export default function AdminProducts() {
@@ -226,16 +227,12 @@ export default function AdminProducts() {
                   className="input min-h-[80px]"
                 />
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Image URL</label>
-                <input
-                  type="url"
-                  value={form.image_url}
-                  onChange={(e) => setForm({ ...form, image_url: e.target.value })}
-                  className="input"
-                  placeholder="https://..."
-                />
-              </div>
+              <ImageUpload
+                value={form.image_url}
+                onChange={(url) => setForm({ ...form, image_url: url })}
+                label="Product Image"
+                folder="products"
+              />
               <div className="flex gap-4">
                 <label className="flex items-center gap-2">
                   <input

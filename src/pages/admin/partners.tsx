@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Plus, Pencil, Trash2, X } from 'lucide-react';
 import { AdminLayout } from './dashboard';
 import { supabase } from '@/lib/supabase';
+import { ImageUpload } from '@/components/ui/image-upload';
 import type { Partner } from '@/lib/types';
 
 export default function AdminPartners() {
@@ -9,7 +10,7 @@ export default function AdminPartners() {
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState<Partner | null>(null);
   const [showForm, setShowForm] = useState(false);
-  const [form, setForm] = useState({ name: '', logo_url: '', website_url: '', is_active: true });
+  const [form, setForm] = useState<{ name: string; logo_url: string | null; website_url: string | null; is_active: boolean }>({ name: '', logo_url: '', website_url: '', is_active: true });
 
   useEffect(() => { fetchPartners(); }, []);
 
@@ -90,8 +91,13 @@ export default function AdminPartners() {
             </div>
             <form onSubmit={handleSubmit} className="space-y-4">
               <input required placeholder="Name *" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="input" />
-              <input placeholder="Logo URL" value={form.logo_url} onChange={(e) => setForm({ ...form, logo_url: e.target.value })} className="input" />
-              <input placeholder="Website URL" value={form.website_url} onChange={(e) => setForm({ ...form, website_url: e.target.value })} className="input" />
+              <ImageUpload
+                value={form.logo_url || ''}
+                onChange={(url) => setForm({ ...form, logo_url: url })}
+                label="Logo"
+                folder="partners"
+              />
+              <input placeholder="Website URL" value={form.website_url || ''} onChange={(e) => setForm({ ...form, website_url: e.target.value })} className="input" />
               <label className="flex items-center gap-2">
                 <input type="checkbox" checked={form.is_active} onChange={(e) => setForm({ ...form, is_active: e.target.checked })} />
                 <span className="text-sm">Active</span>
