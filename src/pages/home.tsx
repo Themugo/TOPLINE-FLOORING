@@ -9,14 +9,11 @@ import { Skeleton } from "@/components/ui/skeleton";
 import HeroSlider from "@/components/home/HeroSlider";
 import { useCart } from "@/hooks/use-cart";
 import { formatKES } from "@/lib/utils";
-import { ArrowRight, Package, Phone, Shield, Zap, Users, Star, Lightbulb, TrendingUp, MessageCircle, Award, Clock, ThumbsUp, Wrench, HeartHandshake, BarChart3, Building2, CheckCircle2, ChevronDown } from "lucide-react";
-import type { HomepageSection, Testimonial, Partner, Project, ProjectImage } from "@/lib/types";
+import { ArrowRight, Shield, Star, Lightbulb, TrendingUp, Award, Clock, ThumbsUp, Wrench, HeartHandshake, BarChart3, Building2, CheckCircle2, Zap, Users, Package, MessageCircle, ChevronDown } from "lucide-react";
+import type { HomepageSection, Testimonial, Partner, Project } from "@/lib/types";
 
 const FALLBACK_SLIDES = [
-  { id: '1', title: 'APP Bituminous Membrane Waterproofing', subtitle: 'Building Trust and Protection, One Surface at a Time', image_url: 'https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=1400&q=80', button_text: 'View Services', button_link: '/shop?type=service' },
-  { id: '2', title: 'Epoxy Flooring Solutions', subtitle: 'Durable, decorative flooring for industries, warehouses and commercial spaces', image_url: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?auto=format&fit=crop&w=1400&q=80', button_text: 'Learn More', button_link: '/shop?type=service' },
-  { id: '3', title: 'Basement & Foundation Waterproofing', subtitle: 'Complete below-grade protection for lasting structural integrity', image_url: 'https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&w=1400&q=80', button_text: 'Get Quote', button_link: '/quotation' },
-  { id: '4', title: 'Roof Coating & Repair', subtitle: 'Restore and protect your roof with advanced coating systems', image_url: 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=1400&q=80', button_text: 'Contact Us', button_link: '/contact' },
+  { id: '1', title: 'Epoxy Flooring Solutions', subtitle: 'Building Trust and Protection, One Surface at a Time', image_url: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?auto=format&fit=crop&w=1400&q=80', button_text: 'Book Our Services', button_link: '/services' },
 ];
 
 const SERVICE_FALLBACK_IMAGES = [
@@ -28,13 +25,8 @@ const SERVICE_FALLBACK_IMAGES = [
 
 const VALUES_1 = [
   { icon: Shield, label: "Durable", color: "bg-green-600", iconColor: "text-white" },
-  { icon: Zap, label: "Cost-Effective", color: "bg-sky-500", iconColor: "text-white" },
-  { icon: Users, label: "Professional", color: "bg-slate-800", iconColor: "text-white" },
-];
-const VALUES_2 = [
   { icon: Star, label: "Integrity", color: "bg-green-600", iconColor: "text-white" },
   { icon: Lightbulb, label: "Innovation", color: "bg-sky-500", iconColor: "text-white" },
-  { icon: TrendingUp, label: "Excellence", color: "bg-slate-800", iconColor: "text-white" },
 ];
 
 const ICON_MAP: Record<string, React.ComponentType<any>> = {
@@ -136,81 +128,35 @@ export default function Home() {
         );
       })()}
 
-      {/* Services Section */}
-      {isSectionVisible('services') && (
+      {/* Welcome Section */}
       <section className="py-16 md:py-24 bg-white">
-        <div className="container mx-auto px-6 md:px-12">
-          <div className="text-center mb-12">
-            <h2 className="font-display text-3xl md:text-4xl font-bold text-primary uppercase tracking-wide mb-3">
-              Our Services
-            </h2>
-            <p className="text-muted-foreground text-base md:text-lg font-sans max-w-2xl mx-auto">
-              Professional flooring and waterproofing solutions for industrial, commercial, and residential projects across Kenya and East Africa.
-            </p>
-            <div className="mt-4 flex items-center justify-center gap-3">
-              <div className="h-px w-12 bg-primary/30" />
-              <div className="h-1.5 w-1.5 rounded-full bg-primary/40" />
-              <div className="h-px w-12 bg-primary/30" />
-            </div>
-          </div>
-
-          {featLoading ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-              {Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-80 rounded-2xl" />)}
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-              {featuredServices?.slice(0, 6).map((product, idx) => (
-                <div key={product.id} className="flex flex-col items-center text-center group bg-white rounded-sm border border-border hover:border-primary/40 hover:shadow-xl transition-all duration-300 overflow-hidden">
-                  <div className="relative w-full overflow-hidden" style={{ aspectRatio: "4/3" }}>
-                    <img
-                      src={product.image_url || SERVICE_FALLBACK_IMAGES[idx % SERVICE_FALLBACK_IMAGES.length]}
-                      alt={product.name}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                    <div className="absolute bottom-4 left-4 right-4">
-                      <span className="font-display text-lg text-white font-semibold">{product.name}</span>
-                    </div>
-                  </div>
-                  <div className="p-5 w-full">
-                    {product.description && (
-                      <p className="text-muted-foreground text-sm font-light leading-relaxed mb-4 line-clamp-2">{product.description}</p>
-                    )}
-                    <div className="flex items-center justify-between">
-                      <span className="font-display font-semibold text-primary">{formatKES(product.price)}<span className="text-xs text-muted-foreground ml-1">/{product.unit || 'service'}</span></span>
-                      <Link href={`/shop/${product.id}`}>
-                        <Button size="sm" className="rounded-sm text-xs">Learn More</Button>
-                      </Link>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-
-          <div className="mt-10 text-center">
-            <Link href="/shop?type=service">
-              <Button variant="outline" className="border-primary text-primary hover:bg-primary hover:text-white rounded-sm font-sans uppercase tracking-widest text-xs h-11 px-10">
-                View All Services <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
-            </Link>
-          </div>
+        <div className="container mx-auto px-6 md:px-12 max-w-4xl text-center">
+          <h2 className="font-display text-3xl md:text-4xl font-bold text-primary uppercase tracking-wide mb-6">
+            Welcome to Topline Flooring and Waterproofing
+          </h2>
+          <p className="font-display text-xl md:text-2xl text-foreground font-semibold mb-4">
+            Building Trust and Protection, One Surface at a Time
+          </p>
+          <p className="text-muted-foreground text-base md:text-lg leading-relaxed mb-8">
+            For over 10 years, Topline Flooring and Waterproofing has been a trusted name in providing top-quality flooring and waterproofing solutions across Kenya and the East African region.
+          </p>
+          <Link href="/services">
+            <Button className="rounded-sm font-sans uppercase tracking-wide text-sm h-11 px-8">
+              Book Our Services
+            </Button>
+          </Link>
         </div>
       </section>
-      )}
 
-      {/* Who We Are */}
+      {/* Who We Are Section */}
       {isSectionVisible('about') && (() => {
         const aboutSec = homepageSections.find(s => s.section_type === 'about');
         const aboutTitle = aboutSec?.title || 'Who We Are';
-        const aboutText = aboutSec?.subtitle || 'For over 10 years, Topline Flooring and Waterproofing has been the trusted partner for professional flooring and waterproofing solutions across Kenya and East Africa. We deliver durable, cost-effective services that enhance the lifespan and performance of every structure.';
+        const aboutText = aboutSec?.subtitle || 'We are recognized for delivering durable, cost-effective, and professional services that enhance the lifespan and performance of every structure we work on—from residential homes to large industrial and commercial facilities.';
         return (
         <section className="py-16 md:py-24 bg-muted">
           <div className="container mx-auto px-6 md:px-12 max-w-4xl">
-            <ValuesRow values={VALUES_1} banner="DELIVERY" />
-
-            <div className="text-center mt-12 mb-10">
+            <div className="text-center mb-12">
               <h2 className="font-display text-2xl md:text-3xl font-bold text-primary uppercase tracking-wide mb-4">
                 {aboutTitle}
               </h2>
@@ -219,7 +165,12 @@ export default function Home() {
               </p>
             </div>
 
-            <ValuesRow values={VALUES_2} banner="VALUES" />
+            <div className="text-center">
+              <h3 className="font-display text-xl md:text-2xl font-bold text-foreground mb-4">What We Do</h3>
+              <p className="text-muted-foreground text-base md:text-lg leading-relaxed font-sans max-w-xl mx-auto">
+                Our success is built on integrity, innovation, and excellence. We combine advanced materials with skilled workmanship to ensure long-lasting results that exceed client expectations.
+              </p>
+            </div>
           </div>
         </section>
         );
@@ -268,6 +219,70 @@ export default function Home() {
         </section>
         );
       })()}
+
+      {/* Services Section */}
+      {isSectionVisible('services') && (
+      <section className="py-16 md:py-24 bg-white">
+        <div className="container mx-auto px-6 md:px-12">
+          <div className="text-center mb-12">
+            <h2 className="font-display text-3xl md:text-4xl font-bold text-primary uppercase tracking-wide mb-3">
+              Our Services
+            </h2>
+            <p className="text-muted-foreground text-base md:text-lg font-sans max-w-2xl mx-auto">
+              We offer a complete range of flooring and waterproofing solutions designed to deliver reliability, durability, and visual appeal.
+            </p>
+            <div className="mt-4 flex items-center justify-center gap-3">
+              <div className="h-px w-12 bg-primary/30" />
+              <div className="h-1.5 w-1.5 rounded-full bg-primary/40" />
+              <div className="h-px w-12 bg-primary/30" />
+            </div>
+          </div>
+
+          {featLoading ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+              {Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-80 rounded-2xl" />)}
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+              {featuredServices?.slice(0, 6).map((product, idx) => (
+                <div key={product.id} className="flex flex-col items-center text-center group bg-white rounded-sm border border-border hover:border-primary/40 hover:shadow-xl transition-all duration-300 overflow-hidden">
+                  <div className="relative w-full overflow-hidden" style={{ aspectRatio: "4/3" }}>
+                    <img
+                      src={product.image_url || SERVICE_FALLBACK_IMAGES[idx % SERVICE_FALLBACK_IMAGES.length]}
+                      alt={product.name}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                    <div className="absolute bottom-4 left-4 right-4">
+                      <span className="font-display text-lg text-white font-semibold">{product.name}</span>
+                    </div>
+                  </div>
+                  <div className="p-5 w-full">
+                    {product.description && (
+                      <p className="text-muted-foreground text-sm font-light leading-relaxed mb-4 line-clamp-2">{product.description}</p>
+                    )}
+                    <div className="flex items-center justify-between">
+                      <span className="font-display font-semibold text-primary">{formatKES(product.price)}<span className="text-xs text-muted-foreground ml-1">/{product.unit || 'service'}</span></span>
+                      <Link href={`/shop/${product.id}`}>
+                        <Button size="sm" className="rounded-sm text-xs">Learn More</Button>
+                      </Link>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          <div className="mt-10 text-center">
+            <Link href="/services">
+              <Button variant="outline" className="border-primary text-primary hover:bg-primary hover:text-white rounded-sm font-sans uppercase tracking-widest text-xs h-11 px-10">
+                View All Services <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </section>
+      )}
 
       {/* Statistics */}
       {isSectionVisible('statistics') && (() => {

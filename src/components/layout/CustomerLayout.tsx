@@ -7,13 +7,10 @@ import { Input } from "@/components/ui/input";
 import { useCmsContent } from "@/hooks/use-cms-content";
 
 const primaryLinks = [
-  { href: "/shop", label: "Shop" },
-  { href: "/market", label: "Market" },
-  { href: "/services", label: "Services" },
-  { href: "/shop?type=material", label: "Materials" },
-  { href: "/about", label: "About" },
-  { href: "/contact", label: "Contact" },
-  { href: "/quotation", label: "Request Quote" },
+  { href: "/", label: "Home" },
+  { href: "/services", label: "Our Services" },
+  { href: "/contact", label: "Contact Us" },
+  { href: "/quotation", label: "Request Quotation" },
 ];
 
 export function CustomerLayout({ children }: { children: React.ReactNode }) {
@@ -447,9 +444,19 @@ export function CustomerLayout({ children }: { children: React.ReactNode }) {
               <p className="text-secondary-foreground/50 text-sm max-w-md leading-relaxed font-light mb-4">
                 {footerCompanyDesc}
               </p>
-              <div className="flex items-center gap-3 text-sm text-secondary-foreground/60">
-                <Phone className="h-4 w-4 text-primary" />
-                <span>{footerContact.phone}</span>
+              <div className="space-y-2 text-sm text-secondary-foreground/60">
+                <div className="flex items-center gap-2">
+                  <Phone className="h-4 w-4 text-primary" />
+                  <span>0720 859 737 / 0755 293 372</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-primary">📍</span>
+                  <span>Nairobi, Kenya</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-primary">📧</span>
+                  <span>toplineflooringandwaterproofin@gmail.com</span>
+                </div>
               </div>
             </div>
 
