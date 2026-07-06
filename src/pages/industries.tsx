@@ -1,21 +1,59 @@
+import { useState, useEffect } from "react";
 import { CustomerLayout } from "@/components/layout/CustomerLayout";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { Building2, Warehouse, ShoppingBag, Hospital, School, Building, Ship, Trees, ArrowRight } from "lucide-react";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+import { supabase } from "@/lib/supabase";
+import { usePageVisit } from "@/hooks/use-page-visit";
 
-const industries = [
-  { icon: Warehouse, title: "Industrial", desc: "Heavy-duty flooring and waterproofing for factories, warehouses, and manufacturing plants.", href: "/shop?type=service" },
-  { icon: Building2, title: "Commercial", desc: "High-traffic flooring solutions for offices, retail spaces, and commercial complexes.", href: "/shop?type=service" },
-  { icon: ShoppingBag, title: "Retail", desc: "Durable and aesthetically pleasing floors for showrooms, malls, and stores.", href: "/shop?type=service" },
-  { icon: Hospital, title: "Healthcare", desc: "Hygienic, chemical-resistant flooring for hospitals, clinics, and laboratories.", href: "/shop?type=service" },
-  { icon: School, title: "Education", desc: "Safe and durable flooring for schools, universities, and training facilities.", href: "/shop?type=service" },
-  { icon: Building, title: "Residential", desc: "Quality flooring and waterproofing for apartments, homes, and housing complexes.", href: "/shop?type=service" },
-  { icon: Ship, title: "Marine", desc: "Waterproofing and coating solutions for docks, ports, and marine structures.", href: "/shop?type=service" },
-  { icon: Trees, title: "Infrastructure", desc: "Large-scale waterproofing for bridges, tunnels, and public infrastructure.", href: "/quotation" },
+const FALLBACK_INDUSTRIES = [
+  { icon: "Warehouse", title: "Industrial", desc: "Heavy-duty flooring and waterproofing for factories, warehouses, and manufacturing plants.", href: "/shop?type=service" },
+  { icon: "Building2", title: "Commercial", desc: "High-traffic flooring solutions for offices, retail spaces, and commercial complexes.", href: "/shop?type=service" },
+  { icon: "ShoppingBag", title: "Retail", desc: "Durable and aesthetically pleasing floors for showrooms, malls, and stores.", href: "/shop?type=service" },
+  { icon: "Hospital", title: "Healthcare", desc: "Hygienic, chemical-resistant flooring for hospitals, clinics, and laboratories.", href: "/shop?type=service" },
+  { icon: "School", title: "Education", desc: "Safe and durable flooring for schools, universities, and training facilities.", href: "/shop?type=service" },
+  { icon: "Building", title: "Residential", desc: "Quality flooring and waterproofing for apartments, homes, and housing complexes.", href: "/shop?type=service" },
+  { icon: "Ship", title: "Marine", desc: "Waterproofing and coating solutions for docks, ports, and marine structures.", href: "/shop?type=service" },
+  { icon: "Trees", title: "Infrastructure", desc: "Large-scale waterproofing for bridges, tunnels, and public infrastructure.", href: "/quotation" },
 ];
 
+const ICON_MAP: Record<string, any> = { Building2, Warehouse, ShoppingBag, Hospital, School, Building, Ship, Trees };
+
 export default function Industries() {
+  usePageVisit("/industries");
+
+  const [industries, setIndustries] = useState<{ icon: string; title: string; desc: string; href: string }[]>(FALLBACK_INDUSTRIES);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!supabase) {
+      setLoading(false);
+      return;
+    }
+
+    supabase
+      .from("categories")
+      .select("*")
+      .eq("is_active", true)
+      .order("display_order")
+      .then(({ data }) => {
+        if (data && data.length > 0) {
+          const icons = ["Building2", "Warehouse", "ShoppingBag", "Hospital", "School", "Building", "Ship", "Trees"];
+          const mapped = data.map((c, i) => ({
+            icon: icons[i % icons.length],
+            title: c.name,
+            desc: c.description || `Professional ${c.name.toLowerCase()} solutions tailored to your needs.`,
+            href: `/shop?category=${c.slug}`,
+          }));
+          setIndustries(mapped);
+        }
+      })
+      .catch(console.warn)
+      .finally(() => setLoading(false));
+  }, []);
+
   return (
     <CustomerLayout>
       <Breadcrumbs items={[{ label: "Industries Served" }]} />
@@ -33,13 +71,24 @@ export default function Industries() {
       <section className="py-16 md:py-24">
         <div className="container mx-auto px-6 md:px-12">
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {industries.map((ind) => (
-              <Link key={ind.title} href={ind.href} className="group p-6 bg-background border border-border rounded-sm hover:border-primary/40 hover:shadow-lg transition-all">
-                <ind.icon className="h-10 w-10 text-primary mb-4 group-hover:scale-110 transition-transform" />
-                <h3 className="font-display font-semibold text-foreground mb-2">{ind.title}</h3>
-                <p className="text-muted-foreground text-sm font-light leading-relaxed">{ind.desc}</p>
-              </Link>
-            ))}
+            {loading
+              ? Array.from({ length: 8 }).map((_, i) => (
+                  <div key={i} className="p-6 bg-background border border-border rounded-sm">
+                    <Skeleton className="h-10 w-10 mb-4" />
+                    <Skeleton className="h-5 w-32 mb-2" />
+                    <Skeleton className="h-4 w-full" />
+                  </div>
+                ))
+              : industries.map((ind) => {
+                  const Icon = ICON_MAP[ind.icon];
+                  return (
+                    <Link key={ind.title} href={ind.href} className="group p-6 bg-background border border-border rounded-sm hover:border-primary/40 hover:shadow-lg transition-all">
+                      {Icon && <Icon className="h-10 w-10 text-primary mb-4 group-hover:scale-110 transition-transform" />}
+                      <h3 className="font-display font-semibold text-foreground mb-2">{ind.title}</h3>
+                      <p className="text-muted-foreground text-sm font-light leading-relaxed">{ind.desc}</p>
+                    </Link>
+                  );
+                })}
           </div>
 
           <div className="mt-16 text-center bg-muted rounded-sm p-12">

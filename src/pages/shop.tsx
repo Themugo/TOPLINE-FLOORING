@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useSearch } from "wouter";
 import { useListProducts, useListCategories } from "@/lib/api";
+import { usePageVisit } from "@/hooks/use-page-visit";
 import { CustomerLayout } from "@/components/layout/CustomerLayout";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { Button } from "@/components/ui/button";
@@ -13,6 +14,7 @@ import { Search, ShieldCheck, Wrench, Package } from "lucide-react";
 type Tab = "all" | "service" | "material";
 
 export default function Shop() {
+  usePageVisit("/shop");
   const searchString = useSearch();
   const params = new URLSearchParams(searchString);
   const initialCategory = params.get("category") ? Number(params.get("category")) : null;

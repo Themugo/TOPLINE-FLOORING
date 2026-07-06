@@ -6,27 +6,52 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/lib/supabase";
+import { usePageVisit } from "@/hooks/use-page-visit";
+import { useCmsContent } from "@/hooks/use-cms-content";
 import { Phone, Mail, MapPin, Clock, Send, MessageCircle } from "lucide-react";
 
 export default function Contact() {
+  usePageVisit("/contact");
   const { toast } = useToast();
+  const { content } = useCmsContent("contact");
   const [form, setForm] = useState({ name: "", email: "", phone: "", subject: "", message: "" });
   const [loading, setLoading] = useState(false);
+
+  const heroTitle = content.hero?.title || "Contact Us";
+  const heroSubtitle = content.hero?.subtitle || "Have a project in mind? We'd love to hear from you. Send us a message and we'll respond as soon as possible.";
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
-    // Simulate form submission
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    try {
+      if (supabase) {
+        const { error } = await supabase.from("contact_messages").insert({
+          name: form.name,
+          email: form.email,
+          phone: form.phone || null,
+          service_interest: form.subject || null,
+          message: form.message,
+        });
+        if (error) throw error;
+      }
 
-    toast({
-      title: "Message Sent",
-      description: "Thank you for contacting us. We will respond within 24 hours.",
-    });
+      toast({
+        title: "Message Sent",
+        description: "Thank you for contacting us. We will respond within 24 hours.",
+      });
 
-    setForm({ name: "", email: "", phone: "", subject: "", message: "" });
-    setLoading(false);
+      setForm({ name: "", email: "", phone: "", subject: "", message: "" });
+    } catch (err) {
+      toast({
+        title: "Error",
+        description: "Something went wrong. Please try again later.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -40,8 +65,8 @@ export default function Contact() {
             <div className="h-px w-6 bg-primary" />
             <span className="text-primary text-xs uppercase tracking-[0.2em] font-sans font-medium">Get In Touch</span>
           </div>
-          <h1 className="font-display text-4xl md:text-6xl font-semibold text-white mb-3">Contact Us</h1>
-          <p className="text-secondary-foreground/50 max-w-xl font-light">Have a project in mind? We'd love to hear from you. Send us a message and we'll respond as soon as possible.</p>
+          <h1 className="font-display text-4xl md:text-6xl font-semibold text-white mb-3">{heroTitle}</h1>
+          <p className="text-secondary-foreground/50 max-w-xl font-light">{heroSubtitle}</p>
         </div>
       </div>
 

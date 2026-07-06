@@ -3,6 +3,7 @@ import { FolderOpen, Upload, Search, Image, File, Trash2, Edit2, FolderPlus, Che
 import { AdminLayout } from '@/components/layout/AdminLayout';
 import { supabase } from '@/lib/supabase';
 import { useToast } from '@/hooks/use-toast';
+import { validateUrlExtension } from '@/lib/upload';
 import type { MediaFolder, MediaFile } from '@/lib/types';
 
 export default function AdminMediaLibrary() {
@@ -437,6 +438,12 @@ function UploadModal({
     const urlList = urls.split('\n').filter(url => url.trim());
     if (urlList.length === 0) {
       toast({ type: 'error', message: 'Please enter at least one URL' });
+      return;
+    }
+
+    const invalidUrls = urlList.filter(url => !validateUrlExtension(url));
+    if (invalidUrls.length > 0) {
+      toast({ type: 'error', message: `Invalid file type in: ${invalidUrls.join(', ')}. Allowed: JPEG, PNG, WebP, GIF, SVG` });
       return;
     }
 

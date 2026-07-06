@@ -1,13 +1,15 @@
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Link } from "wouter";
 import { supabase } from "@/lib/supabase";
 import { useListProducts } from "@/lib/api";
+import { usePageVisit } from "@/hooks/use-page-visit";
 import { CustomerLayout } from "@/components/layout/CustomerLayout";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import HeroSlider from "@/components/home/HeroSlider";
 import { useCart } from "@/hooks/use-cart";
 import { formatKES } from "@/lib/utils";
-import { ArrowRight, ChevronLeft, ChevronRight, Package, Phone, Shield, Zap, Users, Star, Lightbulb, TrendingUp, MessageCircle, Award, Clock, ThumbsUp, Wrench, HeartHandshake, BarChart3, Building2, CheckCircle2, ChevronDown } from "lucide-react";
+import { ArrowRight, Package, Phone, Shield, Zap, Users, Star, Lightbulb, TrendingUp, MessageCircle, Award, Clock, ThumbsUp, Wrench, HeartHandshake, BarChart3, Building2, CheckCircle2, ChevronDown } from "lucide-react";
 import type { HomepageSection, Testimonial, Partner, Project, ProjectImage } from "@/lib/types";
 
 const FALLBACK_SLIDES = [
@@ -66,14 +68,10 @@ const DEFAULT_FAQS = [
 ];
 
 export default function Home() {
-  const [slide, setSlide] = useState(0);
-  const [fading, setFading] = useState(false);
-  const [paused, setPaused] = useState(false);
+  usePageVisit("/");
   const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
   const [partners, setPartners] = useState<Partner[]>([]);
   const [homepageSections, setHomepageSections] = useState<HomepageSection[]>([]);
-  const [touchStartX, setTouchStartX] = useState(0);
-  const [touchEndX, setTouchEndX] = useState(0);
   const [projects, setProjects] = useState<Project[]>([]);
 
   const { data: featuredServices, isLoading: featLoading } = useListProducts({ featured: true, productType: "service" });
@@ -123,29 +121,6 @@ export default function Home() {
     fetchContent();
   }, [supabase]);
 
-  const goToSlide = useCallback((idx: number) => {
-    setFading(true);
-    setTimeout(() => {
-      setSlide(idx);
-      setFading(false);
-    }, 300);
-  }, []);
-
-  useEffect(() => {
-    if (heroSlides.length === 0 || paused) return;
-    const t = setInterval(() => goToSlide((slide + 1) % heroSlides.length), 4000);
-    return () => clearInterval(t);
-  }, [slide, goToSlide, heroSlides.length, paused]);
-
-  // Touch handlers for swipe
-  const handleTouchStart = (e: React.TouchEvent) => setTouchStartX(e.touches[0].clientX);
-  const handleTouchMove = (e: React.TouchEvent) => setTouchEndX(e.touches[0].clientX);
-  const handleTouchEnd = () => {
-    if (touchStartX - touchEndX > 75) goToSlide((slide + 1) % heroSlides.length);
-    else if (touchEndX - touchStartX > 75) goToSlide((slide - 1 + heroSlides.length) % heroSlides.length);
-  };
-
-  // Check if a section should be visible based on homepage_sections config
   const isSectionVisible = (sectionType: string) => {
     const section = homepageSections.find(s => s.section_type === sectionType);
     return section ? section.is_active : true; // Default to visible if not configured
@@ -153,99 +128,13 @@ export default function Home() {
 
   return (
     <CustomerLayout>
-      {/* Hero Slider */}
       {isSectionVisible('hero') && (() => {
         const heroSec = homepageSections.find(s => s.section_type === 'hero');
         const overlayOpacity = heroSec?.content?.overlay_opacity ?? 60;
         return (
-        <section
-          className="relative w-full overflow-hidden h-[50vh] sm:h-[60vh] md:h-[70vh] lg:h-[80vh] min-h-[350px] md:min-h-[450px] lg:min-h-[500px] max-h-[900px]"
-          onMouseEnter={() => setPaused(true)}
-          onMouseLeave={() => setPaused(false)}
-          onTouchStart={handleTouchStart}
-          onTouchMove={handleTouchMove}
-          onTouchEnd={handleTouchEnd}
-        >
-        {heroSlides.length > 0 && (
-          <>
-            {heroSlides.map((s, i) => (
-              <div
-                key={s.id}
-                className="absolute inset-0 bg-cover bg-center bg-no-repeat transition-opacity duration-700"
-                style={{
-                  backgroundImage: `url(${s.image_url})`,
-                  opacity: i === slide && !fading ? 1 : 0,
-                  zIndex: i === slide ? 1 : 0,
-                }}
-              />
-            ))}
-            <div
-              className="absolute inset-0 z-10"
-              style={{ background: `linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,${overlayOpacity/100*0.5}) 50%, rgba(0,0,0,${overlayOpacity/100*0.3}) 100%)` }}
-            />
-
-            <div className="absolute inset-0 z-20 flex flex-col justify-center lg:justify-end pb-8 sm:pb-12 lg:pb-20 px-6 md:px-16">
-              <div className={`max-w-4xl transition-all duration-500 ${fading ? "opacity-0 translate-y-4" : "opacity-100 translate-y-0"}`}>
-                <p className="text-primary text-xs sm:text-sm uppercase tracking-[0.25em] font-sans font-medium mb-3 drop-shadow-sm">
-                  Topline Flooring & Waterproofing
-                </p>
-                <h1 className="font-display text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-white leading-tight mb-3 max-w-4xl drop-shadow-lg">
-                  {heroSlides[slide].title}
-                </h1>
-                {heroSlides[slide].subtitle && (
-                  <p className="text-white/80 text-sm sm:text-base md:text-lg font-sans font-light max-w-2xl mb-6 drop-shadow">
-                    {heroSlides[slide].subtitle}
-                  </p>
-                )}
-                <div className="flex flex-wrap gap-3">
-                  {heroSlides[slide].button_link && heroSlides[slide].button_text && (
-                    <Link href={heroSlides[slide].button_link}>
-                      <Button className="bg-primary hover:bg-primary/90 text-primary-foreground font-sans font-medium px-7 h-11 rounded-sm tracking-wide text-sm shadow-lg">
-                        {heroSlides[slide].button_text} <ArrowRight className="ml-2 h-4 w-4" />
-                      </Button>
-                    </Link>
-                  )}
-                  <a href="tel:0720859737">
-                    <Button variant="outline" className="border-white/40 text-white hover:bg-white/10 font-sans font-medium px-6 h-11 rounded-sm tracking-wide backdrop-blur-sm text-sm shadow-lg">
-                      <Phone className="mr-2 h-4 w-4 text-primary" />
-                      0720 859 737
-                    </Button>
-                  </a>
-                </div>
-              </div>
-            </div>
-
-            {/* Navigation Arrows */}
-            <button
-              onClick={() => goToSlide((slide - 1 + heroSlides.length) % heroSlides.length)}
-              className="absolute left-4 md:left-8 top-1/2 -translate-y-1/2 h-10 w-10 rounded-full bg-black/30 hover:bg-primary text-white flex items-center justify-center transition-all backdrop-blur-sm z-30 hover:scale-110"
-              aria-label="Previous slide"
-            >
-              <ChevronLeft className="h-5 w-5" />
-            </button>
-            <button
-              onClick={() => goToSlide((slide + 1) % heroSlides.length)}
-              className="absolute right-4 md:right-8 top-1/2 -translate-y-1/2 h-10 w-10 rounded-full bg-black/30 hover:bg-primary text-white flex items-center justify-center transition-all backdrop-blur-sm z-30 hover:scale-110"
-              aria-label="Next slide"
-            >
-              <ChevronRight className="h-5 w-5" />
-            </button>
-
-            {/* Dots */}
-            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-30">
-              {heroSlides.map((_, i) => (
-                <button
-                  key={i}
-                  onClick={() => goToSlide(i)}
-                  className={`rounded-full transition-all duration-300 ${i === slide ? "w-8 h-2 bg-primary" : "w-2 h-2 bg-white/40 hover:bg-white/70"}`}
-                  aria-label={`Go to slide ${i + 1}`}
-                />
-              ))}
-            </div>
-          </>
-        )}
-      </section>
-      )})()}
+          <HeroSlider slides={heroSlides} overlayOpacity={overlayOpacity} />
+        );
+      })()}
 
       {/* Services Section */}
       {isSectionVisible('services') && (

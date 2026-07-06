@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { X, MapPin, Building2, Calendar, Ruler, Loader2 } from 'lucide-react';
+import { usePageVisit } from '@/hooks/use-page-visit';
 import { CustomerLayout } from '@/components/layout/CustomerLayout';
 import { Breadcrumbs } from '@/components/Breadcrumbs';
 import { Link } from 'wouter';
@@ -11,6 +12,7 @@ interface ProjectWithImages extends Project {
 }
 
 export default function Portfolio() {
+  usePageVisit("/portfolio");
   const [projects, setProjects] = useState<ProjectWithImages[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState('All');

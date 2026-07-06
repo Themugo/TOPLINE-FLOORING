@@ -5,12 +5,97 @@ import { useState, useRef, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 
+type SubItem = { href: string; label: string };
+type MegaMenuColumn = { heading: string; items: SubItem[] };
+
+type NavLink =
+  | { type: "link"; href: string; label: string }
+  | { type: "dropdown"; label: string; items: SubItem[] }
+  | { type: "megamenu"; label: string; columns: MegaMenuColumn[] };
+
+const serviceHref = (name: string) => `/shop?type=service&search=${encodeURIComponent(name)}`;
+const materialHref = (name: string) => `/shop?type=material&search=${encodeURIComponent(name)}`;
+
+const servicesColumns: MegaMenuColumn[] = [
+  {
+    heading: "Waterproofing",
+    items: [
+      { href: serviceHref("APP Bituminous Membrane"), label: "APP Bituminous Membrane" },
+      { href: serviceHref("Torch-On Membranes"), label: "Torch-On Membranes" },
+      { href: serviceHref("Liquid Waterproofing"), label: "Liquid Waterproofing" },
+      { href: serviceHref("Basement Waterproofing"), label: "Basement Waterproofing" },
+      { href: serviceHref("Roof Waterproofing"), label: "Roof Waterproofing" },
+      { href: serviceHref("Balcony Waterproofing"), label: "Balcony Waterproofing" },
+      { href: serviceHref("Bathroom Waterproofing"), label: "Bathroom Waterproofing" },
+      { href: serviceHref("Water Tank Waterproofing"), label: "Water Tank Waterproofing" },
+    ],
+  },
+  {
+    heading: "Flooring",
+    items: [
+      { href: serviceHref("Epoxy Flooring"), label: "Epoxy Flooring" },
+      { href: serviceHref("Industrial Epoxy"), label: "Industrial Epoxy" },
+      { href: serviceHref("Warehouse Flooring"), label: "Warehouse Flooring" },
+      { href: serviceHref("Garage Flooring"), label: "Garage Flooring" },
+      { href: serviceHref("Hospital Flooring"), label: "Hospital Flooring" },
+      { href: serviceHref("Polyurethane Flooring"), label: "Polyurethane Flooring" },
+      { href: serviceHref("Decorative Flooring"), label: "Decorative Flooring" },
+    ],
+  },
+  {
+    heading: "Repair & Maintenance",
+    items: [
+      { href: serviceHref("Concrete Repair"), label: "Concrete Repair" },
+      { href: serviceHref("Protective Coatings"), label: "Protective Coatings" },
+      { href: serviceHref("Floor Hardeners"), label: "Floor Hardeners" },
+      { href: serviceHref("Expansion Joint Systems"), label: "Expansion Joint Systems" },
+      { href: serviceHref("Sealants"), label: "Sealants" },
+      { href: serviceHref("Construction Chemicals"), label: "Construction Chemicals" },
+      { href: serviceHref("Floor Primers"), label: "Floor Primers" },
+      { href: serviceHref("Concrete Sealers"), label: "Concrete Sealers" },
+      { href: serviceHref("Roof Coatings"), label: "Roof Coatings" },
+    ],
+  },
+];
+
+const materialItems: SubItem[] = [
+  { href: materialHref("Industrial Flooring Accessories"), label: "Industrial Flooring Accessories" },
+  { href: materialHref("Floor Primers"), label: "Floor Primers" },
+  { href: materialHref("Concrete Sealers"), label: "Concrete Sealers" },
+  { href: materialHref("Roof Coatings"), label: "Roof Coatings" },
+  { href: materialHref("Sealants"), label: "Sealants" },
+  { href: materialHref("Construction Chemicals"), label: "Construction Chemicals" },
+  { href: "/shop?type=material", label: "View All" },
+];
+
+const shopItems: SubItem[] = [
+  { href: "/shop", label: "All Products" },
+  { href: "/shop?type=material", label: "Materials" },
+  { href: "/shop?type=service", label: "Services" },
+  { href: "/shop?type=special", label: "Special Offers" },
+];
+
+const primaryLinks: NavLink[] = [
+  { type: "link", href: "/", label: "Home" },
+  { type: "link", href: "/about", label: "About" },
+  { type: "megamenu", label: "Services", columns: servicesColumns },
+  { type: "dropdown", label: "Materials", items: materialItems },
+  { type: "dropdown", label: "Shop", items: shopItems },
+  { type: "link", href: "/portfolio", label: "Projects" },
+  { type: "link", href: "/gallery", label: "Gallery" },
+  { type: "link", href: "/testimonials", label: "Testimonials" },
+  { type: "link", href: "/partners", label: "Partners" },
+  { type: "link", href: "/contact", label: "Contact" },
+  { type: "link", href: "/quotation", label: "Request Quote" },
+];
+
 export function CustomerLayout({ children }: { children: React.ReactNode }) {
   const { totalItems } = useCart();
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
+  const [mobileExpanded, setMobileExpanded] = useState<string | null>(null);
   const [location, setLocation] = useLocation();
   const searchRef = useRef<HTMLInputElement>(null);
   const dropdownTimeout = useRef<ReturnType<typeof setTimeout>>();
@@ -21,6 +106,15 @@ export function CustomerLayout({ children }: { children: React.ReactNode }) {
     }
   }, [searchOpen]);
 
+  useEffect(() => {
+    if (isMobileOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => { document.body.style.overflow = ""; };
+  }, [isMobileOpen]);
+
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
@@ -29,38 +123,6 @@ export function CustomerLayout({ children }: { children: React.ReactNode }) {
       setSearchQuery("");
     }
   };
-
-  const primaryLinks: ({ href: string; label: string } | { label: string; dropdown: { href: string; label: string }[] })[] = [
-    { href: "/", label: "Home" },
-    { href: "/about", label: "About" },
-    {
-      label: "Services",
-      dropdown: [
-        { href: "/services", label: "All Services" },
-        { href: "/shop?type=service&category=1", label: "APP Waterproofing" },
-        { href: "/shop?type=service&category=2", label: "Epoxy Flooring" },
-        { href: "/shop?type=service&category=3", label: "Concrete Repair" },
-        { href: "/shop?type=service", label: "View All Services" },
-      ],
-    },
-    {
-      label: "Shop",
-      dropdown: [
-        { href: "/shop", label: "All Products" },
-        { href: "/shop?type=material", label: "Materials" },
-        { href: "/shop?type=service", label: "Services" },
-      ],
-    },
-    { href: "/portfolio", label: "Projects" },
-    { href: "/contact", label: "Contact" },
-  ];
-
-  const moreLinks = [
-    { href: "/industries", label: "Industries" },
-    { href: "/faq", label: "FAQs" },
-    { href: "/quotation", label: "Get a Quote" },
-    { href: "/admin/login", label: "Admin Login", icon: LogIn },
-  ];
 
   const handleDropdownEnter = (label: string) => {
     if (dropdownTimeout.current) clearTimeout(dropdownTimeout.current);
@@ -74,6 +136,11 @@ export function CustomerLayout({ children }: { children: React.ReactNode }) {
   const isActive = (href: string) => {
     if (href === "/") return location === "/";
     return location.startsWith(href);
+  };
+
+  const closeMobile = () => {
+    setIsMobileOpen(false);
+    setMobileExpanded(null);
   };
 
   return (
@@ -109,106 +176,125 @@ export function CustomerLayout({ children }: { children: React.ReactNode }) {
 
           {/* Desktop Nav */}
           <nav className="hidden lg:flex items-center gap-1">
-            {primaryLinks.map((link) =>
-              "dropdown" in link ? (
-                <div
-                  key={link.label}
-                  className="relative"
-                  onMouseEnter={() => handleDropdownEnter(link.label)}
-                  onMouseLeave={handleDropdownLeave}
-                >
-                  <button
+            {primaryLinks.map((link) => {
+              if (link.type === "link") {
+                return (
+                  <Link
+                    key={link.href}
+                    href={link.href}
                     className={cn(
-                      "flex items-center gap-1 px-3 py-2 text-sm font-sans font-medium transition-colors tracking-wide uppercase text-[11px] rounded-sm",
-                      openDropdown === link.label || link.dropdown.some((d) => isActive(d.href))
-                        ? "text-primary"
-                        : "text-muted-foreground hover:text-foreground"
+                      "px-3 py-2 text-sm font-sans font-medium transition-colors tracking-wide uppercase text-[11px] rounded-sm",
+                      isActive(link.href)
+                        ? "text-primary bg-primary/5"
+                        : "text-muted-foreground hover:text-foreground hover:bg-muted"
                     )}
                   >
-                    {link.label} <ChevronDown className="h-3 w-3" />
-                  </button>
-                  {openDropdown === link.label && (
-                    <div
-                      className="absolute top-full left-0 mt-1 w-56 bg-background border border-border rounded-sm shadow-xl py-2 z-50"
-                      onMouseEnter={() => handleDropdownEnter(link.label)}
-                      onMouseLeave={handleDropdownLeave}
-                    >
-                      {link.dropdown.map((item) => (
-                        <Link
-                          key={item.href}
-                          href={item.href}
-                          className={cn(
-                            "block px-4 py-2 text-sm font-sans transition-colors",
-                            isActive(item.href)
-                              ? "text-primary bg-primary/5"
-                              : "text-muted-foreground hover:text-foreground hover:bg-muted"
-                          )}
-                        >
-                          {item.label}
-                        </Link>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              ) : (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className={cn(
-                    "px-3 py-2 text-sm font-sans font-medium transition-colors tracking-wide uppercase text-[11px] rounded-sm",
-                    isActive(link.href)
-                      ? "text-primary bg-primary/5"
-                      : "text-muted-foreground hover:text-foreground hover:bg-muted"
-                  )}
-                >
-                  {link.label}
-                </Link>
-              )
-            )}
+                    {link.label}
+                  </Link>
+                );
+              }
 
-            {/* More dropdown */}
-            <div
-              className="relative"
-              onMouseEnter={() => handleDropdownEnter("more")}
-              onMouseLeave={handleDropdownLeave}
-            >
-              <button
-                className={cn(
-                  "flex items-center gap-1 px-3 py-2 text-sm font-sans font-medium transition-colors tracking-wide uppercase text-[11px] rounded-sm",
-                  openDropdown === "more"
-                    ? "text-primary"
-                    : "text-muted-foreground hover:text-foreground"
-                )}
-              >
-                <MoreHorizontal className="h-4 w-4" />
-              </button>
-              {openDropdown === "more" && (
-                <div
-                  className="absolute top-full right-0 mt-1 w-48 bg-background border border-border rounded-sm shadow-xl py-2 z-50"
-                  onMouseEnter={() => handleDropdownEnter("more")}
-                  onMouseLeave={handleDropdownLeave}
-                >
-                  {moreLinks.map((item) => (
-                    <Link
-                      key={item.href}
-                      href={item.href}
+              if (link.type === "megamenu") {
+                return (
+                  <div
+                    key={link.label}
+                    className="relative"
+                    onMouseEnter={() => handleDropdownEnter(link.label)}
+                    onMouseLeave={handleDropdownLeave}
+                  >
+                    <button
                       className={cn(
-                        "flex items-center gap-2 px-4 py-2 text-sm font-sans transition-colors",
-                        isActive(item.href)
-                          ? "text-primary bg-primary/5"
-                          : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                        "flex items-center gap-1 px-3 py-2 text-sm font-sans font-medium transition-colors tracking-wide uppercase text-[11px] rounded-sm",
+                        openDropdown === link.label
+                          ? "text-primary"
+                          : "text-muted-foreground hover:text-foreground"
                       )}
                     >
-                      {"icon" in item && <LogIn className="h-3.5 w-3.5" />}
-                      {item.label}
-                    </Link>
-                  ))}
-                </div>
-              )}
-            </div>
+                      {link.label} <ChevronDown className="h-3 w-3" />
+                    </button>
+                    {openDropdown === link.label && (
+                      <div
+                        className="absolute top-full left-1/2 -translate-x-1/2 mt-1 w-[600px] bg-background border border-border rounded-sm shadow-xl z-50 p-6"
+                        onMouseEnter={() => handleDropdownEnter(link.label)}
+                        onMouseLeave={handleDropdownLeave}
+                      >
+                        <div className="grid grid-cols-3 gap-4">
+                          {link.columns.map((col) => (
+                            <div key={col.heading}>
+                              <h4 className="text-[10px] uppercase tracking-widest font-semibold text-muted-foreground mb-3">
+                                {col.heading}
+                              </h4>
+                              <ul className="space-y-1">
+                                {col.items.map((item) => (
+                                  <li key={item.href}>
+                                    <Link
+                                      href={item.href}
+                                      className="block text-sm text-muted-foreground hover:text-foreground transition-colors py-0.5"
+                                    >
+                                      {item.label}
+                                    </Link>
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              }
+
+              if (link.type === "dropdown") {
+                return (
+                  <div
+                    key={link.label}
+                    className="relative"
+                    onMouseEnter={() => handleDropdownEnter(link.label)}
+                    onMouseLeave={handleDropdownLeave}
+                  >
+                    <button
+                      className={cn(
+                        "flex items-center gap-1 px-3 py-2 text-sm font-sans font-medium transition-colors tracking-wide uppercase text-[11px] rounded-sm",
+                        openDropdown === link.label
+                          ? "text-primary"
+                          : "text-muted-foreground hover:text-foreground"
+                      )}
+                    >
+                      {link.label} <ChevronDown className="h-3 w-3" />
+                    </button>
+                    {openDropdown === link.label && (
+                      <div
+                        className="absolute top-full left-0 mt-1 w-56 bg-background border border-border rounded-sm shadow-xl py-2 z-50"
+                        onMouseEnter={() => handleDropdownEnter(link.label)}
+                        onMouseLeave={handleDropdownLeave}
+                      >
+                        {link.items.map((item) => (
+                          <Link
+                            key={item.href}
+                            href={item.href}
+                            className={cn(
+                              "block px-4 py-2 text-sm font-sans transition-colors",
+                              isActive(item.href)
+                                ? "text-primary bg-primary/5"
+                                : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                            )}
+                          >
+                            {item.label}
+                          </Link>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                );
+              }
+
+              return null;
+            })}
           </nav>
 
-          <div className="flex items-center gap-2">
+          {/* Right side actions */}
+          <div className="flex items-center gap-1">
             {/* Search */}
             <form onSubmit={handleSearch} className="hidden md:flex items-center">
               {searchOpen ? (
@@ -237,6 +323,27 @@ export function CustomerLayout({ children }: { children: React.ReactNode }) {
               )}
             </form>
 
+            {/* WhatsApp */}
+            <a
+              href="https://wa.me/254720859737"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hidden md:inline-flex p-2 text-muted-foreground hover:text-[#25D366] transition-colors"
+              aria-label="Chat on WhatsApp"
+            >
+              <MessageCircle className="h-4 w-4" />
+            </a>
+
+            {/* Request Quote */}
+            <Link
+              href="/quotation"
+              className="hidden md:inline-flex p-2 text-muted-foreground hover:text-primary transition-colors"
+              aria-label="Request a quote"
+            >
+              <FileText className="h-4 w-4" />
+            </Link>
+
+            {/* Cart */}
             <Link href="/cart" className="relative p-2 text-foreground hover:text-primary transition-colors" aria-label="Shopping cart">
               <ShoppingCart className="h-5 w-5" />
               {totalItems > 0 && (
@@ -246,22 +353,105 @@ export function CustomerLayout({ children }: { children: React.ReactNode }) {
               )}
             </Link>
 
+            {/* More/Login dropdown */}
+            <div
+              className="relative hidden lg:block"
+              onMouseEnter={() => handleDropdownEnter("more")}
+              onMouseLeave={handleDropdownLeave}
+            >
+              <button
+                className={cn(
+                  "flex items-center gap-1 p-2 text-sm font-sans font-medium transition-colors rounded-sm",
+                  openDropdown === "more"
+                    ? "text-primary"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+                aria-label="More"
+              >
+                <MoreHorizontal className="h-4 w-4" />
+              </button>
+              {openDropdown === "more" && (
+                <div
+                  className="absolute top-full right-0 mt-1 w-48 bg-background border border-border rounded-sm shadow-xl py-2 z-50"
+                  onMouseEnter={() => handleDropdownEnter("more")}
+                  onMouseLeave={handleDropdownLeave}
+                >
+                  <Link
+                    href="/admin/login"
+                    className="flex items-center gap-2 px-4 py-2 text-sm font-sans transition-colors text-muted-foreground hover:text-foreground hover:bg-muted"
+                  >
+                    <LogIn className="h-3.5 w-3.5" />
+                    Admin Login
+                  </Link>
+                  <Link
+                    href="/industries"
+                    className="block px-4 py-2 text-sm font-sans transition-colors text-muted-foreground hover:text-foreground hover:bg-muted"
+                  >
+                    Industries
+                  </Link>
+                  <Link
+                    href="/faq"
+                    className="block px-4 py-2 text-sm font-sans transition-colors text-muted-foreground hover:text-foreground hover:bg-muted"
+                  >
+                    FAQs
+                  </Link>
+                  <Link
+                    href="/track-order"
+                    className="block px-4 py-2 text-sm font-sans transition-colors text-muted-foreground hover:text-foreground hover:bg-muted"
+                  >
+                    Track Order
+                  </Link>
+                </div>
+              )}
+            </div>
+
+            {/* Mobile hamburger */}
             <button
               className="lg:hidden p-2 text-foreground"
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
-              aria-label="Toggle menu"
+              onClick={() => setIsMobileOpen(true)}
+              aria-label="Open menu"
             >
-              {isMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+              <Menu className="h-5 w-5" />
             </button>
           </div>
         </div>
+      </header>
 
-        {/* Mobile Nav */}
-        {isMenuOpen && (
-          <div className="lg:hidden border-t border-border bg-background max-h-[80vh] overflow-y-auto">
-            <nav className="flex flex-col py-4 px-6 space-y-1">
-              {/* Mobile search */}
-              <form onSubmit={handleSearch} className="mb-3">
+      {/* Mobile Drawer */}
+      <>
+        {/* Overlay */}
+        <div
+          className={cn(
+            "fixed inset-0 bg-black/50 z-40 transition-opacity duration-300",
+            isMobileOpen ? "opacity-100" : "opacity-0 pointer-events-none"
+          )}
+          onClick={closeMobile}
+        />
+
+        {/* Drawer panel */}
+        <div
+          className={cn(
+            "fixed right-0 top-0 h-full w-80 max-w-[85vw] bg-background z-50 shadow-2xl transition-transform duration-300 flex flex-col",
+            isMobileOpen ? "translate-x-0" : "translate-x-full"
+          )}
+        >
+          {/* Close button */}
+          <div className="flex items-center justify-between px-4 h-16 border-b border-border shrink-0">
+            <span className="font-display font-semibold text-sm tracking-tight">Menu</span>
+            <button
+              onClick={closeMobile}
+              className="p-2 text-foreground hover:text-muted-foreground transition-colors"
+              aria-label="Close menu"
+            >
+              <X className="h-5 w-5" />
+            </button>
+          </div>
+
+          {/* Scrollable content */}
+          <div className="flex-1 overflow-y-auto">
+            {/* Mobile search */}
+            <div className="px-4 pt-4 pb-2">
+              <form onSubmit={(e) => { handleSearch(e); closeMobile(); }}>
                 <div className="relative">
                   <Input
                     type="text"
@@ -275,67 +465,144 @@ export function CustomerLayout({ children }: { children: React.ReactNode }) {
                   </button>
                 </div>
               </form>
+            </div>
 
-              {primaryLinks.map((link) =>
-                "dropdown" in link ? (
-                  <div key={link.label}>
-                    <span className="block px-3 py-2.5 text-sm font-sans uppercase tracking-widest font-semibold text-foreground/60">
+            <nav className="flex flex-col px-4 pb-4">
+              {primaryLinks.map((link) => {
+                if (link.type === "link") {
+                  return (
+                    <Link
+                      key={link.href}
+                      href={link.href}
+                      className={cn(
+                        "block px-3 py-2.5 text-sm font-sans uppercase tracking-widest font-medium transition-colors rounded-sm",
+                        isActive(link.href) ? "text-primary bg-primary/5" : "text-muted-foreground"
+                      )}
+                      onClick={closeMobile}
+                    >
                       {link.label}
-                    </span>
-                    {link.dropdown.map((item) => (
-                      <Link
-                        key={item.href}
-                        href={item.href}
-                        className={cn(
-                          "block pl-6 pr-3 py-2 text-sm font-sans transition-colors",
-                          isActive(item.href) ? "text-primary" : "text-muted-foreground"
-                        )}
-                        onClick={() => setIsMenuOpen(false)}
-                      >
-                        {item.label}
-                      </Link>
-                    ))}
-                  </div>
-                ) : (
-                  <Link
-                    key={link.href}
-                    href={link.href}
-                    className={cn(
-                      "block px-3 py-2.5 text-sm font-sans uppercase tracking-widest font-medium transition-colors rounded-sm",
-                      isActive(link.href) ? "text-primary bg-primary/5" : "text-muted-foreground"
-                    )}
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    {link.label}
-                  </Link>
-                )
-              )}
+                    </Link>
+                  );
+                }
 
-              <div className="pt-2 mt-2 border-t border-border">
-                <span className="block px-3 py-2.5 text-sm font-sans uppercase tracking-widest font-semibold text-foreground/60">
+                const isExpanded = mobileExpanded === link.label;
+
+                if (link.type === "megamenu") {
+                  return (
+                    <div key={link.label}>
+                      <button
+                        onClick={() => setMobileExpanded(isExpanded ? null : link.label)}
+                        className="flex items-center justify-between w-full px-3 py-2.5 text-sm font-sans uppercase tracking-widest font-medium transition-colors rounded-sm text-muted-foreground"
+                      >
+                        {link.label}
+                        <ChevronDown className={cn("h-3.5 w-3.5 transition-transform", isExpanded && "rotate-180")} />
+                      </button>
+                      {isExpanded && (
+                        <div className="pl-4 pb-2 space-y-3">
+                          {link.columns.map((col) => (
+                            <div key={col.heading}>
+                              <span className="block text-[10px] uppercase tracking-widest font-semibold text-muted-foreground/60 px-3 py-1">
+                                {col.heading}
+                              </span>
+                              <div className="space-y-0.5">
+                                {col.items.map((item) => (
+                                  <Link
+                                    key={item.href}
+                                    href={item.href}
+                                    className="block px-3 py-1.5 text-sm font-sans transition-colors text-muted-foreground hover:text-foreground rounded-sm"
+                                    onClick={closeMobile}
+                                  >
+                                    {item.label}
+                                  </Link>
+                                ))}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  );
+                }
+
+                if (link.type === "dropdown") {
+                  return (
+                    <div key={link.label}>
+                      <button
+                        onClick={() => setMobileExpanded(isExpanded ? null : link.label)}
+                        className="flex items-center justify-between w-full px-3 py-2.5 text-sm font-sans uppercase tracking-widest font-medium transition-colors rounded-sm text-muted-foreground"
+                      >
+                        {link.label}
+                        <ChevronDown className={cn("h-3.5 w-3.5 transition-transform", isExpanded && "rotate-180")} />
+                      </button>
+                      {isExpanded && (
+                        <div className="pl-4 pb-2 space-y-0.5">
+                          {link.items.map((item) => (
+                            <Link
+                              key={item.href}
+                              href={item.href}
+                              className="block px-3 py-1.5 text-sm font-sans transition-colors text-muted-foreground hover:text-foreground rounded-sm"
+                              onClick={closeMobile}
+                            >
+                              {item.label}
+                            </Link>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  );
+                }
+
+                return null;
+              })}
+            </nav>
+
+            {/* More section */}
+            <div className="px-4 pb-2">
+              <div className="border-t border-border pt-3">
+                <span className="block px-3 py-1.5 text-[10px] uppercase tracking-widest font-semibold text-muted-foreground/60">
                   More
                 </span>
-                {moreLinks.map((item) => (
+                <div className="space-y-0.5">
                   <Link
-                    key={item.href}
-                    href={item.href}
-                    className={cn(
-                      "flex items-center gap-2 pl-6 pr-3 py-2 text-sm font-sans transition-colors",
-                      isActive(item.href) ? "text-primary" : "text-muted-foreground"
-                    )}
-                    onClick={() => setIsMenuOpen(false)}
+                    href="/admin/login"
+                    className="flex items-center gap-2 px-3 py-2 text-sm font-sans transition-colors text-muted-foreground hover:text-foreground rounded-sm"
+                    onClick={closeMobile}
                   >
-                    {"icon" in item && <LogIn className="h-3.5 w-3.5" />}
-                    {item.label}
+                    <LogIn className="h-3.5 w-3.5" />
+                    Admin Login
                   </Link>
-                ))}
+                  <Link
+                    href="/industries"
+                    className="block px-3 py-2 text-sm font-sans transition-colors text-muted-foreground hover:text-foreground rounded-sm"
+                    onClick={closeMobile}
+                  >
+                    Industries
+                  </Link>
+                  <Link
+                    href="/faq"
+                    className="block px-3 py-2 text-sm font-sans transition-colors text-muted-foreground hover:text-foreground rounded-sm"
+                    onClick={closeMobile}
+                  >
+                    FAQs
+                  </Link>
+                  <Link
+                    href="/track-order"
+                    className="block px-3 py-2 text-sm font-sans transition-colors text-muted-foreground hover:text-foreground rounded-sm"
+                    onClick={closeMobile}
+                  >
+                    Track Order
+                  </Link>
+                </div>
               </div>
+            </div>
 
-              <div className="pt-3 mt-3 border-t border-border">
+            {/* Contact info */}
+            <div className="px-4 pb-6">
+              <div className="border-t border-border pt-3 space-y-1">
                 <a
                   href="tel:0720859737"
-                  className="flex items-center gap-2 px-3 py-2.5 text-sm text-muted-foreground hover:text-foreground"
-                  onClick={() => setIsMenuOpen(false)}
+                  className="flex items-center gap-2 px-3 py-2.5 text-sm text-muted-foreground hover:text-foreground transition-colors rounded-sm"
+                  onClick={closeMobile}
                 >
                   <Phone className="h-4 w-4" />
                   0720 859 737
@@ -344,17 +611,17 @@ export function CustomerLayout({ children }: { children: React.ReactNode }) {
                   href="https://wa.me/254720859737"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-2 px-3 py-2.5 text-sm text-muted-foreground hover:text-[#25D366]"
-                  onClick={() => setIsMenuOpen(false)}
+                  className="flex items-center gap-2 px-3 py-2.5 text-sm text-muted-foreground hover:text-[#25D366] transition-colors rounded-sm"
+                  onClick={closeMobile}
                 >
                   <MessageCircle className="h-4 w-4" />
                   WhatsApp
                 </a>
               </div>
-            </nav>
+            </div>
           </div>
-        )}
-      </header>
+        </div>
+      </>
 
       <main className="flex-1">
         {children}
@@ -380,6 +647,7 @@ export function CustomerLayout({ children }: { children: React.ReactNode }) {
         </a>
       </div>
 
+      {/* Footer */}
       <footer className="bg-secondary text-secondary-foreground mt-auto">
         <div className="container mx-auto px-6 md:px-12 pt-16 pb-8">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-10 mb-12">

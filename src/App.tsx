@@ -1,3 +1,4 @@
+import { lazy, Suspense } from "react";
 import { Switch, Route, Router as WouterRouter } from "wouter";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
@@ -6,45 +7,49 @@ import { CartProvider } from "@/hooks/use-cart";
 import { AdminAuthGuard } from "@/components/admin/AdminAuthGuard";
 import { InitializationScreen } from "@/components/InitializationScreen";
 import { isConfigured } from "@/lib/supabase";
+import { Loader2 } from "lucide-react";
 import NotFound from "@/pages/not-found";
 import Home from "@/pages/home";
-import Shop from "@/pages/shop";
-import ShopDetail from "@/pages/shop-detail";
-import Cart from "@/pages/cart";
-import OrderConfirmation from "@/pages/order-confirmation";
-import CheckoutSuccess from "@/pages/checkout-success";
-import Contact from "@/pages/contact";
-import Quotation from "@/pages/quotation";
-import Services from "@/pages/services";
-import ServiceDetail from "@/pages/service-detail";
-import Portfolio from "@/pages/portfolio";
-import About from "@/pages/about";
-import Industries from "@/pages/industries";
-import FAQ from "@/pages/faq";
-import TrackOrder from "@/pages/track-order";
-import AdminLogin from "@/pages/admin/login";
-import Dashboard from "@/pages/admin/dashboard";
-import AdminOrders from "@/pages/admin/orders";
-import AdminProducts from "@/pages/admin/products";
-import AdminCategories from "@/pages/admin/categories";
-import AdminCustomers from "@/pages/admin/customers";
-import AdminHeroSlides from "@/pages/admin/hero-slides";
-import AdminTestimonials from "@/pages/admin/testimonials";
-import AdminPartners from "@/pages/admin/partners";
-import AdminQuotations from "@/pages/admin/quotations";
-import AdminSettings from "@/pages/admin/settings";
-import AdminCoupons from "@/pages/admin/coupons";
-import AdminDeliveryZones from "@/pages/admin/delivery-zones";
-import AdminHomepageBuilder from "@/pages/admin/homepage-builder";
-import AdminInventory from "@/pages/admin/inventory";
-import AdminMediaLibrary from "@/pages/admin/media-library";
-import AdminProjects from "@/pages/admin/projects";
-import AdminPromotions from "@/pages/admin/promotions";
-import AdminReports from "@/pages/admin/reports";
-import AdminSeo from "@/pages/admin/seo";
-import AdminSiteSettings from "@/pages/admin/site-settings";
-import AdminTheme from "@/pages/admin/theme";
-import AdminNavigation from "@/pages/admin/navigation";
+
+const Shop = lazy(() => import("@/pages/shop"));
+const ShopDetail = lazy(() => import("@/pages/shop-detail"));
+const Cart = lazy(() => import("@/pages/cart"));
+const OrderConfirmation = lazy(() => import("@/pages/order-confirmation"));
+const CheckoutSuccess = lazy(() => import("@/pages/checkout-success"));
+const Contact = lazy(() => import("@/pages/contact"));
+const Quotation = lazy(() => import("@/pages/quotation"));
+const Services = lazy(() => import("@/pages/services"));
+const ServiceDetail = lazy(() => import("@/pages/service-detail"));
+const Portfolio = lazy(() => import("@/pages/portfolio"));
+const About = lazy(() => import("@/pages/about"));
+const Industries = lazy(() => import("@/pages/industries"));
+const FAQ = lazy(() => import("@/pages/faq"));
+const TrackOrder = lazy(() => import("@/pages/track-order"));
+const AdminLogin = lazy(() => import("@/pages/admin/login"));
+const Dashboard = lazy(() => import("@/pages/admin/dashboard"));
+const AdminOrders = lazy(() => import("@/pages/admin/orders"));
+const AdminProducts = lazy(() => import("@/pages/admin/products"));
+const AdminCategories = lazy(() => import("@/pages/admin/categories"));
+const AdminCustomers = lazy(() => import("@/pages/admin/customers"));
+const AdminHeroSlides = lazy(() => import("@/pages/admin/hero-slides"));
+const AdminTestimonials = lazy(() => import("@/pages/admin/testimonials"));
+const AdminPartners = lazy(() => import("@/pages/admin/partners"));
+const AdminQuotations = lazy(() => import("@/pages/admin/quotations"));
+const AdminSettings = lazy(() => import("@/pages/admin/settings"));
+const AdminCoupons = lazy(() => import("@/pages/admin/coupons"));
+const AdminDeliveryZones = lazy(() => import("@/pages/admin/delivery-zones"));
+const AdminHomepageBuilder = lazy(() => import("@/pages/admin/homepage-builder"));
+const AdminInventory = lazy(() => import("@/pages/admin/inventory"));
+const AdminMediaLibrary = lazy(() => import("@/pages/admin/media-library"));
+const AdminProjects = lazy(() => import("@/pages/admin/projects"));
+const AdminPromotions = lazy(() => import("@/pages/admin/promotions"));
+const AdminReports = lazy(() => import("@/pages/admin/reports"));
+const AdminSeo = lazy(() => import("@/pages/admin/seo"));
+const AdminSiteSettings = lazy(() => import("@/pages/admin/site-settings"));
+const AdminTheme = lazy(() => import("@/pages/admin/theme"));
+const AdminNavigation = lazy(() => import("@/pages/admin/navigation"));
+const AdminAuditLogs = lazy(() => import("@/pages/admin/audit-logs"));
+const AdminBackups = lazy(() => import("@/pages/admin/backups"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -55,181 +60,66 @@ const queryClient = new QueryClient({
   },
 });
 
+const adminRouteConfigs = [
+  { path: "/admin", Component: Dashboard },
+  { path: "/admin/orders", Component: AdminOrders },
+  { path: "/admin/products", Component: AdminProducts },
+  { path: "/admin/categories", Component: AdminCategories },
+  { path: "/admin/customers", Component: AdminCustomers },
+  { path: "/admin/hero-slides", Component: AdminHeroSlides },
+  { path: "/admin/testimonials", Component: AdminTestimonials },
+  { path: "/admin/partners", Component: AdminPartners },
+  { path: "/admin/quotations", Component: AdminQuotations },
+  { path: "/admin/coupons", Component: AdminCoupons },
+  { path: "/admin/delivery-zones", Component: AdminDeliveryZones },
+  { path: "/admin/homepage-builder", Component: AdminHomepageBuilder },
+  { path: "/admin/inventory", Component: AdminInventory },
+  { path: "/admin/media-library", Component: AdminMediaLibrary },
+  { path: "/admin/projects", Component: AdminProjects },
+  { path: "/admin/promotions", Component: AdminPromotions },
+  { path: "/admin/reports", Component: AdminReports },
+  { path: "/admin/seo", Component: AdminSeo },
+  { path: "/admin/site-settings", Component: AdminSiteSettings },
+  { path: "/admin/theme", Component: AdminTheme },
+  { path: "/admin/navigation", Component: AdminNavigation },
+  { path: "/admin/settings", Component: AdminSettings },
+  { path: "/admin/audit-logs", Component: AdminAuditLogs },
+  { path: "/admin/backups", Component: AdminBackups },
+  { path: "/admin/gallery", Component: AdminProjects },
+];
+
 function Router() {
   return (
-    <Switch>
-      <Route path="/" component={Home} />
-      <Route path="/shop" component={Shop} />
-      <Route path="/shop/:id" component={ShopDetail} />
-      <Route path="/services" component={Services} />
-      <Route path="/services/:slug" component={ServiceDetail} />
-      <Route path="/portfolio" component={Portfolio} />
-      <Route path="/cart" component={Cart} />
-      <Route path="/order-confirmation/:id" component={OrderConfirmation} />
-      <Route path="/checkout/success" component={CheckoutSuccess} />
-      <Route path="/contact" component={Contact} />
-      <Route path="/about" component={About} />
-      <Route path="/industries" component={Industries} />
-      <Route path="/faq" component={FAQ} />
-      <Route path="/track-order" component={TrackOrder} />
-      <Route path="/quotation" component={Quotation} />
-      <Route path="/admin/login" component={AdminLogin} />
-      <Route path="/admin">
-        {() => (
-          <AdminAuthGuard>
-            <Dashboard />
-          </AdminAuthGuard>
-        )}
-      </Route>
-      <Route path="/admin/orders">
-        {() => (
-          <AdminAuthGuard>
-            <AdminOrders />
-          </AdminAuthGuard>
-        )}
-      </Route>
-      <Route path="/admin/products">
-        {() => (
-          <AdminAuthGuard>
-            <AdminProducts />
-          </AdminAuthGuard>
-        )}
-      </Route>
-      <Route path="/admin/categories">
-        {() => (
-          <AdminAuthGuard>
-            <AdminCategories />
-          </AdminAuthGuard>
-        )}
-      </Route>
-      <Route path="/admin/customers">
-        {() => (
-          <AdminAuthGuard>
-            <AdminCustomers />
-          </AdminAuthGuard>
-        )}
-      </Route>
-      <Route path="/admin/hero-slides">
-        {() => (
-          <AdminAuthGuard>
-            <AdminHeroSlides />
-          </AdminAuthGuard>
-        )}
-      </Route>
-      <Route path="/admin/testimonials">
-        {() => (
-          <AdminAuthGuard>
-            <AdminTestimonials />
-          </AdminAuthGuard>
-        )}
-      </Route>
-      <Route path="/admin/partners">
-        {() => (
-          <AdminAuthGuard>
-            <AdminPartners />
-          </AdminAuthGuard>
-        )}
-      </Route>
-      <Route path="/admin/quotations">
-        {() => (
-          <AdminAuthGuard>
-            <AdminQuotations />
-          </AdminAuthGuard>
-        )}
-      </Route>
-      <Route path="/admin/coupons">
-        {() => (
-          <AdminAuthGuard>
-            <AdminCoupons />
-          </AdminAuthGuard>
-        )}
-      </Route>
-      <Route path="/admin/delivery-zones">
-        {() => (
-          <AdminAuthGuard>
-            <AdminDeliveryZones />
-          </AdminAuthGuard>
-        )}
-      </Route>
-      <Route path="/admin/homepage-builder">
-        {() => (
-          <AdminAuthGuard>
-            <AdminHomepageBuilder />
-          </AdminAuthGuard>
-        )}
-      </Route>
-      <Route path="/admin/inventory">
-        {() => (
-          <AdminAuthGuard>
-            <AdminInventory />
-          </AdminAuthGuard>
-        )}
-      </Route>
-      <Route path="/admin/media-library">
-        {() => (
-          <AdminAuthGuard>
-            <AdminMediaLibrary />
-          </AdminAuthGuard>
-        )}
-      </Route>
-      <Route path="/admin/projects">
-        {() => (
-          <AdminAuthGuard>
-            <AdminProjects />
-          </AdminAuthGuard>
-        )}
-      </Route>
-      <Route path="/admin/promotions">
-        {() => (
-          <AdminAuthGuard>
-            <AdminPromotions />
-          </AdminAuthGuard>
-        )}
-      </Route>
-      <Route path="/admin/reports">
-        {() => (
-          <AdminAuthGuard>
-            <AdminReports />
-          </AdminAuthGuard>
-        )}
-      </Route>
-      <Route path="/admin/seo">
-        {() => (
-          <AdminAuthGuard>
-            <AdminSeo />
-          </AdminAuthGuard>
-        )}
-      </Route>
-      <Route path="/admin/site-settings">
-        {() => (
-          <AdminAuthGuard>
-            <AdminSiteSettings />
-          </AdminAuthGuard>
-        )}
-      </Route>
-      <Route path="/admin/theme">
-        {() => (
-          <AdminAuthGuard>
-            <AdminTheme />
-          </AdminAuthGuard>
-        )}
-      </Route>
-      <Route path="/admin/navigation">
-        {() => (
-          <AdminAuthGuard>
-            <AdminNavigation />
-          </AdminAuthGuard>
-        )}
-      </Route>
-      <Route path="/admin/settings">
-        {() => (
-          <AdminAuthGuard>
-            <AdminSettings />
-          </AdminAuthGuard>
-        )}
-      </Route>
-      <Route component={NotFound} />
-    </Switch>
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-background"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>}>
+      <Switch>
+        <Route path="/" component={Home} />
+        <Route path="/shop" component={Shop} />
+        <Route path="/shop/:id" component={ShopDetail} />
+        <Route path="/services" component={Services} />
+        <Route path="/services/:slug" component={ServiceDetail} />
+        <Route path="/portfolio" component={Portfolio} />
+        <Route path="/cart" component={Cart} />
+        <Route path="/order-confirmation/:id" component={OrderConfirmation} />
+        <Route path="/checkout/success" component={CheckoutSuccess} />
+        <Route path="/contact" component={Contact} />
+        <Route path="/about" component={About} />
+        <Route path="/industries" component={Industries} />
+        <Route path="/faq" component={FAQ} />
+        <Route path="/track-order" component={TrackOrder} />
+        <Route path="/quotation" component={Quotation} />
+        <Route path="/admin/login" component={AdminLogin} />
+        {adminRouteConfigs.map(({ path, Component }) => (
+          <Route key={path} path={path}>
+            {() => (
+              <AdminAuthGuard>
+                <Component />
+              </AdminAuthGuard>
+            )}
+          </Route>
+        ))}
+        <Route component={NotFound} />
+      </Switch>
+    </Suspense>
   );
 }
 
