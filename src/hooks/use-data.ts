@@ -18,6 +18,10 @@ import type {
   Project,
   SeoPage,
   InventoryMovement,
+  Lead,
+  Material,
+  Installation,
+  DashboardMetrics,
   InventoryAlert,
   ProductBrand,
   ProductTag,
@@ -818,4 +822,168 @@ export function useProductComparison(customerId?: string, sessionId?: string) {
   };
 
   return { comparison, loading, addToComparison, removeFromComparison, clearComparison };
+}
+
+// Dashboard Metrics
+export function useDashboardMetrics() {
+  const [metrics, setMetrics] = useState<DashboardMetrics | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchMetrics() {
+      try {
+        // Fetch all metrics in parallel
+        const [
+          leadsResult,
+          quotationsResult,
+          projectsResult,
+          installationsResult,
+          ordersResult,
+          materialsResult,
+        ] = await Promise.all([
+          // New enquiries today
+          supabase.from('leads').select('id').gte('created_at', new Date().toISOString().split('T')[0]),
+          // Open quotations
+          supabase.from('quotations').select('id').eq('status', 'pending'),
+          // Active projects
+          supabase.from('projects').select('id').in('status', ['pending', 'scheduled', 'in_progress']),
+          // Pending installations
+          supabase.from('installations').select('id').in('status', ['scheduled', 'in_progress']),
+          // Today's deliveries (orders with delivery scheduled today)
+          supabase.from('orders').select('id, total_amount, payment_status').eq('delivery_date', new Date().toISOString().split('T')[0]),
+          // Low stock items
+          supabase.from('materials').select('id').lt('current_stock', 'minimum_stock_level'),
+        ]);
+
+        const newEnquiries = leadsResult.data?.length || 0;
+        const openQuotations = quotationsResult.data?.length || 0;
+        const activeProjects = projectsResult.data?.length || 0;
+        const pendingInstallations = installationsResult.data?.length || 0;
+        const todayDeliveries = ordersResult.data?.length || 0;
+        const awaitingPayment = ordersResult.data?.filter(o => o.payment_status !== 'paid').length || 0;
+        const lowStockItems = materialsResult.data?.length || 0;
+
+        // Sales metrics
+        const today = new Date().toISOString().split('T')[0];
+        const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+        const monthAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+        const yearAgo = new Date(Date.now() - 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+
+        const [salesToday, salesWeek, salesMonth, salesYear] = await Promise.all([
+          supabase.from('orders').select('total_amount').gte('created_at', today).eq('status', 'completed'),
+          supabase.from('orders').select('total_amount').gte('created_at', weekAgo).eq('status', 'completed'),
+          supabase.from('orders').select('total_amount').gte('created_at', monthAgo).eq('status', 'completed'),
+          supabase.from('orders').select('total_amount').gte('created_at', yearAgo).eq('status', 'completed'),
+        ]);
+
+        const sumSales = (data: any[]) => data?.reduce((sum, order) => sum + (order.total_amount || 0), 0) || 0;
+
+        // Conversion rate (leads won / total leads)
+        const totalLeads = await supabase.from('leads').select('id');
+        const wonLeads = await supabase.from('leads').select('id').eq('outcome', 'won');
+        const conversionRate = totalLeads.data?.length ? (wonLeads.data?.length || 0) / totalLeads.data.length * 100 : 0;
+
+        // Total revenue
+        const allOrders = await supabase.from('orders').select('total_amount').eq('status', 'completed');
+        const revenue = sumSales(allOrders.data || []);
+
+        // Outstanding balance
+        const unpaidOrders = await supabase.from('orders').select('total_amount').neq('payment_status', 'paid');
+        const outstandingBalance = sumSales(unpaidOrders.data || []);
+
+        setMetrics({
+          newEnquiries,
+          openQuotations,
+          activeProjects,
+          pendingInstallations,
+          todayDeliveries,
+          awaitingPayment,
+          lowStockItems,
+          salesToday: sumSales(salesToday.data || []),
+          salesWeek: sumSales(salesWeek.data || []),
+          salesMonth: sumSales(salesMonth.data || []),
+          salesYear: sumSales(salesYear.data || []),
+          conversionRate,
+          revenue,
+          outstandingBalance,
+          customerSatisfaction: 0, // To be calculated from reviews
+          teamWorkload: 0, // To be calculated from assigned tasks
+          deliveryPerformance: 0, // To be calculated from on-time deliveries
+        });
+      } catch (err) {
+        console.error('Failed to fetch dashboard metrics:', err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchMetrics();
+  }, []);
+
+  return { metrics, loading };
+}
+
+// Leads
+export function useLeads(options?: { stage?: string; assignedTo?: string }) {
+  const [leads, setLeads] = useState<Lead[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchLeads() {
+      let query = supabase.from('leads').select('*').order('created_at', { ascending: false });
+      
+      if (options?.stage) query = query.eq('lead_stage', options.stage);
+      if (options?.assignedTo) query = query.eq('assigned_to', options.assignedTo);
+
+      const { data } = await query;
+      setLeads(data || []);
+      setLoading(false);
+    }
+    fetchLeads();
+  }, [options?.stage, options?.assignedTo]);
+
+  return { leads, loading };
+}
+
+// Materials
+export function useMaterials(options?: { category?: string; lowStock?: boolean }) {
+  const [materials, setMaterials] = useState<Material[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchMaterials() {
+      let query = supabase.from('materials').select('*, supplier:suppliers(*)').eq('is_active', true);
+      
+      if (options?.category) query = query.eq('category', options.category);
+      if (options?.lowStock) query = query.lt('current_stock', 'minimum_stock_level');
+
+      const { data } = await query;
+      setMaterials(data || []);
+      setLoading(false);
+    }
+    fetchMaterials();
+  }, [options?.category, options?.lowStock]);
+
+  return { materials, loading };
+}
+
+// Installations
+export function useInstallations(options?: { status?: string; date?: string }) {
+  const [installations, setInstallations] = useState<Installation[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchInstallations() {
+      let query = supabase.from('installations').select('*, project:projects(*), order:orders(*)').order('scheduled_date', { ascending: true });
+      
+      if (options?.status) query = query.eq('status', options.status);
+      if (options?.date) query = query.eq('scheduled_date', options.date);
+
+      const { data } = await query;
+      setInstallations(data || []);
+      setLoading(false);
+    }
+    fetchInstallations();
+  }, [options?.status, options?.date]);
+
+  return { installations, loading };
 }

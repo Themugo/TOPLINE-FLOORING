@@ -546,3 +546,212 @@ export interface ProductComparison {
   updated_at: string;
   products?: Product[];
 }
+
+// Business Control Centre Types
+export interface Lead {
+  id: string;
+  lead_number: string;
+  customer_name: string;
+  company_name: string | null;
+  email: string | null;
+  phone: string;
+  preferred_contact_method: string;
+  source: string | null;
+  interested_products: string[] | null;
+  interested_services: string[] | null;
+  budget_range: string | null;
+  project_location: string | null;
+  project_address: string | null;
+  lead_stage: string;
+  assigned_to: string | null;
+  follow_up_date: string | null;
+  follow_up_notes: string | null;
+  outcome: string | null;
+  outcome_reason: string | null;
+  communication_history: any;
+  created_at: string;
+  updated_at: string;
+  created_by: string | null;
+}
+
+export interface Service {
+  id: string;
+  service_code: string | null;
+  name: string;
+  description: string | null;
+  pricing_model: string | null;
+  base_price: number | null;
+  duration_hours: number | null;
+  required_materials: string[] | null;
+  required_skills: string[] | null;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Project {
+  id: string;
+  project_number: string;
+  customer_id: string | null;
+  quotation_id: string | null;
+  order_id: string | null;
+  project_manager: string | null;
+  project_name: string;
+  project_address: string | null;
+  project_type: string | null;
+  status: string;
+  start_date: string | null;
+  end_date: string | null;
+  estimated_cost: number | null;
+  actual_cost: number | null;
+  allocated_materials: any;
+  assigned_team: any;
+  progress_percentage: number;
+  progress_notes: string | null;
+  issues: any;
+  customer_approval: boolean;
+  completion_date: string | null;
+  completion_notes: string | null;
+  completion_photos: string[] | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface SiteVisit {
+  id: string;
+  project_id: string | null;
+  quotation_id: string | null;
+  customer_id: string | null;
+  scheduled_date: string | null;
+  scheduled_time: string | null;
+  assigned_to: string | null;
+  visit_type: string | null;
+  status: string;
+  visit_notes: string | null;
+  measurements: any;
+  photos: string[] | null;
+  customer_signature: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Material {
+  id: string;
+  sku: string | null;
+  barcode: string | null;
+  name: string;
+  description: string | null;
+  category: string | null;
+  supplier_id: string | null;
+  purchase_cost: number | null;
+  selling_price: number | null;
+  unit: string | null;
+  current_stock: number;
+  reserved_stock: number;
+  minimum_stock_level: number | null;
+  warehouse_location: string | null;
+  batch_number: string | null;
+  expiry_date: string | null;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface StockMovement {
+  id: string;
+  material_id: string;
+  movement_type: string;
+  quantity: number;
+  reference_type: string | null;
+  reference_id: string | null;
+  from_location: string | null;
+  to_location: string | null;
+  notes: string | null;
+  performed_by: string | null;
+  created_at: string;
+}
+
+export interface Supplier {
+  id: string;
+  supplier_code: string | null;
+  name: string;
+  contact_person: string | null;
+  email: string | null;
+  phone: string | null;
+  address: string | null;
+  city: string | null;
+  country: string;
+  is_preferred: boolean;
+  payment_terms: string | null;
+  notes: string | null;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface PurchaseOrder {
+  id: string;
+  po_number: string;
+  supplier_id: string | null;
+  order_date: string;
+  expected_delivery_date: string | null;
+  actual_delivery_date: string | null;
+  status: string;
+  total_amount: number | null;
+  paid_amount: number;
+  notes: string | null;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface PurchaseOrderItem {
+  id: string;
+  purchase_order_id: string;
+  material_id: string | null;
+  quantity: number;
+  unit_price: number | null;
+  total_price: number | null;
+  received_quantity: number;
+  created_at: string;
+}
+
+export interface Installation {
+  id: string;
+  installation_number: string;
+  order_id: string | null;
+  project_id: string | null;
+  scheduled_date: string | null;
+  scheduled_time: string | null;
+  assigned_team: any;
+  status: string;
+  start_time: string | null;
+  end_time: string | null;
+  notes: string | null;
+  progress_photos: string[] | null;
+  customer_confirmation: boolean;
+  customer_signature: string | null;
+  completion_certificate: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface DashboardMetrics {
+  newEnquiries: number;
+  openQuotations: number;
+  activeProjects: number;
+  pendingInstallations: number;
+  todayDeliveries: number;
+  awaitingPayment: number;
+  lowStockItems: number;
+  salesToday: number;
+  salesWeek: number;
+  salesMonth: number;
+  salesYear: number;
+  conversionRate: number;
+  revenue: number;
+  outstandingBalance: number;
+  customerSatisfaction: number;
+  teamWorkload: number;
+  deliveryPerformance: number;
+}
