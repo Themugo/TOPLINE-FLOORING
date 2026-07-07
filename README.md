@@ -87,6 +87,7 @@ Copy `.env.example` to `.env` and fill in your Supabase credentials.
 
 - Never commit `.env` file
 - Change default admin credentials immediately after deployment
-- Enable Supabase Row Level Security (RLS) policies
+- Enable Supabase Row Level Security (RLS) policies (see `SUPABASE_RLS_POLICIES.md`)
 - Use HTTPS in production
 - Regularly update dependencies
+- Default admin password after migration: `ToplineSecure2024!` (CHANGE IMMEDIATELY)
