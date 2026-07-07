@@ -125,7 +125,7 @@ export function useHomepageSections() {
 }
 
 // Products
-export function useProducts(options?: { categoryId?: string; featured?: boolean; limit?: number; brandId?: string }) {
+export function useProducts(options?: { categoryId?: string; featured?: boolean; limit?: number; brandId?: string; search?: string }) {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -142,6 +142,9 @@ export function useProducts(options?: { categoryId?: string; featured?: boolean;
       if (options?.featured) query = query.eq('featured', true);
       if (options?.brandId) query = query.eq('brand_id', options.brandId);
       if (options?.limit) query = query.limit(options.limit);
+      if (options?.search) {
+        query = query.or(`name.ilike.%${options.search}%,description.ilike.%${options.search}%,short_description.ilike.%${options.search}%`);
+      }
 
       const { data, error: err } = await query;
       if (err) throw err;
@@ -151,7 +154,7 @@ export function useProducts(options?: { categoryId?: string; featured?: boolean;
     } finally {
       setLoading(false);
     }
-  }, [options?.categoryId, options?.featured, options?.limit, options?.brandId]);
+  }, [options?.categoryId, options?.featured, options?.limit, options?.brandId, options?.search]);
 
   useEffect(() => {
     refetch();

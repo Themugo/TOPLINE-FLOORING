@@ -1,26 +1,32 @@
-import { useState } from 'react';
-import { Link } from 'wouter';
-import { Search, Filter, X } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Link, useLocation } from 'wouter';
+import { Filter } from 'lucide-react';
 import { CustomerLayout } from '@/components/layout/CustomerLayout';
+import { AdvancedSearch } from '@/components/search/AdvancedSearch';
 import { useProducts, useCategories } from '@/hooks/use-data';
 import { formatKES } from '@/lib/utils';
 import { useCart } from '@/hooks/use-cart';
 import type { Product } from '@/lib/types';
 
 export default function Shop() {
+  const [location] = useLocation();
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const { categories } = useCategories();
   const { products } = useProducts(
-    selectedCategory ? { categoryId: selectedCategory } : undefined
+    selectedCategory ? { categoryId: selectedCategory, search: searchQuery } : { search: searchQuery }
   );
   const { addItem } = useCart();
 
-  const filteredProducts = products.filter(
-    (product) =>
-      product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      product.description?.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  // Parse URL params for search and category
+  useEffect(() => {
+    const params = new URLSearchParams(location.split('?')[1] || '');
+    const searchParam = params.get('search');
+    const categoryParam = params.get('category');
+    
+    if (searchParam) setSearchQuery(searchParam);
+    if (categoryParam) setSelectedCategory(categoryParam);
+  }, [location]);
 
   const handleAddToCart = (product: Product) => {
     addItem(product);
@@ -40,6 +46,13 @@ export default function Shop() {
             </p>
           </div>
 
+          {/* Advanced Search Bar */}
+          <div className="mb-8">
+            <AdvancedSearch 
+              onSearch={(query) => setSearchQuery(query)}
+            />
+          </div>
+
           <div className="flex flex-col lg:flex-row gap-8">
             {/* Filters Sidebar */}
             <aside className="lg:w-64 flex-shrink-0">
@@ -49,38 +62,17 @@ export default function Shop() {
                     <Filter className="w-4 h-4" />
                     Filters
                   </h2>
-                  {selectedCategory && (
+                  {(selectedCategory || searchQuery) && (
                     <button
-                      onClick={() => setSelectedCategory(null)}
+                      onClick={() => {
+                        setSelectedCategory(null);
+                        setSearchQuery('');
+                      }}
                       className="text-sm text-primary-600 hover:text-primary-700"
                     >
                       Clear
                     </button>
                   )}
-                </div>
-
-                <div className="mb-6">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Search
-                  </label>
-                  <div className="relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                    <input
-                      type="text"
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      placeholder="Search products..."
-                      className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm"
-                    />
-                    {searchQuery && (
-                      <button
-                        onClick={() => setSearchQuery('')}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                      >
-                        <X className="w-4 h-4" />
-                      </button>
-                    )}
-                  </div>
                 </div>
 
                 <div>
@@ -117,12 +109,14 @@ export default function Shop() {
             {/* Products Grid */}
             <div className="flex-1">
               <div className="mb-4 text-sm text-gray-500">
-                Showing {filteredProducts.length} product{filteredProducts.length !== 1 && 's'}
+                Showing {products.length} product{products.length !== 1 && 's'}
+                {searchQuery && <span> for "{searchQuery}"</span>}
+                {selectedCategory && <span> in selected category</span>}
               </div>
 
-              {filteredProducts.length > 0 ? (
+              {products.length > 0 ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {filteredProducts.map((product) => (
+                  {products.map((product: Product) => (
                     <div key={product.id} className="card group">
                       <Link href={`/product/${product.slug}`}>
                         <div className="aspect-[4/3] overflow-hidden bg-gray-100">
