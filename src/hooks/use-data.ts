@@ -927,21 +927,40 @@ export function useLeads(options?: { stage?: string; assignedTo?: string }) {
   const [leads, setLeads] = useState<Lead[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    async function fetchLeads() {
-      let query = supabase.from('leads').select('*').order('created_at', { ascending: false });
-      
-      if (options?.stage) query = query.eq('lead_stage', options.stage);
-      if (options?.assignedTo) query = query.eq('assigned_to', options.assignedTo);
+  const refetch = useCallback(async () => {
+    let query = supabase.from('leads').select('*').order('created_at', { ascending: false });
+    
+    if (options?.stage) query = query.eq('lead_stage', options.stage);
+    if (options?.assignedTo) query = query.eq('assigned_to', options.assignedTo);
 
-      const { data } = await query;
-      setLeads(data || []);
-      setLoading(false);
-    }
-    fetchLeads();
+    const { data } = await query;
+    setLeads(data || []);
+    setLoading(false);
   }, [options?.stage, options?.assignedTo]);
 
-  return { leads, loading };
+  useEffect(() => {
+    refetch();
+  }, [refetch]);
+
+  const createLead = async (data: Partial<Lead>) => {
+    const { error } = await supabase.from('leads').insert(data);
+    if (error) throw error;
+    await refetch();
+  };
+
+  const updateLead = async (id: string, data: Partial<Lead>) => {
+    const { error } = await supabase.from('leads').update(data).eq('id', id);
+    if (error) throw error;
+    await refetch();
+  };
+
+  const deleteLead = async (id: string) => {
+    const { error } = await supabase.from('leads').delete().eq('id', id);
+    if (error) throw error;
+    await refetch();
+  };
+
+  return { leads, loading, refetch, createLead, updateLead, deleteLead };
 }
 
 // Materials

@@ -19,6 +19,7 @@ import NotFound from '@/pages/not-found';
 // Admin Pages
 import AdminLogin from '@/pages/admin/login';
 import { DashboardPage } from '@/pages/admin/dashboard';
+import AdminLeads from '@/pages/admin/leads';
 import AdminOrders from '@/pages/admin/orders';
 import AdminProducts from '@/pages/admin/products';
 import AdminCategories from '@/pages/admin/categories';
@@ -56,6 +57,14 @@ function Router() {
     return (
       <AdminAuthGuard>
         <DashboardPage />
+      </AdminAuthGuard>
+    );
+  }
+
+  if (location === '/admin/leads') {
+    return (
+      <AdminAuthGuard>
+        <AdminLeads />
       </AdminAuthGuard>
     );
   }

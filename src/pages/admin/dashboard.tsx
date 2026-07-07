@@ -40,11 +40,12 @@ function AdminLayout({ children, title }: AdminLayoutProps) {
 
   const navItems = [
     { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
+    { href: '/admin/leads', label: 'Leads', icon: Users },
     { href: '/admin/orders', label: 'Orders', icon: ShoppingCart },
     { href: '/admin/products', label: 'Products', icon: Package },
     { href: '/admin/categories', label: 'Categories', icon: FolderOpen },
     { href: '/admin/inventory', label: 'Inventory', icon: Warehouse },
-    { href: '/admin/customers', label: 'Customers', icon: Users },
+    { href: '/admin/customers', label: 'Customers', icon: Users2 },
     { href: '/admin/quotations', label: 'Quotations', icon: FileText },
     { href: '/admin/projects', label: 'Projects', icon: FolderKanban },
     { href: '/admin/promotions', label: 'Promotions', icon: Megaphone },
