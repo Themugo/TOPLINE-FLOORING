@@ -1,46 +1,26 @@
-import { useState, useEffect } from 'react';
-import { Link, useLocation } from 'wouter';
+import { useState } from 'react';
+import { Link } from 'wouter';
+import { Search, Filter, X } from 'lucide-react';
 import { CustomerLayout } from '@/components/layout/CustomerLayout';
-import { AdvancedSearch } from '@/components/search/AdvancedSearch';
-import { ProductFilters, type FilterOptions } from '@/components/filter/ProductFilters';
 import { useProducts, useCategories } from '@/hooks/use-data';
 import { formatKES } from '@/lib/utils';
 import { useCart } from '@/hooks/use-cart';
 import type { Product } from '@/lib/types';
 
 export default function Shop() {
-  const [location] = useLocation();
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
-  const [filterOptions, setFilterOptions] = useState<FilterOptions>({});
   const { categories } = useCategories();
-  const { products } = useProducts({
-    categoryId: selectedCategory || undefined,
-    search: searchQuery,
-    priceRange: filterOptions.priceRange,
-    brands: filterOptions.brands,
-    materials: filterOptions.materials,
-    inStock: filterOptions.inStock,
-    isNewArrival: filterOptions.isNewArrival,
-    isBestSeller: filterOptions.isBestSeller,
-    isClearance: filterOptions.isClearance,
-    sortBy: filterOptions.sortBy,
-  });
+  const { products } = useProducts(
+    selectedCategory ? { categoryId: selectedCategory } : undefined
+  );
   const { addItem } = useCart();
 
-  // Get available brands and materials from products
-  const availableBrands = Array.from(new Set(products.map(p => p.brand?.name).filter(Boolean) as string[]));
-  const availableMaterials = Array.from(new Set(products.map(p => p.material).filter(Boolean) as string[]));
-
-  // Parse URL params for search and category
-  useEffect(() => {
-    const params = new URLSearchParams(location.split('?')[1] || '');
-    const searchParam = params.get('search');
-    const categoryParam = params.get('category');
-    
-    if (searchParam) setSearchQuery(searchParam);
-    if (categoryParam) setSelectedCategory(categoryParam);
-  }, [location]);
+  const filteredProducts = products.filter(
+    (product) =>
+      product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      product.description?.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   const handleAddToCart = (product: Product) => {
     addItem(product);
@@ -60,25 +40,50 @@ export default function Shop() {
             </p>
           </div>
 
-          {/* Advanced Search Bar */}
-          <div className="mb-8">
-            <AdvancedSearch 
-              onSearch={(query) => setSearchQuery(query)}
-            />
-          </div>
-
           <div className="flex flex-col lg:flex-row gap-8">
             {/* Filters Sidebar */}
             <aside className="lg:w-64 flex-shrink-0">
               <div className="card p-6 sticky top-24">
-                <ProductFilters
-                  options={filterOptions}
-                  onChange={setFilterOptions}
-                  availableBrands={availableBrands}
-                  availableMaterials={availableMaterials}
-                />
-                
-                <div className="mt-6 pt-6 border-t border-gray-200">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="font-semibold text-navy-900 flex items-center gap-2">
+                    <Filter className="w-4 h-4" />
+                    Filters
+                  </h2>
+                  {selectedCategory && (
+                    <button
+                      onClick={() => setSelectedCategory(null)}
+                      className="text-sm text-primary-600 hover:text-primary-700"
+                    >
+                      Clear
+                    </button>
+                  )}
+                </div>
+
+                <div className="mb-6">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Search
+                  </label>
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                    <input
+                      type="text"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      placeholder="Search products..."
+                      className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm"
+                    />
+                    {searchQuery && (
+                      <button
+                        onClick={() => setSearchQuery('')}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                <div>
                   <h3 className="text-sm font-medium text-gray-700 mb-3">Categories</h3>
                   <div className="space-y-2">
                     <button
@@ -112,14 +117,12 @@ export default function Shop() {
             {/* Products Grid */}
             <div className="flex-1">
               <div className="mb-4 text-sm text-gray-500">
-                Showing {products.length} product{products.length !== 1 && 's'}
-                {searchQuery && <span> for "{searchQuery}"</span>}
-                {selectedCategory && <span> in selected category</span>}
+                Showing {filteredProducts.length} product{filteredProducts.length !== 1 && 's'}
               </div>
 
-              {products.length > 0 ? (
+              {filteredProducts.length > 0 ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {products.map((product: Product) => (
+                  {filteredProducts.map((product) => (
                     <div key={product.id} className="card group">
                       <Link href={`/product/${product.slug}`}>
                         <div className="aspect-[4/3] overflow-hidden bg-gray-100">

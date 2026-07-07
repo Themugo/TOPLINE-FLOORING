@@ -25,8 +25,8 @@ import {
   Search,
 } from 'lucide-react';
 import { useAdminAuth } from '@/hooks/use-data';
-import { useState } from 'react';
-import { ExecutiveDashboard } from '@/components/dashboard/ExecutiveDashboard';
+import { useState, useEffect } from 'react';
+import { supabase } from '@/lib/supabase';
 
 interface AdminLayoutProps {
   children: React.ReactNode;
@@ -40,12 +40,11 @@ function AdminLayout({ children, title }: AdminLayoutProps) {
 
   const navItems = [
     { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
-    { href: '/admin/leads', label: 'Leads', icon: Users },
     { href: '/admin/orders', label: 'Orders', icon: ShoppingCart },
     { href: '/admin/products', label: 'Products', icon: Package },
     { href: '/admin/categories', label: 'Categories', icon: FolderOpen },
     { href: '/admin/inventory', label: 'Inventory', icon: Warehouse },
-    { href: '/admin/customers', label: 'Customers', icon: Users2 },
+    { href: '/admin/customers', label: 'Customers', icon: Users },
     { href: '/admin/quotations', label: 'Quotations', icon: FileText },
     { href: '/admin/projects', label: 'Projects', icon: FolderKanban },
     { href: '/admin/promotions', label: 'Promotions', icon: Megaphone },
@@ -173,5 +172,129 @@ export function DashboardPage() {
 export { AdminLayout };
 
 function DashboardContent() {
-  return <ExecutiveDashboard />;
+  const [stats, setStats] = useState([
+    { label: 'Total Orders', value: '0', color: 'bg-blue-500' },
+    { label: 'Pending Orders', value: '0', color: 'bg-yellow-500' },
+    { label: 'Quotations', value: '0', color: 'bg-green-500' },
+    { label: 'Products', value: '0', color: 'bg-purple-500' },
+  ]);
+  const [recentOrders, setRecentOrders] = useState<any[]>([]);
+  const [recentQuotations, setRecentQuotations] = useState<any[]>([]);
+
+  useEffect(() => {
+    async function fetchStats() {
+      const [ordersRes, pendingRes, quotesRes, productsRes] = await Promise.all([
+        supabase.from('orders').select('id', { count: 'exact', head: true }),
+        supabase.from('orders').select('id', { count: 'exact', head: true }).eq('status', 'pending'),
+        supabase.from('quotations').select('id', { count: 'exact', head: true }),
+        supabase.from('products').select('id', { count: 'exact', head: true }).eq('is_active', true),
+      ]);
+
+      setStats([
+        { label: 'Total Orders', value: ordersRes.count?.toString() || '0', color: 'bg-blue-500' },
+        { label: 'Pending Orders', value: pendingRes.count?.toString() || '0', color: 'bg-yellow-500' },
+        { label: 'Quotations', value: quotesRes.count?.toString() || '0', color: 'bg-green-500' },
+        { label: 'Products', value: productsRes.count?.toString() || '0', color: 'bg-purple-500' },
+      ]);
+
+      const { data: recentOrdersData } = await supabase
+        .from('orders')
+        .select('id, customer_name, total_amount, status, created_at')
+        .order('created_at', { ascending: false })
+        .limit(5);
+      setRecentOrders(recentOrdersData || []);
+
+      const { data: recentQuotesData } = await supabase
+        .from('quotations')
+        .select('id, name, project_type, status, created_at')
+        .order('created_at', { ascending: false })
+        .limit(5);
+      setRecentQuotations(recentQuotesData || []);
+    }
+
+    fetchStats();
+  }, []);
+
+  return (
+    <div>
+      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        {stats.map((stat) => (
+          <div key={stat.label} className="bg-navy-900 rounded-xl p-6 border border-navy-800">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm text-gray-400">{stat.label}</span>
+              <div className={`w-3 h-3 rounded-full ${stat.color}`} />
+            </div>
+            <p className="text-3xl font-bold text-white">{stat.value}</p>
+          </div>
+        ))}
+      </div>
+
+      <div className="grid lg:grid-cols-2 gap-6 mb-8">
+        <div className="bg-navy-900 rounded-xl p-6 border border-navy-800">
+          <h2 className="font-semibold text-white mb-4">Recent Orders</h2>
+          {recentOrders.length === 0 ? (
+            <p className="text-gray-500 text-sm">No orders yet</p>
+          ) : (
+            <div className="space-y-3">
+              {recentOrders.map((order) => (
+                <div key={order.id} className="flex justify-between items-center py-2 border-b border-navy-800 last:border-0">
+                  <div>
+                    <p className="font-medium text-sm text-white">{order.customer_name}</p>
+                    <p className="text-xs text-gray-500">{new Date(order.created_at).toLocaleDateString()}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-sm font-medium text-white">KES {order.total_amount?.toLocaleString()}</p>
+                    <span className={`text-xs px-2 py-0.5 rounded-full ${order.status === 'pending' ? 'bg-primary-500/20 text-primary-400' : 'bg-green-500/20 text-green-400'}`}>
+                      {order.status}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <div className="bg-navy-900 rounded-xl p-6 border border-navy-800">
+          <h2 className="font-semibold text-white mb-4">Recent Quotations</h2>
+          {recentQuotations.length === 0 ? (
+            <p className="text-gray-500 text-sm">No quotation requests yet</p>
+          ) : (
+            <div className="space-y-3">
+              {recentQuotations.map((quote) => (
+                <div key={quote.id} className="flex justify-between items-center py-2 border-b border-navy-800 last:border-0">
+                  <div>
+                    <p className="font-medium text-sm text-white">{quote.name}</p>
+                    <p className="text-xs text-gray-500">{quote.project_type || 'General'}</p>
+                  </div>
+                  <span className={`text-xs px-2 py-0.5 rounded-full ${quote.status === 'new' ? 'bg-accent-500/20 text-accent-400' : 'bg-navy-800 text-gray-400'}`}>
+                    {quote.status}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+
+      <div className="bg-navy-900 rounded-xl p-6 border border-navy-800">
+        <h2 className="font-semibold text-white mb-4">Quick Actions</h2>
+        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {[
+            { label: 'Add Product', href: '/admin/products' },
+            { label: 'View Orders', href: '/admin/orders' },
+            { label: 'Add Category', href: '/admin/categories' },
+            { label: 'View Quotations', href: '/admin/quotations' },
+          ].map((action) => (
+            <Link
+              key={action.href}
+              href={action.href}
+              className="p-4 bg-navy-800 rounded-lg text-center font-medium text-gray-300 hover:bg-navy-700 hover:text-white transition-colors"
+            >
+              {action.label}
+            </Link>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
 }
