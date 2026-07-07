@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'wouter';
-import { Filter } from 'lucide-react';
 import { CustomerLayout } from '@/components/layout/CustomerLayout';
 import { AdvancedSearch } from '@/components/search/AdvancedSearch';
+import { ProductFilters, type FilterOptions } from '@/components/filter/ProductFilters';
 import { useProducts, useCategories } from '@/hooks/use-data';
 import { formatKES } from '@/lib/utils';
 import { useCart } from '@/hooks/use-cart';
@@ -12,11 +12,25 @@ export default function Shop() {
   const [location] = useLocation();
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [filterOptions, setFilterOptions] = useState<FilterOptions>({});
   const { categories } = useCategories();
-  const { products } = useProducts(
-    selectedCategory ? { categoryId: selectedCategory, search: searchQuery } : { search: searchQuery }
-  );
+  const { products } = useProducts({
+    categoryId: selectedCategory || undefined,
+    search: searchQuery,
+    priceRange: filterOptions.priceRange,
+    brands: filterOptions.brands,
+    materials: filterOptions.materials,
+    inStock: filterOptions.inStock,
+    isNewArrival: filterOptions.isNewArrival,
+    isBestSeller: filterOptions.isBestSeller,
+    isClearance: filterOptions.isClearance,
+    sortBy: filterOptions.sortBy,
+  });
   const { addItem } = useCart();
+
+  // Get available brands and materials from products
+  const availableBrands = Array.from(new Set(products.map(p => p.brand?.name).filter(Boolean) as string[]));
+  const availableMaterials = Array.from(new Set(products.map(p => p.material).filter(Boolean) as string[]));
 
   // Parse URL params for search and category
   useEffect(() => {
@@ -57,25 +71,14 @@ export default function Shop() {
             {/* Filters Sidebar */}
             <aside className="lg:w-64 flex-shrink-0">
               <div className="card p-6 sticky top-24">
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="font-semibold text-navy-900 flex items-center gap-2">
-                    <Filter className="w-4 h-4" />
-                    Filters
-                  </h2>
-                  {(selectedCategory || searchQuery) && (
-                    <button
-                      onClick={() => {
-                        setSelectedCategory(null);
-                        setSearchQuery('');
-                      }}
-                      className="text-sm text-primary-600 hover:text-primary-700"
-                    >
-                      Clear
-                    </button>
-                  )}
-                </div>
-
-                <div>
+                <ProductFilters
+                  options={filterOptions}
+                  onChange={setFilterOptions}
+                  availableBrands={availableBrands}
+                  availableMaterials={availableMaterials}
+                />
+                
+                <div className="mt-6 pt-6 border-t border-gray-200">
                   <h3 className="text-sm font-medium text-gray-700 mb-3">Categories</h3>
                   <div className="space-y-2">
                     <button

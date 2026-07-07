@@ -125,7 +125,21 @@ export function useHomepageSections() {
 }
 
 // Products
-export function useProducts(options?: { categoryId?: string; featured?: boolean; limit?: number; brandId?: string; search?: string }) {
+export function useProducts(options?: { 
+  categoryId?: string; 
+  featured?: boolean; 
+  limit?: number; 
+  brandId?: string; 
+  search?: string;
+  priceRange?: { min: number; max: number };
+  brands?: string[];
+  materials?: string[];
+  inStock?: boolean;
+  isNewArrival?: boolean;
+  isBestSeller?: boolean;
+  isClearance?: boolean;
+  sortBy?: 'price-asc' | 'price-desc' | 'name-asc' | 'name-desc' | 'newest' | 'popular';
+}) {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -135,16 +149,53 @@ export function useProducts(options?: { categoryId?: string; featured?: boolean;
       let query = supabase
         .from('products')
         .select('*, category:categories(*), brand:product_brands(*)')
-        .eq('is_active', true)
-        .order('display_order', { ascending: true });
+        .eq('is_active', true);
 
+      // Apply filters
       if (options?.categoryId) query = query.eq('category_id', options.categoryId);
       if (options?.featured) query = query.eq('featured', true);
       if (options?.brandId) query = query.eq('brand_id', options.brandId);
-      if (options?.limit) query = query.limit(options.limit);
+      if (options?.brands?.length) query = query.in('brand_id', options.brands);
+      if (options?.materials?.length) query = query.in('material', options.materials);
+      if (options?.inStock) query = query.gt('stock_quantity', 0);
+      if (options?.isNewArrival) query = query.eq('is_new_arrival', true);
+      if (options?.isBestSeller) query = query.eq('is_best_seller', true);
+      if (options?.isClearance) query = query.eq('is_clearance', true);
+      
+      // Price range
+      if (options?.priceRange) {
+        query = query.gte('price', options.priceRange.min).lte('price', options.priceRange.max);
+      }
+      
+      // Search
       if (options?.search) {
         query = query.or(`name.ilike.%${options.search}%,description.ilike.%${options.search}%,short_description.ilike.%${options.search}%`);
       }
+
+      // Sorting
+      switch (options?.sortBy) {
+        case 'price-asc':
+          query = query.order('price', { ascending: true });
+          break;
+        case 'price-desc':
+          query = query.order('price', { ascending: false });
+          break;
+        case 'name-asc':
+          query = query.order('name', { ascending: true });
+          break;
+        case 'name-desc':
+          query = query.order('name', { ascending: false });
+          break;
+        case 'newest':
+          query = query.order('created_at', { ascending: false });
+          break;
+        case 'popular':
+        default:
+          query = query.order('display_order', { ascending: true });
+          break;
+      }
+
+      if (options?.limit) query = query.limit(options.limit);
 
       const { data, error: err } = await query;
       if (err) throw err;
@@ -154,7 +205,21 @@ export function useProducts(options?: { categoryId?: string; featured?: boolean;
     } finally {
       setLoading(false);
     }
-  }, [options?.categoryId, options?.featured, options?.limit, options?.brandId, options?.search]);
+  }, [
+    options?.categoryId, 
+    options?.featured, 
+    options?.limit, 
+    options?.brandId, 
+    options?.search,
+    options?.priceRange,
+    options?.brands,
+    options?.materials,
+    options?.inStock,
+    options?.isNewArrival,
+    options?.isBestSeller,
+    options?.isClearance,
+    options?.sortBy
+  ]);
 
   useEffect(() => {
     refetch();
