@@ -7,6 +7,7 @@ import { useLocation } from 'wouter';
 import Home from '@/pages/home';
 import Shop from '@/pages/shop';
 import ShopDetail from '@/pages/shop-detail';
+import Compare from '@/pages/compare';
 import Cart from '@/pages/cart';
 import OrderConfirmation from '@/pages/order-confirmation';
 import Contact from '@/pages/contact';
@@ -226,6 +227,10 @@ function Router() {
 
   if (location === '/shop') {
     return <Shop />;
+  }
+
+  if (location === '/compare') {
+    return <Compare />;
   }
 
   if (location === '/contact') {
