@@ -49,7 +49,7 @@ export default function AdminSiteSettings() {
         );
       }
       toast({ title: 'Settings saved successfully' });
-    } catch (error) {
+    } catch {
       toast({ title: 'Failed to save settings', variant: 'destructive' });
     }
     setSaving(false);

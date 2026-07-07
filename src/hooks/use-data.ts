@@ -534,34 +534,41 @@ export function useInventoryAlerts() {
 }
 
 // Admin Auth
+// Uses real Supabase Auth (email + password, JWT-backed session).
+// Row Level Security on every admin-managed table checks for an
+// authenticated session, so this hook is the single source of truth
+// for whether the current browser is allowed to write to the database -
+// there is no separate "flag" that can be forged from devtools.
 export function useAdminAuth() {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const auth = sessionStorage.getItem('topline_admin_auth');
-    setIsAuthenticated(auth === 'true');
-    setLoading(false);
+    let mounted = true;
+
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!mounted) return;
+      setIsAuthenticated(!!session);
+      setLoading(false);
+    });
+
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+      setIsAuthenticated(!!session);
+    });
+
+    return () => {
+      mounted = false;
+      listener.subscription.unsubscribe();
+    };
   }, []);
 
-  const login = async (username: string, password: string): Promise<boolean> => {
-    try {
-      const { data } = await supabase.from('admin_settings').select('setting_value').eq('setting_key', 'admin_username').maybeSingle();
-      const { data: pwdData } = await supabase.from('admin_settings').select('setting_value').eq('setting_key', 'admin_password').maybeSingle();
-      if (data?.setting_value === username && pwdData?.setting_value === password) {
-        sessionStorage.setItem('topline_admin_auth', 'true');
-        setIsAuthenticated(true);
-        return true;
-      }
-      return false;
-    } catch {
-      return false;
-    }
+  const login = async (email: string, password: string): Promise<boolean> => {
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    return !error;
   };
 
-  const logout = () => {
-    sessionStorage.removeItem('topline_admin_auth');
-    setIsAuthenticated(false);
+  const logout = async () => {
+    await supabase.auth.signOut();
   };
 
   return { isAuthenticated, loading, login, logout };

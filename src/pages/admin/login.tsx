@@ -4,7 +4,7 @@ import { Lock, User, AlertCircle, Building2 } from 'lucide-react';
 import { useAdminAuth } from '@/hooks/use-data';
 
 export default function AdminLogin() {
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -16,12 +16,12 @@ export default function AdminLogin() {
     setError('');
     setLoading(true);
 
-    const success = await login(username, password);
+    const success = await login(email, password);
 
     if (success) {
       setLocation('/admin');
     } else {
-      setError('Invalid username or password');
+      setError('Invalid email or password');
     }
 
     setLoading(false);
@@ -51,17 +51,18 @@ export default function AdminLogin() {
 
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-2">
-                Username
+                Email
               </label>
               <div className="relative">
                 <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
                 <input
-                  type="text"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   className="w-full pl-10 pr-4 py-3 bg-navy-800 border border-navy-700 rounded-lg text-white placeholder-gray-500 focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                  placeholder="Enter username"
+                  placeholder="Enter admin email"
                   required
+                  autoComplete="username"
                 />
               </div>
             </div>
@@ -91,12 +92,6 @@ export default function AdminLogin() {
               {loading ? 'Signing in...' : 'Sign In'}
             </button>
           </form>
-
-          <div className="mt-6 pt-6 border-t border-navy-800">
-            <p className="text-xs text-gray-500 text-center">
-              Default credentials: <span className="text-primary-400">admin</span> / <span className="text-primary-400">admin123</span>
-            </p>
-          </div>
         </div>
 
         <p className="text-center text-gray-500 text-xs mt-6">

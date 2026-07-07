@@ -49,51 +49,29 @@ export default function Cart() {
 
     setSubmitting(true);
     try {
-      // Create customer
-      const { data: customer, error: customerError } = await supabase
-        .from('customers')
-        .insert({
-          name: form.name,
-          email: form.email,
-          phone: form.phone,
-        })
-        .select()
-        .single();
+      // Places the customer + order + order_items atomically via a
+      // SECURITY DEFINER RPC. This lets an anonymous shopper check out
+      // without needing SELECT/UPDATE/DELETE rights on customer data,
+      // which is enforced by RLS everywhere else in the database.
+      const { data: orderId, error } = await supabase.rpc('create_customer_order', {
+        p_name: form.name,
+        p_email: form.email,
+        p_phone: form.phone,
+        p_notes: form.notes || null,
+        p_total_amount: totalPrice,
+        p_items: items.map((item) => ({
+          product_id: item.product.id,
+          product_name: item.product.name,
+          quantity: item.quantity,
+          unit_price: item.product.price,
+        })),
+      });
 
-      if (customerError) throw customerError;
-
-      // Create order
-      const { data: order, error: orderError } = await supabase
-        .from('orders')
-        .insert({
-          customer_id: customer.id,
-          customer_name: form.name,
-          customer_email: form.email,
-          customer_phone: form.phone,
-          total_amount: totalPrice,
-          notes: form.notes || null,
-          status: 'pending',
-        })
-        .select()
-        .single();
-
-      if (orderError) throw orderError;
-
-      // Create order items
-      const orderItems = items.map((item) => ({
-        order_id: order.id,
-        product_id: item.product.id,
-        product_name: item.product.name,
-        quantity: item.quantity,
-        unit_price: item.product.price,
-      }));
-
-      const { error: itemsError } = await supabase.from('order_items').insert(orderItems);
-      if (itemsError) throw itemsError;
+      if (error) throw error;
 
       clearCart();
-      setLocation(`/order-confirmation/${order.id}`);
-    } catch (err) {
+      setLocation(`/order-confirmation/${orderId}`);
+    } catch {
       toast({
         title: 'Order Failed',
         description: 'Something went wrong. Please try again.',

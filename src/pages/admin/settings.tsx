@@ -1,78 +1,61 @@
 import { useState, useEffect } from 'react';
-import { Save, AlertCircle } from 'lucide-react';
+import { Save, AlertCircle, KeyRound } from 'lucide-react';
+import { Link } from 'wouter';
 import { AdminLayout } from './dashboard';
 import { supabase } from '@/lib/supabase';
 import { useToast } from '@/hooks/use-toast';
 
-interface Setting {
-  id: string;
-  setting_key: string;
-  setting_value: string;
-}
-
 export default function AdminSettings() {
-  const [, setSettings] = useState<Setting[]>([]);
+  const [currentEmail, setCurrentEmail] = useState('');
+  const [newEmail, setNewEmail] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const { toast } = useToast();
 
-  const [formData, setFormData] = useState({
-    site_name: '',
-    site_tagline: '',
-    contact_email: '',
-    contact_phone: '',
-    contact_address: '',
-    business_hours: '',
-    whatsapp_number: '',
-    admin_username: '',
-    admin_password: '',
-  });
-
   useEffect(() => {
-    fetchSettings();
+    supabase.auth.getUser().then(({ data }) => {
+      setCurrentEmail(data.user?.email || '');
+      setNewEmail(data.user?.email || '');
+      setLoading(false);
+    });
   }, []);
 
-  const fetchSettings = async () => {
-    const { data } = await supabase.from('admin_settings').select('*');
-    if (data) {
-      setSettings(data);
-      const formObj: Record<string, string> = {};
-      data.forEach((s) => {
-        formObj[s.setting_key] = s.setting_value;
-      });
-      setFormData({
-        site_name: formObj.site_name || '',
-        site_tagline: formObj.site_tagline || '',
-        contact_email: formObj.contact_email || '',
-        contact_phone: formObj.contact_phone || '',
-        contact_address: formObj.contact_address || '',
-        business_hours: formObj.business_hours || '',
-        whatsapp_number: formObj.whatsapp_number || '',
-        admin_username: formObj.admin_username || '',
-        admin_password: formObj.admin_password || '',
-      });
-    }
-    setLoading(false);
-  };
-
   const handleSave = async () => {
+    if (newPassword && newPassword !== confirmPassword) {
+      toast({ title: 'Passwords do not match', variant: 'destructive' });
+      return;
+    }
+    if (newPassword && newPassword.length < 8) {
+      toast({ title: 'Password must be at least 8 characters', variant: 'destructive' });
+      return;
+    }
+
     setSaving(true);
     try {
-      const updates = Object.entries(formData).map(([key, value]) => ({
-        setting_key: key,
-        setting_value: value,
-        updated_at: new Date().toISOString(),
-      }));
+      const updates: { email?: string; password?: string } = {};
+      if (newEmail && newEmail !== currentEmail) updates.email = newEmail;
+      if (newPassword) updates.password = newPassword;
 
-      for (const update of updates) {
-        await supabase
-          .from('admin_settings')
-          .upsert(update, { onConflict: 'setting_key' });
+      if (Object.keys(updates).length === 0) {
+        toast({ title: 'Nothing to update' });
+        setSaving(false);
+        return;
       }
 
-      toast({ title: 'Settings saved successfully' });
-    } catch {
-      toast({ title: 'Failed to save settings', variant: 'destructive' });
+      const { error } = await supabase.auth.updateUser(updates);
+      if (error) throw error;
+
+      setNewPassword('');
+      setConfirmPassword('');
+      toast({ title: 'Account settings saved successfully' });
+    } catch (err) {
+      toast({
+        title: 'Failed to save settings',
+        description: err instanceof Error ? err.message : undefined,
+        variant: 'destructive',
+      });
     }
     setSaving(false);
   };
@@ -82,118 +65,60 @@ export default function AdminSettings() {
   return (
     <AdminLayout title="Settings">
       <div className="max-w-2xl">
-        {/* Site Settings */}
         <div className="bg-white rounded-xl border border-gray-200 p-6 mb-6">
-          <h2 className="font-semibold text-gray-900 mb-4">Site Information</h2>
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Site Name</label>
-              <input
-                type="text"
-                value={formData.site_name}
-                onChange={(e) => setFormData({ ...formData, site_name: e.target.value })}
-                className="input"
-                placeholder="Topline Flooring & Waterproofing"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Tagline</label>
-              <input
-                type="text"
-                value={formData.site_tagline}
-                onChange={(e) => setFormData({ ...formData, site_tagline: e.target.value })}
-                className="input"
-                placeholder="Professional flooring and waterproofing solutions"
-              />
-            </div>
-          </div>
+          <h2 className="font-semibold text-gray-900 mb-1">Site & Contact Information</h2>
+          <p className="text-sm text-gray-500 mb-4">
+            Site name, tagline, contact details, logo, SEO defaults, and social links
+            now live in one place.
+          </p>
+          <Link href="/admin/site-settings" className="btn-secondary inline-block">
+            Go to Site Settings
+          </Link>
         </div>
 
-        {/* Contact Settings */}
+        {/* Admin Account (real Supabase Auth) */}
         <div className="bg-white rounded-xl border border-gray-200 p-6 mb-6">
-          <h2 className="font-semibold text-gray-900 mb-4">Contact Information</h2>
-          <div className="space-y-4">
-            <div className="grid sm:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                <input
-                  type="email"
-                  value={formData.contact_email}
-                  onChange={(e) => setFormData({ ...formData, contact_email: e.target.value })}
-                  className="input"
-                  placeholder="info@toplineflooring.co.ke"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
-                <input
-                  type="tel"
-                  value={formData.contact_phone}
-                  onChange={(e) => setFormData({ ...formData, contact_phone: e.target.value })}
-                  className="input"
-                  placeholder="+254 700 123 456"
-                />
-              </div>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">WhatsApp Number</label>
-              <input
-                type="text"
-                value={formData.whatsapp_number}
-                onChange={(e) => setFormData({ ...formData, whatsapp_number: e.target.value })}
-                className="input"
-                placeholder="254700123456"
-              />
-              <p className="text-xs text-gray-500 mt-1">Format: country code + number (no + sign)</p>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Address</label>
-              <input
-                type="text"
-                value={formData.contact_address}
-                onChange={(e) => setFormData({ ...formData, contact_address: e.target.value })}
-                className="input"
-                placeholder="Industrial Area, Nairobi, Kenya"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Business Hours</label>
-              <input
-                type="text"
-                value={formData.business_hours}
-                onChange={(e) => setFormData({ ...formData, business_hours: e.target.value })}
-                className="input"
-                placeholder="Mon-Fri: 8AM-5PM, Sat: 9AM-1PM"
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Admin Credentials */}
-        <div className="bg-white rounded-xl border border-gray-200 p-6 mb-6">
-          <h2 className="font-semibold text-gray-900 mb-4">Admin Credentials</h2>
+          <h2 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
+            <KeyRound className="w-5 h-5" />
+            Admin Account
+          </h2>
           <div className="flex items-center gap-2 p-3 bg-yellow-50 text-yellow-800 rounded-lg text-sm mb-4">
             <AlertCircle className="w-4 h-4 flex-shrink-0" />
-            <span>Changing these will affect admin login access</span>
+            <span>This changes the sign-in credentials for the account you're currently logged in as.</span>
           </div>
-          <div className="grid sm:grid-cols-2 gap-4">
+          <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Username</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
               <input
-                type="text"
-                value={formData.admin_username}
-                onChange={(e) => setFormData({ ...formData, admin_username: e.target.value })}
+                type="email"
+                value={newEmail}
+                onChange={(e) => setNewEmail(e.target.value)}
                 className="input"
+                autoComplete="username"
               />
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
-              <input
-                type="password"
-                value={formData.admin_password}
-                onChange={(e) => setFormData({ ...formData, admin_password: e.target.value })}
-                className="input"
-              />
+            <div className="grid sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">New Password</label>
+                <input
+                  type="password"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  className="input"
+                  placeholder="Leave blank to keep current password"
+                  autoComplete="new-password"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Confirm New Password</label>
+                <input
+                  type="password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  className="input"
+                  autoComplete="new-password"
+                />
+              </div>
             </div>
           </div>
         </div>
@@ -204,7 +129,7 @@ export default function AdminSettings() {
           className="btn-primary flex items-center gap-2"
         >
           <Save className="w-4 h-4" />
-          {saving ? 'Saving...' : 'Save Settings'}
+          {saving ? 'Saving...' : 'Save Account Settings'}
         </button>
       </div>
     </AdminLayout>

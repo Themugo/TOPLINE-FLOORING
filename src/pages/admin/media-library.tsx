@@ -468,7 +468,7 @@ function UploadModal({
           file_size: file.size,
           is_public: true,
         });
-      } catch (err) {
+      } catch {
         toast({ type: 'error', message: `Failed to upload ${file.name}` });
       }
     }
