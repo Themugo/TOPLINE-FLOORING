@@ -21,6 +21,11 @@ import type {
   InventoryAlert,
   ProductBrand,
   ProductTag,
+  ProductCollection,
+  ProductReview,
+  Wishlist,
+  RecentlyViewed,
+  ProductComparison,
 } from '@/lib/types';
 
 // Site Settings
@@ -556,4 +561,193 @@ export function useServices() {
   }, []);
 
   return { services, loading };
+}
+
+// Enterprise Product Catalog Hooks
+
+// Product Collections
+export function useProductCollections() {
+  const [collections, setCollections] = useState<ProductCollection[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchCollections() {
+      const { data } = await supabase.from('product_collections').select('*').eq('is_active', true).order('display_order');
+      setCollections(data || []);
+      setLoading(false);
+    }
+    fetchCollections();
+  }, []);
+
+  return { collections, loading };
+}
+
+// Product Reviews
+export function useProductReviews(productId: string) {
+  const [reviews, setReviews] = useState<ProductReview[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchReviews() {
+      const { data } = await supabase
+        .from('product_reviews')
+        .select('*, images:review_images(*)')
+        .eq('product_id', productId)
+        .eq('is_approved', true)
+        .order('created_at', { ascending: false });
+      setReviews(data || []);
+      setLoading(false);
+    }
+    if (productId) fetchReviews();
+  }, [productId]);
+
+  return { reviews, loading };
+}
+
+// Wishlist
+export function useWishlist(customerId?: string) {
+  const [wishlist, setWishlist] = useState<Wishlist[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchWishlist() {
+      let query = supabase
+        .from('wishlists')
+        .select('*, product:products(*), variant:product_variants(*)')
+        .order('added_at', { ascending: false });
+      
+      if (customerId) {
+        query = query.eq('customer_id', customerId);
+      }
+      
+      const { data } = await query;
+      setWishlist(data || []);
+      setLoading(false);
+    }
+    fetchWishlist();
+  }, [customerId]);
+
+  const addToWishlist = async (productId: string, variantId?: string) => {
+    await supabase.from('wishlists').insert({
+      customer_id: customerId,
+      product_id: productId,
+      variant_id: variantId,
+    });
+    // Refetch
+  };
+
+  const removeFromWishlist = async (id: string) => {
+    await supabase.from('wishlists').delete().eq('id', id);
+    setWishlist(prev => prev.filter(item => item.id !== id));
+  };
+
+  return { wishlist, loading, addToWishlist, removeFromWishlist };
+}
+
+// Recently Viewed
+export function useRecentlyViewed(customerId?: string, sessionId?: string) {
+  const [recentlyViewed, setRecentlyViewed] = useState<RecentlyViewed[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchRecentlyViewed() {
+      let query = supabase
+        .from('recently_viewed')
+        .select('*, product:products(*)')
+        .order('viewed_at', { ascending: false })
+        .limit(20);
+      
+      if (customerId) {
+        query = query.eq('customer_id', customerId);
+      } else if (sessionId) {
+        query = query.eq('session_id', sessionId);
+      }
+      
+      const { data } = await query;
+      setRecentlyViewed(data || []);
+      setLoading(false);
+    }
+    fetchRecentlyViewed();
+  }, [customerId, sessionId]);
+
+  const trackView = async (productId: string) => {
+    await supabase.from('recently_viewed').insert({
+      customer_id: customerId,
+      session_id: sessionId,
+      product_id: productId,
+    });
+  };
+
+  return { recentlyViewed, loading, trackView };
+}
+
+// Product Comparison
+export function useProductComparison(customerId?: string, sessionId?: string) {
+  const [comparison, setComparison] = useState<ProductComparison | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchComparison() {
+      let query = supabase
+        .from('product_comparisons')
+        .select('*, products:products(*)')
+        .order('updated_at', { ascending: false })
+        .limit(1);
+      
+      if (customerId) {
+        query = query.eq('customer_id', customerId);
+      } else if (sessionId) {
+        query = query.eq('session_id', sessionId);
+      }
+      
+      const { data } = await query;
+      setComparison(data?.[0] || null);
+      setLoading(false);
+    }
+    fetchComparison();
+  }, [customerId, sessionId]);
+
+  const addToComparison = async (productId: string) => {
+    const currentIds = comparison?.product_ids || [];
+    if (currentIds.length >= 4) return; // Max 4 products
+    if (currentIds.includes(productId)) return;
+
+    const newIds = [...currentIds, productId];
+    if (comparison?.id) {
+      await supabase.from('product_comparisons').update({
+        product_ids: newIds,
+        updated_at: new Date().toISOString(),
+      }).eq('id', comparison.id);
+    } else {
+      await supabase.from('product_comparisons').insert({
+        customer_id: customerId,
+        session_id: sessionId,
+        product_ids: newIds,
+      });
+    }
+  };
+
+  const removeFromComparison = async (productId: string) => {
+    if (!comparison) return;
+    const newIds = comparison.product_ids.filter((id: string) => id !== productId);
+    
+    if (newIds.length === 0) {
+      await supabase.from('product_comparisons').delete().eq('id', comparison.id);
+      setComparison(null);
+    } else {
+      await supabase.from('product_comparisons').update({
+        product_ids: newIds,
+        updated_at: new Date().toISOString(),
+      }).eq('id', comparison.id);
+    }
+  };
+
+  const clearComparison = async () => {
+    if (comparison?.id) {
+      await supabase.from('product_comparisons').delete().eq('id', comparison.id);
+      setComparison(null);
+    }
+  };
+
+  return { comparison, loading, addToComparison, removeFromComparison, clearComparison };
 }

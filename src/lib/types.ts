@@ -41,6 +41,39 @@ export interface Product {
   variants?: ProductVariant[];
   documents?: ProductDocument[];
   tags?: ProductTag[];
+  // Enterprise fields
+  status: 'active' | 'draft' | 'archived' | 'clearance';
+  is_new_arrival: boolean;
+  is_best_seller: boolean;
+  is_clearance: boolean;
+  sale_price: number | null;
+  cost_price: number | null;
+  sale_start_date: string | null;
+  sale_end_date: string | null;
+  collection: string | null;
+  material: string | null;
+  origin_country: string | null;
+  warranty_years: number | null;
+  warranty_description: string | null;
+  thickness_mm: number | null;
+  weight_kg: number | null;
+  dimensions: string | null;
+  pack_size: string | null;
+  coverage_per_unit: string | null;
+  installation_method: string | null;
+  is_indoor: boolean;
+  is_outdoor: boolean;
+  room_suitability: string[] | null;
+  slip_rating: string | null;
+  water_resistance: string | null;
+  abrasion_rating: string | null;
+  fire_rating: string | null;
+  barcode: string | null;
+  video_url: string | null;
+  video_thumbnail: string | null;
+  image_360_url: string | null;
+  canonical_url: string | null;
+  meta_keywords: string | null;
 }
 
 export interface ProductImage {
@@ -70,6 +103,20 @@ export interface ProductVariant {
   attributes: Record<string, any>;
   is_active: boolean;
   display_order: number;
+  // Enterprise fields
+  size: string | null;
+  color: string | null;
+  finish: string | null;
+  texture: string | null;
+  thickness_mm: number | null;
+  pack_size: string | null;
+  barcode: string | null;
+  image_url: string | null;
+  sale_price: number | null;
+  cost_price: number | null;
+  weight_kg: number | null;
+  low_stock_threshold: number;
+  is_default: boolean;
 }
 
 export interface ProductDocument {
@@ -421,4 +468,81 @@ export interface ActivityLog {
   ip_address: string | null;
   user_agent: string | null;
   created_at: string;
+}
+
+// Enterprise Product Catalog Types
+export interface ProductCollection {
+  id: string;
+  name: string;
+  slug: string;
+  description: string | null;
+  image_url: string | null;
+  display_order: number;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ProductCollectionRelation {
+  product_id: string;
+  collection_id: string;
+  display_order: number;
+}
+
+export interface ProductReview {
+  id: string;
+  product_id: string;
+  customer_id: string | null;
+  customer_name: string;
+  rating: number;
+  title: string | null;
+  content: string | null;
+  pros: string[] | null;
+  cons: string[] | null;
+  verified_purchase: boolean;
+  helpful_votes: number;
+  is_approved: boolean;
+  admin_reply: string | null;
+  admin_reply_at: string | null;
+  created_at: string;
+  updated_at: string;
+  product?: Product;
+  images?: ReviewImage[];
+}
+
+export interface ReviewImage {
+  id: string;
+  review_id: string;
+  image_url: string;
+  display_order: number;
+  created_at: string;
+}
+
+export interface Wishlist {
+  id: string;
+  customer_id: string;
+  product_id: string;
+  variant_id: string | null;
+  added_at: string;
+  product?: Product;
+  variant?: ProductVariant;
+}
+
+export interface RecentlyViewed {
+  id: string;
+  customer_id: string | null;
+  session_id: string | null;
+  product_id: string;
+  viewed_at: string;
+  product?: Product;
+}
+
+export interface ProductComparison {
+  id: string;
+  customer_id: string | null;
+  session_id: string | null;
+  product_ids: string[];
+  created_at: string;
+  updated_at: string;
+  products?: Product[];
 }
