@@ -3,6 +3,7 @@ import { Link } from 'wouter';
 import { ArrowRight, CheckCircle, Loader2 } from 'lucide-react';
 import { CustomerLayout } from '@/components/layout/CustomerLayout';
 import { supabase } from '@/lib/supabase';
+import { getServicePlaceholder, withFallback } from '@/lib/placeholders';
 
 interface Service {
   id: string;
@@ -99,7 +100,7 @@ export default function Services() {
                 >
                   <div className={index % 2 === 1 ? 'lg:order-2' : ''}>
                     <img
-                      src={service.image_url}
+                      src={withFallback(service.image_url, getServicePlaceholder(service.slug || service.name))}
                       alt={service.name}
                       className="w-full rounded-2xl shadow-lg"
                     />

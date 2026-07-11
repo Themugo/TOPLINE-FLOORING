@@ -1,15 +1,18 @@
 import { useState, useEffect } from 'react';
-import { Plus, Pencil, Trash2, X, Star } from 'lucide-react';
+import { Plus, Pencil, Trash2, X, Star, Images } from 'lucide-react';
 import { AdminLayout } from './dashboard';
 import { supabase } from '@/lib/supabase';
 import { useToast } from '@/hooks/use-toast';
-import type { Project } from '@/lib/types';
+import { ImageUpload } from '@/components/ui/image-upload';
+import { getProjectPlaceholder, withFallback } from '@/lib/placeholders';
+import type { Project, ProjectImage } from '@/lib/types';
 
 export default function AdminProjects() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState<Project | null>(null);
   const [showForm, setShowForm] = useState(false);
+  const [galleryProject, setGalleryProject] = useState<Project | null>(null);
   const { toast } = useToast();
 
   const [form, setForm] = useState({
@@ -132,6 +135,7 @@ export default function AdminProjects() {
                 </td>
                 <td className="px-6 py-4">
                   <button onClick={() => toggleFeatured(project.id, project.featured)} className="p-2"><Star className={`w-4 h-4 ${project.featured ? 'text-yellow-500 fill-yellow-500' : ''}`} /></button>
+                  <button onClick={() => setGalleryProject(project)} className="p-2" title="Manage Photos"><Images className="w-4 h-4" /></button>
                   <button onClick={() => editProject(project)} className="p-2"><Pencil className="w-4 h-4" /></button>
                   <button onClick={() => handleDelete(project.id)} className="p-2 text-red-500"><Trash2 className="w-4 h-4" /></button>
                 </td>
@@ -185,6 +189,125 @@ export default function AdminProjects() {
           </div>
         </div>
       )}
+      {galleryProject && (
+        <ProjectGalleryModal project={galleryProject} onClose={() => setGalleryProject(null)} />
+      )}
     </AdminLayout>
+  );
+}
+
+function ProjectGalleryModal({ project, onClose }: { project: Project; onClose: () => void }) {
+  const [images, setImages] = useState<ProjectImage[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [newImageUrl, setNewImageUrl] = useState('');
+  const [newImageType, setNewImageType] = useState<'before' | 'after' | 'progress' | 'other'>('after');
+  const [newCaption, setNewCaption] = useState('');
+  const { toast } = useToast();
+
+  useEffect(() => { fetchImages(); }, [project.id]);
+
+  const fetchImages = async () => {
+    setLoading(true);
+    const { data } = await supabase
+      .from('project_images')
+      .select('*')
+      .eq('project_id', project.id)
+      .order('display_order');
+    setImages(data || []);
+    setLoading(false);
+  };
+
+  const handleAdd = async () => {
+    if (!newImageUrl) {
+      toast({ title: 'Upload or select a photo first', variant: 'destructive' });
+      return;
+    }
+    const { error } = await supabase.from('project_images').insert({
+      project_id: project.id,
+      image_url: newImageUrl,
+      image_type: newImageType,
+      caption: newCaption || null,
+      display_order: images.length,
+    });
+    if (error) {
+      toast({ title: 'Failed to add photo', variant: 'destructive' });
+      return;
+    }
+    setNewImageUrl('');
+    setNewCaption('');
+    await fetchImages();
+  };
+
+  const handleRemove = async (id: string) => {
+    const { error } = await supabase.from('project_images').delete().eq('id', id);
+    if (error) {
+      toast({ title: 'Failed to remove photo', variant: 'destructive' });
+      return;
+    }
+    await fetchImages();
+  };
+
+  const typeLabels: Record<string, string> = {
+    before: 'Before',
+    after: 'After',
+    progress: 'In Progress',
+    other: 'Other',
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50" onClick={onClose}>
+      <div className="bg-white rounded-xl max-w-2xl w-full p-6 max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+        <div className="flex justify-between items-center mb-4">
+          <div>
+            <h2 className="font-semibold text-lg">Photos - {project.title}</h2>
+            <p className="text-xs text-gray-500">Before/after and progress photos shown on the Portfolio page.</p>
+          </div>
+          <button onClick={onClose}><X className="w-5 h-5" /></button>
+        </div>
+
+        {loading ? (
+          <div className="text-center py-8 text-gray-400">Loading photos...</div>
+        ) : (
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-6">
+            {images.map((img) => (
+              <div key={img.id} className="relative group rounded-lg overflow-hidden border border-gray-200">
+                <img src={withFallback(img.image_url, getProjectPlaceholder())} alt={img.caption || ''} className="w-full aspect-square object-cover" />
+                <span className="absolute top-1 left-1 text-[10px] font-medium bg-black/60 text-white px-1.5 py-0.5 rounded">
+                  {typeLabels[img.image_type]}
+                </span>
+                <button
+                  onClick={() => handleRemove(img.id)}
+                  className="absolute top-1 right-1 p-1 bg-red-500 text-white rounded opacity-0 group-hover:opacity-100 transition-opacity"
+                >
+                  <X className="w-3 h-3" />
+                </button>
+                {img.caption && (
+                  <p className="absolute bottom-0 inset-x-0 bg-black/60 text-white text-[10px] p-1 truncate">{img.caption}</p>
+                )}
+              </div>
+            ))}
+            {images.length === 0 && (
+              <p className="col-span-full text-center text-sm text-gray-400 py-6">No photos yet - add the first one below.</p>
+            )}
+          </div>
+        )}
+
+        <div className="border-t border-gray-200 pt-4 space-y-3">
+          <ImageUpload label="Add a Photo" value={newImageUrl} onChange={setNewImageUrl} folder="projects" />
+          <div className="grid grid-cols-2 gap-3">
+            <select value={newImageType} onChange={(e) => setNewImageType(e.target.value as typeof newImageType)} className="input">
+              <option value="before">Before</option>
+              <option value="after">After</option>
+              <option value="progress">In Progress</option>
+              <option value="other">Other</option>
+            </select>
+            <input placeholder="Caption (optional)" value={newCaption} onChange={(e) => setNewCaption(e.target.value)} className="input" />
+          </div>
+          <button onClick={handleAdd} className="btn-primary w-full flex items-center justify-center gap-2">
+            <Plus className="w-4 h-4" /> Add to Gallery
+          </button>
+        </div>
+      </div>
+    </div>
   );
 }

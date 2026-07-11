@@ -2,8 +2,9 @@ import { useState, useEffect, useMemo } from 'react';
 import { Link } from 'wouter';
 import { ChevronLeft, ChevronRight, Star, ArrowRight, Phone, Megaphone } from 'lucide-react';
 import { CustomerLayout } from '@/components/layout/CustomerLayout';
-import { useHeroSlides, useProducts, useTestimonials, usePartners, usePromotions, useHomepageSections, useServices } from '@/hooks/use-data';
-import { formatKES } from '@/lib/utils';
+import { useHeroSlides, useProducts, useTestimonials, usePartners, usePromotions, useHomepageSections, useServices, useSiteSettings, useThemeSettings } from '@/hooks/use-data';
+import { formatKES, telHref } from '@/lib/utils';
+import { getServicePlaceholder, getProductPlaceholder, withFallback } from '@/lib/placeholders';
 import { useCart } from '@/hooks/use-cart';
 import type { Product } from '@/lib/types';
 
@@ -26,13 +27,54 @@ export default function Home() {
   const { promotions } = usePromotions('top');
   const { sections } = useHomepageSections();
   const { services } = useServices();
+  const { settings } = useSiteSettings();
+  const phone = settings.contact?.phone || '+254 700 123 456';
+  const { theme } = useThemeSettings();
+  const layoutStyle = theme?.layout_style || 'classic';
   const { addItem } = useCart();
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [isSliderPaused, setIsSliderPaused] = useState(false);
+  const [touchStartX, setTouchStartX] = useState<number | null>(null);
 
   // Get hero section config
   const heroSection = sections.find(s => s.section_type === 'hero');
   const slideInterval = heroSection?.content?.slide_interval || 6000;
   const overlayOpacity = heroSection?.content?.overlay_opacity || 70;
+
+  // Generic accessor for the other admin-editable sections (services,
+  // about, products, partners, testimonials, cta). Falls back to
+  // sensible defaults if the section row doesn't exist yet (e.g. before
+  // the seed migration has run), so the homepage never breaks.
+  const getSection = (type: string) => sections.find(s => s.section_type === type);
+  const isSectionVisible = (type: string) => getSection(type)?.is_active !== false;
+  const sectionStyle = (type: string): React.CSSProperties => {
+    const s = getSection(type);
+    if (!s) return {};
+    const style: React.CSSProperties = {};
+    if (s.background_color) style.backgroundColor = s.background_color;
+    if (s.background_image) {
+      style.backgroundImage = `url(${s.background_image})`;
+      style.backgroundSize = 'cover';
+      style.backgroundPosition = 'center';
+    }
+    return style;
+  };
+
+  const servicesSection = getSection('services');
+  const aboutSection = getSection('about');
+  const aboutContent = aboutSection?.content || {};
+  const aboutStats: { value: string; label: string }[] = Array.isArray(aboutContent.stats) && aboutContent.stats.length > 0
+    ? aboutContent.stats
+    : [
+        { value: '10+', label: 'Years' },
+        { value: '500+', label: 'Projects' },
+        { value: '100%', label: 'Guarantee' },
+      ];
+  const productsSection = getSection('products');
+  const partnersSection = getSection('partners');
+  const testimonialsSection = getSection('testimonials');
+  const ctaSection = getSection('cta');
+  const ctaContent = ctaSection?.content || {};
 
   // Combine hero slides with services and featured products
   const allSlides: HeroSlideData[] = useMemo(() => {
@@ -84,12 +126,28 @@ export default function Home() {
   }, [slides, services, products]);
 
   useEffect(() => {
-    if (allSlides.length === 0) return;
+    if (allSlides.length === 0 || isSliderPaused) return;
     const interval = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % allSlides.length);
     }, slideInterval);
     return () => clearInterval(interval);
-  }, [allSlides.length, slideInterval]);
+  }, [allSlides.length, slideInterval, isSliderPaused]);
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setTouchStartX(e.touches[0].clientX);
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (touchStartX === null || allSlides.length < 2) return;
+    const deltaX = e.changedTouches[0].clientX - touchStartX;
+    const SWIPE_THRESHOLD = 50;
+    if (deltaX > SWIPE_THRESHOLD) {
+      setCurrentSlide((prev) => (prev - 1 + allSlides.length) % allSlides.length);
+    } else if (deltaX < -SWIPE_THRESHOLD) {
+      setCurrentSlide((prev) => (prev + 1) % allSlides.length);
+    }
+    setTouchStartX(null);
+  };
 
   const handleAddToCart = (product: Product) => {
     addItem(product);
@@ -113,7 +171,13 @@ export default function Home() {
       ))}
 
       {/* Hero Section - Full viewport slider with dark navy overlay */}
-      <section className="relative h-[55vh] md:h-[60vh] lg:h-[65vh] overflow-hidden">
+      <section
+        className="relative h-[55vh] md:h-[60vh] lg:h-[65vh] overflow-hidden"
+        onMouseEnter={() => setIsSliderPaused(true)}
+        onMouseLeave={() => setIsSliderPaused(false)}
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
+      >
         {allSlides.map((slide, index) => (
           <div
             key={slide.id}
@@ -129,6 +193,8 @@ export default function Home() {
               src={slide.image_url}
               alt={slide.title}
               className="w-full h-full object-cover"
+              loading={index === 0 ? 'eager' : 'lazy'}
+              fetchPriority={index === 0 ? 'high' : 'auto'}
             />
             <div className="absolute inset-0 z-20 flex items-center">
               <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
@@ -206,40 +272,69 @@ export default function Home() {
       </section>
 
       {/* Services Section */}
-      <section className="py-12 lg:py-16 bg-navy-950">
+      {isSectionVisible('services') && (
+      <section className={`${servicesSection?.padding || 'py-12 lg:py-16'} bg-navy-950`} style={sectionStyle('services')}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-3xl mx-auto mb-10">
             <h2 className="font-display text-2xl lg:text-3xl font-bold text-white mb-2">
-              Our Services
+              {servicesSection?.title || 'Our Services'}
             </h2>
             <p className="text-gray-400">
-              Professional flooring and waterproofing solutions for Kenya and East Africa.
+              {servicesSection?.subtitle || 'Professional flooring and waterproofing solutions for Kenya and East Africa.'}
             </p>
           </div>
 
           {services.length > 0 ? (
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
-              {services.map((service) => (
-                <Link
-                  key={service.id}
-                  href="/services"
-                  className="group relative overflow-hidden rounded-xl aspect-[4/3]"
-                >
-                  <img
-                    src={service.image_url}
-                    alt={service.name}
-                    className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-navy-900 via-navy-900/60 to-transparent" />
-                  <div className="absolute bottom-0 left-0 right-0 p-3 lg:p-4">
-                    <h3 className="font-display text-sm lg:text-base font-bold text-white">
-                      {service.name}
-                    </h3>
-                    <p className="text-xs text-gray-300 line-clamp-1 hidden sm:block">{service.short_description || service.description}</p>
-                  </div>
-                </Link>
-              ))}
-            </div>
+            layoutStyle === 'showcase' ? (
+              <div className="flex gap-4 lg:gap-6 overflow-x-auto pb-4 snap-x snap-mandatory scrollbar-thin">
+                {services.map((service) => (
+                  <Link
+                    key={service.id}
+                    href="/services"
+                    className="group relative overflow-hidden rounded-xl flex-shrink-0 w-64 lg:w-80 aspect-[3/4] snap-start"
+                  >
+                    <img
+                      src={withFallback(service.image_url, getServicePlaceholder(service.slug || service.name))}
+                      alt={service.name}
+                      className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-navy-900 via-navy-900/50 to-transparent" />
+                    <div className="absolute bottom-0 left-0 right-0 p-5">
+                      <span className="inline-block text-xs font-semibold tracking-widest uppercase text-primary-400 mb-2">
+                        Service
+                      </span>
+                      <h3 className="font-display text-lg font-bold text-white mb-1">
+                        {service.name}
+                      </h3>
+                      <p className="text-sm text-gray-300 line-clamp-2">{service.short_description || service.description}</p>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
+                {services.map((service) => (
+                  <Link
+                    key={service.id}
+                    href="/services"
+                    className="group relative overflow-hidden rounded-xl aspect-[4/3]"
+                  >
+                    <img
+                      src={withFallback(service.image_url, getServicePlaceholder(service.slug || service.name))}
+                      alt={service.name}
+                      className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-navy-900 via-navy-900/60 to-transparent" />
+                    <div className="absolute bottom-0 left-0 right-0 p-3 lg:p-4">
+                      <h3 className="font-display text-sm lg:text-base font-bold text-white">
+                        {service.name}
+                      </h3>
+                      <p className="text-xs text-gray-300 line-clamp-1 hidden sm:block">{service.short_description || service.description}</p>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            )
           ) : (
             <div className="text-center py-8">
               <p className="text-gray-500">Loading services...</p>
@@ -247,27 +342,25 @@ export default function Home() {
           )}
         </div>
       </section>
+      )}
 
       {/* About Section */}
-      <section className="py-12 lg:py-16 bg-gray-50">
+      {isSectionVisible('about') && (
+      <section className={`${aboutSection?.padding || 'py-12 lg:py-16'} bg-gray-50`} style={sectionStyle('about')}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
             <div>
               <h2 className="font-display text-2xl lg:text-3xl font-bold text-navy-900 mb-4">
-                Who We Are
+                {aboutSection?.title || 'Who We Are'}
               </h2>
               <p className="text-gray-600 mb-4">
-                For over 10 years, Topline Flooring and Waterproofing has been the trusted partner for professional flooring and waterproofing solutions across Kenya and East Africa. We deliver durable, cost-effective services that enhance the lifespan and performance of every structure.
+                {aboutContent.paragraph_1 || 'For over 10 years, Topline Flooring and Waterproofing has been the trusted partner for professional flooring and waterproofing solutions across Kenya and East Africa. We deliver durable, cost-effective services that enhance the lifespan and performance of every structure.'}
               </p>
               <p className="text-gray-600 mb-6">
-                Our team of certified professionals uses only the highest quality materials from globally recognized brands like Sika, Mapei, and BASF.
+                {aboutContent.paragraph_2 || 'Our team of certified professionals uses only the highest quality materials from globally recognized brands like Sika, Mapei, and BASF.'}
               </p>
               <div className="grid grid-cols-3 gap-4">
-                {[
-                  { value: '10+', label: 'Years' },
-                  { value: '500+', label: 'Projects' },
-                  { value: '100%', label: 'Guarantee' },
-                ].map((stat) => (
+                {aboutStats.map((stat) => (
                   <div key={stat.label} className="text-center">
                     <p className="font-display text-xl lg:text-2xl font-bold text-primary-600">{stat.value}</p>
                     <p className="text-xs text-gray-500">{stat.label}</p>
@@ -277,24 +370,26 @@ export default function Home() {
             </div>
             <div className="relative">
               <img
-                src="https://images.unsplash.com/photo-1504307651674-208930a97d63?auto=format&fit=crop&w=600&q=80"
-                alt="Topline Flooring team"
+                src={aboutContent.image_url || 'https://images.unsplash.com/photo-1504307651674-208930a97d63?auto=format&fit=crop&w=600&q=80'}
+                alt={aboutSection?.title || 'Topline Flooring team'}
                 className="rounded-xl shadow-lg w-full"
               />
             </div>
           </div>
         </div>
       </section>
+      )}
 
       {/* Materials Shop Section */}
-      <section className="py-12 lg:py-16 bg-white">
+      {isSectionVisible('products') && (
+      <section className={`${productsSection?.padding || 'py-12 lg:py-16'} bg-white`} style={sectionStyle('products')}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center mb-8">
             <div>
               <h2 className="font-display text-2xl lg:text-3xl font-bold text-navy-900">
-                Materials Shop
+                {productsSection?.title || 'Materials Shop'}
               </h2>
-              <p className="text-gray-600 text-sm">Premium materials from trusted brands</p>
+              <p className="text-gray-600 text-sm">{productsSection?.subtitle || 'Premium materials from trusted brands'}</p>
             </div>
             <Link href="/shop" className="text-primary-600 hover:text-primary-700 font-medium text-sm flex items-center gap-1">
               View All <ArrowRight className="w-4 h-4" />
@@ -302,42 +397,81 @@ export default function Home() {
           </div>
 
           {products.length > 0 ? (
-            <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
-              {products.map((product) => (
-                <div key={product.id} className="card group">
-                  <Link href={`/product/${product.slug}`}>
-                    <div className="aspect-square overflow-hidden bg-gray-100">
-                      <img
-                        src={product.image_url || 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?auto=format&fit=crop&w=400&q=80'}
-                        alt={product.name}
-                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                      />
-                    </div>
-                  </Link>
-                  <div className="p-3 lg:p-4">
-                    {product.category && (
-                      <p className="text-xs text-primary-600 uppercase tracking-wide mb-1">
-                        {product.category.name}
-                      </p>
-                    )}
+            layoutStyle === 'showcase' ? (
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
+                {products.map((product, idx) => (
+                  <div key={product.id} className={`card group ${idx % 3 === 0 ? 'lg:row-span-2' : ''}`}>
                     <Link href={`/product/${product.slug}`}>
-                      <h3 className="font-semibold text-navy-900 text-sm lg:text-base hover:text-primary-600 line-clamp-1">
-                        {product.name}
-                      </h3>
+                      <div className={`overflow-hidden bg-gray-100 ${idx % 3 === 0 ? 'aspect-square lg:aspect-[1/2]' : 'aspect-square'}`}>
+                        <img
+                          src={withFallback(product.image_url, getProductPlaceholder(product.category?.slug || product.category?.name))}
+                          alt={product.name}
+                          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                        />
+                      </div>
                     </Link>
-                    <div className="flex items-center justify-between mt-3">
-                      <p className="font-bold text-navy-900 text-sm">{formatKES(product.price)}</p>
-                      <button
-                        onClick={() => handleAddToCart(product)}
-                        className="text-xs bg-primary-500 hover:bg-primary-600 text-white px-2 py-1 lg:px-3 lg:py-1.5 rounded transition-colors"
-                      >
-                        Add
-                      </button>
+                    <div className="p-3 lg:p-4">
+                      {product.category && (
+                        <p className="text-xs text-primary-600 uppercase tracking-wide mb-1">
+                          {product.category.name}
+                        </p>
+                      )}
+                      <Link href={`/product/${product.slug}`}>
+                        <h3 className="font-semibold text-navy-900 text-sm lg:text-base hover:text-primary-600 line-clamp-1">
+                          {product.name}
+                        </h3>
+                      </Link>
+                      <div className="flex items-center justify-between mt-3">
+                        <p className="font-bold text-navy-900 text-sm">{formatKES(product.price)}</p>
+                        <button
+                          onClick={() => handleAddToCart(product)}
+                          className="text-xs bg-primary-500 hover:bg-primary-600 text-white px-2 py-1 lg:px-3 lg:py-1.5 rounded transition-colors"
+                        >
+                          Add
+                        </button>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
+                {products.map((product) => (
+                  <div key={product.id} className="card group">
+                    <Link href={`/product/${product.slug}`}>
+                      <div className="aspect-square overflow-hidden bg-gray-100">
+                        <img
+                          src={withFallback(product.image_url, getProductPlaceholder(product.category?.slug || product.category?.name))}
+                          alt={product.name}
+                          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                        />
+                      </div>
+                    </Link>
+                    <div className="p-3 lg:p-4">
+                      {product.category && (
+                        <p className="text-xs text-primary-600 uppercase tracking-wide mb-1">
+                          {product.category.name}
+                        </p>
+                      )}
+                      <Link href={`/product/${product.slug}`}>
+                        <h3 className="font-semibold text-navy-900 text-sm lg:text-base hover:text-primary-600 line-clamp-1">
+                          {product.name}
+                        </h3>
+                      </Link>
+                      <div className="flex items-center justify-between mt-3">
+                        <p className="font-bold text-navy-900 text-sm">{formatKES(product.price)}</p>
+                        <button
+                          onClick={() => handleAddToCart(product)}
+                          className="text-xs bg-primary-500 hover:bg-primary-600 text-white px-2 py-1 lg:px-3 lg:py-1.5 rounded transition-colors"
+                        >
+                          Add
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )
           ) : (
             <div className="text-center py-8 bg-gray-50 rounded-xl border">
               <p className="text-gray-500">No featured products</p>
@@ -345,13 +479,14 @@ export default function Home() {
           )}
         </div>
       </section>
+      )}
 
       {/* Partners */}
-      {partners.length > 0 && (
-        <section className="py-8 border-y border-gray-200">
+      {partners.length > 0 && isSectionVisible('partners') && (
+        <section className={`${partnersSection?.padding || 'py-8'} border-y border-gray-200`} style={sectionStyle('partners')}>
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <p className="text-center text-xs text-gray-500 uppercase tracking-wide mb-4">
-              Our Partners
+              {partnersSection?.title || 'Our Partners'}
             </p>
             <div className="flex flex-wrap justify-center items-center gap-6 lg:gap-10 opacity-60">
               {partners.map((partner) => (
@@ -369,12 +504,12 @@ export default function Home() {
       )}
 
       {/* Testimonials */}
-      {testimonials.length > 0 && (
-        <section className="py-12 lg:py-16">
+      {testimonials.length > 0 && isSectionVisible('testimonials') && (
+        <section className={`${testimonialsSection?.padding || 'py-12 lg:py-16'}`} style={sectionStyle('testimonials')}>
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-8">
               <h2 className="font-display text-2xl lg:text-3xl font-bold text-gray-900 mb-2">
-                What Clients Say
+                {testimonialsSection?.title || 'What Clients Say'}
               </h2>
             </div>
             <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -403,25 +538,27 @@ export default function Home() {
       )}
 
       {/* CTA Section */}
-      <section className="py-12 lg:py-16 bg-navy-900">
+      {isSectionVisible('cta') && (
+      <section className={`${ctaSection?.padding || 'py-12 lg:py-16'} bg-navy-900`} style={sectionStyle('cta')}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="font-display text-2xl lg:text-3xl font-bold text-white mb-3">
-            Ready to Start Your Project?
+            {ctaSection?.title || 'Ready to Start Your Project?'}
           </h2>
           <p className="text-gray-300 mb-6 max-w-xl mx-auto text-sm lg:text-base">
-            Get in touch with our team for a free consultation and quotation.
+            {ctaSection?.subtitle || 'Get in touch with our team for a free consultation and quotation.'}
           </p>
           <div className="flex flex-col sm:flex-row justify-center gap-3">
-            <Link href="/quotation" className="bg-primary-500 hover:bg-primary-600 text-white px-6 py-2.5 rounded-lg font-medium text-sm shadow-lg">
-              Get Free Quote
+            <Link href={ctaContent.cta_link || '/quotation'} className="bg-primary-500 hover:bg-primary-600 text-white px-6 py-2.5 rounded-lg font-medium text-sm shadow-lg">
+              {ctaContent.cta_text || 'Get Free Quote'}
             </Link>
-            <a href="tel:+254700123456" className="bg-white text-navy-900 px-6 py-2.5 rounded-lg font-medium text-sm hover:bg-gray-100">
+            <a href={telHref(phone)} className="bg-white text-navy-900 px-6 py-2.5 rounded-lg font-medium text-sm hover:bg-gray-100">
               <Phone className="w-4 h-4 inline mr-2" />
               Call Now
             </a>
           </div>
         </div>
       </section>
+      )}
     </CustomerLayout>
   );
 }

@@ -109,7 +109,133 @@ gitignored) and the env vars are set in Vercel's dashboard instead.
   in case you want it — just note the real success page is
   `order-confirmation.tsx`).
 
-## 6. Known lower-priority cleanup (not blocking deploy)
+## 6. Business Platform Upgrade (Priority 1) - July 2026
+
+New migration: `20260708100000_008_business_platform_foundation.sql`
+Run it the same way as the others (SQL Editor or `supabase db push`).
+
+**What it adds to the database:**
+- CRM: `leads`, `lead_notes`, `lead_reminders`
+- Quotation lifecycle: `draft → sent → negotiating → accepted/rejected → converted`,
+  itemized `quotation_items`, auto-numbering (`Q-2026-0001`), tax/total columns.
+  Old status values (`new`/`contacted`/`quoted`/`won`/`lost`) still work - nothing
+  was removed, the new stages were added alongside them.
+- Invoicing: `invoices`, `invoice_items`, `payments` - auto-numbered
+  (`INV-2026-0001`), with a trigger that keeps `amount_paid` and status
+  (`draft/sent/paid/partial/overdue/cancelled`) in sync automatically
+  whenever a payment is recorded.
+- Inventory upgrade: `suppliers`, `purchase_orders`, `purchase_order_items`,
+  auto-numbered (`PO-2026-0001`). Receiving goods against a PO
+  automatically increases stock and logs an `inventory_movements` entry.
+  Placing an order automatically **deducts** stock and raises an
+  `inventory_alerts` row when a product drops to/below its low-stock
+  threshold - both fully automatic via database triggers, no app code
+  needed to keep stock accurate.
+- Audit logging: every insert/update/delete on `leads`, `quotations`,
+  `invoices`, `purchase_orders`, and `orders` is automatically recorded
+  into the existing `activity_logs` table via a generic trigger - nothing
+  to remember to log manually.
+
+**What shipped in the UI this pass:**
+- **CRM** (`/admin/crm`): full lead pipeline (Kanban by stage), notes,
+  follow-up reminders, one-click convert-to-customer.
+- **Quotations** (`/admin/quotations`): full lifecycle dropdown, itemized
+  line-item editor with live subtotal/VAT/total, **PDF download** (client-side,
+  no API key needed), and Convert-to-Order once a quote is accepted.
+
+**Schema is ready, UI is next phase:** Invoicing (`useInvoices`,
+`recordPayment`) and Suppliers/POs (`useSuppliers`, `usePurchaseOrders`)
+hooks exist and are fully wired to the new tables, but don't have admin
+screens yet - the data layer is there so building those pages next is
+fast, not a re-architecture.
+
+**Not built this pass (Priority 2 & 3 from the roadmap discussion):**
+project management (site visits/scheduling/completion certs), upgraded
+reports/analytics, staff roles & permissions, automated email/WhatsApp
+notifications, backup/restore tooling. These are real, separate builds -
+happy to scope and tackle them next in priority order.
+
+## 7. Photos, Services Admin & Homepage Layouts - July 2026
+
+New migration: `20260709120000_009_homepage_layout_switcher.sql`
+Run it the same way as the others.
+
+**What it adds:**
+- `theme_settings.layout_style` column (`classic` or `showcase`) - lets
+  the admin switch how the homepage's Services and Materials Shop
+  sections are arranged, live, no code changes. Go to Admin -> Theme ->
+  Homepage Layout to switch.
+
+**Biggest gap closed - Services had zero admin management:**
+The `services` table and public Services page existed, but there was no
+admin screen for it at all - services could only be changed by editing
+the database directly. New: **Admin -> Services** (`/admin/services`),
+full CRUD with photo upload/library picker, feature lists, and
+show/hide toggle.
+
+**Placeholder images:** any product, service, or portfolio photo that's
+missing now falls back to a curated, category-aware stock photo
+(`src/lib/placeholders.ts`) instead of a broken image icon or blank box -
+applied across Shop, Shop Detail, Services, homepage, and Portfolio.
+Real photos always take priority; placeholders only show until the
+admin uploads one.
+
+**Photos, centralized:** the existing drag-and-drop `ImageUpload`
+component now also has a **"Browse Library"** option, so any photo
+already uploaded anywhere can be reused on a different product/service/
+project without re-uploading it. Wired into Products, Services, Hero
+Slides, and (new) **Project photo galleries** - Admin -> Projects ->
+the photos icon on any project row now opens a before/after/progress
+gallery manager, which didn't exist before (Portfolio images were
+completely admin-unmanageable).
+
+**Not changed:** Homepage Builder's per-section title/subtitle/settings
+editor (already existed and still works); this pass focused on the
+concrete gaps - services, photo fallbacks, and a real layout choice -
+rather than re-doing what already worked.
+
+## 8. Full Homepage Editing Rights - July 2026
+
+New migration: `20260710080000_010_seed_homepage_sections.sql` - run it
+after 009, same way as the others.
+
+**The core problem this fixes:** `homepage_sections` had no rows in it
+at all, so the Homepage Builder page showed an empty list, and the
+homepage itself only ever read one hero setting - every other piece of
+text (About paragraphs, section headings, CTA button/link, stats) was
+hardcoded directly in the React component, completely unreachable from
+admin no matter what the builder appeared to offer. On top of that, the
+CTA section's title/subtitle/button were being fetched from the database
+but the component had a leftover hardcoded copy that silently ignored
+them - so even editing the one part that *did* have a DB row had zero
+effect on the live site.
+
+**Fixed:**
+- Seeded one row per homepage section, matching exactly what was
+  hardcoded before, so turning this migration on causes zero visual
+  change - but from this point on, the homepage actually reads these
+  rows.
+- Wired the CTA section's title, subtitle, button text, and button link
+  to the database (previously dead code).
+- Homepage Builder (`/admin/homepage`) now has a real editor for the
+  **About section**: both paragraphs, the photo (upload or pick from
+  Media Library), and the stats row (10+ Years / 500+ Projects / etc,
+  add/remove freely).
+- Every section now supports a **background image** (in addition to the
+  existing background color), settable via the same upload/library
+  picker used elsewhere.
+- Background color now also has a native color-picker swatch alongside
+  the preset dropdown, for any custom brand color.
+- Section list now shows a thumbnail of each section's background image
+  where one is set, so it's easier to tell sections apart at a glance.
+
+**What admin can now fully control on the homepage without a developer:**
+hero slide timing/overlay/transition, which sections show and in what
+order, every section's heading/subtitle/background/spacing, the About
+text/photo/stats, how many products the shop section shows, and the
+CTA's text and destination link.
+
+## 10. Known lower-priority cleanup (not blocking deploy)
 
 - ~22 `@typescript-eslint/no-explicit-any` lint warnings across admin
   pages (style only, doesn't affect behavior or the build).

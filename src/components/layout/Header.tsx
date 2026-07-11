@@ -2,11 +2,21 @@ import { useState } from 'react';
 import { Link, useLocation } from 'wouter';
 import { Menu, X, ShoppingCart, Phone, LogIn } from 'lucide-react';
 import { useCart } from '@/hooks/use-cart';
+import { useSiteSettings } from '@/hooks/use-data';
+import { telHref } from '@/lib/utils';
+
+const DEFAULT_PHONE = '+254 700 123 456';
 
 export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [location] = useLocation();
   const { totalItems } = useCart();
+  const { settings } = useSiteSettings();
+
+  const siteName = settings.site_info?.name || 'TOPLINE';
+  const [firstWord, ...restWords] = siteName.split(' ');
+  const tagline = settings.site_info?.tagline || 'FLOORING & WATERPROOFING';
+  const phone = settings.contact?.phone || DEFAULT_PHONE;
 
   const navLinks = [
     { href: '/', label: 'Home' },
@@ -28,13 +38,13 @@ export function Header() {
         <div className="flex items-center justify-between h-16 lg:h-20">
           <Link href="/" className="flex items-center gap-3">
             <div className="w-10 h-10 bg-gradient-to-br from-primary-400 to-primary-600 rounded-lg flex items-center justify-center shadow-lg">
-              <span className="text-white font-display font-bold text-lg">T</span>
+              <span className="text-white font-display font-bold text-lg">{firstWord.charAt(0)}</span>
             </div>
             <div className="hidden sm:block">
               <h1 className="font-display font-bold text-lg text-white leading-tight">
-                TOPLINE
+                {firstWord}{restWords.length > 0 ? ` ${restWords.join(' ')}` : ''}
               </h1>
-              <p className="text-xs text-primary-400 tracking-wide">FLOORING & WATERPROOFING</p>
+              <p className="text-xs text-primary-400 tracking-wide">{tagline}</p>
             </div>
           </Link>
 
@@ -56,11 +66,11 @@ export function Header() {
 
           <div className="flex items-center gap-3">
             <a
-              href="tel:+254700123456"
+              href={telHref(phone)}
               className="hidden md:flex items-center gap-2 text-sm text-gray-300 hover:text-primary-400 transition-colors"
             >
               <Phone className="w-4 h-4" />
-              <span>+254 700 123 456</span>
+              <span>{phone}</span>
             </a>
 
             <Link
@@ -112,11 +122,11 @@ export function Header() {
             ))}
             <div className="pt-4 mt-4 border-t border-navy-800 space-y-1">
               <a
-                href="tel:+254700123456"
+                href={telHref(phone)}
                 className="flex items-center gap-2 px-4 py-3 text-sm text-gray-300"
               >
                 <Phone className="w-4 h-4" />
-                <span>+254 700 123 456</span>
+                <span>{phone}</span>
               </a>
               <Link
                 href="/admin/login"

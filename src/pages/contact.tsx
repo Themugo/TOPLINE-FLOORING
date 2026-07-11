@@ -2,7 +2,9 @@ import { useState } from 'react';
 import { Phone, Mail, MapPin, Clock, Send } from 'lucide-react';
 import { CustomerLayout } from '@/components/layout/CustomerLayout';
 import { useToast } from '@/hooks/use-toast';
+import { useSiteSettings } from '@/hooks/use-data';
 import { supabase } from '@/lib/supabase';
+import { telHref } from '@/lib/utils';
 
 interface FormData {
   name: string;
@@ -14,6 +16,7 @@ interface FormData {
 
 export default function Contact() {
   const { toast } = useToast();
+  const { settings } = useSiteSettings();
   const [form, setForm] = useState<FormData>({
     name: '',
     email: '',
@@ -61,29 +64,38 @@ export default function Contact() {
     }
   };
 
+  const phone = settings.contact?.phone || '+254 700 123 456';
+  const email = settings.contact?.email || 'info@toplineflooring.co.ke';
+  const address = settings.contact?.address || 'Industrial Area, Nairobi, Kenya';
+  const weekdays = settings.business_hours?.weekdays;
+  const saturday = settings.business_hours?.saturday;
+  const hours = weekdays && saturday
+    ? `Mon-Fri: ${weekdays.open}-${weekdays.close}, Sat: ${saturday.open}-${saturday.close}`
+    : 'Mon-Fri: 8AM-5PM, Sat: 9AM-1PM';
+
   const contactInfo = [
     {
       icon: Phone,
       title: 'Phone',
-      value: '+254 700 123 456',
-      href: 'tel:+254700123456',
+      value: phone,
+      href: telHref(phone),
     },
     {
       icon: Mail,
       title: 'Email',
-      value: 'info@toplineflooring.co.ke',
-      href: 'mailto:info@toplineflooring.co.ke',
+      value: email,
+      href: `mailto:${email}`,
     },
     {
       icon: MapPin,
       title: 'Address',
-      value: 'Industrial Area, Nairobi, Kenya',
+      value: address,
       href: null,
     },
     {
       icon: Clock,
       title: 'Hours',
-      value: 'Mon-Fri: 8AM-5PM, Sat: 9AM-1PM',
+      value: hours,
       href: null,
     },
   ];

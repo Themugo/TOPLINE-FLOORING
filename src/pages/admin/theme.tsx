@@ -213,6 +213,49 @@ export default function AdminTheme() {
           </div>
         </div>
 
+        {/* Homepage Layout */}
+        <div className="bg-white rounded-xl border border-gray-200 p-6 mb-6">
+          <h2 className="font-semibold text-gray-900 mb-1">Homepage Layout</h2>
+          <p className="text-sm text-gray-500 mb-4">
+            Switch how the Services and Materials Shop sections are arranged on your homepage.
+            Changes apply instantly to the live site.
+          </p>
+          <div className="grid sm:grid-cols-2 gap-4">
+            <button
+              onClick={() => updateTheme({ layout_style: 'classic' })}
+              className={`text-left rounded-xl border-2 p-4 transition-all ${
+                (theme?.layout_style || 'classic') === 'classic' ? 'border-primary-500 bg-primary-50' : 'border-gray-200 hover:border-gray-300'
+              }`}
+            >
+              <div className="grid grid-cols-4 gap-1 mb-3">
+                {Array.from({ length: 8 }).map((_, i) => (
+                  <div key={i} className="aspect-square bg-navy-200 rounded" />
+                ))}
+              </div>
+              <p className="font-medium text-sm text-gray-900">Classic Grid</p>
+              <p className="text-xs text-gray-500">Even tile grid - clean and familiar</p>
+            </button>
+
+            <button
+              onClick={() => updateTheme({ layout_style: 'showcase' })}
+              className={`text-left rounded-xl border-2 p-4 transition-all ${
+                theme?.layout_style === 'showcase' ? 'border-primary-500 bg-primary-50' : 'border-gray-200 hover:border-gray-300'
+              }`}
+            >
+              <div className="flex gap-1 mb-3">
+                <div className="w-1/3 aspect-[3/4] bg-navy-300 rounded" />
+                <div className="flex-1 grid grid-cols-2 gap-1">
+                  {Array.from({ length: 4 }).map((_, i) => (
+                    <div key={i} className="aspect-square bg-navy-200 rounded" />
+                  ))}
+                </div>
+              </div>
+              <p className="font-medium text-sm text-gray-900">Showcase</p>
+              <p className="text-xs text-gray-500">Horizontal scroll services + featured-first product grid</p>
+            </button>
+          </div>
+        </div>
+
         {/* Preview */}
         <div className="bg-white rounded-xl border border-gray-200 p-6 mb-6">
           <h2 className="font-semibold text-gray-900 mb-4">Live Preview</h2>

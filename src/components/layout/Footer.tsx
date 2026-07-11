@@ -1,8 +1,47 @@
 import { Link } from 'wouter';
-import { Phone, Mail, MapPin, Facebook, Instagram, Linkedin } from 'lucide-react';
+import { Phone, Mail, MapPin, Facebook, Instagram, Linkedin, Twitter } from 'lucide-react';
+import { useSiteSettings } from '@/hooks/use-data';
+import { telHref } from '@/lib/utils';
+
+const DEFAULTS = {
+  name: 'TOPLINE',
+  tagline: 'FLOORING & WATERPROOFING',
+  description:
+    'Professional flooring and waterproofing solutions for industrial, commercial, and residential projects across Kenya and East Africa.',
+  phone: '+254 700 123 456',
+  email: 'info@toplineflooring.co.ke',
+  address: 'Industrial Area, Nairobi, Kenya',
+};
 
 export function Footer() {
   const currentYear = new Date().getFullYear();
+  const { settings } = useSiteSettings();
+
+  const siteName = settings.site_info?.name || DEFAULTS.name;
+  const [firstWord, ...restWords] = siteName.split(' ');
+  const tagline = settings.site_info?.tagline || DEFAULTS.tagline;
+  const description = settings.site_info?.description || DEFAULTS.description;
+
+  const phone = settings.contact?.phone || DEFAULTS.phone;
+  const email = settings.contact?.email || DEFAULTS.email;
+  const address = settings.contact?.address || DEFAULTS.address;
+
+  const weekdays = settings.business_hours?.weekdays;
+  const saturday = settings.business_hours?.saturday;
+  const sunday = settings.business_hours?.sunday;
+
+  const social = settings.social_links || {};
+  const socialLinks = [
+    { key: 'facebook', url: social.facebook, Icon: Facebook },
+    { key: 'instagram', url: social.instagram, Icon: Instagram },
+    { key: 'linkedin', url: social.linkedin, Icon: Linkedin },
+    { key: 'twitter', url: social.twitter, Icon: Twitter },
+  ].filter((s) => !!s.url);
+
+  const copyright =
+    settings.footer?.copyright ||
+    `© ${currentYear} ${siteName}. All rights reserved.`;
+  const showSocial = settings.footer?.show_social !== false;
 
   return (
     <footer className="bg-navy-950 text-gray-300">
@@ -11,21 +50,16 @@ export function Footer() {
           <div>
             <div className="flex items-center gap-3 mb-6">
               <div className="w-10 h-10 bg-gradient-to-br from-primary-400 to-primary-600 rounded-lg flex items-center justify-center shadow-lg">
-                <span className="text-white font-display font-bold text-lg">T</span>
+                <span className="text-white font-display font-bold text-lg">{firstWord.charAt(0)}</span>
               </div>
               <div>
                 <h2 className="font-display font-bold text-lg text-white leading-tight">
-                  TOPLINE
+                  {firstWord}{restWords.length > 0 ? ` ${restWords.join(' ')}` : ''}
                 </h2>
-                <p className="text-xs text-primary-400 tracking-wide">
-                  FLOORING & WATERPROOFING
-                </p>
+                <p className="text-xs text-primary-400 tracking-wide">{tagline}</p>
               </div>
             </div>
-            <p className="text-sm text-gray-400 leading-relaxed">
-              Professional flooring and waterproofing solutions for industrial, commercial,
-              and residential projects across Kenya and East Africa.
-            </p>
+            <p className="text-sm text-gray-400 leading-relaxed">{description}</p>
           </div>
 
           <div>
@@ -74,57 +108,59 @@ export function Footer() {
             <h3 className="font-semibold text-white mb-4">Contact Info</h3>
             <div className="space-y-4">
               <a
-                href="tel:+254700123456"
+                href={telHref(phone)}
                 className="flex items-start gap-3 text-sm text-gray-400 hover:text-primary-400 transition-colors"
               >
                 <Phone className="w-4 h-4 mt-0.5 flex-shrink-0" />
-                <span>+254 700 123 456</span>
+                <span>{phone}</span>
               </a>
               <a
-                href="mailto:info@toplineflooring.co.ke"
+                href={`mailto:${email}`}
                 className="flex items-start gap-3 text-sm text-gray-400 hover:text-primary-400 transition-colors"
               >
                 <Mail className="w-4 h-4 mt-0.5 flex-shrink-0" />
-                <span>info@toplineflooring.co.ke</span>
+                <span>{email}</span>
               </a>
               <div className="flex items-start gap-3 text-sm text-gray-400">
                 <MapPin className="w-4 h-4 mt-0.5 flex-shrink-0" />
-                <span>Industrial Area, Nairobi, Kenya</span>
+                <span>{address}</span>
               </div>
               <div className="text-sm text-gray-400">
-                <p>Mon - Fri: 8:00 AM - 5:00 PM</p>
-                <p>Sat: 9:00 AM - 1:00 PM</p>
+                {weekdays ? (
+                  <p>Mon - Fri: {weekdays.open} - {weekdays.close}</p>
+                ) : (
+                  <p>Mon - Fri: 8:00 AM - 5:00 PM</p>
+                )}
+                {saturday ? (
+                  <p>Sat: {saturday.open} - {saturday.close}</p>
+                ) : (
+                  <p>Sat: 9:00 AM - 1:00 PM</p>
+                )}
+                {sunday && sunday !== 'Closed' && <p>Sun: {sunday}</p>}
               </div>
             </div>
 
-            <div className="flex items-center gap-4 mt-6">
-              <a
-                href="#"
-                className="w-9 h-9 rounded-full bg-navy-900 flex items-center justify-center text-gray-400 hover:bg-primary-500 hover:text-white transition-colors"
-              >
-                <Facebook className="w-4 h-4" />
-              </a>
-              <a
-                href="#"
-                className="w-9 h-9 rounded-full bg-navy-900 flex items-center justify-center text-gray-400 hover:bg-primary-500 hover:text-white transition-colors"
-              >
-                <Instagram className="w-4 h-4" />
-              </a>
-              <a
-                href="#"
-                className="w-9 h-9 rounded-full bg-navy-900 flex items-center justify-center text-gray-400 hover:bg-primary-500 hover:text-white transition-colors"
-              >
-                <Linkedin className="w-4 h-4" />
-              </a>
-            </div>
+            {showSocial && socialLinks.length > 0 && (
+              <div className="flex items-center gap-4 mt-6">
+                {socialLinks.map(({ key, url, Icon }) => (
+                  <a
+                    key={key}
+                    href={url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-9 h-9 rounded-full bg-navy-900 flex items-center justify-center text-gray-400 hover:bg-primary-500 hover:text-white transition-colors"
+                  >
+                    <Icon className="w-4 h-4" />
+                  </a>
+                ))}
+              </div>
+            )}
           </div>
         </div>
 
         <div className="mt-12 pt-8 border-t border-navy-900">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-            <p className="text-sm text-gray-500">
-              &copy; {currentYear} Topline Flooring and Waterproofing. All rights reserved.
-            </p>
+            <p className="text-sm text-gray-500">{copyright}</p>
             <div className="flex items-center gap-6 text-sm text-gray-500">
               <Link href="/admin/login" className="hover:text-primary-400 transition-colors">
                 Admin Portal

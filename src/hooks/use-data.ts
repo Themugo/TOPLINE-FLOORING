@@ -21,53 +21,79 @@ import type {
   InventoryAlert,
   ProductBrand,
   ProductTag,
+  Lead,
+  LeadNote,
+  LeadReminder,
+  Invoice,
+  Supplier,
+  PurchaseOrder,
 } from '@/lib/types';
+
+function errorMessage(err: unknown, fallback: string): string {
+  return err instanceof Error ? err.message : fallback;
+}
 
 // Site Settings
 export function useSiteSettings() {
   const [settings, setSettings] = useState<Record<string, any>>({});
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    async function fetchSettings() {
-      const { data } = await supabase.from('site_settings').select('*');
-      if (data) {
-        const obj: Record<string, any> = {};
-        data.forEach((s) => { obj[s.setting_key] = s.setting_value; });
-        setSettings(obj);
-      }
+  const fetchSettings = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const { data, error: err } = await supabase.from('site_settings').select('*');
+      if (err) throw err;
+      const obj: Record<string, any> = {};
+      (data || []).forEach((s) => { obj[s.setting_key] = s.setting_value; });
+      setSettings(obj);
+    } catch (err) {
+      setError(errorMessage(err, 'Failed to load site settings'));
+    } finally {
       setLoading(false);
     }
-    fetchSettings();
   }, []);
 
+  useEffect(() => { fetchSettings(); }, [fetchSettings]);
+
   const updateSetting = async (key: string, value: any) => {
-    await supabase.from('site_settings').upsert(
+    const { error: err } = await supabase.from('site_settings').upsert(
       { setting_key: key, setting_value: value, updated_at: new Date().toISOString() },
       { onConflict: 'setting_key' }
     );
+    if (err) throw err;
+    await fetchSettings();
   };
 
-  return { settings, loading, updateSetting };
+  return { settings, loading, error, updateSetting, refetch: fetchSettings };
 }
 
 // Navigation Menus
 export function useNavigationMenus(location?: string) {
   const [menus, setMenus] = useState<NavigationMenu[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    async function fetchMenus() {
+  const fetchMenus = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
       let query = supabase.from('navigation_menus').select('*').order('display_order');
       if (location) query = query.eq('location', location);
-      const { data } = await query;
+      const { data, error: err } = await query;
+      if (err) throw err;
       setMenus(data || []);
+    } catch (err) {
+      setError(errorMessage(err, 'Failed to load navigation menus'));
+    } finally {
       setLoading(false);
     }
-    fetchMenus();
   }, [location]);
 
-  return { menus, loading };
+  useEffect(() => { fetchMenus(); }, [fetchMenus]);
+
+  return { menus, loading, error, refetch: fetchMenus };
 }
 
 // Theme Settings
@@ -75,48 +101,65 @@ export function useThemeSettings() {
   const [theme, setTheme] = useState<ThemeSetting | null>(null);
   const [themes, setThemes] = useState<ThemeSetting[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    async function fetchThemes() {
-      const { data } = await supabase.from('theme_settings').select('*').order('created_at');
+  const fetchThemes = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const { data, error: err } = await supabase.from('theme_settings').select('*').order('created_at');
+      if (err) throw err;
       setThemes(data || []);
-      const active = data?.find(t => t.is_active);
-      setTheme(active || null);
+      setTheme(data?.find(t => t.is_active) || null);
+    } catch (err) {
+      setError(errorMessage(err, 'Failed to load theme settings'));
+    } finally {
       setLoading(false);
     }
-    fetchThemes();
   }, []);
 
+  useEffect(() => { fetchThemes(); }, [fetchThemes]);
+
   const activateTheme = async (id: string) => {
-    await supabase.from('theme_settings').update({ is_active: false }).neq('id', id);
-    await supabase.from('theme_settings').update({ is_active: true }).eq('id', id);
-    const { data } = await supabase.from('theme_settings').select('*');
-    setThemes(data || []);
-    setTheme(data?.find(t => t.is_active) || null);
+    const { error: err1 } = await supabase.from('theme_settings').update({ is_active: false }).neq('id', id);
+    if (err1) throw err1;
+    const { error: err2 } = await supabase.from('theme_settings').update({ is_active: true }).eq('id', id);
+    if (err2) throw err2;
+    await fetchThemes();
   };
 
-  return { theme, themes, loading, activateTheme };
+  return { theme, themes, loading, error, activateTheme, refetch: fetchThemes };
 }
 
 // Homepage Sections
 export function useHomepageSections() {
   const [sections, setSections] = useState<HomepageSection[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const fetchSections = useCallback(async () => {
-    const { data } = await supabase.from('homepage_sections').select('*').order('display_order');
-    setSections(data || []);
-    setLoading(false);
+    setLoading(true);
+    setError(null);
+    try {
+      const { data, error: err } = await supabase.from('homepage_sections').select('*').order('display_order');
+      if (err) throw err;
+      setSections(data || []);
+    } catch (err) {
+      setError(errorMessage(err, 'Failed to load homepage sections'));
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
   useEffect(() => { fetchSections(); }, [fetchSections]);
 
   const updateSection = async (id: string, updates: Partial<HomepageSection>) => {
-    await supabase.from('homepage_sections').update({ ...updates, updated_at: new Date().toISOString() }).eq('id', id);
-    fetchSections();
+    const { error: err } = await supabase.from('homepage_sections').update({ ...updates, updated_at: new Date().toISOString() }).eq('id', id);
+    if (err) throw err;
+    await fetchSections();
   };
 
-  return { sections, loading, updateSection, refetch: fetchSections };
+  return { sections, loading, error, updateSection, refetch: fetchSections };
 }
 
 // Products
@@ -126,6 +169,8 @@ export function useProducts(options?: { categoryId?: string; featured?: boolean;
   const [error, setError] = useState<string | null>(null);
 
   const refetch = useCallback(async () => {
+    setLoading(true);
+    setError(null);
     try {
       let query = supabase
         .from('products')
@@ -142,7 +187,7 @@ export function useProducts(options?: { categoryId?: string; featured?: boolean;
       if (err) throw err;
       setProducts(data || []);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load products');
+      setError(errorMessage(err, 'Failed to load products'));
     } finally {
       setLoading(false);
     }
@@ -160,300 +205,444 @@ export function useProduct(slug: string) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    async function fetchProduct() {
-      try {
-        const { data, error: err } = await supabase
-          .from('products')
-          .select('*, category:categories(*), brand:product_brands(*), images:product_images(*), specifications:product_specifications(*), variants:product_variants(*), documents:product_documents(*)')
-          .eq('slug', slug)
-          .eq('is_active', true)
-          .maybeSingle();
-        if (err) throw err;
-        setProduct(data);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to load product');
-      } finally {
-        setLoading(false);
-      }
+  const fetchProduct = useCallback(async () => {
+    if (!slug) return;
+    setLoading(true);
+    setError(null);
+    try {
+      const { data, error: err } = await supabase
+        .from('products')
+        .select('*, category:categories(*), brand:product_brands(*), images:product_images(*), specifications:product_specifications(*), variants:product_variants(*), documents:product_documents(*)')
+        .eq('slug', slug)
+        .eq('is_active', true)
+        .maybeSingle();
+      if (err) throw err;
+      setProduct(data);
+    } catch (err) {
+      setError(errorMessage(err, 'Failed to load product'));
+    } finally {
+      setLoading(false);
     }
-    if (slug) fetchProduct();
   }, [slug]);
 
-  return { product, loading, error };
+  useEffect(() => { fetchProduct(); }, [fetchProduct]);
+
+  return { product, loading, error, refetch: fetchProduct };
 }
 
 // Categories
 export function useCategories() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const refetch = useCallback(async () => {
-    const { data } = await supabase.from('categories').select('*').eq('is_active', true).order('display_order');
-    setCategories(data || []);
-    setLoading(false);
+    setLoading(true);
+    setError(null);
+    try {
+      const { data, error: err } = await supabase.from('categories').select('*').eq('is_active', true).order('display_order');
+      if (err) throw err;
+      setCategories(data || []);
+    } catch (err) {
+      setError(errorMessage(err, 'Failed to load categories'));
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
   useEffect(() => {
     refetch();
   }, [refetch]);
 
-  return { categories, loading, refetch };
+  return { categories, loading, error, refetch };
 }
 
 // Brands
 export function useBrands() {
   const [brands, setBrands] = useState<ProductBrand[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    async function fetchBrands() {
-      const { data } = await supabase.from('product_brands').select('*').eq('is_active', true).order('display_order');
+  const refetch = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const { data, error: err } = await supabase.from('product_brands').select('*').eq('is_active', true).order('display_order');
+      if (err) throw err;
       setBrands(data || []);
+    } catch (err) {
+      setError(errorMessage(err, 'Failed to load brands'));
+    } finally {
       setLoading(false);
     }
-    fetchBrands();
   }, []);
 
-  return { brands, loading };
+  useEffect(() => { refetch(); }, [refetch]);
+
+  return { brands, loading, error, refetch };
 }
 
 // Tags
 export function useProductTags() {
   const [tags, setTags] = useState<ProductTag[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    async function fetchTags() {
-      const { data } = await supabase.from('product_tags').select('*').order('name');
+  const refetch = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const { data, error: err } = await supabase.from('product_tags').select('*').order('name');
+      if (err) throw err;
       setTags(data || []);
+    } catch (err) {
+      setError(errorMessage(err, 'Failed to load tags'));
+    } finally {
       setLoading(false);
     }
-    fetchTags();
   }, []);
 
-  return { tags, loading };
+  useEffect(() => { refetch(); }, [refetch]);
+
+  return { tags, loading, error, refetch };
 }
 
 // Hero Slides
-export function useHeroSlides() {
+export function useHeroSlides(options?: { activeOnly?: boolean }) {
   const [slides, setSlides] = useState<HeroSlide[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const activeOnly = options?.activeOnly ?? true;
 
-  useEffect(() => {
-    async function fetchSlides() {
-      const { data } = await supabase.from('hero_slides').select('*').eq('is_active', true).order('display_order');
+  const refetch = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      let query = supabase.from('hero_slides').select('*').order('display_order');
+      if (activeOnly) query = query.eq('is_active', true);
+      const { data, error: err } = await query;
+      if (err) throw err;
       setSlides(data || []);
+    } catch (err) {
+      setError(errorMessage(err, 'Failed to load hero slides'));
+    } finally {
       setLoading(false);
     }
-    fetchSlides();
-  }, []);
+  }, [activeOnly]);
 
-  return { slides, loading };
+  useEffect(() => { refetch(); }, [refetch]);
+
+  return { slides, loading, error, refetch };
 }
 
 // Testimonials
-export function useTestimonials() {
+export function useTestimonials(options?: { activeOnly?: boolean }) {
   const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const activeOnly = options?.activeOnly ?? true;
 
-  useEffect(() => {
-    async function fetchTestimonials() {
-      const { data } = await supabase.from('testimonials').select('*').eq('is_active', true).order('display_order');
+  const refetch = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      let query = supabase.from('testimonials').select('*').order('display_order');
+      if (activeOnly) query = query.eq('is_active', true);
+      const { data, error: err } = await query;
+      if (err) throw err;
       setTestimonials(data || []);
+    } catch (err) {
+      setError(errorMessage(err, 'Failed to load testimonials'));
+    } finally {
       setLoading(false);
     }
-    fetchTestimonials();
-  }, []);
+  }, [activeOnly]);
 
-  return { testimonials, loading };
+  useEffect(() => { refetch(); }, [refetch]);
+
+  return { testimonials, loading, error, refetch };
 }
 
 // Partners
-export function usePartners() {
+export function usePartners(options?: { activeOnly?: boolean }) {
   const [partners, setPartners] = useState<Partner[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const activeOnly = options?.activeOnly ?? true;
 
-  useEffect(() => {
-    async function fetchPartners() {
-      const { data } = await supabase.from('partners').select('*').eq('is_active', true).order('display_order');
+  const refetch = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      let query = supabase.from('partners').select('*').order('display_order');
+      if (activeOnly) query = query.eq('is_active', true);
+      const { data, error: err } = await query;
+      if (err) throw err;
       setPartners(data || []);
+    } catch (err) {
+      setError(errorMessage(err, 'Failed to load partners'));
+    } finally {
       setLoading(false);
     }
-    fetchPartners();
-  }, []);
+  }, [activeOnly]);
 
-  return { partners, loading };
+  useEffect(() => { refetch(); }, [refetch]);
+
+  return { partners, loading, error, refetch };
 }
 
 // Orders
 export function useOrders(options?: { status?: string }) {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const fetchOrders = useCallback(async () => {
-    let query = supabase.from('orders').select('*, items:order_items(*), delivery_zone:delivery_zones(*)').order('created_at', { ascending: false });
-    if (options?.status) query = query.eq('status', options.status);
-    const { data } = await query;
-    setOrders(data || []);
-    setLoading(false);
+    setLoading(true);
+    setError(null);
+    try {
+      let query = supabase.from('orders').select('*, items:order_items(*), delivery_zone:delivery_zones(*)').order('created_at', { ascending: false });
+      if (options?.status) query = query.eq('status', options.status);
+      const { data, error: err } = await query;
+      if (err) throw err;
+      setOrders(data || []);
+    } catch (err) {
+      setError(errorMessage(err, 'Failed to load orders'));
+    } finally {
+      setLoading(false);
+    }
   }, [options?.status]);
 
   useEffect(() => { fetchOrders(); }, [fetchOrders]);
 
-  return { orders, loading, refetch: fetchOrders };
+  return { orders, loading, error, refetch: fetchOrders };
 }
 
 // Quotations
 export function useQuotations(options?: { status?: string }) {
   const [quotations, setQuotations] = useState<Quotation[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const fetchQuotations = useCallback(async () => {
-    let query = supabase.from('quotations').select('*').order('created_at', { ascending: false });
-    if (options?.status) query = query.eq('status', options.status);
-    const { data } = await query;
-    setQuotations(data || []);
-    setLoading(false);
+    setLoading(true);
+    setError(null);
+    try {
+      let query = supabase.from('quotations').select('*, items:quotation_items(*)').order('created_at', { ascending: false });
+      if (options?.status) query = query.eq('status', options.status);
+      const { data, error: err } = await query;
+      if (err) throw err;
+      setQuotations(data || []);
+    } catch (err) {
+      setError(errorMessage(err, 'Failed to load quotations'));
+    } finally {
+      setLoading(false);
+    }
   }, [options?.status]);
 
   useEffect(() => { fetchQuotations(); }, [fetchQuotations]);
 
-  return { quotations, loading, refetch: fetchQuotations };
+  return { quotations, loading, error, refetch: fetchQuotations };
 }
 
 // Customers
 export function useCustomers() {
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    async function fetchCustomers() {
-      const { data } = await supabase.from('customers').select('*').order('created_at', { ascending: false });
+  const fetchCustomers = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const { data, error: err } = await supabase.from('customers').select('*').order('created_at', { ascending: false });
+      if (err) throw err;
       setCustomers(data || []);
+    } catch (err) {
+      setError(errorMessage(err, 'Failed to load customers'));
+    } finally {
       setLoading(false);
     }
-    fetchCustomers();
   }, []);
 
-  return { customers, loading };
+  useEffect(() => { fetchCustomers(); }, [fetchCustomers]);
+
+  return { customers, loading, error, refetch: fetchCustomers };
 }
 
 // Delivery Zones
-export function useDeliveryZones() {
+export function useDeliveryZones(options?: { activeOnly?: boolean }) {
   const [zones, setZones] = useState<DeliveryZone[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const activeOnly = options?.activeOnly ?? true;
 
-  useEffect(() => {
-    async function fetchZones() {
-      const { data } = await supabase.from('delivery_zones').select('*').eq('is_active', true).order('display_order');
+  const refetch = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      let query = supabase.from('delivery_zones').select('*').order('display_order');
+      if (activeOnly) query = query.eq('is_active', true);
+      const { data, error: err } = await query;
+      if (err) throw err;
       setZones(data || []);
+    } catch (err) {
+      setError(errorMessage(err, 'Failed to load delivery zones'));
+    } finally {
       setLoading(false);
     }
-    fetchZones();
-  }, []);
+  }, [activeOnly]);
 
-  return { zones, loading };
+  useEffect(() => { refetch(); }, [refetch]);
+
+  return { zones, loading, error, refetch };
 }
 
 // Promotions
-export function usePromotions(position?: string) {
+export function usePromotions(position?: string, options?: { activeOnly?: boolean }) {
   const [promotions, setPromotions] = useState<Promotion[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const activeOnly = options?.activeOnly ?? true;
 
-  useEffect(() => {
-    async function fetchPromotions() {
-      let query = supabase.from('promotions').select('*').eq('is_active', true).order('display_order');
+  const refetch = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      let query = supabase.from('promotions').select('*').order('display_order');
+      if (activeOnly) query = query.eq('is_active', true);
       if (position) query = query.eq('position', position);
-      const { data } = await query;
-      // Filter by date
-      const now = new Date();
-      const active = (data || []).filter(p =>
-        (!p.start_date || new Date(p.start_date) <= now) &&
-        (!p.end_date || new Date(p.end_date) >= now)
-      );
-      setPromotions(active);
+      const { data, error: err } = await query;
+      if (err) throw err;
+      if (activeOnly) {
+        const now = new Date();
+        setPromotions((data || []).filter(p =>
+          (!p.start_date || new Date(p.start_date) <= now) &&
+          (!p.end_date || new Date(p.end_date) >= now)
+        ));
+      } else {
+        setPromotions(data || []);
+      }
+    } catch (err) {
+      setError(errorMessage(err, 'Failed to load promotions'));
+    } finally {
       setLoading(false);
     }
-    fetchPromotions();
-  }, [position]);
+  }, [position, activeOnly]);
 
-  return { promotions, loading };
+  useEffect(() => { refetch(); }, [refetch]);
+
+  return { promotions, loading, error, refetch };
 }
 
 // Projects/Portfolio
-export function useProjects(options?: { featured?: boolean }) {
+export function useProjects(options?: { featured?: boolean; activeOnly?: boolean }) {
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const activeOnly = options?.activeOnly ?? true;
 
-  useEffect(() => {
-    async function fetchProjects() {
-      let query = supabase.from('projects').select('*').eq('is_active', true).order('display_order');
+  const refetch = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      let query = supabase.from('projects').select('*').order('display_order');
+      if (activeOnly) query = query.eq('is_active', true);
       if (options?.featured) query = query.eq('featured', true);
-      const { data } = await query;
+      const { data, error: err } = await query;
+      if (err) throw err;
       setProjects(data || []);
+    } catch (err) {
+      setError(errorMessage(err, 'Failed to load projects'));
+    } finally {
       setLoading(false);
     }
-    fetchProjects();
-  }, [options?.featured]);
+  }, [options?.featured, activeOnly]);
 
-  return { projects, loading };
+  useEffect(() => { refetch(); }, [refetch]);
+
+  return { projects, loading, error, refetch };
 }
 
 export function useProject(slug: string) {
   const [project, setProject] = useState<Project | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    async function fetchProject() {
-      const { data } = await supabase
+  const fetchProject = useCallback(async () => {
+    if (!slug) return;
+    setLoading(true);
+    setError(null);
+    try {
+      const { data, error: err } = await supabase
         .from('projects')
         .select('*, images:project_images(*)')
         .eq('slug', slug)
         .eq('is_active', true)
         .maybeSingle();
+      if (err) throw err;
       setProject(data);
+    } catch (err) {
+      setError(errorMessage(err, 'Failed to load project'));
+    } finally {
       setLoading(false);
     }
-    if (slug) fetchProject();
   }, [slug]);
 
-  return { project, loading };
+  useEffect(() => { fetchProject(); }, [fetchProject]);
+
+  return { project, loading, error, refetch: fetchProject };
 }
 
 // Inventory
 export function useInventoryMovements(productId?: string) {
   const [movements, setMovements] = useState<InventoryMovement[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    async function fetchMovements() {
+  const refetch = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
       let query = supabase.from('inventory_movements').select('*, product:products(name)').order('created_at', { ascending: false });
       if (productId) query = query.eq('product_id', productId);
-      const { data } = await query;
+      const { data, error: err } = await query;
+      if (err) throw err;
       setMovements(data || []);
+    } catch (err) {
+      setError(errorMessage(err, 'Failed to load inventory movements'));
+    } finally {
       setLoading(false);
     }
-    fetchMovements();
   }, [productId]);
 
-  return { movements, loading };
+  useEffect(() => { refetch(); }, [refetch]);
+
+  return { movements, loading, error, refetch };
 }
 
 export function useInventoryAlerts() {
   const [alerts, setAlerts] = useState<InventoryAlert[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    async function fetchAlerts() {
-      const { data } = await supabase.from('inventory_alerts').select('*, product:products(name)').eq('is_resolved', false).order('created_at', { ascending: false });
+  const refetch = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const { data, error: err } = await supabase.from('inventory_alerts').select('*, product:products(name)').eq('is_resolved', false).order('created_at', { ascending: false });
+      if (err) throw err;
       setAlerts(data || []);
+    } catch (err) {
+      setError(errorMessage(err, 'Failed to load inventory alerts'));
+    } finally {
       setLoading(false);
     }
-    fetchAlerts();
   }, []);
 
-  return { alerts, loading };
+  useEffect(() => { refetch(); }, [refetch]);
+
+  return { alerts, loading, error, refetch };
 }
 
 // Admin Auth
@@ -501,36 +690,52 @@ export function useAdminAuth() {
 export function useMediaFiles(folderId?: string) {
   const [files, setFiles] = useState<MediaFile[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    async function fetchFiles() {
+  const refetch = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
       let query = supabase.from('media_files').select('*').order('created_at', { ascending: false });
       if (folderId) query = query.eq('folder_id', folderId);
-      const { data } = await query;
+      const { data, error: err } = await query;
+      if (err) throw err;
       setFiles(data || []);
+    } catch (err) {
+      setError(errorMessage(err, 'Failed to load media files'));
+    } finally {
       setLoading(false);
     }
-    fetchFiles();
   }, [folderId]);
 
-  return { files, loading };
+  useEffect(() => { refetch(); }, [refetch]);
+
+  return { files, loading, error, refetch };
 }
 
 // SEO
 export function useSeoPages() {
   const [pages, setPages] = useState<SeoPage[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    async function fetchPages() {
-      const { data } = await supabase.from('seo_pages').select('*').order('page_type');
+  const refetch = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const { data, error: err } = await supabase.from('seo_pages').select('*').order('page_type');
+      if (err) throw err;
       setPages(data || []);
+    } catch (err) {
+      setError(errorMessage(err, 'Failed to load SEO pages'));
+    } finally {
       setLoading(false);
     }
-    fetchPages();
   }, []);
 
-  return { pages, loading };
+  useEffect(() => { refetch(); }, [refetch]);
+
+  return { pages, loading, error, refetch };
 }
 
 // Services
@@ -549,18 +754,313 @@ export interface Service {
   updated_at: string;
 }
 
-export function useServices() {
+export function useServices(options?: { activeOnly?: boolean }) {
   const [services, setServices] = useState<Service[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const activeOnly = options?.activeOnly ?? true;
 
-  useEffect(() => {
-    async function fetchServices() {
-      const { data } = await supabase.from('services').select('*').eq('is_active', true).order('display_order');
+  const refetch = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      let query = supabase.from('services').select('*').order('display_order');
+      if (activeOnly) query = query.eq('is_active', true);
+      const { data, error: err } = await query;
+      if (err) throw err;
       setServices(data || []);
+    } catch (err) {
+      setError(errorMessage(err, 'Failed to load services'));
+    } finally {
       setLoading(false);
     }
-    fetchServices();
+  }, [activeOnly]);
+
+  useEffect(() => { refetch(); }, [refetch]);
+
+  const createService = async (service: Partial<Service>) => {
+    const { data, error: err } = await supabase.from('services').insert(service).select().single();
+    if (err) throw err;
+    await refetch();
+    return data;
+  };
+
+  const updateService = async (id: string, updates: Partial<Service>) => {
+    const { error: err } = await supabase
+      .from('services')
+      .update({ ...updates, updated_at: new Date().toISOString() })
+      .eq('id', id);
+    if (err) throw err;
+    await refetch();
+  };
+
+  const deleteService = async (id: string) => {
+    const { error: err } = await supabase.from('services').delete().eq('id', id);
+    if (err) throw err;
+    await refetch();
+  };
+
+  return { services, loading, error, refetch, createService, updateService, deleteService };
+}
+
+// ============================================================
+// CRM: Leads
+// ============================================================
+export function useLeads(options?: { status?: string }) {
+  const [leads, setLeads] = useState<Lead[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const refetch = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      let query = supabase.from('leads').select('*').order('updated_at', { ascending: false });
+      if (options?.status) query = query.eq('status', options.status);
+      const { data, error: err } = await query;
+      if (err) throw err;
+      setLeads(data || []);
+    } catch (err) {
+      setError(errorMessage(err, 'Failed to load leads'));
+    } finally {
+      setLoading(false);
+    }
+  }, [options?.status]);
+
+  useEffect(() => { refetch(); }, [refetch]);
+
+  const createLead = async (lead: Partial<Lead>) => {
+    const { data, error: err } = await supabase.from('leads').insert(lead).select().single();
+    if (err) throw err;
+    await refetch();
+    return data;
+  };
+
+  const updateLead = async (id: string, updates: Partial<Lead>) => {
+    const { error: err } = await supabase
+      .from('leads')
+      .update({ ...updates, updated_at: new Date().toISOString() })
+      .eq('id', id);
+    if (err) throw err;
+    await refetch();
+  };
+
+  const deleteLead = async (id: string) => {
+    const { error: err } = await supabase.from('leads').delete().eq('id', id);
+    if (err) throw err;
+    await refetch();
+  };
+
+  // Converts a lead into a real customer record and marks it won.
+  const convertLead = async (id: string) => {
+    const lead = leads.find((l) => l.id === id);
+    if (!lead) throw new Error('Lead not found');
+
+    const { data: customer, error: custErr } = await supabase
+      .from('customers')
+      .insert({ name: lead.name, email: lead.email || '', phone: lead.phone || '' })
+      .select()
+      .single();
+    if (custErr) throw custErr;
+
+    await updateLead(id, { status: 'won', converted_customer_id: customer.id });
+    return customer;
+  };
+
+  return { leads, loading, error, refetch, createLead, updateLead, deleteLead, convertLead };
+}
+
+export function useLeadNotes(leadId: string | null) {
+  const [notes, setNotes] = useState<LeadNote[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const refetch = useCallback(async () => {
+    if (!leadId) { setNotes([]); setLoading(false); return; }
+    setLoading(true);
+    try {
+      const { data, error: err } = await supabase
+        .from('lead_notes')
+        .select('*')
+        .eq('lead_id', leadId)
+        .order('created_at', { ascending: false });
+      if (err) throw err;
+      setNotes(data || []);
+    } finally {
+      setLoading(false);
+    }
+  }, [leadId]);
+
+  useEffect(() => { refetch(); }, [refetch]);
+
+  const addNote = async (note: string) => {
+    if (!leadId) return;
+    const { data: userData } = await supabase.auth.getUser();
+    const { error: err } = await supabase
+      .from('lead_notes')
+      .insert({ lead_id: leadId, note, created_by: userData.user?.id || null });
+    if (err) throw err;
+    await refetch();
+  };
+
+  return { notes, loading, addNote, refetch };
+}
+
+export function useLeadReminders(leadId: string | null) {
+  const [reminders, setReminders] = useState<LeadReminder[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const refetch = useCallback(async () => {
+    if (!leadId) { setReminders([]); setLoading(false); return; }
+    setLoading(true);
+    try {
+      const { data, error: err } = await supabase
+        .from('lead_reminders')
+        .select('*')
+        .eq('lead_id', leadId)
+        .order('due_at', { ascending: true });
+      if (err) throw err;
+      setReminders(data || []);
+    } finally {
+      setLoading(false);
+    }
+  }, [leadId]);
+
+  useEffect(() => { refetch(); }, [refetch]);
+
+  const addReminder = async (dueAt: string, note: string) => {
+    if (!leadId) return;
+    const { data: userData } = await supabase.auth.getUser();
+    const { error: err } = await supabase
+      .from('lead_reminders')
+      .insert({ lead_id: leadId, due_at: dueAt, note, created_by: userData.user?.id || null });
+    if (err) throw err;
+    await refetch();
+  };
+
+  const completeReminder = async (id: string) => {
+    const { error: err } = await supabase
+      .from('lead_reminders')
+      .update({ completed: true, completed_at: new Date().toISOString() })
+      .eq('id', id);
+    if (err) throw err;
+    await refetch();
+  };
+
+  return { reminders, loading, addReminder, completeReminder, refetch };
+}
+
+// Reminders due within the next 48h (or overdue), across all leads -
+// used for a dashboard "follow-ups due" widget.
+export function useUpcomingReminders() {
+  const [reminders, setReminders] = useState<(LeadReminder & { lead?: Lead })[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const refetch = useCallback(async () => {
+    setLoading(true);
+    try {
+      const cutoff = new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString();
+      const { data, error: err } = await supabase
+        .from('lead_reminders')
+        .select('*, lead:leads(*)')
+        .eq('completed', false)
+        .lte('due_at', cutoff)
+        .order('due_at', { ascending: true });
+      if (err) throw err;
+      setReminders(data || []);
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
-  return { services, loading };
+  useEffect(() => { refetch(); }, [refetch]);
+
+  return { reminders, loading, refetch };
+}
+
+// ============================================================
+// Invoicing
+// ============================================================
+export function useInvoices(options?: { status?: string }) {
+  const [invoices, setInvoices] = useState<Invoice[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const refetch = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      let query = supabase.from('invoices').select('*, items:invoice_items(*), payments(*)').order('created_at', { ascending: false });
+      if (options?.status) query = query.eq('status', options.status);
+      const { data, error: err } = await query;
+      if (err) throw err;
+      setInvoices(data || []);
+    } catch (err) {
+      setError(errorMessage(err, 'Failed to load invoices'));
+    } finally {
+      setLoading(false);
+    }
+  }, [options?.status]);
+
+  useEffect(() => { refetch(); }, [refetch]);
+
+  const recordPayment = async (invoiceId: string, amount: number, method: string, reference?: string) => {
+    const { data: userData } = await supabase.auth.getUser();
+    const { error: err } = await supabase.from('payments').insert({
+      invoice_id: invoiceId,
+      amount,
+      method,
+      reference: reference || null,
+      recorded_by: userData.user?.id || null,
+    });
+    if (err) throw err;
+    await refetch();
+  };
+
+  return { invoices, loading, error, refetch, recordPayment };
+}
+
+// ============================================================
+// Inventory upgrade: suppliers & purchase orders
+// ============================================================
+export function useSuppliers() {
+  const [suppliers, setSuppliers] = useState<Supplier[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const refetch = useCallback(async () => {
+    setLoading(true);
+    try {
+      const { data, error: err } = await supabase.from('suppliers').select('*').order('name');
+      if (err) throw err;
+      setSuppliers(data || []);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => { refetch(); }, [refetch]);
+
+  return { suppliers, loading, refetch };
+}
+
+export function usePurchaseOrders() {
+  const [purchaseOrders, setPurchaseOrders] = useState<PurchaseOrder[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const refetch = useCallback(async () => {
+    setLoading(true);
+    try {
+      const { data, error: err } = await supabase
+        .from('purchase_orders')
+        .select('*, supplier:suppliers(*), items:purchase_order_items(*, product:products(*))')
+        .order('created_at', { ascending: false });
+      if (err) throw err;
+      setPurchaseOrders(data || []);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => { refetch(); }, [refetch]);
+
+  return { purchaseOrders, loading, refetch };
 }

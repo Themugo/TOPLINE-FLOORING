@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
-import { Eye, EyeOff, Settings2, Save } from 'lucide-react';
+import { Eye, EyeOff, Settings2, Save, Plus, Trash2 } from 'lucide-react';
 import { AdminLayout } from './dashboard';
 import { supabase } from '@/lib/supabase';
 import { useToast } from '@/hooks/use-toast';
+import { ImageUpload } from '@/components/ui/image-upload';
 import type { HomepageSection } from '@/lib/types';
 
 export default function AdminHomepageBuilder() {
@@ -27,9 +28,13 @@ export default function AdminHomepageBuilder() {
   };
 
   const updateSection = async (id: string, updates: Partial<HomepageSection>) => {
-    await supabase.from('homepage_sections').update({ ...updates, updated_at: new Date().toISOString() }).eq('id', id);
+    const { error } = await supabase.from('homepage_sections').update({ ...updates, updated_at: new Date().toISOString() }).eq('id', id);
+    if (error) {
+      toast({ title: 'Failed to save section', variant: 'destructive' });
+      return;
+    }
     fetchSections();
-    toast({ title: 'Section updated' });
+    toast({ title: 'Section updated - changes are live on your homepage now' });
     setEditing(null);
   };
 
@@ -48,7 +53,7 @@ export default function AdminHomepageBuilder() {
   };
 
   const sectionTypeLabels: Record<string, string> = {
-    hero: 'Hero Section',
+    hero: 'Hero Slider',
     services: 'Services',
     about: 'About Us',
     products: 'Products/Materials',
@@ -63,7 +68,8 @@ export default function AdminHomepageBuilder() {
     <AdminLayout title="Homepage Builder">
       <div className="max-w-3xl">
         <div className="mb-6 bg-blue-50 text-blue-700 text-sm rounded-lg p-4">
-          Drag sections to reorder. Click the gear icon to configure each section. Toggle visibility with the eye icon.
+          This controls everything on your live homepage - text, photos, colors, and the order sections
+          appear in. Click the gear icon on any section to edit it. Changes save instantly to the site.
         </div>
 
         <div className="space-y-3">
@@ -74,6 +80,10 @@ export default function AdminHomepageBuilder() {
                 !section.is_active ? 'opacity-60' : ''
               }`}
             >
+              {section.background_image && (
+                <img src={section.background_image} alt="" className="w-14 h-14 rounded-lg object-cover flex-shrink-0 hidden sm:block" />
+              )}
+
               <div className="flex flex-col gap-1">
                 <button
                   onClick={() => moveSection(section.id, 'up')}
@@ -91,27 +101,29 @@ export default function AdminHomepageBuilder() {
                 </button>
               </div>
 
-              <div className="flex-1">
+              <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
                   <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded">
                     {sectionTypeLabels[section.section_type] || section.section_type}
                   </span>
                   <span className="text-xs text-gray-400">Order: {section.display_order}</span>
                 </div>
-                <h3 className="font-medium text-gray-900 mt-1">{section.title || 'Untitled'}</h3>
-                {section.subtitle && <p className="text-sm text-gray-500">{section.subtitle}</p>}
+                <h3 className="font-medium text-gray-900 mt-1 truncate">{section.title || 'Untitled'}</h3>
+                {section.subtitle && <p className="text-sm text-gray-500 truncate">{section.subtitle}</p>}
               </div>
 
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-shrink-0">
                 <button
                   onClick={() => setEditing(editing === section.id ? null : section.id)}
                   className="p-2 text-gray-400 hover:text-gray-700"
+                  title="Edit section"
                 >
                   <Settings2 className="w-4 h-4" />
                 </button>
                 <button
                   onClick={() => toggleActive(section.id, section.is_active)}
                   className="p-2 text-gray-400 hover:text-gray-700"
+                  title={section.is_active ? 'Hide from homepage' : 'Show on homepage'}
                 >
                   {section.is_active ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
                 </button>
@@ -131,22 +143,46 @@ export default function AdminHomepageBuilder() {
   );
 }
 
+interface AboutStat {
+  value: string;
+  label: string;
+}
+
 function SectionEditor({ section, onSave, onClose }: { section: HomepageSection; onSave: (u: Partial<HomepageSection>) => void; onClose: () => void }) {
   const [form, setForm] = useState({
     title: section.title || '',
     subtitle: section.subtitle || '',
     background_color: section.background_color || '',
+    background_image: section.background_image || '',
     padding: section.padding || 'py-16',
     content: section.content || {},
   });
 
+  const aboutStats: AboutStat[] = Array.isArray(form.content.stats) ? form.content.stats : [];
+
+  const updateAboutStat = (index: number, field: keyof AboutStat, value: string) => {
+    const next = [...aboutStats];
+    next[index] = { ...next[index], [field]: value };
+    setForm({ ...form, content: { ...form.content, stats: next } });
+  };
+
+  const addAboutStat = () => {
+    setForm({ ...form, content: { ...form.content, stats: [...aboutStats, { value: '', label: '' }] } });
+  };
+
+  const removeAboutStat = (index: number) => {
+    setForm({ ...form, content: { ...form.content, stats: aboutStats.filter((_, i) => i !== index) } });
+  };
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
-      <div className="bg-white rounded-xl max-w-lg w-full p-6 max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50" onClick={onClose}>
+      <div className="bg-white rounded-xl max-w-lg w-full p-6 max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
         <h2 className="font-semibold text-lg mb-4">Edit Section</h2>
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              {section.section_type === 'about' ? 'Heading' : 'Title'}
+            </label>
             <input
               type="text"
               value={form.title}
@@ -155,7 +191,9 @@ function SectionEditor({ section, onSave, onClose }: { section: HomepageSection;
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Subtitle</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Subtitle {section.section_type === 'cta' && '(shown under the heading)'}
+            </label>
             <input
               type="text"
               value={form.subtitle}
@@ -163,21 +201,94 @@ function SectionEditor({ section, onSave, onClose }: { section: HomepageSection;
               className="input"
             />
           </div>
+
+          {/* About-specific content */}
+          {section.section_type === 'about' && (
+            <>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">First Paragraph</label>
+                <textarea
+                  value={form.content.paragraph_1 || ''}
+                  onChange={(e) => setForm({ ...form, content: { ...form.content, paragraph_1: e.target.value } })}
+                  className="input min-h-[80px]"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Second Paragraph</label>
+                <textarea
+                  value={form.content.paragraph_2 || ''}
+                  onChange={(e) => setForm({ ...form, content: { ...form.content, paragraph_2: e.target.value } })}
+                  className="input min-h-[80px]"
+                />
+              </div>
+              <ImageUpload
+                label="About Photo"
+                value={form.content.image_url || ''}
+                onChange={(url) => setForm({ ...form, content: { ...form.content, image_url: url } })}
+                folder="homepage"
+              />
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Stats (e.g. "10+ Years")</label>
+                <div className="space-y-2">
+                  {aboutStats.map((stat, i) => (
+                    <div key={i} className="flex items-center gap-2">
+                      <input
+                        placeholder="Value (10+)"
+                        value={stat.value}
+                        onChange={(e) => updateAboutStat(i, 'value', e.target.value)}
+                        className="input flex-1"
+                      />
+                      <input
+                        placeholder="Label (Years)"
+                        value={stat.label}
+                        onChange={(e) => updateAboutStat(i, 'label', e.target.value)}
+                        className="input flex-1"
+                      />
+                      <button type="button" onClick={() => removeAboutStat(i)} className="p-2 text-red-500 flex-shrink-0">
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+                <button type="button" onClick={addAboutStat} className="mt-2 text-sm text-primary-600 hover:text-primary-700 font-medium flex items-center gap-1">
+                  <Plus className="w-4 h-4" /> Add Stat
+                </button>
+              </div>
+            </>
+          )}
+
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Background Color</label>
-            <select
-              value={form.background_color}
-              onChange={(e) => setForm({ ...form, background_color: e.target.value })}
-              className="input"
-            >
-              <option value="">None (transparent)</option>
-              <option value="#ffffff">White</option>
-              <option value="#f9fafb">Gray 50</option>
-              <option value="#f3f4f6">Gray 100</option>
-              <option value="#0369a1">Primary Blue</option>
-              <option value="#1e293b">Dark</option>
-            </select>
+            <div className="flex items-center gap-3">
+              <select
+                value={form.background_color}
+                onChange={(e) => setForm({ ...form, background_color: e.target.value })}
+                className="input flex-1"
+              >
+                <option value="">None (transparent)</option>
+                <option value="#ffffff">White</option>
+                <option value="#f9fafb">Gray 50</option>
+                <option value="#f3f4f6">Gray 100</option>
+                <option value="#c9971f">Primary Gold</option>
+                <option value="#141a26">Navy Dark</option>
+              </select>
+              <input
+                type="color"
+                value={form.background_color || '#ffffff'}
+                onChange={(e) => setForm({ ...form, background_color: e.target.value })}
+                className="w-10 h-10 rounded border cursor-pointer flex-shrink-0"
+                title="Pick a custom color"
+              />
+            </div>
           </div>
+
+          <ImageUpload
+            label="Background Image (optional - overlays the color above)"
+            value={form.background_image}
+            onChange={(url) => setForm({ ...form, background_image: url })}
+            folder="homepage"
+          />
+
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Padding</label>
             <select
@@ -264,7 +375,7 @@ function SectionEditor({ section, onSave, onClose }: { section: HomepageSection;
           {section.section_type === 'cta' && (
             <>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">CTA Text</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Button Text</label>
                 <input
                   type="text"
                   value={form.content.cta_text || ''}
@@ -273,12 +384,13 @@ function SectionEditor({ section, onSave, onClose }: { section: HomepageSection;
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">CTA Link</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Button Link</label>
                 <input
                   type="text"
                   value={form.content.cta_link || ''}
                   onChange={(e) => setForm({ ...form, content: { ...form.content, cta_link: e.target.value } })}
                   className="input"
+                  placeholder="/quotation"
                 />
               </div>
             </>

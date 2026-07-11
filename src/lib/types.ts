@@ -188,9 +188,21 @@ export interface Quotation {
   area_size: string | null;
   location: string | null;
   message: string | null;
-  status: 'new' | 'contacted' | 'quoted' | 'won' | 'lost';
+  status: QuotationStatus;
+  quotation_number: string | null;
+  valid_until: string | null;
+  subtotal: number;
+  tax_rate: number;
+  tax_amount: number;
+  total_amount: number;
+  pdf_url: string | null;
+  sent_at: string | null;
+  responded_at: string | null;
+  converted_order_id: string | null;
+  lead_id: string | null;
   created_at: string;
   updated_at: string;
+  items?: QuotationItem[];
 }
 
 export interface CartItem {
@@ -239,6 +251,7 @@ export interface ThemeSetting {
   button_style: string;
   border_radius: number;
   spacing_scale: number;
+  layout_style: 'classic' | 'showcase';
   is_active: boolean;
 }
 
@@ -422,3 +435,163 @@ export interface ActivityLog {
   user_agent: string | null;
   created_at: string;
 }
+
+// ============================================================
+// CRM
+// ============================================================
+export type LeadStatus = 'new' | 'contacted' | 'qualified' | 'proposal' | 'negotiating' | 'won' | 'lost';
+
+export interface Lead {
+  id: string;
+  name: string;
+  email: string | null;
+  phone: string | null;
+  company: string | null;
+  source: string;
+  status: LeadStatus;
+  estimated_value: number | null;
+  lost_reason: string | null;
+  assigned_to: string | null;
+  converted_customer_id: string | null;
+  converted_quotation_id: string | null;
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
+  lead_notes?: LeadNote[];
+  lead_reminders?: LeadReminder[];
+}
+
+export interface LeadNote {
+  id: string;
+  lead_id: string;
+  note: string;
+  created_by: string | null;
+  created_at: string;
+}
+
+export interface LeadReminder {
+  id: string;
+  lead_id: string;
+  due_at: string;
+  note: string | null;
+  completed: boolean;
+  completed_at: string | null;
+  created_by: string | null;
+  created_at: string;
+}
+
+// ============================================================
+// Quotations (upgraded)
+// ============================================================
+export type QuotationStatus =
+  | 'new' | 'contacted' | 'quoted' | 'won' | 'lost' // legacy values
+  | 'draft' | 'sent' | 'negotiating' | 'accepted' | 'rejected' | 'converted';
+
+export interface QuotationItem {
+  id: string;
+  quotation_id: string;
+  product_id: string | null;
+  description: string;
+  quantity: number;
+  unit: string;
+  unit_price: number;
+  line_total: number;
+  display_order: number;
+}
+
+// ============================================================
+// Invoicing
+// ============================================================
+export type InvoiceStatus = 'draft' | 'sent' | 'paid' | 'partial' | 'overdue' | 'cancelled';
+export type PaymentMethod = 'cash' | 'mpesa' | 'bank_transfer' | 'card' | 'cheque' | 'other';
+
+export interface Invoice {
+  id: string;
+  invoice_number: string;
+  customer_id: string | null;
+  order_id: string | null;
+  quotation_id: string | null;
+  customer_name: string;
+  customer_email: string | null;
+  customer_phone: string | null;
+  billing_address: string | null;
+  status: InvoiceStatus;
+  subtotal: number;
+  tax_rate: number;
+  tax_amount: number;
+  total_amount: number;
+  amount_paid: number;
+  due_date: string | null;
+  notes: string | null;
+  pdf_url: string | null;
+  created_at: string;
+  updated_at: string;
+  items?: InvoiceItem[];
+  payments?: Payment[];
+}
+
+export interface InvoiceItem {
+  id: string;
+  invoice_id: string;
+  description: string;
+  quantity: number;
+  unit_price: number;
+  line_total: number;
+  display_order: number;
+}
+
+export interface Payment {
+  id: string;
+  invoice_id: string;
+  amount: number;
+  method: PaymentMethod;
+  reference: string | null;
+  paid_at: string;
+  recorded_by: string | null;
+  notes: string | null;
+  created_at: string;
+}
+
+// ============================================================
+// Inventory upgrade: suppliers & purchase orders
+// ============================================================
+export interface Supplier {
+  id: string;
+  name: string;
+  contact_person: string | null;
+  email: string | null;
+  phone: string | null;
+  address: string | null;
+  notes: string | null;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export type PurchaseOrderStatus = 'draft' | 'sent' | 'partial' | 'received' | 'cancelled';
+
+export interface PurchaseOrder {
+  id: string;
+  po_number: string;
+  supplier_id: string | null;
+  status: PurchaseOrderStatus;
+  expected_date: string | null;
+  notes: string | null;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+  supplier?: Supplier;
+  items?: PurchaseOrderItem[];
+}
+
+export interface PurchaseOrderItem {
+  id: string;
+  purchase_order_id: string;
+  product_id: string | null;
+  description: string;
+  quantity_ordered: number;
+  quantity_received: number;
+  unit_cost: number;
+  product?: Product;
+}
+

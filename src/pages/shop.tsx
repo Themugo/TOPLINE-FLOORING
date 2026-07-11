@@ -4,6 +4,7 @@ import { Search, Filter, X } from 'lucide-react';
 import { CustomerLayout } from '@/components/layout/CustomerLayout';
 import { useProducts, useCategories } from '@/hooks/use-data';
 import { formatKES } from '@/lib/utils';
+import { getProductPlaceholder, withFallback } from '@/lib/placeholders';
 import { useCart } from '@/hooks/use-cart';
 import type { Product } from '@/lib/types';
 
@@ -127,7 +128,7 @@ export default function Shop() {
                       <Link href={`/product/${product.slug}`}>
                         <div className="aspect-[4/3] overflow-hidden bg-gray-100">
                           <img
-                            src={product.image_url || 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?auto=format&fit=crop&w=600&q=80'}
+                            src={withFallback(product.image_url, getProductPlaceholder(product.category?.slug || product.category?.name))}
                             alt={product.name}
                             className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                           />

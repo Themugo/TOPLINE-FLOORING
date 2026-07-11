@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'wouter';
-import { ShieldCheck, ArrowLeft, Plus, Minus } from 'lucide-react';
+import { ArrowLeft, Plus, Minus } from 'lucide-react';
 import { CustomerLayout } from '@/components/layout/CustomerLayout';
 import { useProduct, useProducts } from '@/hooks/use-data';
 import { useCart } from '@/hooks/use-cart';
 import { formatKES } from '@/lib/utils';
+import { getProductPlaceholder, withFallback } from '@/lib/placeholders';
 
 const RECENTLY_VIEWED_KEY = 'topline_recently_viewed';
 const MAX_RECENTLY_VIEWED = 6;
@@ -102,17 +103,11 @@ export default function ShopDetail() {
 
           <div className="grid md:grid-cols-2 gap-8 lg:gap-16">
             <div className="aspect-square bg-gray-100 rounded-xl overflow-hidden">
-              {product.image_url ? (
-                <img
-                  src={product.image_url}
-                  alt={product.name}
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center">
-                  <ShieldCheck className="w-20 h-20 text-gray-300" />
-                </div>
-              )}
+              <img
+                src={withFallback(product.image_url, getProductPlaceholder(product.category?.slug || product.category?.name))}
+                alt={product.name}
+                className="w-full h-full object-cover"
+              />
             </div>
 
             <div className="py-2">
@@ -195,17 +190,11 @@ export default function ShopDetail() {
                         className="group bg-white border border-gray-200 hover:border-primary-300 hover:shadow-lg transition-all duration-300 rounded-xl overflow-hidden flex flex-col"
                       >
                         <div className="h-32 bg-gray-100 overflow-hidden">
-                          {rp.image_url ? (
-                            <img
-                              src={rp.image_url}
-                              alt={rp.name}
-                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                            />
-                          ) : (
-                            <div className="w-full h-full flex items-center justify-center">
-                              <ShieldCheck className="w-8 h-8 text-gray-300" />
-                            </div>
-                          )}
+                          <img
+                            src={withFallback(rp.image_url, getProductPlaceholder(rp.category?.slug || rp.category?.name))}
+                            alt={rp.name}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                          />
                         </div>
                         <div className="p-3 flex flex-col flex-1">
                           {rp.category && (

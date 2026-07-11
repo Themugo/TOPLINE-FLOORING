@@ -23,6 +23,7 @@ import {
   Tag,
   Folder,
   Search,
+  Wrench,
 } from 'lucide-react';
 import { useAdminAuth } from '@/hooks/use-data';
 import { useState, useEffect } from 'react';
@@ -40,8 +41,10 @@ function AdminLayout({ children, title }: AdminLayoutProps) {
 
   const navItems = [
     { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
+    { href: '/admin/crm', label: 'CRM / Leads', icon: Users },
     { href: '/admin/orders', label: 'Orders', icon: ShoppingCart },
     { href: '/admin/products', label: 'Products', icon: Package },
+    { href: '/admin/services', label: 'Services', icon: Wrench },
     { href: '/admin/categories', label: 'Categories', icon: FolderOpen },
     { href: '/admin/inventory', label: 'Inventory', icon: Warehouse },
     { href: '/admin/customers', label: 'Customers', icon: Users },

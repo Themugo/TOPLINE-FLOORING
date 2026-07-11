@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react';
-import { Upload, X, Image as ImageIcon, Loader2 } from 'lucide-react';
+import { Upload, X, Image as ImageIcon, Loader2, FolderOpen } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
+import { MediaLibraryModal } from '@/components/admin/MediaLibraryModal';
 
 interface ImageUploadProps {
   value: string;
@@ -21,6 +22,7 @@ export function ImageUpload({
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [dragOver, setDragOver] = useState(false);
+  const [libraryOpen, setLibraryOpen] = useState(false);
 
   async function uploadFile(file: File) {
     setError(null);
@@ -92,7 +94,7 @@ export function ImageUpload({
           >
             <X className="w-4 h-4" />
           </button>
-          <div className="mt-2 flex items-center gap-2">
+          <div className="mt-2 flex items-center gap-3">
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
@@ -101,44 +103,59 @@ export function ImageUpload({
             >
               {uploading ? 'Uploading...' : 'Replace image'}
             </button>
-            <span className="text-xs text-gray-400 truncate max-w-xs">
-              {value.split('/').pop()}
-            </span>
+            <button
+              type="button"
+              onClick={() => setLibraryOpen(true)}
+              className="text-xs text-gray-500 hover:text-gray-700 font-medium flex items-center gap-1"
+            >
+              <FolderOpen className="w-3.5 h-3.5" /> Browse Library
+            </button>
           </div>
         </div>
       ) : (
         <div
-          onClick={() => !uploading && fileInputRef.current?.click()}
           onDragOver={(e) => {
             e.preventDefault();
             setDragOver(true);
           }}
           onDragLeave={() => setDragOver(false)}
           onDrop={handleDrop}
-          className={`w-full h-40 rounded-lg border-2 border-dashed flex flex-col items-center justify-center cursor-pointer transition-colors ${
+          className={`w-full rounded-lg border-2 border-dashed transition-colors ${
             dragOver
               ? 'border-primary-500 bg-primary-50'
               : 'border-gray-300 hover:border-primary-400 hover:bg-gray-50'
           } ${uploading ? 'pointer-events-none' : ''}`}
         >
-          {uploading ? (
-            <>
-              <Loader2 className="w-8 h-8 text-primary-500 animate-spin mb-2" />
-              <p className="text-sm text-gray-500">Uploading...</p>
-            </>
-          ) : (
-            <>
-              <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center mb-2">
-                <Upload className="w-6 h-6 text-gray-400" />
-              </div>
-              <p className="text-sm font-medium text-gray-600">
-                Click to upload or drag & drop
-              </p>
-              <p className="text-xs text-gray-400 mt-1">
-                PNG, JPG, WebP up to 5MB
-              </p>
-            </>
-          )}
+          <div
+            onClick={() => !uploading && fileInputRef.current?.click()}
+            className="h-32 flex flex-col items-center justify-center cursor-pointer"
+          >
+            {uploading ? (
+              <>
+                <Loader2 className="w-7 h-7 text-primary-500 animate-spin mb-2" />
+                <p className="text-sm text-gray-500">Uploading...</p>
+              </>
+            ) : (
+              <>
+                <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center mb-2">
+                  <Upload className="w-5 h-5 text-gray-400" />
+                </div>
+                <p className="text-sm font-medium text-gray-600">
+                  Click to upload or drag & drop
+                </p>
+                <p className="text-xs text-gray-400 mt-1">
+                  PNG, JPG, WebP up to 5MB
+                </p>
+              </>
+            )}
+          </div>
+          <button
+            type="button"
+            onClick={() => setLibraryOpen(true)}
+            className="w-full py-2 text-xs text-gray-500 hover:text-primary-600 font-medium border-t border-gray-200 flex items-center justify-center gap-1.5"
+          >
+            <FolderOpen className="w-3.5 h-3.5" /> Or browse Media Library
+          </button>
         </div>
       )}
 
@@ -153,6 +170,14 @@ export function ImageUpload({
         onChange={handleFileSelect}
         className="hidden"
       />
+
+      {libraryOpen && (
+        <MediaLibraryModal
+          currentValue={value}
+          onSelect={(url) => { onChange(url); setLibraryOpen(false); }}
+          onClose={() => setLibraryOpen(false)}
+        />
+      )}
     </div>
   );
 }

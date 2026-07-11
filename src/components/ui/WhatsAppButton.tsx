@@ -1,8 +1,13 @@
 import { MessageCircle } from 'lucide-react';
+import { useSiteSettings } from '@/hooks/use-data';
+
+const DEFAULT_WHATSAPP = '254700123456';
 
 export function WhatsAppButton() {
-  const phoneNumber = '254700123456';
-  const message = encodeURIComponent('Hello! I\'m interested in your flooring and waterproofing services.');
+  const { settings } = useSiteSettings();
+  const rawNumber = settings.contact?.whatsapp || settings.contact?.phone || DEFAULT_WHATSAPP;
+  const phoneNumber = rawNumber.replace(/\D/g, '');
+  const message = encodeURIComponent("Hello! I'm interested in your flooring and waterproofing services.");
   const whatsappUrl = `https://wa.me/${phoneNumber}?text=${message}`;
 
   return (

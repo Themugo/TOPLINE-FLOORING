@@ -7,6 +7,11 @@ export function formatKES(amount: number): string {
   }).format(amount);
 }
 
+export function telHref(phone: string): string {
+  const cleaned = phone.replace(/[^\d+]/g, '');
+  return `tel:${cleaned}`;
+}
+
 export function formatPhone(phone: string): string {
   // Format Kenyan phone numbers
   const cleaned = phone.replace(/\D/g, '');

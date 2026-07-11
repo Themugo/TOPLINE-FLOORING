@@ -38,6 +38,8 @@ import AdminMediaLibrary from '@/pages/admin/media-library';
 import AdminReports from '@/pages/admin/reports';
 import AdminSeo from '@/pages/admin/seo';
 import AdminCoupons from '@/pages/admin/coupons';
+import AdminCRM from '@/pages/admin/crm';
+import AdminServices from '@/pages/admin/services';
 
 function Router() {
   const [location] = useLocation();
@@ -63,6 +65,22 @@ function Router() {
     return (
       <AdminAuthGuard>
         <AdminOrders />
+      </AdminAuthGuard>
+    );
+  }
+
+  if (location === '/admin/crm') {
+    return (
+      <AdminAuthGuard>
+        <AdminCRM />
+      </AdminAuthGuard>
+    );
+  }
+
+  if (location === '/admin/services') {
+    return (
+      <AdminAuthGuard>
+        <AdminServices />
       </AdminAuthGuard>
     );
   }
