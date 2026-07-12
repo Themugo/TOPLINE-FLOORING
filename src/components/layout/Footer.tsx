@@ -40,30 +40,30 @@ export function Footer() {
 
   const copyright =
     settings.footer?.copyright ||
-    `© ${currentYear} ${siteName}. All rights reserved.`;
+    `© ${currentYear} ${siteName} Flooring and Waterproofing | All Rights Reserved`;
   const showSocial = settings.footer?.show_social !== false;
 
   return (
-    <footer className="bg-navy-950 text-gray-300">
+    <footer className="bg-white text-navy-700 border-t border-gray-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-16">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12">
           <div>
             <div className="flex items-center gap-3 mb-6">
-              <div className="w-10 h-10 bg-gradient-to-br from-primary-400 to-primary-600 rounded-lg flex items-center justify-center shadow-lg">
-                <span className="text-white font-display font-bold text-lg">{firstWord.charAt(0)}</span>
+              <div className="w-10 h-10 rounded-full border-2 border-navy-600 flex items-center justify-center flex-shrink-0">
+                <span className="text-primary-600 font-display font-bold text-lg">{firstWord.charAt(0)}</span>
               </div>
               <div>
-                <h2 className="font-display font-bold text-lg text-white leading-tight">
+                <h2 className="font-display font-bold text-lg text-primary-600 leading-tight">
                   {firstWord}{restWords.length > 0 ? ` ${restWords.join(' ')}` : ''}
                 </h2>
-                <p className="text-xs text-primary-400 tracking-wide">{tagline}</p>
+                <p className="text-xs text-navy-600 tracking-wide">{tagline}</p>
               </div>
             </div>
-            <p className="text-sm text-gray-400 leading-relaxed">{description}</p>
+            <p className="text-sm text-navy-500 leading-relaxed">{description}</p>
           </div>
 
           <div>
-            <h3 className="font-semibold text-white mb-4">Quick Links</h3>
+            <h3 className="font-semibold text-primary-600 mb-4">Quick Links</h3>
             <nav className="space-y-3">
               {[
                 { href: '/', label: 'Home' },
@@ -75,7 +75,7 @@ export function Footer() {
                 <Link
                   key={link.href}
                   href={link.href}
-                  className="block text-sm text-gray-400 hover:text-primary-400 transition-colors"
+                  className="block text-sm text-navy-600 hover:text-primary-600 transition-colors"
                 >
                   {link.label}
                 </Link>
@@ -84,7 +84,7 @@ export function Footer() {
           </div>
 
           <div>
-            <h3 className="font-semibold text-white mb-4">Our Services</h3>
+            <h3 className="font-semibold text-primary-600 mb-4">Our Services</h3>
             <nav className="space-y-3">
               {[
                 'Industrial Flooring',
@@ -96,7 +96,7 @@ export function Footer() {
                 <Link
                   key={service}
                   href="/services"
-                  className="block text-sm text-gray-400 hover:text-primary-400 transition-colors"
+                  className="block text-sm text-navy-600 hover:text-primary-600 transition-colors"
                 >
                   {service}
                 </Link>
@@ -105,27 +105,27 @@ export function Footer() {
           </div>
 
           <div>
-            <h3 className="font-semibold text-white mb-4">Contact Info</h3>
+            <h3 className="font-semibold text-primary-600 mb-4">Contact Info</h3>
             <div className="space-y-4">
               <a
                 href={telHref(phone)}
-                className="flex items-start gap-3 text-sm text-gray-400 hover:text-primary-400 transition-colors"
+                className="flex items-start gap-3 text-sm text-navy-600 hover:text-primary-600 transition-colors"
               >
                 <Phone className="w-4 h-4 mt-0.5 flex-shrink-0" />
                 <span>{phone}</span>
               </a>
               <a
                 href={`mailto:${email}`}
-                className="flex items-start gap-3 text-sm text-gray-400 hover:text-primary-400 transition-colors"
+                className="flex items-start gap-3 text-sm text-navy-600 hover:text-primary-600 transition-colors"
               >
                 <Mail className="w-4 h-4 mt-0.5 flex-shrink-0" />
                 <span>{email}</span>
               </a>
-              <div className="flex items-start gap-3 text-sm text-gray-400">
+              <div className="flex items-start gap-3 text-sm text-navy-600">
                 <MapPin className="w-4 h-4 mt-0.5 flex-shrink-0" />
                 <span>{address}</span>
               </div>
-              <div className="text-sm text-gray-400">
+              <div className="text-sm text-navy-500">
                 {weekdays ? (
                   <p>Mon - Fri: {weekdays.open} - {weekdays.close}</p>
                 ) : (
@@ -148,7 +148,7 @@ export function Footer() {
                     href={url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="w-9 h-9 rounded-full bg-navy-900 flex items-center justify-center text-gray-400 hover:bg-primary-500 hover:text-white transition-colors"
+                    className="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center text-navy-600 hover:bg-primary-500 hover:text-white transition-colors"
                   >
                     <Icon className="w-4 h-4" />
                   </a>
@@ -157,15 +157,16 @@ export function Footer() {
             )}
           </div>
         </div>
+      </div>
 
-        <div className="mt-12 pt-8 border-t border-navy-900">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-            <p className="text-sm text-gray-500">{copyright}</p>
-            <div className="flex items-center gap-6 text-sm text-gray-500">
-              <Link href="/admin/login" className="hover:text-primary-400 transition-colors">
-                Admin Portal
-              </Link>
-            </div>
+      {/* Bottom bar - solid brand gold, matching the site's footer strip */}
+      <div className="bg-primary-500">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-2">
+            <p className="text-sm text-white font-medium">{copyright}</p>
+            <Link href="/admin/login" className="text-sm text-white/90 hover:text-white transition-colors">
+              Admin Portal
+            </Link>
           </div>
         </div>
       </div>

@@ -50,12 +50,12 @@ export default function Portfolio() {
   return (
     <CustomerLayout>
       {/* Hero */}
-      <section className="bg-gradient-to-br from-navy-900 to-navy-950 py-16 lg:py-24">
+      <section className="bg-gray-50 border-b border-gray-200 py-16 lg:py-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h1 className="font-display text-3xl lg:text-4xl font-bold text-white mb-4">
+          <h1 className="font-display text-3xl lg:text-4xl font-bold text-primary-600 mb-4">
             Our Portfolio
           </h1>
-          <p className="text-gray-300 text-lg max-w-2xl mx-auto">
+          <p className="text-navy-600 text-lg max-w-2xl mx-auto">
             Explore our completed projects across Kenya and East Africa. Every project
             showcases our commitment to quality and durability.
           </p>
@@ -145,13 +145,13 @@ export default function Portfolio() {
       </section>
 
       {/* CTA */}
-      <section className="py-16 bg-navy-900">
+      <section className="py-16 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <Building2 className="w-12 h-12 text-primary-400 mx-auto mb-4" />
-          <h2 className="font-display text-2xl font-bold text-white mb-4">
+          <Building2 className="w-12 h-12 text-primary-500 mx-auto mb-4" />
+          <h2 className="font-display text-2xl font-bold text-navy-900 mb-4">
             Want to See Your Project Here?
           </h2>
-          <p className="text-gray-300 mb-8 max-w-xl mx-auto">
+          <p className="text-navy-500 mb-8 max-w-xl mx-auto">
             Let's discuss your flooring and waterproofing needs. Our team is ready to
             bring your vision to life.
           </p>

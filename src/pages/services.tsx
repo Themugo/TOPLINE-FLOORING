@@ -71,12 +71,12 @@ export default function Services() {
   return (
     <CustomerLayout>
       {/* Hero */}
-      <section className="bg-gradient-to-br from-navy-900 to-navy-950 py-16 lg:py-24">
+      <section className="bg-gray-50 border-b border-gray-200 py-16 lg:py-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h1 className="font-display text-3xl lg:text-4xl font-bold text-white mb-4">
+          <h1 className="font-display text-3xl lg:text-4xl font-bold text-primary-600 mb-4">
             Our Services
           </h1>
-          <p className="text-gray-300 text-lg max-w-2xl mx-auto">
+          <p className="text-navy-600 text-lg max-w-2xl mx-auto">
             Professional flooring and waterproofing solutions for industrial, commercial,
             and residential projects across Kenya and East Africa.
           </p>
@@ -185,12 +185,12 @@ export default function Services() {
       </section>
 
       {/* CTA */}
-      <section className="py-16 lg:py-24 bg-navy-900">
+      <section className="py-16 lg:py-24 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="font-display text-3xl lg:text-4xl font-bold text-white mb-4">
+          <h2 className="font-display text-3xl lg:text-4xl font-bold text-navy-900 mb-4">
             Ready to Transform Your Space?
           </h2>
-          <p className="text-gray-300 text-lg mb-8 max-w-2xl mx-auto">
+          <p className="text-navy-500 text-lg mb-8 max-w-2xl mx-auto">
             Get in touch for a free consultation. Our experts are ready to help you
             choose the right solution for your project.
           </p>
@@ -198,7 +198,7 @@ export default function Services() {
             <Link href="/quotation" className="btn-primary">
               Get Free Quote
             </Link>
-            <Link href="/contact" className="btn bg-white text-navy-900 hover:bg-gray-100">
+            <Link href="/contact" className="btn bg-white border border-gray-200 text-navy-700 hover:bg-gray-100">
               Contact Us
             </Link>
           </div>

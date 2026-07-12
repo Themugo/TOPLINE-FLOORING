@@ -275,13 +275,13 @@ export default function Home() {
 
       {/* Services Section */}
       {isSectionVisible('services') && (
-      <section className={`${servicesSection?.padding || 'py-12 lg:py-16'} bg-navy-950`} style={sectionStyle('services')}>
+      <section className={`${servicesSection?.padding || 'py-12 lg:py-16'} bg-white`} style={sectionStyle('services')}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-3xl mx-auto mb-10">
-            <h2 className="font-display text-2xl lg:text-3xl font-bold text-white mb-2">
+            <h2 className="font-display text-2xl lg:text-3xl font-bold text-primary-600 mb-2">
               {servicesSection?.title || 'Our Services'}
             </h2>
-            <p className="text-gray-400">
+            <p className="text-navy-500">
               {servicesSection?.subtitle || 'Professional flooring and waterproofing solutions for Kenya and East Africa.'}
             </p>
           </div>
@@ -541,19 +541,19 @@ export default function Home() {
 
       {/* CTA Section */}
       {isSectionVisible('cta') && (
-      <section className={`${ctaSection?.padding || 'py-12 lg:py-16'} bg-navy-900`} style={sectionStyle('cta')}>
+      <section className={`${ctaSection?.padding || 'py-12 lg:py-16'} bg-gray-50`} style={sectionStyle('cta')}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="font-display text-2xl lg:text-3xl font-bold text-white mb-3">
+          <h2 className="font-display text-2xl lg:text-3xl font-bold text-navy-900 mb-3">
             {ctaSection?.title || 'Ready to Start Your Project?'}
           </h2>
-          <p className="text-gray-300 mb-6 max-w-xl mx-auto text-sm lg:text-base">
+          <p className="text-navy-500 mb-6 max-w-xl mx-auto text-sm lg:text-base">
             {ctaSection?.subtitle || 'Get in touch with our team for a free consultation and quotation.'}
           </p>
           <div className="flex flex-col sm:flex-row justify-center gap-3">
-            <Link href={ctaContent.cta_link || '/quotation'} className="bg-primary-500 hover:bg-primary-600 text-white px-6 py-2.5 rounded-lg font-medium text-sm shadow-lg">
+            <Link href={ctaContent.cta_link || '/quotation'} className="bg-primary-500 hover:bg-primary-600 text-white px-6 py-2.5 rounded-lg font-medium text-sm shadow-sm">
               {ctaContent.cta_text || 'Get Free Quote'}
             </Link>
-            <a href={telHref(phone)} className="bg-white text-navy-900 px-6 py-2.5 rounded-lg font-medium text-sm hover:bg-gray-100">
+            <a href={telHref(phone)} className="bg-white border border-gray-200 text-navy-700 px-6 py-2.5 rounded-lg font-medium text-sm hover:bg-gray-100">
               <Phone className="w-4 h-4 inline mr-2" />
               Call Now
             </a>

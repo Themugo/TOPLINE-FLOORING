@@ -8,7 +8,8 @@ export default {
         display: ['Cormorant Garamond', 'Space Grotesk', 'system-ui', 'serif'],
       },
       colors: {
-        // Rich, deep gold — premium accent (was flat amber before)
+        // Brand gold - matches the site's actual mustard/gold accent
+        // (buttons, section headings, "TOPLINE" logo text)
         primary: {
           50: '#fdf8ed',
           100: '#faedc9',
@@ -22,19 +23,21 @@ export default {
           900: '#5c3f19',
           950: '#35220c',
         },
-        // Deep navy-charcoal — hero/sidebar/dark surfaces
+        // Brand blue - matches the site's actual link/nav/contact-bar
+        // blue and the ring around the logo. Named "navy" for
+        // historical reasons but this is a real blue, not near-black.
         navy: {
-          50: '#f2f4f7',
-          100: '#e2e6ec',
-          200: '#c7cfdc',
-          300: '#a1aec3',
-          400: '#7789a5',
-          500: '#5b6d8a',
-          600: '#485771',
-          700: '#3b475d',
-          800: '#262f3f',
-          900: '#141a26',
-          950: '#0b0f17',
+          50: '#eaf3fc',
+          100: '#cfe6f8',
+          200: '#a3cdf0',
+          300: '#71b0e6',
+          400: '#4593da',
+          500: '#2779c7',
+          600: '#1e73be',
+          700: '#195c9c',
+          800: '#164d81',
+          900: '#153f69',
+          950: '#0d2740',
         },
         accent: {
           50: '#f0f9ff',

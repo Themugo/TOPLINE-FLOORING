@@ -117,15 +117,15 @@ export default function Quotation() {
     <CustomerLayout>
       <div className="min-h-screen">
         {/* Hero */}
-        <section className="bg-gradient-to-br from-navy-900 to-navy-950 py-16 lg:py-24">
+        <section className="bg-white border-b border-gray-200 py-16 lg:py-24">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <div className="w-16 h-16 bg-primary-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
-              <FileText className="w-8 h-8 text-primary-400" />
+            <div className="w-16 h-16 bg-primary-50 rounded-full flex items-center justify-center mx-auto mb-6">
+              <FileText className="w-8 h-8 text-primary-600" />
             </div>
-            <h1 className="font-display text-3xl lg:text-4xl font-bold text-white mb-4">
+            <h1 className="font-display text-3xl lg:text-4xl font-bold text-primary-600 mb-4">
               Request a Quotation
             </h1>
-            <p className="text-gray-300 text-lg max-w-2xl mx-auto">
+            <p className="text-navy-600 text-lg max-w-2xl mx-auto">
               Tell us about your project and we'll provide a detailed quotation including
               materials, installation, and timeline.
             </p>

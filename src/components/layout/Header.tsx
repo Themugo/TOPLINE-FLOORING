@@ -33,18 +33,18 @@ export function Header() {
   };
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-navy-950/95 backdrop-blur-sm border-b border-navy-900">
+    <header className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm border-b border-gray-200 shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 lg:h-20">
           <Link href="/" className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-primary-400 to-primary-600 rounded-lg flex items-center justify-center shadow-lg">
-              <span className="text-white font-display font-bold text-lg">{firstWord.charAt(0)}</span>
+            <div className="w-10 h-10 rounded-full border-2 border-navy-600 flex items-center justify-center flex-shrink-0">
+              <span className="text-primary-600 font-display font-bold text-lg">{firstWord.charAt(0)}</span>
             </div>
             <div className="hidden sm:block">
-              <h1 className="font-display font-bold text-lg text-white leading-tight">
+              <h1 className="font-display font-bold text-lg text-primary-600 leading-tight">
                 {firstWord}{restWords.length > 0 ? ` ${restWords.join(' ')}` : ''}
               </h1>
-              <p className="text-xs text-primary-400 tracking-wide">{tagline}</p>
+              <p className="text-xs text-navy-600 tracking-wide">{tagline}</p>
             </div>
           </Link>
 
@@ -55,8 +55,8 @@ export function Header() {
                 href={link.href}
                 className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
                   isActive(link.href)
-                    ? 'text-primary-400 bg-navy-900'
-                    : 'text-gray-300 hover:text-white hover:bg-navy-900'
+                    ? 'text-primary-600 bg-primary-50'
+                    : 'text-navy-700 hover:text-primary-600 hover:bg-gray-50'
                 }`}
               >
                 {link.label}
@@ -67,7 +67,7 @@ export function Header() {
           <div className="flex items-center gap-3">
             <a
               href={telHref(phone)}
-              className="hidden md:flex items-center gap-2 text-sm text-gray-300 hover:text-primary-400 transition-colors"
+              className="hidden md:flex items-center gap-2 text-sm text-navy-700 hover:text-primary-600 transition-colors"
             >
               <Phone className="w-4 h-4" />
               <span>{phone}</span>
@@ -75,7 +75,7 @@ export function Header() {
 
             <Link
               href="/cart"
-              className="relative p-2 text-gray-300 hover:text-white transition-colors"
+              className="relative p-2 text-navy-700 hover:text-primary-600 transition-colors"
             >
               <ShoppingCart className="w-5 h-5" />
               {totalItems > 0 && (
@@ -87,7 +87,7 @@ export function Header() {
 
             <Link
               href="/admin/login"
-              className="hidden sm:flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg bg-primary-500 text-white hover:bg-primary-600 transition-colors shadow-lg"
+              className="hidden sm:flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg bg-primary-500 text-white hover:bg-primary-600 transition-colors shadow-sm"
             >
               <LogIn className="w-4 h-4" />
               <span>Login</span>
@@ -95,7 +95,7 @@ export function Header() {
 
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="lg:hidden p-2 text-gray-300 hover:text-white"
+              className="lg:hidden p-2 text-navy-700 hover:text-primary-600"
             >
               {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
@@ -104,7 +104,7 @@ export function Header() {
       </div>
 
       {mobileMenuOpen && (
-        <div className="lg:hidden bg-navy-900 border-t border-navy-800">
+        <div className="lg:hidden bg-white border-t border-gray-200">
           <nav className="max-w-7xl mx-auto px-4 py-4 space-y-1">
             {navLinks.map((link) => (
               <Link
@@ -113,17 +113,17 @@ export function Header() {
                 onClick={() => setMobileMenuOpen(false)}
                 className={`block px-4 py-3 text-sm font-medium rounded-lg transition-colors ${
                   isActive(link.href)
-                    ? 'text-primary-400 bg-navy-800'
-                    : 'text-gray-300 hover:text-white hover:bg-navy-800'
+                    ? 'text-primary-600 bg-primary-50'
+                    : 'text-navy-700 hover:text-primary-600 hover:bg-gray-50'
                 }`}
               >
                 {link.label}
               </Link>
             ))}
-            <div className="pt-4 mt-4 border-t border-navy-800 space-y-1">
+            <div className="pt-4 mt-4 border-t border-gray-200 space-y-1">
               <a
                 href={telHref(phone)}
-                className="flex items-center gap-2 px-4 py-3 text-sm text-gray-300"
+                className="flex items-center gap-2 px-4 py-3 text-sm text-navy-700"
               >
                 <Phone className="w-4 h-4" />
                 <span>{phone}</span>
@@ -131,7 +131,7 @@ export function Header() {
               <Link
                 href="/admin/login"
                 onClick={() => setMobileMenuOpen(false)}
-                className="flex items-center gap-2 px-4 py-3 text-sm font-medium text-primary-400"
+                className="flex items-center gap-2 px-4 py-3 text-sm font-medium text-primary-600"
               >
                 <LogIn className="w-4 h-4" />
                 <span>Admin Login</span>
