@@ -4,6 +4,7 @@ import { ArrowRight, CheckCircle, Loader2 } from 'lucide-react';
 import { CustomerLayout } from '@/components/layout/CustomerLayout';
 import { supabase } from '@/lib/supabase';
 import { getServicePlaceholder, withFallback } from '@/lib/placeholders';
+import { useSeoMeta } from '@/hooks/use-seo';
 
 interface Service {
   id: string;
@@ -16,6 +17,7 @@ interface Service {
 }
 
 export default function Services() {
+  useSeoMeta('services');
   const [services, setServices] = useState<Service[]>([]);
   const [loading, setLoading] = useState(true);
 

@@ -35,7 +35,8 @@ import AdminProjects from '@/pages/admin/projects';
 import AdminPromotions from '@/pages/admin/promotions';
 import AdminInventory from '@/pages/admin/inventory';
 import AdminMediaLibrary from '@/pages/admin/media-library';
-import AdminReports from '@/pages/admin/reports';
+import { lazy, Suspense } from 'react';
+const AdminReports = lazy(() => import('@/pages/admin/reports'));
 import AdminSeo from '@/pages/admin/seo';
 import AdminCoupons from '@/pages/admin/coupons';
 import AdminCRM from '@/pages/admin/crm';
@@ -216,7 +217,9 @@ function Router() {
   if (location === '/admin/reports') {
     return (
       <AdminAuthGuard>
-        <AdminReports />
+        <Suspense fallback={<div className="min-h-screen flex items-center justify-center text-gray-400">Loading reports...</div>}>
+          <AdminReports />
+        </Suspense>
       </AdminAuthGuard>
     );
   }

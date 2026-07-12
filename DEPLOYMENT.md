@@ -2,28 +2,42 @@
 
 ## 1. Apply the database migrations
 
-Your Supabase project already has migrations 001–005 applied. Two new
-migrations fix the security gaps and clean up leftover data:
-- `20260707090000_006_security_hardening.sql` — real admin auth + correct RLS
-- `20260707093000_007_drop_admin_settings.sql` — carries over any
-  site name/contact info you'd saved into `site_settings`, then drops
-  the now-unused `admin_settings` table
+Run every file in `supabase/migrations/` **in filename order** (the
+timestamp prefix is the order) against your Supabase project. If you're
+starting fresh, run all of them. If you've already applied some, only
+the ones after your last-applied file are needed - they're all written
+to be safe to re-run (idempotent) if you're ever unsure.
 
-Apply them with either:
+Current full list, in order:
+```
+001_initial_schema.sql
+002_seed_data.sql
+003_production_schema.sql
+004_services_table.sql
+005_create_images_storage_bucket.sql
+006_security_hardening.sql            - real admin auth + correct RLS
+007_drop_admin_settings.sql           - removes leftover plaintext-credential table
+008_business_platform_foundation.sql  - CRM, quotation lifecycle, invoicing, inventory automation
+009_homepage_layout_switcher.sql      - homepage layout picker
+010_seed_homepage_sections.sql        - makes homepage content actually admin-editable
+011_checkout_coupons_delivery.sql     - wires coupons/delivery zones into checkout
+012_seed_seo_pages.sql                - makes SEO manager actually functional
+013_ensure_images_bucket.sql          - fixes "bucket not found" image upload errors
+```
 
-**Supabase CLI (recommended):**
+**Supabase CLI:**
 ```bash
-supabase link --project-ref kxwfyemiuqpnkmwpucda
+supabase link --project-ref YOUR_PROJECT_REF
 supabase db push
 ```
 
-**Or manually:** open the Supabase Dashboard → SQL Editor → run
-`006_security_hardening.sql`, then `007_drop_admin_settings.sql`, in
-that order.
+**Or manually:** Supabase Dashboard → SQL Editor → paste and run each
+file's contents in order, one at a time.
 
-After running 007, open Admin → Site Settings and re-enter your business
-hours — that one field couldn't be safely auto-migrated (see the
-migration's comment for why) and needs a 30-second re-entry.
+After running 007 (if you haven't already), open Admin → Site Settings
+and re-enter your business hours — that one field couldn't be safely
+auto-migrated (see the migration's comment for why) and needs a
+30-second re-entry.
 
 ## 2. Create the real admin login
 
@@ -235,11 +249,77 @@ order, every section's heading/subtitle/background/spacing, the About
 text/photo/stats, how many products the shop section shows, and the
 CTA's text and destination link.
 
-## 10. Known lower-priority cleanup (not blocking deploy)
+## 9. Reports, Customers, Coupons/Delivery & SEO - July 2026
+
+New migrations: `20260711090000_011_checkout_coupons_delivery.sql` and
+`20260711100000_012_seed_seo_pages.sql`. Run both, in order, after 010.
+
+**Reports dashboard was quietly broken - now fixed:**
+- The date range selector (7/30/90/365 days) was computed but never
+  actually applied to any query - every view showed all-time totals
+  regardless of what you picked. Now genuinely filtered, with a
+  previous-period comparison badge on revenue.
+- "Active Products" was mislabeled - it counted every active product,
+  not low-stock ones. Replaced with a correct **Low Stock Items** count
+  (compares each product's stock against its own threshold).
+- "Export Report" button did nothing. Now exports a real CSV.
+- Added: **Revenue Trend** chart (daily, over the selected range),
+  **Inventory Valuation** (stock x price across active products),
+  **Outstanding Invoices** (unpaid balance from the invoicing module),
+  and a **Quote Pipeline** breakdown using the full quotation lifecycle
+  (draft -> sent -> negotiating -> accepted/rejected -> converted).
+
+**Customers page was read-only with no detail view - now a real CRM-lite:**
+Search by name/email/phone/company, and click any customer to see their
+full history in one place - every order, quotation, and invoice, plus
+total spent and outstanding balance.
+
+**Coupons and Delivery Zones were fully manageable in admin but never
+touched the storefront - now wired into checkout:**
+- Delivery zone selector at checkout, with the zone's fee (or free
+  delivery over its threshold) added to the total automatically.
+- A working coupon code field, validated server-side via a new
+  `validate_coupon` function (percentage/fixed, min order value, date
+  window, usage cap all enforced) - checked without ever exposing the
+  full coupon list to anonymous visitors. Applying a coupon now also
+  increments its usage count atomically so `max_uses` can't be
+  over-redeemed by concurrent checkouts.
+- The order confirmation page now shows a real receipt (items, subtotal,
+  delivery, discount, total) instead of just an order number.
+- Removed `checkout-success.tsx`, an orphaned duplicate of the
+  confirmation page that no route ever pointed to.
+
+**SEO Manager was completely non-functional - now works end to end:**
+`seo_pages` had zero rows (nothing to edit) and, separately, nothing on
+the storefront ever read from it even when populated - meta titles/
+descriptions never reached an actual page. Fixed both: seeded one row
+per main page (Home, Shop, Services, Portfolio, Contact, Quotation), and
+added a hook that applies each page's title, description, keywords,
+Open Graph tags, canonical URL, and robots directives to the live page.
+Product pages use their own name/photo as a smart fallback until you
+add a dedicated SEO entry for a specific product.
+
+## 10. Storage Bucket Fix - July 2026
+
+New migration: `20260712080000_013_ensure_images_bucket.sql`
+
+If you saw "bucket not found" errors when uploading images anywhere in
+admin, it means migration 005 never actually got applied to your
+project, even though later migrations did. This migration safely
+creates the `images` bucket (idempotent - does nothing if it already
+exists correctly) with the secure, post-006 policy set: anyone can view
+images, but only logged-in admins can upload, replace, or delete them.
+
+Run it the same way as the others (SQL Editor or `supabase db push`).
+No other steps needed - refresh admin and image uploads will work.
+
+## 11. Known lower-priority cleanup (not blocking deploy)
 
 - ~22 `@typescript-eslint/no-explicit-any` lint warnings across admin
   pages (style only, doesn't affect behavior or the build).
   Non-critical: it's stray `any` typing in scattered admin pages, not a
   security or functional issue.
-- The main JS bundle is ~520KB; consider code-splitting admin routes
-  later if load time matters to you.
+- The main JS bundle is ~1MB (gzipped ~290KB); the Reports page's
+  chart library (recharts) is lazy-loaded into its own ~368KB chunk
+  that only downloads when an admin actually opens Reports, so it
+  doesn't affect the storefront's load time.

@@ -3,12 +3,14 @@ import { Link } from 'wouter';
 import { Search, Filter, X } from 'lucide-react';
 import { CustomerLayout } from '@/components/layout/CustomerLayout';
 import { useProducts, useCategories } from '@/hooks/use-data';
+import { useSeoMeta } from '@/hooks/use-seo';
 import { formatKES } from '@/lib/utils';
 import { getProductPlaceholder, withFallback } from '@/lib/placeholders';
 import { useCart } from '@/hooks/use-cart';
 import type { Product } from '@/lib/types';
 
 export default function Shop() {
+  useSeoMeta('shop');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const { categories } = useCategories();

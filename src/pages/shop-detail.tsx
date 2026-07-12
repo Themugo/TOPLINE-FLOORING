@@ -6,6 +6,7 @@ import { useProduct, useProducts } from '@/hooks/use-data';
 import { useCart } from '@/hooks/use-cart';
 import { formatKES } from '@/lib/utils';
 import { getProductPlaceholder, withFallback } from '@/lib/placeholders';
+import { useSeoMeta } from '@/hooks/use-seo';
 
 const RECENTLY_VIEWED_KEY = 'topline_recently_viewed';
 const MAX_RECENTLY_VIEWED = 6;
@@ -36,6 +37,11 @@ export default function ShopDetail() {
   const slug = location.replace('/product/', '');
   const [qty, setQty] = useState(1);
   const { product, loading } = useProduct(slug);
+  useSeoMeta('product', slug, product ? {
+    title: `${product.name} | Topline Flooring & Waterproofing`,
+    description: product.description || undefined,
+    image: product.image_url || undefined,
+  } : undefined);
   const { addItem } = useCart();
   const [, setRecentProducts] = useState<any[]>([]);
 

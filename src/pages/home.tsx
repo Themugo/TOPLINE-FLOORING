@@ -3,6 +3,7 @@ import { Link } from 'wouter';
 import { ChevronLeft, ChevronRight, Star, ArrowRight, Phone, Megaphone } from 'lucide-react';
 import { CustomerLayout } from '@/components/layout/CustomerLayout';
 import { useHeroSlides, useProducts, useTestimonials, usePartners, usePromotions, useHomepageSections, useServices, useSiteSettings, useThemeSettings } from '@/hooks/use-data';
+import { useSeoMeta } from '@/hooks/use-seo';
 import { formatKES, telHref } from '@/lib/utils';
 import { getServicePlaceholder, getProductPlaceholder, withFallback } from '@/lib/placeholders';
 import { useCart } from '@/hooks/use-cart';
@@ -20,6 +21,7 @@ interface HeroSlideData {
 }
 
 export default function Home() {
+  useSeoMeta('home');
   const { slides } = useHeroSlides();
   const { products } = useProducts({ featured: true, limit: 6 });
   const { testimonials } = useTestimonials();

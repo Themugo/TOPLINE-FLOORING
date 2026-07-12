@@ -117,8 +117,27 @@ export default function AdminOrders() {
                   </div>
                 ))}
               </div>
-              <div className="pt-4 border-t">
-                <div className="flex justify-between font-medium">
+              {(selectedOrder.delivery_zone || selectedOrder.delivery_address) && (
+                <div>
+                  <p className="text-sm text-gray-500 mb-1">Delivery</p>
+                  {selectedOrder.delivery_zone && <p className="text-sm">{selectedOrder.delivery_zone.zone_name}</p>}
+                  {selectedOrder.delivery_address && <p className="text-sm text-gray-600">{selectedOrder.delivery_address}</p>}
+                </div>
+              )}
+              <div className="pt-4 border-t space-y-1">
+                {selectedOrder.delivery_charge > 0 && (
+                  <div className="flex justify-between text-sm text-gray-600">
+                    <span>Delivery Charge</span>
+                    <span>{formatKES(selectedOrder.delivery_charge)}</span>
+                  </div>
+                )}
+                {selectedOrder.discount_amount > 0 && (
+                  <div className="flex justify-between text-sm text-green-600">
+                    <span>Discount</span>
+                    <span>-{formatKES(selectedOrder.discount_amount)}</span>
+                  </div>
+                )}
+                <div className="flex justify-between font-medium pt-1">
                   <span>Total</span>
                   <span>{formatKES(selectedOrder.total_amount)}</span>
                 </div>

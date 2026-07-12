@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { X, MapPin, Building2, Calendar, Ruler, Loader2 } from 'lucide-react';
 import { CustomerLayout } from '@/components/layout/CustomerLayout';
+import { useSeoMeta } from '@/hooks/use-seo';
 import { Link } from 'wouter';
 import { supabase } from '@/lib/supabase';
 import type { Project, ProjectImage } from '@/lib/types';
@@ -10,6 +11,7 @@ interface ProjectWithImages extends Project {
 }
 
 export default function Portfolio() {
+  useSeoMeta('portfolio');
   const [projects, setProjects] = useState<ProjectWithImages[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState('All');

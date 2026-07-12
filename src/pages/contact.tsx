@@ -5,6 +5,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useSiteSettings } from '@/hooks/use-data';
 import { supabase } from '@/lib/supabase';
 import { telHref } from '@/lib/utils';
+import { useSeoMeta } from '@/hooks/use-seo';
 
 interface FormData {
   name: string;
@@ -15,6 +16,7 @@ interface FormData {
 }
 
 export default function Contact() {
+  useSeoMeta('contact');
   const { toast } = useToast();
   const { settings } = useSiteSettings();
   const [form, setForm] = useState<FormData>({

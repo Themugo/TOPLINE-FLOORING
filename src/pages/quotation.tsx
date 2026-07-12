@@ -3,6 +3,7 @@ import { FileText, Send, CheckCircle } from 'lucide-react';
 import { CustomerLayout } from '@/components/layout/CustomerLayout';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/lib/supabase';
+import { useSeoMeta } from '@/hooks/use-seo';
 
 interface FormData {
   name: string;
@@ -16,6 +17,7 @@ interface FormData {
 }
 
 export default function Quotation() {
+  useSeoMeta('quotation');
   const { toast } = useToast();
   const [form, setForm] = useState<FormData>({
     name: '',
