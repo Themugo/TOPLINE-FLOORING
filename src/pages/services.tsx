@@ -73,7 +73,8 @@ export default function Services() {
       {/* Hero */}
       <section className="bg-gray-50 border-b border-gray-200 py-16 lg:py-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h1 className="font-display text-3xl lg:text-4xl font-bold text-primary-600 mb-4">
+          <span className="section-label">What We Do</span>
+          <h1 className="font-display text-3xl lg:text-4xl font-bold text-primary-600 mb-4 mt-2">
             Our Services
           </h1>
           <p className="text-navy-600 text-lg max-w-2xl mx-auto">

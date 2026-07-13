@@ -2,12 +2,14 @@ import { AdminLayout } from './dashboard';
 import { useOrders } from '@/hooks/use-data';
 import { formatKES, formatDateTime } from '@/lib/utils';
 import { supabase } from '@/lib/supabase';
+import { useToast } from '@/hooks/use-toast';
 import { useState } from 'react';
 import { Eye, X } from 'lucide-react';
 import type { Order } from '@/lib/types';
 
 export default function AdminOrders() {
   const { orders, loading, refetch } = useOrders();
+  const { toast } = useToast();
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
 
   const updateStatus = async (orderId: string, status: string) => {
@@ -15,7 +17,11 @@ export default function AdminOrders() {
       .from('orders')
       .update({ status, updated_at: new Date().toISOString() })
       .eq('id', orderId);
-    if (!error) refetch();
+    if (error) {
+      toast({ title: 'Failed to update order status', variant: 'destructive' });
+      return;
+    }
+    refetch();
   };
 
   const statusColors: Record<string, string> = {

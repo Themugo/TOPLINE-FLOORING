@@ -47,7 +47,12 @@ export function ImageUpload({
 
       onChange(urlData.publicUrl);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Upload failed');
+      const message = err instanceof Error ? err.message : 'Upload failed';
+      if (/bucket not found/i.test(message)) {
+        setError('Storage bucket is missing. Run migration 013_ensure_images_bucket.sql in Supabase SQL Editor, then try again.');
+      } else {
+        setError(message);
+      }
     } finally {
       setUploading(false);
     }
@@ -225,7 +230,12 @@ export function MultiImageUpload({
       }
       onChange([...value, ...urls]);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Upload failed');
+      const message = err instanceof Error ? err.message : 'Upload failed';
+      if (/bucket not found/i.test(message)) {
+        setError('Storage bucket is missing. Run migration 013_ensure_images_bucket.sql in Supabase SQL Editor, then try again.');
+      } else {
+        setError(message);
+      }
     } finally {
       setUploading(false);
     }

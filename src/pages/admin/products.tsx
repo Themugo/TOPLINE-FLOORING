@@ -1,15 +1,18 @@
 import { useState } from 'react';
-import { Plus, Pencil, Trash2, X } from 'lucide-react';
+import { Plus, Pencil, Trash2, X, Package } from 'lucide-react';
 import { AdminLayout } from './dashboard';
 import { useProducts, useCategories } from '@/hooks/use-data';
 import { formatKES } from '@/lib/utils';
 import { supabase } from '@/lib/supabase';
+import { useToast } from '@/hooks/use-toast';
 import { ImageUpload } from '@/components/ui/image-upload';
 import type { Product } from '@/lib/types';
 
 export default function AdminProducts() {
   const { products, loading, refetch } = useProducts();
   const { categories } = useCategories();
+  const { toast } = useToast();
+  const [saving, setSaving] = useState(false);
   const [editing, setEditing] = useState<Product | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState({
@@ -42,6 +45,14 @@ export default function AdminProducts() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    const price = parseFloat(form.price);
+    if (isNaN(price) || price < 0) {
+      toast({ title: 'Enter a valid price', variant: 'destructive' });
+      return;
+    }
+
+    setSaving(true);
     const slug = form.slug || form.name.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, '');
 
     const data = {
@@ -49,7 +60,7 @@ export default function AdminProducts() {
       slug,
       category_id: form.category_id || null,
       description: form.description,
-      price: parseFloat(form.price),
+      price,
       unit: form.unit,
       image_url: form.image_url || null,
       featured: form.featured,
@@ -57,23 +68,38 @@ export default function AdminProducts() {
       is_active: true,
     };
 
-    if (editing) {
-      const { error } = await supabase
-        .from('products')
-        .update({ ...data, updated_at: new Date().toISOString() })
-        .eq('id', editing.id);
-      if (!error) refetch();
-    } else {
-      const { error } = await supabase.from('products').insert(data);
-      if (!error) refetch();
+    try {
+      if (editing) {
+        const { error } = await supabase
+          .from('products')
+          .update({ ...data, updated_at: new Date().toISOString() })
+          .eq('id', editing.id);
+        if (error) throw error;
+        toast({ title: 'Product updated' });
+      } else {
+        const { error } = await supabase.from('products').insert(data);
+        if (error) throw error;
+        toast({ title: 'Product created' });
+      }
+      await refetch();
+      resetForm();
+    } catch {
+      toast({ title: 'Failed to save product', description: 'That slug may already be in use.', variant: 'destructive' });
+    } finally {
+      setSaving(false);
     }
-    resetForm();
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Are you sure?')) return;
-    const { error } = await supabase.from('products').delete().eq('id', id);
-    if (!error) refetch();
+    if (!confirm('Delete this product? This cannot be undone.')) return;
+    try {
+      const { error } = await supabase.from('products').delete().eq('id', id);
+      if (error) throw error;
+      await refetch();
+      toast({ title: 'Product deleted' });
+    } catch {
+      toast({ title: 'Failed to delete product', variant: 'destructive' });
+    }
   };
 
   const editProduct = (product: Product) => {
@@ -101,7 +127,13 @@ export default function AdminProducts() {
       </div>
 
       {loading ? (
-        <div className="text-center py-12">Loading...</div>
+        <div className="text-center py-12 text-navy-400">Loading products...</div>
+      ) : products.length === 0 ? (
+        <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
+          <Package className="w-10 h-10 text-gray-300 mx-auto mb-3" />
+          <p className="text-navy-500 mb-4">No products yet.</p>
+          <button onClick={() => setShowForm(true)} className="btn-primary">Add Your First Product</button>
+        </div>
       ) : (
         <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
           <div className="overflow-x-auto">
@@ -253,7 +285,7 @@ export default function AdminProducts() {
               </div>
               <div className="flex gap-3 pt-4">
                 <button type="button" onClick={resetForm} className="btn-secondary flex-1">Cancel</button>
-                <button type="submit" className="btn-primary flex-1">{editing ? 'Update' : 'Create'}</button>
+                <button type="submit" disabled={saving} className="btn-primary flex-1">{saving ? 'Saving...' : editing ? 'Update' : 'Create'}</button>
               </div>
             </form>
           </div>

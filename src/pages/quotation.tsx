@@ -122,7 +122,8 @@ export default function Quotation() {
             <div className="w-16 h-16 bg-primary-50 rounded-full flex items-center justify-center mx-auto mb-6">
               <FileText className="w-8 h-8 text-primary-600" />
             </div>
-            <h1 className="font-display text-3xl lg:text-4xl font-bold text-primary-600 mb-4">
+            <span className="section-label">Free Consultation</span>
+            <h1 className="font-display text-3xl lg:text-4xl font-bold text-primary-600 mb-4 mt-2">
               Request a Quotation
             </h1>
             <p className="text-navy-600 text-lg max-w-2xl mx-auto">

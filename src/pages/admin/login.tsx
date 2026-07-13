@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useLocation } from 'wouter';
-import { Lock, User, AlertCircle, Building2 } from 'lucide-react';
+import { Lock, User, AlertCircle } from 'lucide-react';
 import { useAdminAuth } from '@/hooks/use-data';
 
 export default function AdminLogin() {
@@ -28,38 +28,38 @@ export default function AdminLogin() {
   };
 
   return (
-    <div className="min-h-screen bg-navy-950 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
       <div className="max-w-md w-full">
         <div className="text-center mb-8">
-          <div className="w-16 h-16 bg-gradient-to-br from-primary-400 to-primary-600 rounded-xl flex items-center justify-center mx-auto mb-4 shadow-lg">
-            <Building2 className="w-8 h-8 text-white" />
+          <div className="w-16 h-16 rounded-full border-2 border-navy-600 flex items-center justify-center mx-auto mb-4 bg-white shadow-sm">
+            <span className="text-primary-600 font-display font-bold text-2xl">T</span>
           </div>
-          <h1 className="font-display text-2xl font-bold text-white">
+          <h1 className="font-display text-2xl font-bold text-primary-600">
             Admin Portal
           </h1>
-          <p className="text-gray-400 mt-1">Topline Flooring & Waterproofing</p>
+          <p className="text-navy-500 mt-1">Topline Flooring & Waterproofing</p>
         </div>
 
-        <div className="bg-navy-900 rounded-xl p-8 border border-navy-800 shadow-xl">
+        <div className="bg-white rounded-xl p-8 border border-gray-200 shadow-sm">
           <form onSubmit={handleSubmit} className="space-y-6">
             {error && (
-              <div className="flex items-center gap-2 p-4 bg-red-900/50 text-red-300 rounded-lg text-sm">
+              <div className="flex items-center gap-2 p-4 bg-red-50 text-red-700 rounded-lg text-sm">
                 <AlertCircle className="w-4 h-4 flex-shrink-0" />
                 {error}
               </div>
             )}
 
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
+              <label className="block text-sm font-medium text-navy-700 mb-2">
                 Email
               </label>
               <div className="relative">
-                <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
+                <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-navy-300" />
                 <input
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 bg-navy-800 border border-navy-700 rounded-lg text-white placeholder-gray-500 focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                  className="input pl-10"
                   placeholder="Enter admin email"
                   required
                   autoComplete="username"
@@ -68,18 +68,19 @@ export default function AdminLogin() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
+              <label className="block text-sm font-medium text-navy-700 mb-2">
                 Password
               </label>
               <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-navy-300" />
                 <input
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 bg-navy-800 border border-navy-700 rounded-lg text-white placeholder-gray-500 focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                  className="input pl-10"
                   placeholder="Enter password"
                   required
+                  autoComplete="current-password"
                 />
               </div>
             </div>
@@ -87,14 +88,14 @@ export default function AdminLogin() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-primary-500 hover:bg-primary-600 text-white py-3 rounded-lg font-medium transition-colors shadow-lg hover:shadow-xl"
+              className="btn-primary w-full"
             >
               {loading ? 'Signing in...' : 'Sign In'}
             </button>
           </form>
         </div>
 
-        <p className="text-center text-gray-500 text-xs mt-6">
+        <p className="text-center text-navy-400 text-xs mt-6">
           Access restricted to authorized personnel only
         </p>
       </div>

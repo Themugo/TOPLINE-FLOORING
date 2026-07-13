@@ -108,7 +108,8 @@ export default function Contact() {
         {/* Hero */}
         <section className="bg-white border-b border-gray-200 py-16 lg:py-24">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <h1 className="font-display text-3xl lg:text-4xl font-bold text-primary-600 mb-4">
+            <span className="section-label">Get In Touch</span>
+            <h1 className="font-display text-3xl lg:text-4xl font-bold text-primary-600 mb-4 mt-2">
               Contact Us
             </h1>
             <p className="text-navy-600 text-lg max-w-2xl mx-auto">

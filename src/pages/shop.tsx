@@ -14,7 +14,7 @@ export default function Shop() {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const { categories } = useCategories();
-  const { products } = useProducts(
+  const { products, loading } = useProducts(
     selectedCategory ? { categoryId: selectedCategory } : undefined
   );
   const { addItem } = useCart();
@@ -34,7 +34,8 @@ export default function Shop() {
       <div className="min-h-screen bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
           <div className="mb-8">
-            <h1 className="font-display text-3xl lg:text-4xl font-bold text-navy-900 mb-2">
+            <span className="section-label">Shop</span>
+            <h1 className="font-display text-3xl lg:text-4xl font-bold text-navy-900 mb-2 mt-2">
               Materials Shop
             </h1>
             <p className="text-gray-600">
@@ -120,23 +121,45 @@ export default function Shop() {
             {/* Products Grid */}
             <div className="flex-1">
               <div className="mb-4 text-sm text-gray-500">
-                Showing {filteredProducts.length} product{filteredProducts.length !== 1 && 's'}
+                {loading ? 'Loading products...' : `Showing ${filteredProducts.length} product${filteredProducts.length !== 1 ? 's' : ''}`}
               </div>
 
-              {filteredProducts.length > 0 ? (
+              {loading ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {Array.from({ length: 6 }).map((_, i) => (
+                    <div key={i} className="card">
+                      <div className="aspect-[4/3] bg-gray-200 animate-pulse" />
+                      <div className="p-5 space-y-3">
+                        <div className="h-3 w-1/3 bg-gray-200 rounded animate-pulse" />
+                        <div className="h-4 w-3/4 bg-gray-200 rounded animate-pulse" />
+                        <div className="h-3 w-full bg-gray-200 rounded animate-pulse" />
+                        <div className="flex items-center justify-between pt-1">
+                          <div className="h-4 w-16 bg-gray-200 rounded animate-pulse" />
+                          <div className="h-9 w-24 bg-gray-200 rounded-lg animate-pulse" />
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : filteredProducts.length > 0 ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                   {filteredProducts.map((product) => (
                     <div key={product.id} className="card group">
                       <Link href={`/product/${product.slug}`}>
-                        <div className="aspect-[4/3] overflow-hidden bg-gray-100">
+                        <div className="relative aspect-[4/3] overflow-hidden bg-gray-100">
                           <img
                             src={withFallback(product.image_url, getProductPlaceholder(product.category?.slug || product.category?.name))}
                             alt={product.name}
                             className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                           />
                           {product.featured && (
-                            <span className="absolute top-3 left-3 bg-accent-500 text-white text-xs font-medium px-2 py-1 rounded">
+                            <span className="absolute top-3 left-3 bg-accent-500 text-white text-xs font-medium px-2 py-1 rounded shadow-sm">
                               Featured
+                            </span>
+                          )}
+                          {!product.in_stock && (
+                            <span className="absolute top-3 right-3 bg-navy-900/80 text-white text-xs font-medium px-2 py-1 rounded">
+                              Out of Stock
                             </span>
                           )}
                         </div>
@@ -148,23 +171,24 @@ export default function Shop() {
                           </p>
                         )}
                         <Link href={`/product/${product.slug}`}>
-                          <h3 className="font-semibold text-gray-900 mb-2 hover:text-primary-600 transition-colors">
+                          <h3 className="font-semibold text-gray-900 mb-2 hover:text-primary-600 transition-colors line-clamp-1">
                             {product.name}
                           </h3>
                         </Link>
                         <p className="text-sm text-gray-500 line-clamp-2 mb-4">
                           {product.description}
                         </p>
-                        <div className="flex items-center justify-between">
+                        <div className="flex items-center justify-between gap-2">
                           <div>
                             <p className="font-bold text-gray-900">{formatKES(product.price)}</p>
                             <p className="text-xs text-gray-500">per {product.unit}</p>
                           </div>
                           <button
                             onClick={() => handleAddToCart(product)}
-                            className="btn-primary py-2 px-4"
+                            disabled={!product.in_stock}
+                            className="btn-primary py-2 px-4 disabled:opacity-50 disabled:cursor-not-allowed"
                           >
-                            Add to Cart
+                            {product.in_stock ? 'Add to Cart' : 'Unavailable'}
                           </button>
                         </div>
                       </div>
@@ -172,11 +196,22 @@ export default function Shop() {
                   ))}
                 </div>
               ) : (
-                <div className="text-center py-12 bg-white rounded-xl border border-gray-200">
-                  <p className="text-gray-500 mb-2">No products found</p>
-                  <p className="text-sm text-gray-400">
-                    Try adjusting your search or filter criteria.
+                <div className="text-center py-16 bg-white rounded-xl border border-gray-200">
+                  <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-4">
+                    <Search className="w-5 h-5 text-gray-400" />
+                  </div>
+                  <p className="text-gray-700 font-medium mb-1">No products found</p>
+                  <p className="text-sm text-gray-500 mb-5">
+                    Try adjusting your search or browsing a different category.
                   </p>
+                  {(searchQuery || selectedCategory) && (
+                    <button
+                      onClick={() => { setSearchQuery(''); setSelectedCategory(null); }}
+                      className="btn-secondary text-sm"
+                    >
+                      Clear filters
+                    </button>
+                  )}
                 </div>
               )}
             </div>

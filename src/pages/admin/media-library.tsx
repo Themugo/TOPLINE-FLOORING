@@ -468,8 +468,13 @@ function UploadModal({
           file_size: file.size,
           is_public: true,
         });
-      } catch {
-        toast({ type: 'error', message: `Failed to upload ${file.name}` });
+      } catch (err) {
+        const message = err instanceof Error ? err.message : '';
+        if (/bucket not found/i.test(message)) {
+          toast({ type: 'error', message: 'Storage bucket missing - run migration 013_ensure_images_bucket.sql in Supabase, then retry.' });
+        } else {
+          toast({ type: 'error', message: `Failed to upload ${file.name}` });
+        }
       }
     }
 

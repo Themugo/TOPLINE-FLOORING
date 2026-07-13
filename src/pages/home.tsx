@@ -96,33 +96,44 @@ export default function Home() {
       });
     });
 
-    // Add services as slides
-    services.forEach(service => {
-      combined.push({
-        id: `service-${service.id}`,
-        title: service.name,
-        subtitle: 'Our Services',
-        description: service.short_description || service.description,
-        image_url: service.image_url,
-        button_text: 'Learn More',
-        button_link: '/services',
-        source_type: 'service'
-      });
-    });
+    // Services and featured products fill out the rest of the slider,
+    // in a random order and random selection each time the page loads
+    // (rather than always showing every service in the same fixed
+    // order) so the hero stays fresh on repeat visits.
+    const servicesPool: HeroSlideData[] = services.map(service => ({
+      id: `service-${service.id}`,
+      title: service.name,
+      subtitle: 'Our Services',
+      description: service.short_description || service.description,
+      image_url: service.image_url,
+      button_text: 'Learn More',
+      button_link: '/services',
+      source_type: 'service' as const,
+    }));
 
-    // Add top products as slides
-    products.slice(0, 3).forEach(product => {
-      combined.push({
-        id: `product-${product.id}`,
-        title: product.name,
-        subtitle: 'Featured Product',
-        description: product.short_description || `Premium quality ${product.category?.name || 'materials'} from our shop`,
-        image_url: product.image_url || 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?auto=format&fit=crop&w=800&q=80',
-        button_text: 'Shop Now',
-        button_link: `/product/${product.slug}`,
-        source_type: 'product'
-      });
-    });
+    const productsPool: HeroSlideData[] = products.map(product => ({
+      id: `product-${product.id}`,
+      title: product.name,
+      subtitle: 'Featured Product',
+      description: product.short_description || `Premium quality ${product.category?.name || 'materials'} from our shop`,
+      image_url: product.image_url || getProductPlaceholder(product.category?.slug || product.category?.name),
+      button_text: 'Shop Now',
+      button_link: `/product/${product.slug}`,
+      source_type: 'product' as const,
+    }));
+
+    // Fisher-Yates shuffle
+    const shuffle = <T,>(arr: T[]): T[] => {
+      const copy = [...arr];
+      for (let i = copy.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [copy[i], copy[j]] = [copy[j], copy[i]];
+      }
+      return copy;
+    };
+
+    const shuffledRest = shuffle([...servicesPool, ...productsPool]).slice(0, 5);
+    combined.push(...shuffledRest);
 
     return combined;
   }, [slides, services, products]);
@@ -211,7 +222,7 @@ export default function Home() {
                     </p>
                   )}
                   <h1
-                    className={`font-display text-2xl sm:text-3xl lg:text-5xl font-bold text-white mb-3 transition-all duration-500 delay-200 ${
+                    className={`font-display text-3xl sm:text-4xl lg:text-6xl font-bold text-white mb-3 transition-all duration-500 delay-200 ${
                       index === currentSlide ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2'
                     }`}
                   >
@@ -278,7 +289,8 @@ export default function Home() {
       <section className={`${servicesSection?.padding || 'py-12 lg:py-16'} bg-white`} style={sectionStyle('services')}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-3xl mx-auto mb-10">
-            <h2 className="font-display text-2xl lg:text-3xl font-bold text-primary-600 mb-2">
+            <span className="section-label">What We Offer</span>
+            <h2 className="font-display text-2xl lg:text-3xl font-bold text-primary-600 mb-2 mt-2">
               {servicesSection?.title || 'Our Services'}
             </h2>
             <p className="text-navy-500">
@@ -352,7 +364,8 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
             <div>
-              <h2 className="font-display text-2xl lg:text-3xl font-bold text-navy-900 mb-4">
+              <span className="section-label">About Us</span>
+              <h2 className="font-display text-2xl lg:text-3xl font-bold text-navy-900 mb-4 mt-2">
                 {aboutSection?.title || 'Who We Are'}
               </h2>
               <p className="text-gray-600 mb-4">
@@ -388,7 +401,8 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center mb-8">
             <div>
-              <h2 className="font-display text-2xl lg:text-3xl font-bold text-navy-900">
+              <span className="section-label">Shop</span>
+              <h2 className="font-display text-2xl lg:text-3xl font-bold text-navy-900 mt-2">
                 {productsSection?.title || 'Materials Shop'}
               </h2>
               <p className="text-gray-600 text-sm">{productsSection?.subtitle || 'Premium materials from trusted brands'}</p>
@@ -485,18 +499,18 @@ export default function Home() {
 
       {/* Partners */}
       {partners.length > 0 && isSectionVisible('partners') && (
-        <section className={`${partnersSection?.padding || 'py-8'} border-y border-gray-200`} style={sectionStyle('partners')}>
+        <section className={`${partnersSection?.padding || 'py-12 lg:py-16'} border-y border-gray-200`} style={sectionStyle('partners')}>
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <p className="text-center text-xs text-gray-500 uppercase tracking-wide mb-4">
-              {partnersSection?.title || 'Our Partners'}
-            </p>
-            <div className="flex flex-wrap justify-center items-center gap-6 lg:gap-10 opacity-60">
+            <h2 className="text-center font-display text-xl lg:text-2xl font-bold text-primary-600 uppercase tracking-[0.15em] mb-8">
+              {partnersSection?.title || 'Our Certified Partners'}
+            </h2>
+            <div className="flex flex-wrap justify-center items-center gap-8 lg:gap-12">
               {partners.map((partner) => (
-                <div key={partner.id}>
+                <div key={partner.id} className="grayscale hover:grayscale-0 transition-all duration-300 opacity-70 hover:opacity-100">
                   {partner.logo_url ? (
-                    <img src={partner.logo_url} alt={partner.name} className="h-8 object-contain" />
+                    <img src={partner.logo_url} alt={partner.name} className="h-9 object-contain" />
                   ) : (
-                    <span className="font-semibold text-gray-700 text-sm">{partner.name}</span>
+                    <span className="font-semibold text-navy-600 text-sm">{partner.name}</span>
                   )}
                 </div>
               ))}
@@ -510,7 +524,8 @@ export default function Home() {
         <section className={`${testimonialsSection?.padding || 'py-12 lg:py-16'}`} style={sectionStyle('testimonials')}>
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-8">
-              <h2 className="font-display text-2xl lg:text-3xl font-bold text-gray-900 mb-2">
+              <span className="section-label">Testimonials</span>
+              <h2 className="font-display text-2xl lg:text-3xl font-bold text-navy-900 mb-2 mt-2">
                 {testimonialsSection?.title || 'What Clients Say'}
               </h2>
             </div>

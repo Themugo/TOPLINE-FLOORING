@@ -92,6 +92,7 @@ export default function AdminDeliveryZones() {
       </div>
 
       <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+        <div className="overflow-x-auto">
         <table className="w-full">
           <thead className="bg-gray-50 border-b">
             <tr>
@@ -119,6 +120,7 @@ export default function AdminDeliveryZones() {
             ))}
           </tbody>
         </table>
+        </div>
       </div>
 
       {showForm && (

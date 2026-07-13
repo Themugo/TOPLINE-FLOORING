@@ -9,10 +9,24 @@
 
   body {
     @apply antialiased text-navy-900 bg-cream;
+    font-feature-settings: 'cv11', 'ss01';
   }
 
   h1, h2, h3, h4, h5, h6 {
-    @apply font-display tracking-tight;
+    @apply font-display font-semibold tracking-tight text-navy-950;
+    line-height: 1.15;
+  }
+
+  h1 {
+    letter-spacing: -0.02em;
+  }
+
+  h2, h3 {
+    letter-spacing: -0.01em;
+  }
+
+  p {
+    line-height: 1.65;
   }
 
   ::selection {
@@ -22,27 +36,29 @@
 
 @layer components {
   .btn {
-    @apply inline-flex items-center justify-center px-6 py-3 font-medium rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2;
+    @apply inline-flex items-center justify-center px-6 py-3 font-medium rounded-lg transition-all focus:outline-none focus:ring-2 focus:ring-offset-2;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 200ms;
   }
 
   .btn-primary {
-    @apply btn bg-primary-500 text-white hover:bg-primary-600 focus:ring-primary-400 active:scale-[0.98] shadow-premium hover:shadow-premium-lg;
+    @apply btn bg-primary-500 text-white hover:bg-primary-600 focus:ring-primary-400 active:scale-[0.97] shadow-premium hover:shadow-premium-lg;
   }
 
   .btn-secondary {
-    @apply btn bg-white text-navy-900 border border-navy-200 hover:bg-cream-100 focus:ring-navy-300 active:scale-[0.98];
+    @apply btn bg-white text-navy-900 border border-navy-200 hover:bg-cream-100 hover:border-navy-300 focus:ring-navy-300 active:scale-[0.97];
   }
 
   .btn-accent {
-    @apply btn bg-accent-500 text-white hover:bg-accent-600 focus:ring-accent-400 active:scale-[0.98];
+    @apply btn bg-accent-500 text-white hover:bg-accent-600 focus:ring-accent-400 active:scale-[0.97];
   }
 
   .btn-navy {
-    @apply btn bg-navy-900 text-white hover:bg-navy-800 focus:ring-navy-700 active:scale-[0.98];
+    @apply btn bg-navy-900 text-white hover:bg-navy-800 focus:ring-navy-700 active:scale-[0.97];
   }
 
   .input {
-    @apply w-full px-4 py-3 bg-white border border-navy-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent transition-all duration-200;
+    @apply w-full px-4 py-3 bg-white border border-navy-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent transition-all duration-200 text-navy-900 placeholder-navy-300;
   }
 
   .input-dark {
@@ -50,25 +66,46 @@
   }
 
   .card {
-    @apply bg-white rounded-xl shadow-premium border border-navy-100/60 overflow-hidden transition-all duration-300 hover:shadow-premium-lg;
+    @apply bg-white rounded-xl shadow-premium border border-navy-100/60 overflow-hidden transition-all;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 300ms;
+  }
+
+  .card:hover {
+    @apply shadow-premium-lg border-navy-200/60;
+    transform: translateY(-2px);
   }
 
   .card-dark {
     @apply bg-navy-900 rounded-xl border border-navy-800 overflow-hidden transition-all duration-300 hover:border-navy-700;
   }
 
+  /* Small tracked-caps "eyebrow" label used above section headings,
+     matching the site's existing gold section-title treatment
+     (e.g. "OUR CERTIFIED PARTNERS"). */
   .section-label {
     @apply inline-block text-xs font-semibold tracking-[0.2em] uppercase text-primary-600;
+  }
+
+  /* Consistent section heading pair: eyebrow label + large title.
+     Use together so every section across the site reads with the
+     same visual rhythm. */
+  .section-heading {
+    @apply font-display text-3xl lg:text-4xl font-bold text-navy-950 mt-2;
+  }
+
+  .section-subtitle {
+    @apply text-navy-500 text-base lg:text-lg mt-3 max-w-2xl;
   }
 }
 
 @layer utilities {
   .animate-slide-up {
-    animation: slideUp 0.3s ease-out;
+    animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   .animate-slide-down {
-    animation: slideDown 0.3s ease-out;
+    animation: slideDown 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   .animate-fade-in {
@@ -76,11 +113,12 @@
   }
 
   .animate-scale-in {
-    animation: scaleIn 0.2s ease-out;
+    animation: scaleIn 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   .hover-lift {
     @apply transition-transform duration-300 hover:-translate-y-1;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   }
 }
 

@@ -313,7 +313,94 @@ images, but only logged-in admins can upload, replace, or delete them.
 Run it the same way as the others (SQL Editor or `supabase db push`).
 No other steps needed - refresh admin and image uploads will work.
 
-## 11. Known lower-priority cleanup (not blocking deploy)
+## 11. Brand Colors & Site-Wide UI/UX Pass - July 2026
+
+No new migrations - this was a code-only pass, no database changes.
+
+**Brand colors corrected:** the previous design pass used a near-black
+navy as the site's primary dark color, which didn't match your real
+brand at all - your actual site uses white backgrounds, a medium blue
+(matching the logo ring and nav links) and gold/mustard accents, with no
+solid dark sections anywhere. Fixed everywhere:
+- Header switched from a solid dark bar to white, with blue nav links
+  and gold active/hover states
+- Footer switched to a white content area with a solid gold bottom bar
+  (matching your real footer)
+- Home page's Services section and CTA band, and the page-title banners
+  on Contact/Portfolio/Quotation/Services, all switched from dark
+  gradients to light backgrounds with gold headings
+- The color tokens themselves were redefined so "navy" is now your
+  actual brand blue, not near-black - this cascades correctly everywhere
+  the token is used
+
+**Admin dashboard was the last piece still dark-themed - now fixed:**
+Every other admin page already used a white/light theme, making the
+dashboard shell (sidebar, topbar, login page) the one inconsistent
+holdout with a dark navy theme. Rebuilt to match: white sidebar, light
+page background, white stat/content cards - consistent with the rest of
+admin and easier to read for data-heavy screens. The sidebar's 23 nav
+items are now grouped (Overview / Sales / Catalog / Marketing / Content
+/ Configuration) instead of one long flat list, making the admin panel
+meaningfully easier to navigate.
+
+**Reliability gap found and fixed across 7 admin pages:** Categories,
+Testimonials, Partners, Hero Slides, Products, Orders, and Inventory
+were silently swallowing save/delete errors - if something failed
+(duplicate slug, network issue, etc.) the admin got no feedback at all
+and had no way to know the action didn't work. All seven now show a
+toast on both success and failure, plus proper "Saving..." button states
+so it's clear when an action is in progress. Categories/Testimonials/
+Partners/Hero Slides/Products also gained proper empty states (a clear
+message + call-to-action instead of a blank table) and Inventory's
+manual stock adjustment now guards against going negative and uses
+proper TypeScript types instead of `any`.
+
+**Mobile bug fixed:** Coupons, Delivery Zones, Projects, and Promotions
+had data tables with no horizontal-scroll wrapper, so wide tables would
+overflow and break the layout on phones. Fixed on all four.
+
+## 12. Typography, Hero Slider & Storage Fix Follow-up - July 2026
+
+No new migrations - code-only pass.
+
+**Font mismatch found and fixed:** the earlier "premium redesign" pass
+introduced a serif display font (Cormorant Garamond), but your real
+brand is entirely sans-serif based on your actual site. Swapped to
+Outfit (headings) + Inter (body) - both modern, premium, sans-serif,
+matching your brand's clean geometric look. This is a global token
+change (`tailwind.config.js` + `index.css`), so it applies everywhere
+automatically - storefront and admin dashboards alike.
+
+**Typography refined site-wide:** tighter letter-spacing on large
+headings, better line-height, a bigger and more impactful hero
+headline, and a new "eyebrow label" pattern (small gold tracked-caps
+text above section headings) matching your site's own
+"OUR CERTIFIED PARTNERS" style - now applied consistently across the
+homepage and every page banner (Shop, Services, Portfolio, Contact,
+Quotation). The Partners section heading was upgraded from a tiny gray
+label to the large gold tracked-caps treatment your real site actually
+uses.
+
+**Smoother interactions:** buttons and cards now use a consistent
+easing curve and subtle lift-on-hover, instead of default/inconsistent
+transitions, for a more premium, tactile feel.
+
+**Hero slider now randomizes shop products and services:** previously
+it always showed every service and the same 3 products in the same
+fixed order every time. Now it shuffles a random selection of up to 5
+services/products (Fisher-Yates shuffle) on each page load, so the hero
+stays fresh on repeat visits, while dedicated hero slides (set in Admin
+-> Hero Slides) still always show first and in their configured order.
+
+**"Bucket not found" - made self-diagnosing:** if you're still seeing
+this on Products or Services image upload, it means migration
+`013_ensure_images_bucket.sql` hasn't been run on your Supabase project
+yet - **run it now** (SQL Editor, or `supabase db push`). The upload
+components now also detect this specific error and show a clear message
+pointing at the fix, instead of a generic "Upload failed", so this is
+easy to self-diagnose if it ever happens again on a fresh project.
+
+## 13. Known lower-priority cleanup (not blocking deploy)
 
 - ~22 `@typescript-eslint/no-explicit-any` lint warnings across admin
   pages (style only, doesn't affect behavior or the build).
