@@ -2,6 +2,10 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --theme-btn-radius: 0.5rem;
+}
+
 @layer base {
   html {
     scroll-behavior: smooth;
@@ -36,7 +40,8 @@
 
 @layer components {
   .btn {
-    @apply inline-flex items-center justify-center px-6 py-3 font-medium rounded-lg transition-all focus:outline-none focus:ring-2 focus:ring-offset-2;
+    @apply inline-flex items-center justify-center px-6 py-3 font-medium transition-all focus:outline-none focus:ring-2 focus:ring-offset-2;
+    border-radius: var(--theme-btn-radius, 0.5rem);
     transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
     transition-duration: 200ms;
   }

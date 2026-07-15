@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Eye, X, Plus, Trash2, Download, ArrowRightCircle } from 'lucide-react';
+import { Eye, X, Plus, Trash2, Download, ArrowRightCircle, UserPlus } from 'lucide-react';
 import { AdminLayout } from './dashboard';
 import { useQuotations, useSiteSettings } from '@/hooks/use-data';
 import { formatDateTime, formatKES } from '@/lib/utils';
@@ -110,6 +110,32 @@ export default function AdminQuotations() {
     }
   };
 
+  const handleCreateLead = async (q: Quotation) => {
+    try {
+      const { data: lead, error } = await supabase
+        .from('leads')
+        .insert({
+          name: q.name,
+          email: q.email,
+          phone: q.phone,
+          company: q.company,
+          source: 'website',
+          status: 'new',
+          estimated_value: q.total_amount || null,
+          notes: q.message ? `From quotation request: ${q.message}` : `From quotation request${q.project_type ? ` (${q.project_type})` : ''}`,
+        })
+        .select()
+        .single();
+      if (error) throw error;
+
+      await supabase.from('quotations').update({ lead_id: lead.id }).eq('id', q.id);
+      toast({ title: 'Lead created', description: 'Now tracked in CRM / Leads' });
+      refetch();
+    } catch {
+      toast({ title: 'Failed to create lead', variant: 'destructive' });
+    }
+  };
+
   return (
     <AdminLayout title="Quotations">
       {loading ? (
@@ -164,6 +190,11 @@ export default function AdminQuotations() {
                     <button onClick={() => handleDownloadPdf(q)} className="p-2 text-gray-600 hover:text-primary-600" title="Download PDF">
                       <Download className="w-4 h-4" />
                     </button>
+                    {!q.lead_id && (
+                      <button onClick={() => handleCreateLead(q)} className="p-2 text-gray-600 hover:text-primary-600" title="Create CRM Lead">
+                        <UserPlus className="w-4 h-4" />
+                      </button>
+                    )}
                   </td>
                 </tr>
               ))}
@@ -179,6 +210,7 @@ export default function AdminQuotations() {
           onUpdated={refetch}
           onDownloadPdf={handleDownloadPdf}
           onConvert={handleConvertToOrder}
+          onCreateLead={handleCreateLead}
         />
       )}
     </AdminLayout>
@@ -191,12 +223,14 @@ function QuotationDetail({
   onUpdated,
   onDownloadPdf,
   onConvert,
+  onCreateLead,
 }: {
   quotation: Quotation;
   onClose: () => void;
   onUpdated: () => void;
   onDownloadPdf: (q: Quotation) => void;
   onConvert: (q: Quotation) => void;
+  onCreateLead: (q: Quotation) => void;
 }) {
   const { toast } = useToast();
   const [items, setItems] = useState<QuotationItem[]>(quotation.items || []);
@@ -336,6 +370,11 @@ function QuotationDetail({
           <button onClick={() => onDownloadPdf({ ...quotation, items })} className="btn-secondary flex items-center gap-2 text-sm">
             <Download className="w-4 h-4" /> Download PDF
           </button>
+          {!quotation.lead_id && (
+            <button onClick={() => onCreateLead(quotation)} className="btn-secondary flex items-center gap-2 text-sm">
+              <UserPlus className="w-4 h-4" /> Create CRM Lead
+            </button>
+          )}
           {quotation.status === 'accepted' && (
             <button onClick={() => onConvert({ ...quotation, items, subtotal, tax_amount: taxAmount, total_amount: total })} className="btn-primary flex items-center gap-2 text-sm">
               <ArrowRightCircle className="w-4 h-4" /> Convert to Order

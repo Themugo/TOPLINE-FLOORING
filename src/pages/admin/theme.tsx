@@ -83,10 +83,20 @@ export default function AdminTheme() {
 
         {/* Custom Colors */}
         <div className="bg-white rounded-xl border border-gray-200 p-6 mb-6">
-          <h2 className="font-semibold text-gray-900 mb-4">Custom Colors</h2>
+          <div className="flex items-center gap-2 mb-1">
+            <h2 className="font-semibold text-gray-900">Custom Colors</h2>
+          </div>
+          <p className="text-sm text-gray-500 mb-4">
+            <strong className="text-green-700">Primary Color is live</strong> - it updates buttons, links, and
+            accents across the whole site (and admin) immediately on save. Secondary and Accent
+            are saved for future use but not yet applied anywhere.
+          </p>
           <div className="grid sm:grid-cols-3 gap-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Primary Color</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-1.5">
+                Primary Color
+                <span className="text-[10px] font-semibold bg-green-100 text-green-700 px-1.5 py-0.5 rounded-full">LIVE</span>
+              </label>
               <div className="flex items-center gap-3">
                 <input
                   type="color"
@@ -141,8 +151,12 @@ export default function AdminTheme() {
 
         {/* Typography */}
         <div className="bg-white rounded-xl border border-gray-200 p-6 mb-6">
-          <h2 className="font-semibold text-gray-900 mb-4">Typography</h2>
-          <div className="grid sm:grid-cols-2 gap-6">
+          <h2 className="font-semibold text-gray-900 mb-1">Typography</h2>
+          <p className="text-sm text-gray-500 mb-4">
+            Saved for future use - not yet applied to the live site, which currently uses a
+            fixed font pairing chosen to match your brand.
+          </p>
+          <div className="grid sm:grid-cols-2 gap-6 opacity-60 pointer-events-none">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Heading Font</label>
               <select
@@ -175,7 +189,10 @@ export default function AdminTheme() {
           <h2 className="font-semibold text-gray-900 mb-4">Layout & Styling</h2>
           <div className="grid sm:grid-cols-3 gap-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Button Style</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-1.5">
+                Button Style
+                <span className="text-[10px] font-semibold bg-green-100 text-green-700 px-1.5 py-0.5 rounded-full">LIVE</span>
+              </label>
               <select
                 value={theme?.button_style || 'rounded'}
                 onChange={(e) => updateTheme({ button_style: e.target.value })}
@@ -186,7 +203,7 @@ export default function AdminTheme() {
                 ))}
               </select>
             </div>
-            <div>
+            <div className="opacity-60 pointer-events-none">
               <label className="block text-sm font-medium text-gray-700 mb-2">Border Radius</label>
               <input
                 type="number"
@@ -196,9 +213,9 @@ export default function AdminTheme() {
                 onChange={(e) => updateTheme({ border_radius: parseInt(e.target.value) })}
                 className="input"
               />
-              <p className="text-xs text-gray-500 mt-1">Pixels</p>
+              <p className="text-xs text-gray-500 mt-1">Not yet applied - use Button Style above instead</p>
             </div>
-            <div>
+            <div className="opacity-60 pointer-events-none">
               <label className="block text-sm font-medium text-gray-700 mb-2">Spacing Scale</label>
               <select
                 value={theme?.spacing_scale || 8}
@@ -209,6 +226,7 @@ export default function AdminTheme() {
                   <option key={s} value={s}>{s}px</option>
                 ))}
               </select>
+              <p className="text-xs text-gray-500 mt-1">Not yet applied to the live site</p>
             </div>
           </div>
         </div>

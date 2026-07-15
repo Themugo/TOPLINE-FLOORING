@@ -33,12 +33,12 @@ export default function Contact() {
     setSubmitting(true);
 
     try {
-      const { error } = await supabase.from('quotations').insert({
-        name: form.name,
-        email: form.email,
-        phone: form.phone,
-        project_type: form.subject,
-        message: form.message,
+      const { error } = await supabase.rpc('submit_quotation_request', {
+        p_name: form.name,
+        p_email: form.email,
+        p_phone: form.phone,
+        p_project_type: form.subject,
+        p_message: form.message,
       });
 
       if (error) throw error;

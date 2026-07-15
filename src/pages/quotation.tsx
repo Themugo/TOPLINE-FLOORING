@@ -37,16 +37,15 @@ export default function Quotation() {
     setSubmitting(true);
 
     try {
-      const { error } = await supabase.from('quotations').insert({
-        name: form.name,
-        email: form.email,
-        phone: form.phone,
-        company: form.company || null,
-        project_type: form.project_type,
-        area_size: form.area_size,
-        location: form.location,
-        message: form.message,
-        status: 'new',
+      const { error } = await supabase.rpc('submit_quotation_request', {
+        p_name: form.name,
+        p_email: form.email,
+        p_phone: form.phone,
+        p_company: form.company || null,
+        p_project_type: form.project_type,
+        p_area_size: form.area_size,
+        p_location: form.location,
+        p_message: form.message,
       });
 
       if (error) throw error;

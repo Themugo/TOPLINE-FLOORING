@@ -23,11 +23,14 @@ interface HeroSlideData {
 export default function Home() {
   useSeoMeta('home');
   const { slides } = useHeroSlides();
-  const { products } = useProducts({ featured: true, limit: 6 });
+  const { sections } = useHomepageSections();
+  const getSection = (type: string) => sections.find(s => s.section_type === type);
+  const productsSection = getSection('products');
+  const productsLimit = Number(productsSection?.content?.limit) || 6;
+  const { products } = useProducts({ featured: true, limit: productsLimit });
   const { testimonials } = useTestimonials();
   const { partners } = usePartners();
   const { promotions } = usePromotions('top');
-  const { sections } = useHomepageSections();
   const { services } = useServices();
   const { settings } = useSiteSettings();
   const phone = settings.contact?.phone || '+254 700 123 456';
@@ -47,7 +50,6 @@ export default function Home() {
   // about, products, partners, testimonials, cta). Falls back to
   // sensible defaults if the section row doesn't exist yet (e.g. before
   // the seed migration has run), so the homepage never breaks.
-  const getSection = (type: string) => sections.find(s => s.section_type === type);
   const isSectionVisible = (type: string) => getSection(type)?.is_active !== false;
   const sectionStyle = (type: string): React.CSSProperties => {
     const s = getSection(type);
@@ -72,7 +74,6 @@ export default function Home() {
         { value: '500+', label: 'Projects' },
         { value: '100%', label: 'Guarantee' },
       ];
-  const productsSection = getSection('products');
   const partnersSection = getSection('partners');
   const testimonialsSection = getSection('testimonials');
   const ctaSection = getSection('cta');
@@ -284,6 +285,21 @@ export default function Home() {
         )}
       </section>
 
+      {/* Trust Bar - reinforces credibility immediately after the hero */}
+      <section className="bg-navy-950 relative overflow-hidden">
+        <div className="absolute inset-0 opacity-[0.04] bg-[radial-gradient(circle_at_1px_1px,white_1px,transparent_0)] bg-[length:24px_24px]" />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+          <div className="grid grid-cols-2 lg:grid-cols-4 divide-x divide-navy-800">
+            {aboutStats.map((stat) => (
+              <div key={stat.label} className="text-center py-6 lg:py-8 px-2">
+                <p className="font-display text-3xl lg:text-4xl font-bold text-primary-400">{stat.value}</p>
+                <p className="text-xs lg:text-sm text-navy-300 mt-1 tracking-wide">{stat.label}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* Services Section */}
       {isSectionVisible('services') && (
       <section className={`${servicesSection?.padding || 'py-12 lg:py-16'} bg-white`} style={sectionStyle('services')}>
@@ -339,6 +355,9 @@ export default function Home() {
                       className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-navy-900 via-navy-900/60 to-transparent" />
+                    <div className="absolute top-3 right-3 w-8 h-8 rounded-full bg-primary-500 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                      <ArrowRight className="w-4 h-4 text-white" />
+                    </div>
                     <div className="absolute bottom-0 left-0 right-0 p-3 lg:p-4">
                       <h3 className="font-display text-sm lg:text-base font-bold text-white">
                         {service.name}
@@ -352,6 +371,18 @@ export default function Home() {
           ) : (
             <div className="text-center py-8">
               <p className="text-gray-500">Loading services...</p>
+            </div>
+          )}
+
+          {services.length > 0 && (
+            <div className="text-center mt-8 lg:mt-10">
+              <Link
+                href="/services"
+                className="inline-flex items-center gap-2 text-primary-600 font-semibold text-sm hover:gap-3 transition-all"
+              >
+                View All Services
+                <ArrowRight className="w-4 h-4" />
+              </Link>
             </div>
           )}
         </div>

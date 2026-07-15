@@ -1016,7 +1016,84 @@ export function useInvoices(options?: { status?: string }) {
     await refetch();
   };
 
-  return { invoices, loading, error, refetch, recordPayment };
+  const createInvoice = async (invoice: {
+    customer_id?: string | null;
+    order_id?: string | null;
+    quotation_id?: string | null;
+    customer_name: string;
+    customer_email?: string | null;
+    customer_phone?: string | null;
+    billing_address?: string | null;
+    tax_rate?: number;
+    due_date?: string | null;
+    notes?: string | null;
+  }) => {
+    const { data, error: err } = await supabase
+      .from('invoices')
+      .insert({ ...invoice, status: 'draft', tax_rate: invoice.tax_rate ?? 16 })
+      .select()
+      .single();
+    if (err) throw err;
+    await refetch();
+    return data as Invoice;
+  };
+
+  const recalcInvoiceTotals = async (invoiceId: string, taxRate: number) => {
+    const { data: items } = await supabase.from('invoice_items').select('line_total').eq('invoice_id', invoiceId);
+    const subtotal = (items || []).reduce((sum, i) => sum + Number(i.line_total), 0);
+    const taxAmount = subtotal * (taxRate / 100);
+    await supabase.from('invoices').update({
+      subtotal,
+      tax_amount: taxAmount,
+      total_amount: subtotal + taxAmount,
+      updated_at: new Date().toISOString(),
+    }).eq('id', invoiceId);
+  };
+
+  const addInvoiceItem = async (invoiceId: string, item: { description: string; quantity: number; unit_price: number }, taxRate: number) => {
+    const { error: err } = await supabase.from('invoice_items').insert({
+      invoice_id: invoiceId,
+      description: item.description,
+      quantity: item.quantity,
+      unit_price: item.unit_price,
+      line_total: item.quantity * item.unit_price,
+    });
+    if (err) throw err;
+    await recalcInvoiceTotals(invoiceId, taxRate);
+    await refetch();
+  };
+
+  const removeInvoiceItem = async (invoiceId: string, itemId: string, taxRate: number) => {
+    const { error: err } = await supabase.from('invoice_items').delete().eq('id', itemId);
+    if (err) throw err;
+    await recalcInvoiceTotals(invoiceId, taxRate);
+    await refetch();
+  };
+
+  const updateInvoiceStatus = async (invoiceId: string, status: string) => {
+    const { error: err } = await supabase.from('invoices').update({ status, updated_at: new Date().toISOString() }).eq('id', invoiceId);
+    if (err) throw err;
+    await refetch();
+  };
+
+  const deleteInvoice = async (invoiceId: string) => {
+    const { error: err } = await supabase.from('invoices').delete().eq('id', invoiceId);
+    if (err) throw err;
+    await refetch();
+  };
+
+  return {
+    invoices,
+    loading,
+    error,
+    refetch,
+    recordPayment,
+    createInvoice,
+    addInvoiceItem,
+    removeInvoiceItem,
+    updateInvoiceStatus,
+    deleteInvoice,
+  };
 }
 
 // ============================================================
@@ -1039,7 +1116,26 @@ export function useSuppliers() {
 
   useEffect(() => { refetch(); }, [refetch]);
 
-  return { suppliers, loading, refetch };
+  const createSupplier = async (supplier: Partial<Supplier>) => {
+    const { data, error: err } = await supabase.from('suppliers').insert(supplier).select().single();
+    if (err) throw err;
+    await refetch();
+    return data as Supplier;
+  };
+
+  const updateSupplier = async (id: string, updates: Partial<Supplier>) => {
+    const { error: err } = await supabase.from('suppliers').update({ ...updates, updated_at: new Date().toISOString() }).eq('id', id);
+    if (err) throw err;
+    await refetch();
+  };
+
+  const deleteSupplier = async (id: string) => {
+    const { error: err } = await supabase.from('suppliers').delete().eq('id', id);
+    if (err) throw err;
+    await refetch();
+  };
+
+  return { suppliers, loading, refetch, createSupplier, updateSupplier, deleteSupplier };
 }
 
 export function usePurchaseOrders() {
@@ -1062,5 +1158,61 @@ export function usePurchaseOrders() {
 
   useEffect(() => { refetch(); }, [refetch]);
 
-  return { purchaseOrders, loading, refetch };
+  const createPurchaseOrder = async (po: { supplier_id: string | null; expected_date?: string | null; notes?: string | null }) => {
+    const { data: userData } = await supabase.auth.getUser();
+    const { data, error: err } = await supabase
+      .from('purchase_orders')
+      .insert({ ...po, status: 'draft', created_by: userData.user?.id || null })
+      .select('*, supplier:suppliers(*), items:purchase_order_items(*, product:products(*))')
+      .single();
+    if (err) throw err;
+    await refetch();
+    return data as PurchaseOrder;
+  };
+
+  const addPurchaseOrderItem = async (poId: string, item: { product_id: string | null; description: string; quantity_ordered: number; unit_cost: number }) => {
+    const { error: err } = await supabase.from('purchase_order_items').insert({ purchase_order_id: poId, ...item, quantity_received: 0 });
+    if (err) throw err;
+    await refetch();
+  };
+
+  const removePurchaseOrderItem = async (itemId: string) => {
+    const { error: err } = await supabase.from('purchase_order_items').delete().eq('id', itemId);
+    if (err) throw err;
+    await refetch();
+  };
+
+  // Receiving goods: updating quantity_received triggers the database
+  // (apply_goods_received, from migration 008) to automatically add
+  // stock and log an inventory movement - this just records how much
+  // came in.
+  const receiveItem = async (itemId: string, quantityReceived: number) => {
+    const { error: err } = await supabase.from('purchase_order_items').update({ quantity_received: quantityReceived }).eq('id', itemId);
+    if (err) throw err;
+    await refetch();
+  };
+
+  const updatePurchaseOrderStatus = async (poId: string, status: string) => {
+    const { error: err } = await supabase.from('purchase_orders').update({ status, updated_at: new Date().toISOString() }).eq('id', poId);
+    if (err) throw err;
+    await refetch();
+  };
+
+  const deletePurchaseOrder = async (poId: string) => {
+    const { error: err } = await supabase.from('purchase_orders').delete().eq('id', poId);
+    if (err) throw err;
+    await refetch();
+  };
+
+  return {
+    purchaseOrders,
+    loading,
+    refetch,
+    createPurchaseOrder,
+    addPurchaseOrderItem,
+    removePurchaseOrderItem,
+    receiveItem,
+    updatePurchaseOrderStatus,
+    deletePurchaseOrder,
+  };
 }

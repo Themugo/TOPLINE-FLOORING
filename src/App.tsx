@@ -1,6 +1,7 @@
 import { CartProvider } from '@/hooks/use-cart';
 import { AdminAuthGuard, AdminPublicRoute } from '@/components/admin/AdminGuard';
 import { ToastContainer } from '@/components/ui/toast';
+import { ThemeApplier } from '@/components/ThemeApplier';
 import { useLocation } from 'wouter';
 
 // Pages
@@ -41,6 +42,8 @@ import AdminSeo from '@/pages/admin/seo';
 import AdminCoupons from '@/pages/admin/coupons';
 import AdminCRM from '@/pages/admin/crm';
 import AdminServices from '@/pages/admin/services';
+import AdminInvoices from '@/pages/admin/invoices';
+import AdminSuppliers from '@/pages/admin/suppliers';
 
 function Router() {
   const [location] = useLocation();
@@ -82,6 +85,22 @@ function Router() {
     return (
       <AdminAuthGuard>
         <AdminServices />
+      </AdminAuthGuard>
+    );
+  }
+
+  if (location === '/admin/invoices') {
+    return (
+      <AdminAuthGuard>
+        <AdminInvoices />
+      </AdminAuthGuard>
+    );
+  }
+
+  if (location === '/admin/suppliers') {
+    return (
+      <AdminAuthGuard>
+        <AdminSuppliers />
       </AdminAuthGuard>
     );
   }
@@ -283,6 +302,7 @@ function Router() {
 function App() {
   return (
     <CartProvider>
+      <ThemeApplier />
       <Router />
       <ToastContainer />
     </CartProvider>

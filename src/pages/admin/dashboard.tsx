@@ -56,6 +56,7 @@ const NAV_GROUPS: NavGroup[] = [
     items: [
       { href: '/admin/crm', label: 'CRM / Leads', icon: Users },
       { href: '/admin/orders', label: 'Orders', icon: ShoppingCart },
+      { href: '/admin/invoices', label: 'Invoices', icon: FileText },
       { href: '/admin/customers', label: 'Customers', icon: Users },
       { href: '/admin/quotations', label: 'Quotations', icon: FileText },
     ],
@@ -67,6 +68,7 @@ const NAV_GROUPS: NavGroup[] = [
       { href: '/admin/services', label: 'Services', icon: Wrench },
       { href: '/admin/categories', label: 'Categories', icon: FolderOpen },
       { href: '/admin/inventory', label: 'Inventory', icon: Warehouse },
+      { href: '/admin/suppliers', label: 'Suppliers & POs', icon: Truck },
       { href: '/admin/projects', label: 'Projects', icon: FolderKanban },
     ],
   },
@@ -242,8 +244,8 @@ function DashboardContent() {
   const [stats, setStats] = useState([
     { label: 'Total Orders', value: '0', color: 'bg-blue-500' },
     { label: 'Pending Orders', value: '0', color: 'bg-yellow-500' },
-    { label: 'Quotations', value: '0', color: 'bg-green-500' },
-    { label: 'Products', value: '0', color: 'bg-primary-500' },
+    { label: 'Open Leads', value: '0', color: 'bg-purple-500' },
+    { label: 'Outstanding', value: formatKES(0), color: 'bg-red-500' },
   ]);
   const [recentOrders, setRecentOrders] = useState<RecentOrder[]>([]);
   const [recentQuotations, setRecentQuotations] = useState<RecentQuotation[]>([]);
@@ -252,18 +254,20 @@ function DashboardContent() {
   useEffect(() => {
     async function fetchStats() {
       setLoading(true);
-      const [ordersRes, pendingRes, quotesRes, productsRes] = await Promise.all([
+      const [ordersRes, pendingRes, leadsRes, invoicesRes] = await Promise.all([
         supabase.from('orders').select('id', { count: 'exact', head: true }),
         supabase.from('orders').select('id', { count: 'exact', head: true }).eq('status', 'pending'),
-        supabase.from('quotations').select('id', { count: 'exact', head: true }),
-        supabase.from('products').select('id', { count: 'exact', head: true }).eq('is_active', true),
+        supabase.from('leads').select('id', { count: 'exact', head: true }).not('status', 'in', '(won,lost)'),
+        supabase.from('invoices').select('total_amount, amount_paid').not('status', 'in', '(paid,cancelled)'),
       ]);
+
+      const outstanding = (invoicesRes.data || []).reduce((sum, inv) => sum + (inv.total_amount - inv.amount_paid), 0);
 
       setStats([
         { label: 'Total Orders', value: ordersRes.count?.toString() || '0', color: 'bg-blue-500' },
         { label: 'Pending Orders', value: pendingRes.count?.toString() || '0', color: 'bg-yellow-500' },
-        { label: 'Quotations', value: quotesRes.count?.toString() || '0', color: 'bg-green-500' },
-        { label: 'Products', value: productsRes.count?.toString() || '0', color: 'bg-primary-500' },
+        { label: 'Open Leads', value: leadsRes.count?.toString() || '0', color: 'bg-purple-500' },
+        { label: 'Outstanding', value: formatKES(outstanding), color: 'bg-red-500' },
       ]);
 
       const { data: recentOrdersData } = await supabase
@@ -378,8 +382,8 @@ function DashboardContent() {
           {[
             { label: 'Add Product', href: '/admin/products' },
             { label: 'View Orders', href: '/admin/orders' },
-            { label: 'Add Category', href: '/admin/categories' },
-            { label: 'View Quotations', href: '/admin/quotations' },
+            { label: 'CRM / Leads', href: '/admin/crm' },
+            { label: 'Invoices', href: '/admin/invoices' },
           ].map((action) => (
             <Link
               key={action.href}

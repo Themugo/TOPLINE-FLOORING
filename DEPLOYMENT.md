@@ -23,6 +23,7 @@ Current full list, in order:
 011_checkout_coupons_delivery.sql     - wires coupons/delivery zones into checkout
 012_seed_seo_pages.sql                - makes SEO manager actually functional
 013_ensure_images_bucket.sql          - fixes "bucket not found" image upload errors
+014_connect_inquiries_to_crm.sql      - auto-creates a CRM lead from every quotation request
 ```
 
 **Supabase CLI:**
@@ -400,7 +401,118 @@ components now also detect this specific error and show a clear message
 pointing at the fix, instead of a generic "Upload failed", so this is
 easy to self-diagnose if it ever happens again on a fresh project.
 
-## 13. Known lower-priority cleanup (not blocking deploy)
+## 13. Design Pass - Header, Trust Bar & Section Polish - July 2026
+
+No new migrations - code-only pass.
+
+**Header rebuilt with a top utility bar** (address, phone, email, social
+icons) - this existed on your real site but had been dropped somewhere
+in earlier rewrites. Restored it, desktop only (matching typical
+practice - it collapses away on mobile where space is tight). The main
+nav now has an active-link underline instead of a background pill, and
+the header's CTA button was changed from "Login" to **"Request
+Quotation"** - admin login moved to a small icon instead of being the
+most visually prominent button in your customer-facing nav, which
+wasn't serving your visitors. Admin login is still one click away, just
+not competing with your actual conversion goal.
+
+**New: Trust/Stats Bar**, placed right after the hero - a dark full-width
+strip showing your stats (10+ Years, 500+ Projects, etc.) in large gold
+numbers. This reuses the exact same stats data already configured in
+Admin -> Homepage Builder -> About section, so there's nothing new to
+maintain - it's the same numbers, just given a second, higher-impact
+placement immediately after the hero where credibility matters most.
+This is additive only; the original stats display inside the About
+section is untouched.
+
+**Services section**: added a subtle gold arrow badge that appears on
+hover (small premium touch), plus a "View All Services" link below the
+grid that was missing - previously the only way to more services was to
+use the main nav.
+
+## 14. Invoicing & Suppliers/Purchase Orders - Admin UI Completed - July 2026
+
+No new migrations - the database schema and RLS for these already
+existed since the Priority 1 business platform migration; only the
+admin screens were missing until now.
+
+**Invoicing** (`/admin/invoices`): create invoices tied to an existing
+customer or a one-off name, itemized line editor with live subtotal/VAT/
+total, payment recording (cash/M-Pesa/bank/card/cheque/other) with
+running balance, PDF export, and full status lifecycle (draft -> sent ->
+paid/partial/overdue/cancelled) - the status/balance math is handled
+automatically by the database trigger already in place, so recording a
+payment always keeps the invoice's paid amount and status correct.
+
+**Suppliers & Purchase Orders** (`/admin/suppliers`): supplier directory
+(CRUD), and a full PO workflow - create a PO against a supplier, add
+line items (optionally linked to a real product), and mark items as
+received. Receiving goods automatically increases that product's stock
+and logs an inventory movement via the existing database trigger - no
+manual stock adjustment step needed afterward.
+
+## 15. Deeper Gap Audit - July 2026
+
+No new migrations - code-only pass, went looking for places where admin
+data still silently didn't affect the live site (the same class of bug
+as the Homepage Builder and SEO issues fixed earlier).
+
+**Theme customizer was fully disconnected - now partially wired, honestly:**
+Admin -> Theme let you pick Primary/Secondary/Accent colors, fonts,
+button style, border radius, and spacing - none of it touched the live
+site except the layout switcher built earlier. Investigated properly
+before fixing anything: the color system uses 10 different shade
+variants per color (light tints for badges, dark shades for text,
+mid-tones for buttons), so a naive "override everything with one flat
+hex" would have broken the visual hierarchy rather than fixed it.
+
+Built a real HSL-based color ramp generator (`src/lib/theme-engine.ts`)
+that takes the admin's one chosen color and generates a proper 50-950
+tint/shade scale, then applies it live site-wide (storefront and admin)
+via a small runtime stylesheet. **Primary Color and Button Style are now
+genuinely live** - change them in Admin -> Theme and the whole site
+updates immediately, no rebuild needed. Secondary Color, Accent Color,
+fonts, numeric Border Radius, and Spacing Scale are still save-only for
+now (wiring them safely needs more design work - the font pairing was
+specifically chosen to match your real brand, so making it freely
+admin-editable risked reintroducing the earlier mismatch). The Theme
+page itself now says exactly which controls are live vs. saved-only,
+instead of implying everything works.
+
+**Homepage Builder's product count setting was ignored:** the "Products
+to Show" dropdown (3/6/9/12) saved to the database but the homepage
+always hardcoded 6 regardless. Now respected.
+
+**Quotations and CRM were completely disconnected:** a customer
+requesting a quote never showed up anywhere in the Leads pipeline, even
+though both systems existed side by side. An earlier fix added a
+one-click "Create CRM Lead" button in Admin -> Quotations as a
+deliberate manual bridge (avoiding auto-creating leads from every
+anonymous submission). On further thought this undersells what a lead
+pipeline is for - requiring a click for every single inquiry just adds
+a step rather than actually connecting the two systems. Replaced with
+automatic creation: a new `submit_quotation_request` database function
+creates the quotation and a linked lead together, atomically, the
+moment someone submits the Contact or Quotation page - so every
+website inquiry lands in the CRM pipeline immediately with no manual
+step. The original manual "Create CRM Lead" button is untouched and
+still works - it now only appears for older quotations that predate
+this change and don't have a lead yet, so it doubles as a backfill tool.
+
+**SEO Manager couldn't add new pages:** it worked for the 6 pre-seeded
+pages but had no way to add an entry for an individual product page.
+Added a "New Entry" flow so a product's slug can get its own meta
+title/description/OG image, with the product's own name used as a
+smart fallback until you do.
+
+**Dashboard didn't reflect the newer modules:** the main Admin
+Dashboard's stats and Quick Actions still only referenced Orders/
+Quotations/Products - Leads and Invoices (both built in earlier passes)
+were invisible from the first screen an admin sees. Added "Open Leads"
+and "Outstanding" (unpaid invoice balance) stat cards, and CRM/Invoices
+shortcuts in Quick Actions.
+
+## 16. Known lower-priority cleanup (not blocking deploy)
 
 - ~22 `@typescript-eslint/no-explicit-any` lint warnings across admin
   pages (style only, doesn't affect behavior or the build).
