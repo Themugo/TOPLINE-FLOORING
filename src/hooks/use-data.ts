@@ -159,7 +159,19 @@ export function useHomepageSections() {
     await fetchSections();
   };
 
-  return { sections, loading, error, updateSection, refetch: fetchSections };
+  const createSection = async (section: Omit<HomepageSection, 'id' | 'created_at' | 'updated_at'>) => {
+    const { error: err } = await supabase.from('homepage_sections').insert(section);
+    if (err) throw err;
+    await fetchSections();
+  };
+
+  const deleteSection = async (id: string) => {
+    const { error: err } = await supabase.from('homepage_sections').delete().eq('id', id);
+    if (err) throw err;
+    await fetchSections();
+  };
+
+  return { sections, loading, error, updateSection, createSection, deleteSection, refetch: fetchSections };
 }
 
 // Products

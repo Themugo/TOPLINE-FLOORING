@@ -152,7 +152,7 @@ export default function HeroSlider({
       <div className="absolute inset-0 z-20 flex flex-col justify-center lg:justify-end pb-12 sm:pb-16 md:pb-20 lg:pb-24 px-4 sm:px-8 md:px-16">
         <div className="max-w-4xl transition-all duration-500 ease-in-out">
           <p className="text-primary text-xs sm:text-sm uppercase tracking-[0.25em] font-sans font-medium mb-2 sm:mb-3 drop-shadow-sm">
-            Topline Flooring & Waterproofing
+            {settings?.company_name || 'Topline Flooring & Waterproofing'}
           </p>
           <h1 className="font-display text-xl sm:text-2xl md:text-3xl lg:text-5xl font-bold text-white leading-tight mb-2 sm:mb-3 max-w-4xl drop-shadow-lg">
             {slides[currentSlide].title}

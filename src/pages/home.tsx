@@ -45,6 +45,8 @@ export default function Home() {
   const heroSection = sections.find(s => s.section_type === 'hero');
   const slideInterval = heroSection?.content?.slide_interval || 6000;
   const overlayOpacity = heroSection?.content?.overlay_opacity || 70;
+  const showFeaturedProducts = heroSection?.content?.show_featured_products !== false;
+  const showFeaturedServices = heroSection?.content?.show_featured_services !== false;
 
   // Generic accessor for the other admin-editable sections (services,
   // about, products, partners, testimonials, cta). Falls back to
@@ -65,17 +67,14 @@ export default function Home() {
   };
 
   const servicesSection = getSection('services');
+  const servicesMaxItems = Number(servicesSection?.content?.max_items) || 8;
   const aboutSection = getSection('about');
   const aboutContent = aboutSection?.content || {};
-  const aboutStats: { value: string; label: string }[] = Array.isArray(aboutContent.stats) && aboutContent.stats.length > 0
-    ? aboutContent.stats
-    : [
-        { value: '10+', label: 'Years' },
-        { value: '500+', label: 'Projects' },
-        { value: '100%', label: 'Guarantee' },
-      ];
+  const aboutStats: { value: string; label: string }[] = Array.isArray(aboutContent.stats) ? aboutContent.stats : [];
   const partnersSection = getSection('partners');
+  const partnersMaxItems = Number(partnersSection?.content?.max_items) || 10;
   const testimonialsSection = getSection('testimonials');
+  const testimonialsMaxItems = Number(testimonialsSection?.content?.max_items) || 4;
   const ctaSection = getSection('cta');
   const ctaContent = ctaSection?.content || {};
 
@@ -101,7 +100,7 @@ export default function Home() {
     // in a random order and random selection each time the page loads
     // (rather than always showing every service in the same fixed
     // order) so the hero stays fresh on repeat visits.
-    const servicesPool: HeroSlideData[] = services.map(service => ({
+    const servicesPool: HeroSlideData[] = showFeaturedServices ? services.map(service => ({
       id: `service-${service.id}`,
       title: service.name,
       subtitle: 'Our Services',
@@ -110,9 +109,9 @@ export default function Home() {
       button_text: 'Learn More',
       button_link: '/services',
       source_type: 'service' as const,
-    }));
+    })) : [];
 
-    const productsPool: HeroSlideData[] = products.map(product => ({
+    const productsPool: HeroSlideData[] = showFeaturedProducts ? products.map(product => ({
       id: `product-${product.id}`,
       title: product.name,
       subtitle: 'Featured Product',
@@ -121,7 +120,7 @@ export default function Home() {
       button_text: 'Shop Now',
       button_link: `/product/${product.slug}`,
       source_type: 'product' as const,
-    }));
+    })) : [];
 
     // Fisher-Yates shuffle
     const shuffle = <T,>(arr: T[]): T[] => {
@@ -137,7 +136,7 @@ export default function Home() {
     combined.push(...shuffledRest);
 
     return combined;
-  }, [slides, services, products]);
+  }, [slides, services, products, showFeaturedProducts, showFeaturedServices]);
 
   useEffect(() => {
     if (allSlides.length === 0 || isSliderPaused) return;
@@ -285,21 +284,6 @@ export default function Home() {
         )}
       </section>
 
-      {/* Trust Bar - reinforces credibility immediately after the hero */}
-      <section className="bg-navy-950 relative overflow-hidden">
-        <div className="absolute inset-0 opacity-[0.04] bg-[radial-gradient(circle_at_1px_1px,white_1px,transparent_0)] bg-[length:24px_24px]" />
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
-          <div className="grid grid-cols-2 lg:grid-cols-4 divide-x divide-navy-800">
-            {aboutStats.map((stat) => (
-              <div key={stat.label} className="text-center py-6 lg:py-8 px-2">
-                <p className="font-display text-3xl lg:text-4xl font-bold text-primary-400">{stat.value}</p>
-                <p className="text-xs lg:text-sm text-navy-300 mt-1 tracking-wide">{stat.label}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* Services Section */}
       {isSectionVisible('services') && (
       <section className={`${servicesSection?.padding || 'py-12 lg:py-16'} bg-white`} style={sectionStyle('services')}>
@@ -317,7 +301,7 @@ export default function Home() {
           {services.length > 0 ? (
             layoutStyle === 'showcase' ? (
               <div className="flex gap-4 lg:gap-6 overflow-x-auto pb-4 snap-x snap-mandatory scrollbar-thin">
-                {services.map((service) => (
+                {services.slice(0, servicesMaxItems).map((service) => (
                   <Link
                     key={service.id}
                     href="/services"
@@ -343,7 +327,7 @@ export default function Home() {
               </div>
             ) : (
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
-                {services.map((service) => (
+                {services.slice(0, servicesMaxItems).map((service) => (
                   <Link
                     key={service.id}
                     href="/services"
@@ -370,7 +354,7 @@ export default function Home() {
             )
           ) : (
             <div className="text-center py-8">
-              <p className="text-gray-500">Loading services...</p>
+              <p className="text-gray-500">No services available yet. Add services in the admin panel.</p>
             </div>
           )}
 
@@ -400,26 +384,34 @@ export default function Home() {
                 {aboutSection?.title || 'Who We Are'}
               </h2>
               <p className="text-gray-600 mb-4">
-                {aboutContent.paragraph_1 || 'For over 10 years, Topline Flooring and Waterproofing has been the trusted partner for professional flooring and waterproofing solutions across Kenya and East Africa. We deliver durable, cost-effective services that enhance the lifespan and performance of every structure.'}
+                {aboutContent.paragraph_1 || 'Learn more about our company on our About page.'}
               </p>
               <p className="text-gray-600 mb-6">
-                {aboutContent.paragraph_2 || 'Our team of certified professionals uses only the highest quality materials from globally recognized brands like Sika, Mapei, and BASF.'}
+                {aboutContent.paragraph_2 || ''}
               </p>
-              <div className="grid grid-cols-3 gap-4">
-                {aboutStats.map((stat) => (
-                  <div key={stat.label} className="text-center">
-                    <p className="font-display text-xl lg:text-2xl font-bold text-primary-600">{stat.value}</p>
-                    <p className="text-xs text-gray-500">{stat.label}</p>
-                  </div>
-                ))}
-              </div>
+              {aboutStats.length > 0 && (
+                <div className="grid grid-cols-3 gap-4">
+                  {aboutStats.map((stat) => (
+                    <div key={stat.label} className="text-center">
+                      <p className="font-display text-xl lg:text-2xl font-bold text-primary-600">{stat.value}</p>
+                      <p className="text-xs text-gray-500">{stat.label}</p>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
             <div className="relative">
-              <img
-                src={aboutContent.image_url || 'https://images.unsplash.com/photo-1504307651674-208930a97d63?auto=format&fit=crop&w=600&q=80'}
-                alt={aboutSection?.title || 'Topline Flooring team'}
-                className="rounded-xl shadow-lg w-full"
-              />
+              {aboutContent.image_url ? (
+                <img
+                  src={aboutContent.image_url}
+                  alt={aboutSection?.title || 'Topline Flooring team'}
+                  className="rounded-xl shadow-lg w-full"
+                />
+              ) : (
+                <div className="rounded-xl bg-gray-200 aspect-video flex items-center justify-center text-gray-400">
+                  <p className="text-sm">Set an image in the homepage builder</p>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -561,7 +553,7 @@ export default function Home() {
               </h2>
             </div>
             <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
-              {testimonials.slice(0, 4).map((t) => (
+              {testimonials.slice(0, testimonialsMaxItems).map((t) => (
                 <div key={t.id} className="bg-white rounded-xl p-4 border border-gray-100">
                   <div className="flex items-center gap-1 mb-2">
                     {Array.from({ length: t.rating }).map((_, i) => (
