@@ -5,7 +5,7 @@ import { supabase } from '@/lib/supabase';
 import { useToast } from '@/hooks/use-toast';
 import type { MediaFolder, MediaFile } from '@/lib/types';
 
-const STORAGE_BUCKET_ERROR = 'Storage bucket "images" not found. Go to Supabase Dashboard → SQL Editor, paste the contents of supabase/setup_storage.sql, and click Run.';
+const STORAGE_BUCKET_ERROR = 'Storage bucket not accessible. In Supabase Dashboard → SQL Editor, paste and run the contents of supabase/setup_storage.sql. Then reload this page.';
 
 export default function AdminMediaLibrary() {
   return (

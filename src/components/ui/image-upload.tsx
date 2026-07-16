@@ -4,7 +4,7 @@ import { supabase } from '@/lib/supabase';
 import { MediaLibraryModal } from '@/components/admin/MediaLibraryModal';
 import { validateUpload } from '@/lib/upload';
 
-const STORAGE_BUCKET_ERROR = 'Storage bucket "images" not found. Go to Supabase Dashboard → SQL Editor, paste the contents of supabase/setup_storage.sql, and click Run.';
+const STORAGE_BUCKET_ERROR = 'Storage bucket not accessible. In Supabase Dashboard → SQL Editor, paste and run the contents of supabase/setup_storage.sql. Then reload this page.';
 
 interface ImageUploadProps {
   value: string;
