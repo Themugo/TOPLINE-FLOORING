@@ -4,6 +4,22 @@ import { supabase } from '@/lib/supabase';
 import { MediaLibraryModal } from '@/components/admin/MediaLibraryModal';
 import { validateUpload } from '@/lib/upload';
 
+async function ensureImagesBucket(): Promise<boolean> {
+  const { error: getErr } = await supabase.storage.getBucket('images');
+  if (!getErr) return true;
+
+  const { error: createErr } = await supabase.storage.createBucket('images', {
+    public: true,
+    fileSizeLimit: 10 * 1024 * 1024,
+    allowedMimeTypes: ['image/*', 'video/*', 'application/pdf'],
+  });
+  if (createErr) {
+    console.error('Failed to create images bucket:', createErr.message);
+    return false;
+  }
+  return true;
+}
+
 interface ImageUploadProps {
   value: string;
   onChange: (url: string) => void;
@@ -40,14 +56,26 @@ export function ImageUpload({
       const ext = file.name.split('.').pop()?.toLowerCase() || 'jpg';
       const fileName = `${folder}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
 
-      const { error: uploadError } = await supabase.storage
+      let { error: uploadError } = await supabase.storage
         .from('images')
         .upload(fileName, file, {
           cacheControl: '3600',
           upsert: false,
         });
 
-      if (uploadError) throw uploadError;
+      if (uploadError && /bucket not found/i.test(uploadError.message)) {
+        const created = await ensureImagesBucket();
+        if (created) {
+          const retry = await supabase.storage
+            .from('images')
+            .upload(fileName, file, { cacheControl: '3600', upsert: false });
+          if (retry.error) throw retry.error;
+        } else {
+          throw new Error('Could not create storage bucket. Please run migration 013_ensure_images_bucket.sql in the Supabase SQL Editor.');
+        }
+      } else if (uploadError) {
+        throw uploadError;
+      }
 
       const { data: urlData } = supabase.storage
         .from('images')
@@ -55,12 +83,7 @@ export function ImageUpload({
 
       onChange(urlData.publicUrl);
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Upload failed';
-      if (/bucket not found/i.test(message)) {
-        setError('Storage bucket is missing. Run migration 013_ensure_images_bucket.sql in Supabase SQL Editor, then try again.');
-      } else {
-        setError(message);
-      }
+      setError(err instanceof Error ? err.message : 'Upload failed');
     } finally {
       setUploading(false);
     }
@@ -231,11 +254,23 @@ export function MultiImageUpload({
         const ext = file.name.split('.').pop()?.toLowerCase() || 'jpg';
         const fileName = `${folder}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
 
-        const { error: uploadError } = await supabase.storage
+        let { error: uploadError } = await supabase.storage
           .from('images')
           .upload(fileName, file, { cacheControl: '3600', upsert: false });
 
-        if (uploadError) throw uploadError;
+        if (uploadError && /bucket not found/i.test(uploadError.message)) {
+          const created = await ensureImagesBucket();
+          if (created) {
+            const retry = await supabase.storage
+              .from('images')
+              .upload(fileName, file, { cacheControl: '3600', upsert: false });
+            if (retry.error) throw retry.error;
+          } else {
+            throw new Error('Could not create storage bucket. Please run migration 013_ensure_images_bucket.sql in the Supabase SQL Editor.');
+          }
+        } else if (uploadError) {
+          throw uploadError;
+        }
 
         const { data: urlData } = supabase.storage
           .from('images')
@@ -245,12 +280,7 @@ export function MultiImageUpload({
       }
       onChange([...value, ...urls]);
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Upload failed';
-      if (/bucket not found/i.test(message)) {
-        setError('Storage bucket is missing. Run migration 013_ensure_images_bucket.sql in Supabase SQL Editor, then try again.');
-      } else {
-        setError(message);
-      }
+      setError(err instanceof Error ? err.message : 'Upload failed');
     } finally {
       setUploading(false);
     }
