@@ -5,20 +5,7 @@ import { supabase } from '@/lib/supabase';
 import { useToast } from '@/hooks/use-toast';
 import type { MediaFolder, MediaFile } from '@/lib/types';
 
-async function ensureImagesBucket(): Promise<boolean> {
-  const { error: getErr } = await supabase.storage.getBucket('images');
-  if (!getErr) return true;
-  const { error: createErr } = await supabase.storage.createBucket('images', {
-    public: true,
-    fileSizeLimit: 10 * 1024 * 1024,
-    allowedMimeTypes: ['image/*', 'video/*', 'application/pdf'],
-  });
-  if (createErr) {
-    console.error('Failed to create images bucket:', createErr.message);
-    return false;
-  }
-  return true;
-}
+const STORAGE_BUCKET_ERROR = 'Storage bucket "images" not found. Go to Supabase Dashboard → SQL Editor, paste the contents of supabase/setup_storage.sql, and click Run.';
 
 export default function AdminMediaLibrary() {
   return (
@@ -566,17 +553,10 @@ function UploadModal({
           .from('images')
           .upload(storagePath, file, { cacheControl: '3600', upsert: false });
 
-        if (uploadError && /bucket not found/i.test(uploadError.message)) {
-          const created = await ensureImagesBucket();
-          if (created) {
-            const retry = await supabase.storage
-              .from('images')
-              .upload(storagePath, file, { cacheControl: '3600', upsert: false });
-            if (retry.error) throw retry.error;
-          } else {
-            throw new Error('Could not create storage bucket.');
+        if (uploadError) {
+          if (/bucket not found/i.test(uploadError.message)) {
+            throw new Error(STORAGE_BUCKET_ERROR);
           }
-        } else if (uploadError) {
           throw uploadError;
         }
 
@@ -600,8 +580,8 @@ function UploadModal({
         });
       } catch (err) {
         const message = err instanceof Error ? err.message : '';
-        if (/bucket not found|Could not create storage/i.test(message)) {
-          toast({ type: 'error', message: 'Storage bucket could not be created. Run migration 013_ensure_images_bucket.sql in the Supabase SQL Editor.' });
+        if (/bucket not found|Storage bucket/i.test(message)) {
+          toast({ type: 'error', message: STORAGE_BUCKET_ERROR });
         } else {
           toast({ type: 'error', message: `Failed to upload ${file.name}` });
         }

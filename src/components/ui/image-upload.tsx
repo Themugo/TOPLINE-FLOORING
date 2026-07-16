@@ -4,21 +4,7 @@ import { supabase } from '@/lib/supabase';
 import { MediaLibraryModal } from '@/components/admin/MediaLibraryModal';
 import { validateUpload } from '@/lib/upload';
 
-async function ensureImagesBucket(): Promise<boolean> {
-  const { error: getErr } = await supabase.storage.getBucket('images');
-  if (!getErr) return true;
-
-  const { error: createErr } = await supabase.storage.createBucket('images', {
-    public: true,
-    fileSizeLimit: 10 * 1024 * 1024,
-    allowedMimeTypes: ['image/*', 'video/*', 'application/pdf'],
-  });
-  if (createErr) {
-    console.error('Failed to create images bucket:', createErr.message);
-    return false;
-  }
-  return true;
-}
+const STORAGE_BUCKET_ERROR = 'Storage bucket "images" not found. Go to Supabase Dashboard → SQL Editor, paste the contents of supabase/setup_storage.sql, and click Run.';
 
 interface ImageUploadProps {
   value: string;
@@ -56,24 +42,17 @@ export function ImageUpload({
       const ext = file.name.split('.').pop()?.toLowerCase() || 'jpg';
       const fileName = `${folder}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
 
-      let { error: uploadError } = await supabase.storage
+      const { error: uploadError } = await supabase.storage
         .from('images')
         .upload(fileName, file, {
           cacheControl: '3600',
           upsert: false,
         });
 
-      if (uploadError && /bucket not found/i.test(uploadError.message)) {
-        const created = await ensureImagesBucket();
-        if (created) {
-          const retry = await supabase.storage
-            .from('images')
-            .upload(fileName, file, { cacheControl: '3600', upsert: false });
-          if (retry.error) throw retry.error;
-        } else {
-          throw new Error('Could not create storage bucket. Please run migration 013_ensure_images_bucket.sql in the Supabase SQL Editor.');
+      if (uploadError) {
+        if (/bucket not found/i.test(uploadError.message)) {
+          throw new Error(STORAGE_BUCKET_ERROR);
         }
-      } else if (uploadError) {
         throw uploadError;
       }
 
@@ -258,17 +237,10 @@ export function MultiImageUpload({
           .from('images')
           .upload(fileName, file, { cacheControl: '3600', upsert: false });
 
-        if (uploadError && /bucket not found/i.test(uploadError.message)) {
-          const created = await ensureImagesBucket();
-          if (created) {
-            const retry = await supabase.storage
-              .from('images')
-              .upload(fileName, file, { cacheControl: '3600', upsert: false });
-            if (retry.error) throw retry.error;
-          } else {
-            throw new Error('Could not create storage bucket. Please run migration 013_ensure_images_bucket.sql in the Supabase SQL Editor.');
+        if (uploadError) {
+          if (/bucket not found/i.test(uploadError.message)) {
+            throw new Error(STORAGE_BUCKET_ERROR);
           }
-        } else if (uploadError) {
           throw uploadError;
         }
 
