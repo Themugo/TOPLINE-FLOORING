@@ -24,6 +24,8 @@ Current full list, in order:
 012_seed_seo_pages.sql                - makes SEO manager actually functional
 013_ensure_images_bucket.sql          - fixes "bucket not found" image upload errors
 014_connect_inquiries_to_crm.sql      - auto-creates a CRM lead from every quotation request
+015_enrich_product_catalog.sql        - adds SKUs, stock levels & 8 more products across all categories
+016_fix_partners_and_gallery_seed.sql - fixes broken partner logos, adds 2 missing services, seeds photo galleries
 ```
 
 **Supabase CLI:**
@@ -512,7 +514,56 @@ were invisible from the first screen an admin sees. Added "Open Leads"
 and "Outstanding" (unpaid invoice balance) stat cards, and CRM/Invoices
 shortcuts in Quick Actions.
 
-## 16. Known lower-priority cleanup (not blocking deploy)
+## 16. Catalog Population & Real Photo Management - July 2026
+
+New migrations: `20260715080000_015_enrich_product_catalog.sql` (from
+an earlier pass - adds SKUs, stock levels, and 8 more products across
+every category) and `20260716070000_016_fix_partners_and_gallery_seed.sql`
+(this pass - fills what 015 didn't cover). Run both in order.
+
+**Two services actually live on the real site were missing from seed
+data entirely** - "Concrete Repair and Protection" and "Roof Coating
+and Maintenance" - now added with full descriptions and feature lists.
+
+**Partner logos were broken** - 4 of them pointed at brand websites'
+internal asset paths and favicons, which never reliably hotlink and
+were rendering as broken images. Cleared so the site's existing
+text-fallback (partner name as styled text) shows cleanly instead.
+
+**Product photo galleries, fully admin-manageable** - products only
+ever had a single photo with no way to add more from admin, even though
+the database already had a proper gallery table (`product_images`)
+sitting unused. Added a gallery manager (Admin -> Products -> photo icon
+on any row): upload multiple photos per product, each with its own
+caption ("the story behind the upload" - e.g. "Applying the second coat
+on-site in Westlands"), and mark one as the primary listing photo (which
+also updates the product's main image automatically). Seeded a starter
+gallery with captions on a few flagship products so there's something
+to see immediately.
+
+**Media Library now supports real captions and stories** - every
+uploaded file already had `title` and `alt_text` columns, but there was
+no way to edit them after upload. Added an edit action (pencil icon on
+any file) with a Title field and a Description/Story field, which also
+serves as the image's accessibility alt text.
+
+**Products admin form gained two missing fields** that already existed
+in the database but weren't editable: SKU and Short Description (shown
+on product cards, separate from the full description).
+
+**Confirmed still working:** the hero slider's random selection of
+services and products (built earlier) is unaffected by the larger
+catalog - it now has more variety to draw from.
+
+**On the image sourcing:** all stock photos reuse the same verified
+Unsplash CDN photo set already live elsewhere on the site
+(license-safe, no new unverified URLs), just distributed more
+thoughtfully across more products. This is starter content only - every
+photo, caption, and product is fully editable from admin, and the
+galleries/upload tools above are exactly how you'd replace them with
+real project photos.
+
+## 17. Known lower-priority cleanup (not blocking deploy)
 
 - ~22 `@typescript-eslint/no-explicit-any` lint warnings across admin
   pages (style only, doesn't affect behavior or the build).

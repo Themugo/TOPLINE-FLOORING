@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { FolderOpen, Upload, Search, Image, File, Trash2, FolderPlus, ChevronRight, X, Check, Move } from 'lucide-react';
+import { FolderOpen, Upload, Search, Image, File, Trash2, FolderPlus, ChevronRight, X, Check, Move, Pencil } from 'lucide-react';
 import { AdminLayout } from '@/pages/admin/dashboard';
 import { supabase } from '@/lib/supabase';
 import { useToast } from '@/hooks/use-toast';
@@ -23,6 +23,7 @@ function MediaLibraryContent() {
   const [showNewFolderModal, setShowNewFolderModal] = useState(false);
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [showMoveModal, setShowMoveModal] = useState(false);
+  const [editingFile, setEditingFile] = useState<MediaFile | null>(null);
   const { toast } = useToast();
 
   const fetchFolders = useCallback(async () => {
@@ -82,6 +83,21 @@ function MediaLibraryContent() {
       fetchFiles(currentFolder);
       setSelectedFiles(selectedFiles.filter(id => id !== fileId));
     }
+  };
+
+  const handleUpdateFileDetails = async (fileId: string, title: string, altText: string) => {
+    const { error } = await supabase
+      .from('media_files')
+      .update({ title: title || null, alt_text: altText || null })
+      .eq('id', fileId);
+
+    if (error) {
+      toast({ type: 'error', message: 'Failed to save details' });
+      return false;
+    }
+    toast({ type: 'success', message: 'Photo details saved' });
+    fetchFiles(currentFolder);
+    return true;
   };
 
   const handleBulkDelete = async () => {
@@ -264,13 +280,23 @@ function MediaLibraryContent() {
 
               <div className="p-2">
                 <p className="text-xs text-gray-900 font-medium truncate" title={file.original_name || file.filename}>
-                  {file.original_name || file.filename}
+                  {file.title || file.original_name || file.filename}
                 </p>
                 <p className="text-xs text-gray-500">{formatFileSize(file.file_size)}</p>
               </div>
 
               {/* Actions */}
               <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setEditingFile(file);
+                  }}
+                  className="p-1.5 bg-white text-navy-700 rounded hover:text-primary-600 shadow-sm"
+                  title="Edit title, alt text & story"
+                >
+                  <Pencil className="w-3 h-3" />
+                </button>
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
@@ -336,6 +362,83 @@ function MediaLibraryContent() {
           }}
         />
       )}
+
+      {editingFile && (
+        <EditFileModal
+          file={editingFile}
+          onClose={() => setEditingFile(null)}
+          onSave={handleUpdateFileDetails}
+        />
+      )}
+    </div>
+  );
+}
+
+function EditFileModal({
+  file,
+  onClose,
+  onSave,
+}: {
+  file: MediaFile;
+  onClose: () => void;
+  onSave: (fileId: string, title: string, altText: string) => Promise<boolean>;
+}) {
+  const [title, setTitle] = useState(file.title || '');
+  const [altText, setAltText] = useState(file.alt_text || '');
+  const [saving, setSaving] = useState(false);
+  const isImage = file.file_type?.startsWith('image/');
+
+  const handleSave = async () => {
+    setSaving(true);
+    const ok = await onSave(file.id, title, altText);
+    setSaving(false);
+    if (ok) onClose();
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50" onClick={onClose}>
+      <div className="bg-white rounded-xl max-w-md w-full p-6" onClick={(e) => e.stopPropagation()}>
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="font-semibold text-lg text-gray-900">Photo Details</h2>
+          <button onClick={onClose}><X className="w-5 h-5 text-gray-400" /></button>
+        </div>
+
+        {isImage && (
+          <div className="w-full aspect-video bg-gray-100 rounded-lg overflow-hidden mb-4">
+            <img src={file.file_url} alt={file.alt_text || ''} className="w-full h-full object-cover" />
+          </div>
+        )}
+
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
+            <input
+              type="text"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              className="input"
+              placeholder={file.original_name || file.filename}
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Description / Story
+            </label>
+            <textarea
+              value={altText}
+              onChange={(e) => setAltText(e.target.value)}
+              className="input min-h-[90px]"
+              placeholder="What's the story behind this photo? e.g. 'Epoxy floor installation for a warehouse client in Industrial Area, day 2 of 3.' This also doubles as the image's alt text for accessibility and search."
+            />
+          </div>
+          <div className="flex gap-3 pt-2">
+            <button type="button" onClick={onClose} className="btn-secondary flex-1">Cancel</button>
+            <button type="button" onClick={handleSave} disabled={saving} className="btn-primary flex-1">
+              {saving ? 'Saving...' : 'Save'}
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
