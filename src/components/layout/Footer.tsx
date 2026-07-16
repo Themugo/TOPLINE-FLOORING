@@ -1,6 +1,6 @@
 import { Link } from 'wouter';
 import { Phone, Mail, MapPin, Facebook, Instagram, Linkedin, Twitter } from 'lucide-react';
-import { useSiteSettings } from '@/hooks/use-data';
+import { useSiteSettings, useServices } from '@/hooks/use-data';
 import { telHref } from '@/lib/utils';
 
 const DEFAULTS = {
@@ -16,6 +16,7 @@ const DEFAULTS = {
 export function Footer() {
   const currentYear = new Date().getFullYear();
   const { settings } = useSiteSettings();
+  const { services } = useServices();
 
   const siteName = settings.site_info?.name || DEFAULTS.name;
   const [firstWord, ...restWords] = siteName.split(' ');
@@ -86,21 +87,33 @@ export function Footer() {
           <div>
             <h3 className="font-semibold text-primary-600 mb-4">Our Services</h3>
             <nav className="space-y-3">
-              {[
-                'Industrial Flooring',
-                'Epoxy Coatings',
-                'Waterproofing Systems',
-                'Concrete Sealers',
-                'Joint Sealants',
-              ].map((service) => (
-                <Link
-                  key={service}
-                  href="/services"
-                  className="block text-sm text-navy-600 hover:text-primary-600 transition-colors"
-                >
-                  {service}
-                </Link>
-              ))}
+              {services.length > 0 ? (
+                services.slice(0, 5).map((service) => (
+                  <Link
+                    key={service.id}
+                    href="/services"
+                    className="block text-sm text-navy-600 hover:text-primary-600 transition-colors"
+                  >
+                    {service.name}
+                  </Link>
+                ))
+              ) : (
+                [
+                  'Industrial Flooring',
+                  'Epoxy Coatings',
+                  'Waterproofing Systems',
+                  'Concrete Sealers',
+                  'Joint Sealants',
+                ].map((service) => (
+                  <Link
+                    key={service}
+                    href="/services"
+                    className="block text-sm text-navy-600 hover:text-primary-600 transition-colors"
+                  >
+                    {service}
+                  </Link>
+                ))
+              )}
             </nav>
           </div>
 

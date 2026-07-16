@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Phone, Mail, MapPin, Clock, Send } from 'lucide-react';
+import { Phone, Mail, MapPin, Clock, Send, Facebook, Instagram, Linkedin } from 'lucide-react';
 import { CustomerLayout } from '@/components/layout/CustomerLayout';
 import { useToast } from '@/hooks/use-toast';
 import { useSiteSettings } from '@/hooks/use-data';
@@ -155,14 +155,20 @@ export default function Contact() {
                 <div className="mt-6 card p-6">
                   <h3 className="font-semibold text-navy-900 mb-4">Follow Us</h3>
                   <div className="flex gap-3">
-                    {['Facebook', 'Instagram', 'LinkedIn'].map((platform) => (
+                    {[
+                      { name: 'Facebook', url: settings.social_links?.facebook, Icon: Facebook },
+                      { name: 'Instagram', url: settings.social_links?.instagram, Icon: Instagram },
+                      { name: 'LinkedIn', url: settings.social_links?.linkedin, Icon: Linkedin },
+                    ].filter(s => !!s.url).map(({ name, url, Icon }) => (
                       <a
-                        key={platform}
-                        href="#"
+                        key={name}
+                        href={url}
+                        target="_blank"
+                        rel="noopener noreferrer"
                         className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center text-gray-600 hover:bg-primary-500 hover:text-white transition-colors"
+                        aria-label={`Follow us on ${name}`}
                       >
-                        <span className="sr-only">{platform}</span>
-                        <span className="text-sm font-medium">{platform[0]}</span>
+                        <Icon className="w-5 h-5" />
                       </a>
                     ))}
                   </div>
