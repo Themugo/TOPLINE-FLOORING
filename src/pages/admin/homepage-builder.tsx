@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { Eye, EyeOff, Settings2, Save, Plus, Trash2, ChevronUp, ChevronDown, Loader2, GripVertical } from 'lucide-react';
+import { useState } from 'react';
+import { Eye, EyeOff, Settings2, Save, Plus, Trash2, ChevronUp, ChevronDown, Loader2 } from 'lucide-react';
 import { AdminLayout } from './dashboard';
 import { useHomepageSections } from '@/hooks/use-data';
 import { useToast } from '@/hooks/use-toast';

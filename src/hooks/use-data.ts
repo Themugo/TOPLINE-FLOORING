@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
 import type {
@@ -1250,7 +1251,6 @@ function setStoredComparison(state: ComparisonState) {
 
 export function useProductComparison() {
   const [comparison, setComparison] = useState<ComparisonState>(getStoredComparison);
-  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const handler = () => setComparison(getStoredComparison());

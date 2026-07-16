@@ -1,9 +1,13 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from './supabase';
 
-type Tables<T extends string> = any;
-type TablesInsert<T extends string> = any;
-type TablesUpdate<T extends string> = any;
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+type Tables<T extends string> = Record<string, any>;
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+type TablesInsert<T extends string> = Record<string, any>;
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+type TablesUpdate<T extends string> = Record<string, any>;
 
 // Product types
 export type Product = Tables<'products'> & { category_name?: string };

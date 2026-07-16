@@ -34,7 +34,7 @@ export default function ServiceDetail() {
   useEffect(() => {
     if (!slug) return;
     loadService();
-  }, [slug]);
+  }, [slug]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const loadService = async () => {
     setLoading(true);

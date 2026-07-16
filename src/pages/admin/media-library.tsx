@@ -542,6 +542,7 @@ function UploadModal({
 
     setUploading(true);
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const filesToInsert: any[] = [];
 
     for (const file of selectedFiles) {
@@ -549,7 +550,7 @@ function UploadModal({
         const ext = file.name.split('.').pop()?.toLowerCase() || 'jpg';
         const storagePath = `media-library/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
 
-        let { error: uploadError } = await supabase.storage
+        const { error: uploadError } = await supabase.storage
           .from('images')
           .upload(storagePath, file, { cacheControl: '3600', upsert: false });
 

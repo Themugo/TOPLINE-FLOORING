@@ -1,41 +1,58 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Search, X, Phone, Mail, MapPin, Building2, ShoppingCart, FileText, Wallet } from 'lucide-react';
 import { AdminLayout } from './dashboard';
-import { useCustomers } from '@/hooks/use-data';
 import { formatDateTime, formatKES } from '@/lib/utils';
 import { supabase } from '@/lib/supabase';
-import type { Customer, Order, Quotation, Invoice } from '@/lib/types';
+import { usePagination } from '@/hooks/use-pagination';
+import { Pagination } from '@/components/admin/Pagination';
+import type { Customer, Order, Quotation } from '@/lib/types';
 
 export default function AdminCustomers() {
-  const { customers, loading } = useCustomers();
+  const { page, setPage, limit, total, totalPages, from, to, setTotal } = usePagination(20);
+  const [customers, setCustomers] = useState<Customer[]>([]);
+  const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [selected, setSelected] = useState<Customer | null>(null);
 
-  const filtered = customers.filter((c) => {
-    const q = search.toLowerCase();
-    return (
-      c.name.toLowerCase().includes(q) ||
-      c.email.toLowerCase().includes(q) ||
-      c.phone.toLowerCase().includes(q) ||
-      (c.company || '').toLowerCase().includes(q)
-    );
-  });
+  const fetchCustomers = useCallback(async () => {
+    setLoading(true);
+    let query = supabase
+      .from('customers')
+      .select('*', { count: 'exact' })
+      .order('created_at', { ascending: false })
+      .range(from, to);
+
+    if (search.trim()) {
+      query = query.or(`name.ilike.%${search}%,email.ilike.%${search}%,phone.ilike.%${search}%,company.ilike.%${search}%`);
+    }
+
+    const { data, count, error } = await query;
+    if (!error) {
+      setCustomers(data || []);
+      setTotal(count || 0);
+    }
+    setLoading(false);
+  }, [from, to, search, setTotal]);
+
+  useEffect(() => { fetchCustomers(); }, [fetchCustomers]);
 
   return (
     <AdminLayout title="Customers">
-      <div className="mb-6 relative max-w-sm">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-        <input
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search by name, email, phone, or company..."
-          className="input pl-9"
-        />
+      <div className="mb-6 flex items-center gap-4">
+        <div className="relative flex-1 max-w-sm">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+          <input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search by name, email, phone, or company..."
+            className="input pl-9"
+          />
+        </div>
       </div>
 
       {loading ? (
         <div className="text-center py-12">Loading...</div>
-      ) : filtered.length === 0 ? (
+      ) : customers.length === 0 ? (
         <div className="bg-white rounded-xl p-12 border border-gray-200 text-center">
           <p className="text-gray-500">{search ? 'No customers match your search' : 'No customers yet'}</p>
         </div>
@@ -51,7 +68,7 @@ export default function AdminCustomers() {
               </tr>
             </thead>
             <tbody className="divide-y">
-              {filtered.map((customer) => (
+              {customers.map((customer) => (
                 <tr
                   key={customer.id}
                   onClick={() => setSelected(customer)}
@@ -68,6 +85,7 @@ export default function AdminCustomers() {
               ))}
             </tbody>
           </table>
+          <Pagination page={page} total={total} limit={limit} totalPages={totalPages} onPageChange={setPage} />
         </div>
       )}
 
@@ -79,112 +97,76 @@ export default function AdminCustomers() {
 function CustomerDetail({ customer, onClose }: { customer: Customer; onClose: () => void }) {
   const [orders, setOrders] = useState<Order[]>([]);
   const [quotations, setQuotations] = useState<Quotation[]>([]);
-  const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    async function fetchHistory() {
+    async function load() {
       setLoading(true);
-      const [ordersRes, quotesRes, invoicesRes] = await Promise.all([
+      const [o, q] = await Promise.all([
         supabase.from('orders').select('*').eq('customer_id', customer.id).order('created_at', { ascending: false }),
-        supabase.from('quotations').select('*').eq('email', customer.email).order('created_at', { ascending: false }),
-        supabase.from('invoices').select('*').eq('customer_id', customer.id).order('created_at', { ascending: false }),
+        supabase.from('quotations').select('*').eq('customer_id', customer.id).order('created_at', { ascending: false }),
       ]);
-      setOrders(ordersRes.data || []);
-      setQuotations(quotesRes.data || []);
-      setInvoices(invoicesRes.data || []);
+      setOrders(o.data || []);
+      setQuotations(q.data || []);
       setLoading(false);
     }
-    fetchHistory();
-  }, [customer.id, customer.email]);
+    load();
+  }, [customer.id]);
 
-  const totalSpent = orders.reduce((sum, o) => sum + (o.total_amount || 0), 0);
-  const outstandingBalance = invoices
-    .filter((inv) => !['paid', 'cancelled'].includes(inv.status))
-    .reduce((sum, inv) => sum + (inv.total_amount - inv.amount_paid), 0);
+  const totalSpent = orders.filter(o => o.status === 'completed').reduce((sum, o) => sum + o.total_amount, 0);
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex justify-end z-50" onClick={onClose}>
-      <div className="bg-white w-full max-w-lg h-full overflow-y-auto p-6" onClick={(e) => e.stopPropagation()}>
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="font-display font-bold text-xl text-navy-900">{customer.name}</h2>
-          <button onClick={onClose}><X className="w-5 h-5 text-gray-400" /></button>
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
+      <div className="bg-white rounded-xl max-w-2xl w-full p-6 max-h-[90vh] overflow-y-auto">
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="font-semibold text-lg">{customer.name}</h2>
+          <button onClick={onClose} className="p-2"><X className="w-5 h-5" /></button>
         </div>
 
-        <div className="space-y-2 text-sm text-gray-600 mb-6">
-          {customer.company && <p className="flex items-center gap-2"><Building2 className="w-4 h-4" />{customer.company}</p>}
-          <p className="flex items-center gap-2"><Phone className="w-4 h-4" />{customer.phone}</p>
-          <p className="flex items-center gap-2"><Mail className="w-4 h-4" />{customer.email}</p>
-          {customer.address && <p className="flex items-center gap-2"><MapPin className="w-4 h-4" />{customer.address}{customer.city ? `, ${customer.city}` : ''}</p>}
+        <div className="grid grid-cols-2 gap-4 mb-6 text-sm">
+          <div className="flex items-center gap-2"><Mail className="w-4 h-4 text-gray-400" /><span>{customer.email}</span></div>
+          <div className="flex items-center gap-2"><Phone className="w-4 h-4 text-gray-400" /><span>{customer.phone}</span></div>
+          {customer.company && <div className="flex items-center gap-2"><Building2 className="w-4 h-4 text-gray-400" /><span>{customer.company}</span></div>}
+          {customer.address && <div className="flex items-center gap-2"><MapPin className="w-4 h-4 text-gray-400" /><span>{customer.address}</span></div>}
         </div>
 
-        <div className="grid grid-cols-2 gap-3 mb-6">
-          <div className="bg-gray-50 rounded-lg p-3">
-            <p className="text-xs text-gray-500">Total Spent</p>
-            <p className="text-lg font-bold text-navy-900">{formatKES(totalSpent)}</p>
+        <div className="grid grid-cols-3 gap-4 mb-6">
+          <div className="bg-gray-50 rounded-lg p-4 text-center">
+            <ShoppingCart className="w-5 h-5 mx-auto text-primary-600 mb-1" />
+            <p className="text-lg font-bold">{orders.length}</p>
+            <p className="text-xs text-gray-500">Orders</p>
           </div>
-          <div className="bg-gray-50 rounded-lg p-3">
-            <p className="text-xs text-gray-500">Outstanding</p>
-            <p className={`text-lg font-bold ${outstandingBalance > 0 ? 'text-red-600' : 'text-navy-900'}`}>{formatKES(outstandingBalance)}</p>
+          <div className="bg-gray-50 rounded-lg p-4 text-center">
+            <Wallet className="w-5 h-5 mx-auto text-primary-600 mb-1" />
+            <p className="text-lg font-bold">{formatKES(totalSpent)}</p>
+            <p className="text-xs text-gray-500">Total Spent</p>
+          </div>
+          <div className="bg-gray-50 rounded-lg p-4 text-center">
+            <FileText className="w-5 h-5 mx-auto text-primary-600 mb-1" />
+            <p className="text-lg font-bold">{quotations.length}</p>
+            <p className="text-xs text-gray-500">Quotations</p>
           </div>
         </div>
 
         {loading ? (
-          <div className="text-center py-8 text-gray-400">Loading history...</div>
+          <p className="text-center py-4 text-gray-500">Loading...</p>
         ) : (
-          <>
-            <Section icon={<ShoppingCart className="w-4 h-4" />} title={`Orders (${orders.length})`}>
-              {orders.length === 0 ? <EmptyRow text="No orders yet" /> : orders.map((o) => (
-                <HistoryRow key={o.id} left={formatKES(o.total_amount)} right={o.status} date={o.created_at} />
-              ))}
-            </Section>
-
-            <Section icon={<FileText className="w-4 h-4" />} title={`Quotations (${quotations.length})`}>
-              {quotations.length === 0 ? <EmptyRow text="No quotations yet" /> : quotations.map((q) => (
-                <HistoryRow key={q.id} left={q.quotation_number || q.project_type || 'Quote'} right={q.status} date={q.created_at} />
-              ))}
-            </Section>
-
-            <Section icon={<Wallet className="w-4 h-4" />} title={`Invoices (${invoices.length})`}>
-              {invoices.length === 0 ? <EmptyRow text="No invoices yet" /> : invoices.map((inv) => (
-                <HistoryRow key={inv.id} left={`${inv.invoice_number} - ${formatKES(inv.total_amount)}`} right={inv.status} date={inv.created_at} />
-              ))}
-            </Section>
-
-            {customer.notes && (
-              <div className="mt-6">
-                <h3 className="font-semibold text-navy-900 mb-2 text-sm">Notes</h3>
-                <p className="text-sm text-gray-600 bg-gray-50 rounded-lg p-3">{customer.notes}</p>
+          <div className="space-y-4">
+            {orders.length > 0 && (
+              <div>
+                <h3 className="font-medium mb-2">Recent Orders</h3>
+                {orders.slice(0, 5).map((o) => (
+                  <div key={o.id} className="flex justify-between text-sm py-1 border-b">
+                    <span className="font-mono">{o.id.slice(0, 8).toUpperCase()}</span>
+                    <span>{formatKES(o.total_amount)}</span>
+                    <span className="text-gray-500">{formatDateTime(o.created_at)}</span>
+                  </div>
+                ))}
               </div>
             )}
-          </>
+          </div>
         )}
       </div>
     </div>
   );
-}
-
-function Section({ icon, title, children }: { icon: React.ReactNode; title: string; children: React.ReactNode }) {
-  return (
-    <div className="mb-6">
-      <h3 className="font-semibold text-navy-900 mb-2 text-sm flex items-center gap-2">{icon} {title}</h3>
-      <div className="space-y-1.5">{children}</div>
-    </div>
-  );
-}
-
-function HistoryRow({ left, right, date }: { left: string; right: string; date: string }) {
-  return (
-    <div className="flex items-center justify-between bg-gray-50 rounded-lg px-3 py-2 text-sm">
-      <div>
-        <p className="font-medium text-navy-900">{left}</p>
-        <p className="text-xs text-gray-400">{formatDateTime(date)}</p>
-      </div>
-      <span className="text-xs font-medium px-2 py-1 rounded-full bg-white border border-gray-200 capitalize">{right}</span>
-    </div>
-  );
-}
-
-function EmptyRow({ text }: { text: string }) {
-  return <p className="text-xs text-gray-400">{text}</p>;
 }

@@ -43,6 +43,7 @@ export default function ProductImages() {
       .select('*, products!inner(name)')
       .order('display_order');
     if (data) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       setImages(data.map((img: any) => ({
         ...img,
         product_name: img.products?.name,

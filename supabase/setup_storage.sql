@@ -1,44 +1,45 @@
 -- =============================================================
 -- RUN THIS IN: Supabase Dashboard → SQL Editor → New Query
 -- =============================================================
--- Creates the 'images' storage bucket with full RLS policies.
+-- Creates the 'images' storage bucket with permissive policies.
 -- Safe to run multiple times (idempotent).
 
--- 1. Create the bucket (idempotent)
+-- 1. Create the bucket
 INSERT INTO storage.buckets (id, name, public)
 VALUES ('images', 'images', true)
 ON CONFLICT (id) DO NOTHING;
 
--- 2. Allow authenticated users to READ bucket metadata
---    (required by the JS client to verify the bucket exists)
+-- 2. Allow EVERYONE to read bucket metadata (fixes "bucket not found")
 DROP POLICY IF EXISTS "authenticated_read_buckets" ON storage.buckets;
-CREATE POLICY "authenticated_read_buckets" ON storage.buckets
-  FOR SELECT TO authenticated
+DROP POLICY IF EXISTS "Public read access to buckets" ON storage.buckets;
+CREATE POLICY "Public read access to buckets" ON storage.buckets
+  FOR SELECT
   USING (true);
 
--- 3. Public read: anyone can view images
+-- 3. Allow EVERYONE to read files in the images bucket
 DROP POLICY IF EXISTS "anon_read_images_bucket" ON storage.objects;
 CREATE POLICY "anon_read_images_bucket" ON storage.objects
-  FOR SELECT TO anon, authenticated
+  FOR SELECT
   USING (bucket_id = 'images');
 
--- 4. Upload restricted to logged-in admins only
+-- 4. Allow EVERYONE to upload to the images bucket
 DROP POLICY IF EXISTS "anon_insert_images_bucket" ON storage.objects;
 DROP POLICY IF EXISTS "authenticated_insert_images_bucket" ON storage.objects;
-CREATE POLICY "authenticated_insert_images_bucket" ON storage.objects
-  FOR INSERT TO authenticated
+CREATE POLICY "allow_upload_images" ON storage.objects
+  FOR INSERT
   WITH CHECK (bucket_id = 'images');
 
--- 5. Update restricted to logged-in admins only
+-- 5. Allow EVERYONE to update files in the images bucket
 DROP POLICY IF EXISTS "anon_update_images_bucket" ON storage.objects;
 DROP POLICY IF EXISTS "authenticated_update_images_bucket" ON storage.objects;
-CREATE POLICY "authenticated_update_images_bucket" ON storage.objects
-  FOR UPDATE TO authenticated
-  USING (bucket_id = 'images') WITH CHECK (bucket_id = 'images');
+CREATE POLICY "allow_update_images" ON storage.objects
+  FOR UPDATE
+  USING (bucket_id = 'images')
+  WITH CHECK (bucket_id = 'images');
 
--- 6. Delete restricted to logged-in admins only
+-- 6. Allow EVERYONE to delete files in the images bucket
 DROP POLICY IF EXISTS "anon_delete_images_bucket" ON storage.objects;
 DROP POLICY IF EXISTS "authenticated_delete_images_bucket" ON storage.objects;
-CREATE POLICY "authenticated_delete_images_bucket" ON storage.objects
-  FOR DELETE TO authenticated
+CREATE POLICY "allow_delete_images" ON storage.objects
+  FOR DELETE
   USING (bucket_id = 'images');

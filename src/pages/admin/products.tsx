@@ -1,18 +1,23 @@
-import { useState, useEffect } from 'react';
-import { Plus, Pencil, Trash2, X, Package, Images, Star } from 'lucide-react';
+import { useState, useEffect, useCallback } from 'react';
+import { Plus, Pencil, Trash2, X, Package, Images, Star, Search } from 'lucide-react';
 import { AdminLayout } from './dashboard';
-import { useProducts, useCategories } from '@/hooks/use-data';
 import { formatKES } from '@/lib/utils';
 import { supabase } from '@/lib/supabase';
 import { useToast } from '@/hooks/use-toast';
+import { usePagination } from '@/hooks/use-pagination';
+import { Pagination } from '@/components/admin/Pagination';
 import { ImageUpload } from '@/components/ui/image-upload';
 import { getProductPlaceholder, withFallback } from '@/lib/placeholders';
+import { useCategories } from '@/hooks/use-data';
 import type { Product, ProductImage } from '@/lib/types';
 
 export default function AdminProducts() {
-  const { products, loading, refetch } = useProducts();
-  const { categories } = useCategories();
   const { toast } = useToast();
+  const { categories } = useCategories();
+  const { page, setPage, limit, total, totalPages, from, to, setTotal } = usePagination(20);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState('');
   const [saving, setSaving] = useState(false);
   const [editing, setEditing] = useState<Product | null>(null);
   const [showForm, setShowForm] = useState(false);
@@ -30,6 +35,28 @@ export default function AdminProducts() {
     featured: false,
     in_stock: true,
   });
+
+  const fetchProducts = useCallback(async () => {
+    setLoading(true);
+    let query = supabase
+      .from('products')
+      .select('*, category:categories(*), brand:product_brands(*)', { count: 'exact' })
+      .order('display_order', { ascending: true })
+      .range(from, to);
+
+    if (search.trim()) {
+      query = query.or(`name.ilike.%${search}%,sku.ilike.%${search}%,slug.ilike.%${search}%`);
+    }
+
+    const { data, count, error } = await query;
+    if (!error) {
+      setProducts(data || []);
+      setTotal(count || 0);
+    }
+    setLoading(false);
+  }, [from, to, search, setTotal]);
+
+  useEffect(() => { fetchProducts(); }, [fetchProducts]);
 
   const resetForm = () => {
     setForm({
@@ -80,7 +107,7 @@ export default function AdminProducts() {
         if (error) throw error;
         toast({ title: 'Product created' });
       }
-      await refetch();
+      await fetchProducts();
       resetForm();
     } catch {
       toast({ title: 'Failed to save product', description: 'That slug or SKU may already be in use.', variant: 'destructive' });
@@ -94,7 +121,7 @@ export default function AdminProducts() {
     try {
       const { error } = await supabase.from('products').delete().eq('id', id);
       if (error) throw error;
-      await refetch();
+      await fetchProducts();
       toast({ title: 'Product deleted' });
     } catch {
       toast({ title: 'Failed to delete product', variant: 'destructive' });
@@ -122,10 +149,21 @@ export default function AdminProducts() {
   return (
     <AdminLayout title="Products">
       <div className="mb-4 flex items-center justify-between">
-        <button onClick={() => setShowForm(true)} className="btn-primary flex items-center gap-2">
-          <Plus className="w-4 h-4" /> Add Product
-        </button>
-        <p className="text-sm text-navy-400">{products.length} product{products.length !== 1 ? 's' : ''}</p>
+        <div className="flex items-center gap-4">
+          <button onClick={() => setShowForm(true)} className="btn-primary flex items-center gap-2">
+            <Plus className="w-4 h-4" /> Add Product
+          </button>
+          <div className="relative max-w-xs">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search products..."
+              className="input pl-9"
+            />
+          </div>
+        </div>
+        <p className="text-sm text-navy-400">{total} product{total !== 1 ? 's' : ''}</p>
       </div>
 
       {loading ? (
@@ -197,6 +235,7 @@ export default function AdminProducts() {
               </tbody>
             </table>
           </div>
+          <Pagination page={page} total={total} limit={limit} totalPages={totalPages} onPageChange={setPage} />
         </div>
       )}
 
@@ -289,7 +328,7 @@ export default function AdminProducts() {
       )}
 
       {galleryProduct && (
-        <ProductGalleryModal product={galleryProduct} onClose={() => setGalleryProduct(null)} onChanged={refetch} />
+        <ProductGalleryModal product={galleryProduct} onClose={() => setGalleryProduct(null)} onChanged={fetchProducts} />
       )}
     </AdminLayout>
   );

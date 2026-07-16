@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from './supabase';
 
@@ -12,7 +13,7 @@ export async function logAdminAction(action: string, entityType?: string, entity
       details: details || {},
       user_agent: typeof navigator !== 'undefined' ? navigator.userAgent : null,
     });
-  } catch (e) {
+  } catch {
     // Silently fail
   }
 }

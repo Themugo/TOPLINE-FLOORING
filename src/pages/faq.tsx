@@ -66,7 +66,7 @@ export default function FAQ() {
                   <h2 className="font-display text-lg font-semibold text-foreground mb-4">{group.category}</h2>
                 )}
                 <div className="space-y-2" role="list">
-                  {group.items.map((faq, i) => {
+                  {group.items.map((faq) => {
                     const globalIndex = items.indexOf(faq);
                     const isOpen = openIndex === globalIndex;
                     const panelId = `faq-panel-${globalIndex}`;

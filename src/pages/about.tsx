@@ -26,16 +26,14 @@ export default function About() {
     title: 'About Us | Topline Flooring & Waterproofing',
     description: 'Learn about Topline Flooring and Waterproofing - Kenya\'s trusted partner for professional flooring and waterproofing solutions for over 10 years.',
   });
-  const { content, loading } = useCmsContent("about");
+  const { content } = useCmsContent("about");
 
   const heroTitle = content.hero?.title || "Who We Are";
   const heroSubtitle = content.hero?.subtitle || "Building Trust and Protection, One Surface at a Time";
   const missionText = content.mission?.text || "For over 10 years, Topline Flooring and Waterproofing has been the trusted partner for professional flooring and waterproofing solutions across Kenya and East Africa.";
   const missionVision = content.mission?.vision || "";
-  const statsYears = content.stats?.years || "10+";
   const valuesRaw = content.values?.items;
   const teamTitle = content.team?.title || "Over 10 Years of Excellence";
-  const teamDescription = content.team?.description || "";
 
   let valuesList = defaultValues;
   if (valuesRaw) {
@@ -52,7 +50,9 @@ export default function About() {
           };
         });
       }
-    } catch {}
+    } catch {
+      // Keep defaults on parse error
+    }
   }
 
   return (

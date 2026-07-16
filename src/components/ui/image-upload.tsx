@@ -233,7 +233,7 @@ export function MultiImageUpload({
         const ext = file.name.split('.').pop()?.toLowerCase() || 'jpg';
         const fileName = `${folder}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
 
-        let { error: uploadError } = await supabase.storage
+        const { error: uploadError } = await supabase.storage
           .from('images')
           .upload(fileName, file, { cacheControl: '3600', upsert: false });
 

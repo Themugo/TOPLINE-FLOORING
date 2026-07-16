@@ -43,12 +43,12 @@ export default function ShopDetail() {
     image: product.image_url || undefined,
   } : undefined);
   const { addItem } = useCart();
-  const [, setRecentProducts] = useState<any[]>([]);
+  const [, setRecentProducts] = useState<Record<string, unknown>[]>([]);
 
   useEffect(() => {
     if (!product) return;
     trackRecentlyViewed(product.slug);
-  }, [product?.slug]);
+  }, [product?.slug]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     const slugs = getRecentlyViewedSlugs().filter((s) => s !== slug);

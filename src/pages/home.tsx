@@ -528,7 +528,7 @@ export default function Home() {
               {partnersSection?.title || 'Our Certified Partners'}
             </h2>
             <div className="flex flex-wrap justify-center items-center gap-8 lg:gap-12">
-              {partners.map((partner) => (
+              {partners.slice(0, partnersMaxItems).map((partner) => (
                 <div key={partner.id} className="grayscale hover:grayscale-0 transition-all duration-300 opacity-70 hover:opacity-100">
                   {partner.logo_url ? (
                     <img src={partner.logo_url} alt={partner.name} className="h-9 object-contain" />

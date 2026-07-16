@@ -206,7 +206,7 @@ function ProjectGalleryModal({ project, onClose }: { project: Project; onClose: 
   const [newCaption, setNewCaption] = useState('');
   const { toast } = useToast();
 
-  useEffect(() => { fetchImages(); }, [project.id]);
+  useEffect(() => { fetchImages(); }, [project.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const fetchImages = async () => {
     setLoading(true);

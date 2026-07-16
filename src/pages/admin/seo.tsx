@@ -40,7 +40,7 @@ function SeoContent() {
 
   useEffect(() => {
     fetchSeoPages();
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleCreatePage = async (e: React.FormEvent) => {
     e.preventDefault();

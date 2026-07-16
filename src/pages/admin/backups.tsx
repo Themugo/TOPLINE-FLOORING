@@ -6,6 +6,7 @@ import { useToast } from '@/hooks/use-toast';
 
 export default function AdminBackups() {
   const { toast } = useToast();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [backups] = useState<any[]>([]);
   const [creating, setCreating] = useState(false);
 

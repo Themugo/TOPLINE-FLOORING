@@ -1,16 +1,45 @@
+import { useState, useEffect, useCallback } from 'react';
+import { Search } from 'lucide-react';
 import { AdminLayout } from './dashboard';
-import { useOrders } from '@/hooks/use-data';
 import { formatKES, formatDateTime } from '@/lib/utils';
 import { supabase } from '@/lib/supabase';
 import { useToast } from '@/hooks/use-toast';
-import { useState } from 'react';
+import { usePagination } from '@/hooks/use-pagination';
+import { Pagination } from '@/components/admin/Pagination';
 import { Eye, X } from 'lucide-react';
 import type { Order } from '@/lib/types';
 
 export default function AdminOrders() {
-  const { orders, loading, refetch } = useOrders();
   const { toast } = useToast();
+  const { page, setPage, limit, total, totalPages, from, to, setTotal } = usePagination(20);
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState('');
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+
+  const fetchOrders = useCallback(async () => {
+    setLoading(true);
+    let query = supabase
+      .from('orders')
+      .select('*', { count: 'exact' })
+      .order('created_at', { ascending: false })
+      .range(from, to);
+
+    if (search.trim()) {
+      query = query.or(`customer_name.ilike.%${search}%,customer_email.ilike.%${search}%,id.ilike.%${search}%`);
+    }
+
+    const { data, count, error } = await query;
+    if (error) {
+      console.error('Failed to fetch orders:', error);
+    } else {
+      setOrders(data || []);
+      setTotal(count || 0);
+    }
+    setLoading(false);
+  }, [from, to, search, setTotal]);
+
+  useEffect(() => { fetchOrders(); }, [fetchOrders]);
 
   const updateStatus = async (orderId: string, status: string) => {
     const { error } = await supabase
@@ -21,7 +50,8 @@ export default function AdminOrders() {
       toast({ title: 'Failed to update order status', variant: 'destructive' });
       return;
     }
-    refetch();
+    toast({ title: 'Order status updated' });
+    fetchOrders();
   };
 
   const statusColors: Record<string, string> = {
@@ -34,11 +64,23 @@ export default function AdminOrders() {
 
   return (
     <AdminLayout title="Orders">
+      <div className="mb-6 flex items-center gap-4">
+        <div className="relative flex-1 max-w-sm">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+          <input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search by order ID, customer name, or email..."
+            className="input pl-9"
+          />
+        </div>
+      </div>
+
       {loading ? (
         <div className="text-center py-12">Loading...</div>
       ) : orders.length === 0 ? (
         <div className="bg-white rounded-xl p-12 border border-gray-200 text-center">
-          <p className="text-gray-500">No orders yet</p>
+          <p className="text-gray-500">{search ? 'No orders match your search' : 'No orders yet'}</p>
         </div>
       ) : (
         <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
@@ -94,10 +136,10 @@ export default function AdminOrders() {
               </tbody>
             </table>
           </div>
+          <Pagination page={page} total={total} limit={limit} totalPages={totalPages} onPageChange={setPage} />
         </div>
       )}
 
-      {/* Order Detail Modal */}
       {selectedOrder && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
           <div className="bg-white rounded-xl max-w-lg w-full p-6 max-h-[90vh] overflow-y-auto">

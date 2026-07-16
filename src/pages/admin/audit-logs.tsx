@@ -10,6 +10,7 @@ function formatAction(action: string) {
 }
 
 export default function AdminAuditLogs() {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [logs, setLogs] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(0);
@@ -43,7 +44,7 @@ export default function AdminAuditLogs() {
 
   useEffect(() => {
     fetchLogs();
-  }, [page, search]);
+  }, [page, search]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const totalPages = Math.ceil(totalCount / pageSize);
 

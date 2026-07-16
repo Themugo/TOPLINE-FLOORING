@@ -59,7 +59,7 @@ export function StickyPurchasePanel({
           text: product.short_description || product.description || '',
           url: window.location.href,
         });
-      } catch (err) {
+      } catch {
         // User cancelled or error
       }
     } else {

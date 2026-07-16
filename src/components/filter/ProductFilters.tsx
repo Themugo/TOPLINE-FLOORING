@@ -296,7 +296,7 @@ export function ProductFilters({
                   name="sortBy"
                   value={option.value}
                   checked={options.sortBy === option.value}
-                  onChange={(e) => onChange({ ...options, sortBy: e.target.value as any })}
+                   onChange={(e) => onChange({ ...options, sortBy: e.target.value as FilterOptions['sortBy'] })}
                   className="w-4 h-4 text-primary-600 border-gray-300 focus:ring-primary-500"
                 />
                 <span className="text-sm text-gray-600">{option.label}</span>

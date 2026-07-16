@@ -150,7 +150,7 @@ export default function AdminPromotions() {
               <button onClick={resetForm}><X className="w-5 h-5" /></button>
             </div>
             <form onSubmit={handleSubmit} className="space-y-4">
-              <select value={form.promo_type} onChange={(e) => setForm({ ...form, promo_type: e.target.value as any })} className="input">
+              <select value={form.promo_type} onChange={(e) => setForm({ ...form, promo_type: e.target.value as 'banner' | 'announcement' | 'flash_sale' | 'featured' })} className="input">
                 <option value="banner">Banner</option>
                 <option value="announcement">Announcement</option>
                 <option value="flash_sale">Flash Sale</option>

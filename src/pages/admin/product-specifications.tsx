@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Plus, Pencil, Trash2, Search, List } from "lucide-react";
+import { Plus, Pencil, Trash2, Search } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 
 type ProductSpecification = {
@@ -40,6 +40,7 @@ export default function ProductSpecifications() {
       .select('*, products!inner(name)')
       .order('display_order');
     if (data) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       setSpecs(data.map((spec: any) => ({
         ...spec,
         product_name: spec.products?.name,
