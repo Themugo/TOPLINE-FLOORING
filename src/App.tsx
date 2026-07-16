@@ -49,6 +49,15 @@ const AdminCRM = lazy(() => import('@/pages/admin/crm'));
 const AdminServices = lazy(() => import('@/pages/admin/services'));
 const AdminInvoices = lazy(() => import('@/pages/admin/invoices'));
 const AdminSuppliers = lazy(() => import('@/pages/admin/suppliers'));
+const AdminProductBrands = lazy(() => import('@/pages/admin/product-brands'));
+const AdminProductImages = lazy(() => import('@/pages/admin/product-images'));
+const AdminProductSpecs = lazy(() => import('@/pages/admin/product-specifications'));
+const AdminProductVariants = lazy(() => import('@/pages/admin/product-variants'));
+const AdminProductDocs = lazy(() => import('@/pages/admin/product-documents'));
+const AdminNavigation = lazy(() => import('@/pages/admin/navigation'));
+const AdminBackups = lazy(() => import('@/pages/admin/backups'));
+const AdminAuditLogs = lazy(() => import('@/pages/admin/audit-logs'));
+const AdminLeads = lazy(() => import('@/pages/admin/leads'));
 
 function AdminLoading() {
   return (
@@ -128,6 +137,15 @@ function Router() {
     '/admin/reports': AdminReports,
     '/admin/seo': AdminSeo,
     '/admin/coupons': AdminCoupons,
+    '/admin/product-brands': AdminProductBrands,
+    '/admin/product-images': AdminProductImages,
+    '/admin/product-specifications': AdminProductSpecs,
+    '/admin/product-variants': AdminProductVariants,
+    '/admin/product-documents': AdminProductDocs,
+    '/admin/navigation': AdminNavigation,
+    '/admin/backups': AdminBackups,
+    '/admin/audit-logs': AdminAuditLogs,
+    '/admin/leads': AdminLeads,
   };
 
   const AdminComponent = adminRoutes[location as keyof typeof adminRoutes];
