@@ -24,6 +24,13 @@ import {
   Folder,
   Search,
   Wrench,
+  ShieldCheck,
+  ClipboardList,
+  Layers,
+  FileText as FileDoc,
+  Database,
+  Shield,
+  Navigation,
 } from 'lucide-react';
 import { useAdminAuth } from '@/hooks/use-data';
 import { useState, useEffect } from 'react';
@@ -65,6 +72,11 @@ const NAV_GROUPS: NavGroup[] = [
     label: 'Catalog',
     items: [
       { href: '/admin/products', label: 'Products', icon: Package },
+      { href: '/admin/product-brands', label: 'Brands', icon: ShieldCheck },
+      { href: '/admin/product-images', label: 'Product Images', icon: Image },
+      { href: '/admin/product-specifications', label: 'Specifications', icon: ClipboardList },
+      { href: '/admin/product-variants', label: 'Variants', icon: Layers },
+      { href: '/admin/product-documents', label: 'Documents', icon: FileDoc },
       { href: '/admin/services', label: 'Services', icon: Wrench },
       { href: '/admin/categories', label: 'Categories', icon: FolderOpen },
       { href: '/admin/inventory', label: 'Inventory', icon: Warehouse },
@@ -97,6 +109,9 @@ const NAV_GROUPS: NavGroup[] = [
       { href: '/admin/theme', label: 'Theme', icon: Palette },
       { href: '/admin/site-settings', label: 'Site Settings', icon: Globe },
       { href: '/admin/reports', label: 'Reports', icon: BarChart3 },
+      { href: '/admin/navigation', label: 'Navigation', icon: Navigation },
+      { href: '/admin/backups', label: 'Backups', icon: Database },
+      { href: '/admin/audit-logs', label: 'Audit Logs', icon: Shield },
       { href: '/admin/settings', label: 'Admin Settings', icon: Settings },
     ],
   },
@@ -254,36 +269,41 @@ function DashboardContent() {
   useEffect(() => {
     async function fetchStats() {
       setLoading(true);
-      const [ordersRes, pendingRes, leadsRes, invoicesRes] = await Promise.all([
-        supabase.from('orders').select('id', { count: 'exact', head: true }),
-        supabase.from('orders').select('id', { count: 'exact', head: true }).eq('status', 'pending'),
-        supabase.from('leads').select('id', { count: 'exact', head: true }).not('status', 'in', '(won,lost)'),
-        supabase.from('invoices').select('total_amount, amount_paid').not('status', 'in', '(paid,cancelled)'),
-      ]);
+      try {
+        const [ordersRes, pendingRes, leadsRes, invoicesRes] = await Promise.all([
+          supabase.from('orders').select('id', { count: 'exact', head: true }),
+          supabase.from('orders').select('id', { count: 'exact', head: true }).eq('status', 'pending'),
+          supabase.from('leads').select('id', { count: 'exact', head: true }).not('status', 'in', '(won,lost)'),
+          supabase.from('invoices').select('total_amount, amount_paid').not('status', 'in', '(paid,cancelled)'),
+        ]);
 
-      const outstanding = (invoicesRes.data || []).reduce((sum, inv) => sum + (inv.total_amount - inv.amount_paid), 0);
+        const outstanding = (invoicesRes.data || []).reduce((sum, inv) => sum + (inv.total_amount - inv.amount_paid), 0);
 
-      setStats([
-        { label: 'Total Orders', value: ordersRes.count?.toString() || '0', color: 'bg-blue-500' },
-        { label: 'Pending Orders', value: pendingRes.count?.toString() || '0', color: 'bg-yellow-500' },
-        { label: 'Open Leads', value: leadsRes.count?.toString() || '0', color: 'bg-purple-500' },
-        { label: 'Outstanding', value: formatKES(outstanding), color: 'bg-red-500' },
-      ]);
+        setStats([
+          { label: 'Total Orders', value: ordersRes.count?.toString() || '0', color: 'bg-blue-500' },
+          { label: 'Pending Orders', value: pendingRes.count?.toString() || '0', color: 'bg-yellow-500' },
+          { label: 'Open Leads', value: leadsRes.count?.toString() || '0', color: 'bg-purple-500' },
+          { label: 'Outstanding', value: formatKES(outstanding), color: 'bg-red-500' },
+        ]);
 
-      const { data: recentOrdersData } = await supabase
-        .from('orders')
-        .select('id, customer_name, total_amount, status, created_at')
-        .order('created_at', { ascending: false })
-        .limit(5);
-      setRecentOrders(recentOrdersData || []);
+        const { data: recentOrdersData } = await supabase
+          .from('orders')
+          .select('id, customer_name, total_amount, status, created_at')
+          .order('created_at', { ascending: false })
+          .limit(5);
+        setRecentOrders(recentOrdersData || []);
 
-      const { data: recentQuotesData } = await supabase
-        .from('quotations')
-        .select('id, name, project_type, status, created_at')
-        .order('created_at', { ascending: false })
-        .limit(5);
-      setRecentQuotations(recentQuotesData || []);
-      setLoading(false);
+        const { data: recentQuotesData } = await supabase
+          .from('quotations')
+          .select('id, name, project_type, status, created_at')
+          .order('created_at', { ascending: false })
+          .limit(5);
+        setRecentQuotations(recentQuotesData || []);
+      } catch (err) {
+        console.error('Failed to fetch dashboard stats:', err);
+      } finally {
+        setLoading(false);
+      }
     }
 
     fetchStats();

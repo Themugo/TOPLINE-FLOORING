@@ -2,6 +2,8 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight, Phone, ArrowRight } from "lucide-react";
+import { useSiteSettings } from "@/hooks/use-data";
+import { telHref } from "@/lib/utils";
 
 type Slide = {
   id: string | number;
@@ -23,6 +25,7 @@ export default function HeroSlider({
   overlayOpacity = 60,
   autoPlayInterval = 4000,
 }: HeroSliderProps) {
+  const { settings } = useSiteSettings();
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isInteracting, setIsInteracting] = useState(false);
   const touchStartX = useRef(0);
@@ -167,13 +170,13 @@ export default function HeroSlider({
                 </Button>
               </Link>
             )}
-            <a href="tel:0720859737">
+            <a href={telHref(settings?.phone || '+254 720 859 737')}>
               <Button
                 variant="outline"
                 className="border-white/40 text-white hover:bg-white/10 font-sans font-medium px-4 sm:px-6 h-10 sm:h-11 rounded-sm tracking-wide backdrop-blur-sm text-xs sm:text-sm shadow-lg"
               >
                 <Phone className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary" />
-                0720 859 737
+                {settings?.phone || '0720 859 737'}
               </Button>
             </a>
           </div>

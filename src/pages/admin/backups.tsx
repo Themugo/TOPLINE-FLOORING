@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { AdminLayout } from '@/components/layout/AdminLayout';
+import { AdminLayout } from './dashboard';
 import { Button } from '@/components/ui/button';
 import { Database } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';

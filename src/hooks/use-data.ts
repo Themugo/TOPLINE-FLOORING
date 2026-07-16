@@ -1216,3 +1216,55 @@ export function usePurchaseOrders() {
     deletePurchaseOrder,
   };
 }
+
+const COMPARISON_STORAGE_KEY = 'topline_product_comparison';
+
+interface ComparisonState {
+  product_ids: string[];
+}
+
+function getStoredComparison(): ComparisonState {
+  try {
+    const stored = localStorage.getItem(COMPARISON_STORAGE_KEY);
+    return stored ? JSON.parse(stored) : { product_ids: [] };
+  } catch {
+    return { product_ids: [] };
+  }
+}
+
+function setStoredComparison(state: ComparisonState) {
+  localStorage.setItem(COMPARISON_STORAGE_KEY, JSON.stringify(state));
+}
+
+export function useProductComparison() {
+  const [comparison, setComparison] = useState<ComparisonState>(getStoredComparison);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const handler = () => setComparison(getStoredComparison());
+    window.addEventListener('storage', handler);
+    return () => window.removeEventListener('storage', handler);
+  }, []);
+
+  const addToComparison = async (productId: string) => {
+    if (comparison.product_ids.length >= 4) return;
+    if (comparison.product_ids.includes(productId)) return;
+    const next = { product_ids: [...comparison.product_ids, productId] };
+    setStoredComparison(next);
+    setComparison(next);
+  };
+
+  const removeFromComparison = async (productId: string) => {
+    const next = { product_ids: comparison.product_ids.filter(id => id !== productId) };
+    setStoredComparison(next);
+    setComparison(next);
+  };
+
+  const clearComparison = async () => {
+    const next = { product_ids: [] };
+    setStoredComparison(next);
+    setComparison(next);
+  };
+
+  return { comparison, loading, addToComparison, removeFromComparison, clearComparison };
+}

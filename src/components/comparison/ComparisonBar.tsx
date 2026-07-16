@@ -4,7 +4,7 @@ import { Scale, X, ArrowRight } from 'lucide-react';
 import { useProductComparison } from '@/hooks/use-data';
 
 export function ComparisonBar() {
-  const { comparison, loading } = useProductComparison();
+  const { comparison, loading, clearComparison } = useProductComparison();
   const [isVisible, setIsVisible] = useState(false);
   const [productCount, setProductCount] = useState(0);
 
@@ -32,8 +32,7 @@ export function ComparisonBar() {
           <div className="flex items-center gap-3">
             <button
               onClick={() => {
-                // Clear comparison - this would need to be implemented in the hook
-                console.log('Clear comparison');
+                clearComparison();
               }}
               className="text-sm text-gray-500 hover:text-gray-700 transition-colors flex items-center gap-1"
             >

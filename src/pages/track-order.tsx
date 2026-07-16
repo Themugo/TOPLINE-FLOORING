@@ -6,8 +6,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Search, Package, Phone, Mail, MessageCircle } from "lucide-react";
 import { Link } from "wouter";
+import { useSiteSettings } from "@/hooks/use-data";
+import { telHref } from "@/lib/utils";
 
 export default function TrackOrder() {
+  const { settings } = useSiteSettings();
   const [orderId, setOrderId] = useState("");
   const [phone, setPhone] = useState("");
   const [submitted, setSubmitted] = useState(false);
@@ -71,13 +74,13 @@ export default function TrackOrder() {
                 We are currently processing your request. For real-time updates, please contact us directly.
               </p>
               <div className="flex flex-col gap-3 items-center">
-                <a href="tel:0720859737" className="flex items-center gap-2 text-sm text-primary hover:underline">
-                  <Phone className="h-4 w-4" /> 0720 859 737
+                <a href={telHref(settings?.phone || '+254 720 859 737')} className="flex items-center gap-2 text-sm text-primary hover:underline">
+                  <Phone className="h-4 w-4" /> {settings?.phone || '0720 859 737'}
                 </a>
-                <a href="mailto:toplineflooringandwaterproofin@gmail.com" className="flex items-center gap-2 text-sm text-primary hover:underline">
+                <a href={`mailto:${settings?.email || 'info@toplineflooring.co.ke'}`} className="flex items-center gap-2 text-sm text-primary hover:underline">
                   <Mail className="h-4 w-4" /> Send Email
                 </a>
-                <a href="https://wa.me/254720859737" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-sm text-primary hover:underline">
+                <a href={settings?.social_links?.whatsapp || 'https://wa.me/254720859737'} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-sm text-primary hover:underline">
                   <MessageCircle className="h-4 w-4" /> WhatsApp
                 </a>
                 <Button variant="outline" className="mt-3 rounded-sm" onClick={() => setSubmitted(false)}>

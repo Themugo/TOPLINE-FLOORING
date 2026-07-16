@@ -78,7 +78,8 @@ function ReportsContent() {
 
   const fetchStats = useCallback(async () => {
     setLoading(true);
-    const daysAgo = parseInt(dateRange);
+    try {
+      const daysAgo = parseInt(dateRange);
     const now = new Date();
     const startDate = new Date(now);
     startDate.setDate(startDate.getDate() - daysAgo);
@@ -186,6 +187,10 @@ function ReportsContent() {
     );
 
     setLoading(false);
+    } catch (err) {
+      console.error('Failed to fetch reports:', err);
+      setLoading(false);
+    }
   }, [dateRange]);
 
   useEffect(() => {

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { AdminLayout } from '@/components/layout/AdminLayout';
+import { AdminLayout } from './dashboard';
 import { supabase } from '@/lib/supabase';
 import { RefreshCw, Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
