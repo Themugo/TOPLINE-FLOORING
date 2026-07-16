@@ -1,47 +1,24 @@
 import { Link, useLocation } from "wouter";
-import { useGetAdminMe, useAdminLogout } from "@/lib/api";
-import { LayoutDashboard, Package, Tags, ShoppingCart, Users, LogOut, Loader2, Menu, X, Image, Star, Building2, FileText, Settings, Percent, Truck, Home, FolderOpen, BarChart3, Globe, Palette, Megaphone, TrendingUp, MenuSquare, ClipboardList, Database, Layers, FileText as FileDoc, ShieldCheck } from "lucide-react";
+import { supabase } from "@/lib/supabase";
+import { LayoutDashboard, Package, Tags, ShoppingCart, Users, LogOut, Menu, X, Image, Star, Building2, FileText, Settings, Percent, Truck, Home, FolderOpen, BarChart3, Globe, Palette, Megaphone, TrendingUp, ClipboardList, FileText as FileDoc, ShieldCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useState } from "react";
-import { useQueryClient } from "@tanstack/react-query";
+import { useState, useEffect } from "react";
 
 export function AdminLayout({ children }: { children: React.ReactNode }) {
   const [location, setLocation] = useLocation();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const queryClient = useQueryClient();
+  const [email, setEmail] = useState<string>("");
 
-  const { data: session, isLoading } = useGetAdminMe();
-  const logout = useAdminLogout();
-
-  const handleLogout = () => {
-    logout.mutate(undefined, {
-      onSuccess: () => {
-        queryClient.clear();
-        setLocation("/admin/login");
-      }
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => {
+      setEmail(data.user?.email || "");
     });
+  }, []);
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    setLocation("/admin/login");
   };
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
-  }
-
-  // Session should exist since AdminAuthGuard handles the redirect
-  // This is a safety fallback
-  if (!session?.authenticated) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="text-center">
-          <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto mb-4" />
-          <p className="text-sm text-muted-foreground">Redirecting...</p>
-        </div>
-      </div>
-    );
-  }
 
   const links = [
     { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
@@ -66,13 +43,12 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
     { href: "/admin/coupons", label: "Coupons", icon: Percent },
     { divider: true },
     { section: "Content" },
-    { href: "/admin/homepage-builder", label: "Homepage", icon: Home },
+    { href: "/admin/homepage", label: "Homepage", icon: Home },
     { href: "/admin/hero-slides", label: "Hero Slides", icon: Image },
     { href: "/admin/testimonials", label: "Testimonials", icon: Star },
     { href: "/admin/partners", label: "Partners", icon: Building2 },
     { href: "/admin/projects", label: "Projects", icon: Building2 },
-    { href: "/admin/navigation", label: "Navigation", icon: MenuSquare },
-    { href: "/admin/gallery", label: "Gallery", icon: Image },
+    { href: "/admin/services", label: "Services", icon: FileText },
     { divider: true },
     { section: "Media" },
     { href: "/admin/media-library", label: "Media Library", icon: FolderOpen },
@@ -82,10 +58,6 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
     { divider: true },
     { section: "Analytics" },
     { href: "/admin/reports", label: "Reports", icon: BarChart3 },
-    { divider: true },
-    { section: "System" },
-    { href: "/admin/audit-logs", label: "Audit Logs", icon: ClipboardList },
-    { href: "/admin/backups", label: "Backups", icon: Database },
     { divider: true },
     { section: "Settings" },
     { href: "/admin/seo", label: "SEO", icon: Globe },
@@ -130,6 +102,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
                 key={link.href}
                 href={link.href}
                 onClick={() => setIsSidebarOpen(false)}
+                aria-current={isActive ? 'page' : undefined}
                 className={cn(
                   "flex items-center gap-3 px-3 py-2 rounded-md transition-colors text-sm font-medium",
                   isActive
@@ -147,14 +120,13 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
         <div className="p-4 border-t border-sidebar-border">
           <div className="mb-4 px-3 flex flex-col">
             <span className="text-xs text-sidebar-foreground/60 uppercase font-semibold tracking-wider">Logged in as</span>
-            <span className="text-sm font-medium truncate">{session.username}</span>
+            <span className="text-sm font-medium truncate">{email}</span>
           </div>
           <button
             onClick={handleLogout}
-            disabled={logout.isPending}
             className="flex w-full items-center gap-3 px-3 py-2 rounded-md text-sm font-medium text-destructive hover:bg-destructive/10 transition-colors"
           >
-            {logout.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <LogOut className="h-4 w-4" />}
+            <LogOut className="h-4 w-4" />
             Logout
           </button>
         </div>

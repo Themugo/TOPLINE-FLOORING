@@ -2,6 +2,7 @@ import { useRef, useState } from 'react';
 import { Upload, X, Image as ImageIcon, Loader2, FolderOpen } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { MediaLibraryModal } from '@/components/admin/MediaLibraryModal';
+import { validateUpload } from '@/lib/upload';
 
 interface ImageUploadProps {
   value: string;
@@ -26,6 +27,13 @@ export function ImageUpload({
 
   async function uploadFile(file: File) {
     setError(null);
+
+    const validation = validateUpload(file);
+    if (!validation.valid) {
+      setError(validation.error || 'Invalid file');
+      return;
+    }
+
     setUploading(true);
 
     try {
@@ -213,6 +221,13 @@ export function MultiImageUpload({
     try {
       const urls: string[] = [];
       for (const file of Array.from(files)) {
+        const validation = validateUpload(file);
+        if (!validation.valid) {
+          setError(validation.error || 'Invalid file');
+          setUploading(false);
+          return;
+        }
+
         const ext = file.name.split('.').pop()?.toLowerCase() || 'jpg';
         const fileName = `${folder}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
 

@@ -1,4 +1,7 @@
 User-agent: *
 Allow: /
+Disallow: /admin/
+Disallow: /cart
+Disallow: /order-confirmation/
 
 Sitemap: https://toplineflooring.co.ke/sitemap.xml

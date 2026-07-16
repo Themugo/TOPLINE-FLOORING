@@ -5,6 +5,7 @@ import { Shield, Users, Zap, Star, Lightbulb, TrendingUp, Award, HardHat } from 
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { useCmsContent } from "@/hooks/use-cms-content";
+import { useSeoMeta } from "@/hooks/use-seo";
 
 const defaultValues = [
   { icon: Shield, label: "Durable", desc: "Long-lasting solutions built to withstand the harshest conditions", color: "bg-green-600" },
@@ -21,6 +22,10 @@ const iconMap: Record<string, typeof Shield> = {
 
 export default function About() {
   usePageVisit("/about");
+  useSeoMeta('about', null, {
+    title: 'About Us | Topline Flooring & Waterproofing',
+    description: 'Learn about Topline Flooring and Waterproofing - Kenya\'s trusted partner for professional flooring and waterproofing solutions for over 10 years.',
+  });
   const { content, loading } = useCmsContent("about");
 
   const heroTitle = content.hero?.title || "Who We Are";

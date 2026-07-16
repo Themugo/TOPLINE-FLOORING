@@ -121,10 +121,11 @@ export function Header() {
               <Link
                 href="/cart"
                 className="relative p-2 text-navy-700 hover:text-primary-600 transition-colors"
+                aria-label={`Shopping cart${totalItems > 0 ? `, ${totalItems} items` : ''}`}
               >
                 <ShoppingCart className="w-5 h-5" />
                 {totalItems > 0 && (
-                  <span className="absolute -top-1 -right-1 w-5 h-5 bg-primary-500 text-white text-xs font-medium rounded-full flex items-center justify-center">
+                  <span className="absolute -top-1 -right-1 w-5 h-5 bg-primary-500 text-white text-xs font-medium rounded-full flex items-center justify-center" aria-hidden="true">
                     {totalItems}
                   </span>
                 )}
@@ -148,6 +149,9 @@ export function Header() {
               <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                 className="lg:hidden p-2 text-navy-700 hover:text-primary-600"
+                aria-label={mobileMenuOpen ? 'Close menu' : 'Open menu'}
+                aria-expanded={mobileMenuOpen}
+                aria-controls="mobile-menu"
               >
                 {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
               </button>
@@ -157,13 +161,14 @@ export function Header() {
       </div>
 
       {mobileMenuOpen && (
-        <div className="lg:hidden bg-white border-t border-gray-200 max-h-[calc(100vh-4rem)] overflow-y-auto">
-          <nav className="max-w-7xl mx-auto px-4 py-4 space-y-1">
+        <div id="mobile-menu" className="lg:hidden bg-white border-t border-gray-200 max-h-[calc(100vh-4rem)] overflow-y-auto">
+          <nav className="max-w-7xl mx-auto px-4 py-4 space-y-1" aria-label="Mobile navigation">
             {navLinks.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
                 onClick={() => setMobileMenuOpen(false)}
+                aria-current={isActive(link.href) ? 'page' : undefined}
                 className={`block px-4 py-3 text-sm font-medium rounded-lg transition-colors ${
                   isActive(link.href)
                     ? 'text-primary-600 bg-primary-50'

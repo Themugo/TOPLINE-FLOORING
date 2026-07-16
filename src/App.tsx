@@ -3,6 +3,7 @@ import { AdminAuthGuard, AdminPublicRoute } from '@/components/admin/AdminGuard'
 import { ToastContainer } from '@/components/ui/toast';
 import { ThemeApplier } from '@/components/ThemeApplier';
 import { useLocation } from 'wouter';
+import { lazy, Suspense, useEffect } from 'react';
 
 // Pages
 import Home from '@/pages/home';
@@ -16,247 +17,133 @@ import Services from '@/pages/services';
 import Portfolio from '@/pages/portfolio';
 import NotFound from '@/pages/not-found';
 
-// Admin Pages
-import AdminLogin from '@/pages/admin/login';
-import { DashboardPage } from '@/pages/admin/dashboard';
-import AdminOrders from '@/pages/admin/orders';
-import AdminProducts from '@/pages/admin/products';
-import AdminCategories from '@/pages/admin/categories';
-import AdminCustomers from '@/pages/admin/customers';
-import AdminQuotations from '@/pages/admin/quotations';
-import AdminHeroSlides from '@/pages/admin/hero-slides';
-import AdminTestimonials from '@/pages/admin/testimonials';
-import AdminPartners from '@/pages/admin/partners';
-import AdminSettings from '@/pages/admin/settings';
-import AdminSiteSettings from '@/pages/admin/site-settings';
-import AdminTheme from '@/pages/admin/theme';
-import AdminHomepageBuilder from '@/pages/admin/homepage-builder';
-import AdminDeliveryZones from '@/pages/admin/delivery-zones';
-import AdminProjects from '@/pages/admin/projects';
-import AdminPromotions from '@/pages/admin/promotions';
-import AdminInventory from '@/pages/admin/inventory';
-import AdminMediaLibrary from '@/pages/admin/media-library';
-import { lazy, Suspense } from 'react';
+// Lazy-loaded pages
+const About = lazy(() => import('@/pages/about'));
+const FAQ = lazy(() => import('@/pages/faq'));
+const ServiceDetail = lazy(() => import('@/pages/service-detail'));
+
+// Admin Pages (lazy-loaded)
+const AdminLogin = lazy(() => import('@/pages/admin/login'));
+const DashboardPage = lazy(() => import('@/pages/admin/dashboard').then(m => ({ default: m.DashboardPage })));
+const AdminOrders = lazy(() => import('@/pages/admin/orders'));
+const AdminProducts = lazy(() => import('@/pages/admin/products'));
+const AdminCategories = lazy(() => import('@/pages/admin/categories'));
+const AdminCustomers = lazy(() => import('@/pages/admin/customers'));
+const AdminQuotations = lazy(() => import('@/pages/admin/quotations'));
+const AdminHeroSlides = lazy(() => import('@/pages/admin/hero-slides'));
+const AdminTestimonials = lazy(() => import('@/pages/admin/testimonials'));
+const AdminPartners = lazy(() => import('@/pages/admin/partners'));
+const AdminSettings = lazy(() => import('@/pages/admin/settings'));
+const AdminSiteSettings = lazy(() => import('@/pages/admin/site-settings'));
+const AdminTheme = lazy(() => import('@/pages/admin/theme'));
+const AdminHomepageBuilder = lazy(() => import('@/pages/admin/homepage-builder'));
+const AdminDeliveryZones = lazy(() => import('@/pages/admin/delivery-zones'));
+const AdminProjects = lazy(() => import('@/pages/admin/projects'));
+const AdminPromotions = lazy(() => import('@/pages/admin/promotions'));
+const AdminInventory = lazy(() => import('@/pages/admin/inventory'));
+const AdminMediaLibrary = lazy(() => import('@/pages/admin/media-library'));
 const AdminReports = lazy(() => import('@/pages/admin/reports'));
-import AdminSeo from '@/pages/admin/seo';
-import AdminCoupons from '@/pages/admin/coupons';
-import AdminCRM from '@/pages/admin/crm';
-import AdminServices from '@/pages/admin/services';
-import AdminInvoices from '@/pages/admin/invoices';
-import AdminSuppliers from '@/pages/admin/suppliers';
+const AdminSeo = lazy(() => import('@/pages/admin/seo'));
+const AdminCoupons = lazy(() => import('@/pages/admin/coupons'));
+const AdminCRM = lazy(() => import('@/pages/admin/crm'));
+const AdminServices = lazy(() => import('@/pages/admin/services'));
+const AdminInvoices = lazy(() => import('@/pages/admin/invoices'));
+const AdminSuppliers = lazy(() => import('@/pages/admin/suppliers'));
+
+function AdminLoading() {
+  return (
+    <div className="min-h-screen bg-gray-100 flex items-center justify-center" role="status" aria-label="Loading">
+      <div className="flex items-center gap-3">
+        <div className="w-5 h-5 border-2 border-primary-500 border-t-transparent rounded-full animate-spin" />
+        <span className="text-gray-500 text-sm">Loading...</span>
+      </div>
+    </div>
+  );
+}
+
+function PublicLoading() {
+  return (
+    <div className="min-h-[60vh] flex items-center justify-center" role="status" aria-label="Loading">
+      <div className="flex items-center gap-3">
+        <div className="w-5 h-5 border-2 border-primary-500 border-t-transparent rounded-full animate-spin" />
+        <span className="text-gray-400 text-sm">Loading...</span>
+      </div>
+    </div>
+  );
+}
 
 function Router() {
   const [location] = useLocation();
 
-  // Admin routes
+  // Scroll to top on route change
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [location]);
+
+  // Admin login (public route)
   if (location === '/admin/login') {
     return (
       <AdminPublicRoute>
-        <AdminLogin />
+        <Suspense fallback={<AdminLoading />}>
+          <AdminLogin />
+        </Suspense>
       </AdminPublicRoute>
     );
   }
 
+  // Admin routes (protected)
   if (location === '/admin' || location === '/admin/') {
     return (
       <AdminAuthGuard>
-        <DashboardPage />
-      </AdminAuthGuard>
-    );
-  }
-
-  if (location === '/admin/orders') {
-    return (
-      <AdminAuthGuard>
-        <AdminOrders />
-      </AdminAuthGuard>
-    );
-  }
-
-  if (location === '/admin/crm') {
-    return (
-      <AdminAuthGuard>
-        <AdminCRM />
-      </AdminAuthGuard>
-    );
-  }
-
-  if (location === '/admin/services') {
-    return (
-      <AdminAuthGuard>
-        <AdminServices />
-      </AdminAuthGuard>
-    );
-  }
-
-  if (location === '/admin/invoices') {
-    return (
-      <AdminAuthGuard>
-        <AdminInvoices />
-      </AdminAuthGuard>
-    );
-  }
-
-  if (location === '/admin/suppliers') {
-    return (
-      <AdminAuthGuard>
-        <AdminSuppliers />
-      </AdminAuthGuard>
-    );
-  }
-
-  if (location === '/admin/products') {
-    return (
-      <AdminAuthGuard>
-        <AdminProducts />
-      </AdminAuthGuard>
-    );
-  }
-
-  if (location === '/admin/categories') {
-    return (
-      <AdminAuthGuard>
-        <AdminCategories />
-      </AdminAuthGuard>
-    );
-  }
-
-  if (location === '/admin/customers') {
-    return (
-      <AdminAuthGuard>
-        <AdminCustomers />
-      </AdminAuthGuard>
-    );
-  }
-
-  if (location === '/admin/quotations') {
-    return (
-      <AdminAuthGuard>
-        <AdminQuotations />
-      </AdminAuthGuard>
-    );
-  }
-
-  if (location === '/admin/hero-slides') {
-    return (
-      <AdminAuthGuard>
-        <AdminHeroSlides />
-      </AdminAuthGuard>
-    );
-  }
-
-  if (location === '/admin/testimonials') {
-    return (
-      <AdminAuthGuard>
-        <AdminTestimonials />
-      </AdminAuthGuard>
-    );
-  }
-
-  if (location === '/admin/partners') {
-    return (
-      <AdminAuthGuard>
-        <AdminPartners />
-      </AdminAuthGuard>
-    );
-  }
-
-  if (location === '/admin/settings') {
-    return (
-      <AdminAuthGuard>
-        <AdminSettings />
-      </AdminAuthGuard>
-    );
-  }
-
-  if (location === '/admin/site-settings') {
-    return (
-      <AdminAuthGuard>
-        <AdminSiteSettings />
-      </AdminAuthGuard>
-    );
-  }
-
-  if (location === '/admin/theme') {
-    return (
-      <AdminAuthGuard>
-        <AdminTheme />
-      </AdminAuthGuard>
-    );
-  }
-
-  if (location === '/admin/homepage') {
-    return (
-      <AdminAuthGuard>
-        <AdminHomepageBuilder />
-      </AdminAuthGuard>
-    );
-  }
-
-  if (location === '/admin/delivery-zones') {
-    return (
-      <AdminAuthGuard>
-        <AdminDeliveryZones />
-      </AdminAuthGuard>
-    );
-  }
-
-  if (location === '/admin/projects') {
-    return (
-      <AdminAuthGuard>
-        <AdminProjects />
-      </AdminAuthGuard>
-    );
-  }
-
-  if (location === '/admin/promotions') {
-    return (
-      <AdminAuthGuard>
-        <AdminPromotions />
-      </AdminAuthGuard>
-    );
-  }
-
-  if (location === '/admin/inventory') {
-    return (
-      <AdminAuthGuard>
-        <AdminInventory />
-      </AdminAuthGuard>
-    );
-  }
-
-  if (location === '/admin/media-library') {
-    return (
-      <AdminAuthGuard>
-        <AdminMediaLibrary />
-      </AdminAuthGuard>
-    );
-  }
-
-  if (location === '/admin/reports') {
-    return (
-      <AdminAuthGuard>
-        <Suspense fallback={<div className="min-h-screen flex items-center justify-center text-gray-400">Loading reports...</div>}>
-          <AdminReports />
+        <Suspense fallback={<AdminLoading />}>
+          <DashboardPage />
         </Suspense>
       </AdminAuthGuard>
     );
   }
 
-  if (location === '/admin/seo') {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const adminRoutes: Record<string, React.LazyExoticComponent<React.ComponentType<any>>> = {
+    '/admin/orders': AdminOrders,
+    '/admin/crm': AdminCRM,
+    '/admin/services': AdminServices,
+    '/admin/invoices': AdminInvoices,
+    '/admin/suppliers': AdminSuppliers,
+    '/admin/products': AdminProducts,
+    '/admin/categories': AdminCategories,
+    '/admin/customers': AdminCustomers,
+    '/admin/quotations': AdminQuotations,
+    '/admin/hero-slides': AdminHeroSlides,
+    '/admin/testimonials': AdminTestimonials,
+    '/admin/partners': AdminPartners,
+    '/admin/settings': AdminSettings,
+    '/admin/site-settings': AdminSiteSettings,
+    '/admin/theme': AdminTheme,
+    '/admin/homepage': AdminHomepageBuilder,
+    '/admin/delivery-zones': AdminDeliveryZones,
+    '/admin/projects': AdminProjects,
+    '/admin/promotions': AdminPromotions,
+    '/admin/inventory': AdminInventory,
+    '/admin/media-library': AdminMediaLibrary,
+    '/admin/reports': AdminReports,
+    '/admin/seo': AdminSeo,
+    '/admin/coupons': AdminCoupons,
+  };
+
+  const AdminComponent = adminRoutes[location as keyof typeof adminRoutes];
+  if (AdminComponent) {
     return (
       <AdminAuthGuard>
-        <AdminSeo />
+        <Suspense fallback={<AdminLoading />}>
+          <AdminComponent />
+        </Suspense>
       </AdminAuthGuard>
     );
   }
 
-  if (location === '/admin/coupons') {
-    return (
-      <AdminAuthGuard>
-        <AdminCoupons />
-      </AdminAuthGuard>
-    );
+  // Catch any /admin/* that doesn't match
+  if (location.startsWith('/admin')) {
+    return <NotFound />;
   }
 
   // Customer routes
@@ -286,6 +173,30 @@ function Router() {
 
   if (location === '/cart') {
     return <Cart />;
+  }
+
+  if (location === '/about') {
+    return (
+      <Suspense fallback={<PublicLoading />}>
+        <About />
+      </Suspense>
+    );
+  }
+
+  if (location === '/faq') {
+    return (
+      <Suspense fallback={<PublicLoading />}>
+        <FAQ />
+      </Suspense>
+    );
+  }
+
+  if (location.startsWith('/service/')) {
+    return (
+      <Suspense fallback={<PublicLoading />}>
+        <ServiceDetail />
+      </Suspense>
+    );
   }
 
   if (location.startsWith('/product/')) {

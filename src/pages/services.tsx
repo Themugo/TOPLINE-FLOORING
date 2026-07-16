@@ -1,41 +1,13 @@
-import { useState, useEffect } from 'react';
 import { Link } from 'wouter';
-import { ArrowRight, CheckCircle, Loader2 } from 'lucide-react';
+import { ArrowRight, CheckCircle, Loader2, Wrench } from 'lucide-react';
 import { CustomerLayout } from '@/components/layout/CustomerLayout';
-import { supabase } from '@/lib/supabase';
 import { getServicePlaceholder, withFallback } from '@/lib/placeholders';
 import { useSeoMeta } from '@/hooks/use-seo';
-
-interface Service {
-  id: string;
-  name: string;
-  slug: string;
-  description: string;
-  short_description?: string;
-  image_url: string;
-  features?: string[];
-}
+import { useServices } from '@/hooks/use-data';
 
 export default function Services() {
   useSeoMeta('services');
-  const [services, setServices] = useState<Service[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    async function fetchServices() {
-      const { data, error } = await supabase
-        .from('services')
-        .select('*')
-        .eq('is_active', true)
-        .order('display_order');
-
-      if (!error && data) {
-        setServices(data);
-      }
-      setLoading(false);
-    }
-    fetchServices();
-  }, []);
+  const { services, loading } = useServices();
 
   const defaultFeatures: Record<string, string[]> = {
     'industrial-flooring': [
@@ -91,6 +63,20 @@ export default function Services() {
             <div className="text-center py-12">
               <Loader2 className="w-8 h-8 text-primary-500 animate-spin mx-auto mb-4" />
               <p className="text-gray-500">Loading services...</p>
+            </div>
+          ) : services.length === 0 ? (
+            <div className="text-center py-20">
+              <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-4">
+                <Wrench className="w-8 h-8 text-gray-400" />
+              </div>
+              <h3 className="font-display text-xl font-semibold text-navy-900 mb-2">No Services Available</h3>
+              <p className="text-gray-500 max-w-md mx-auto">
+                Our services are currently being updated. Please check back soon or contact us for more information.
+              </p>
+              <Link href="/contact" className="btn-primary inline-flex items-center gap-2 mt-6">
+                Contact Us
+                <ArrowRight className="w-4 h-4" />
+              </Link>
             </div>
           ) : (
             <div className="space-y-16 lg:space-y-24">

@@ -1,5 +1,9 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase, type Tables, type TablesInsert, type TablesUpdate } from './supabase';
+import { supabase } from './supabase';
+
+type Tables<T extends string> = any;
+type TablesInsert<T extends string> = any;
+type TablesUpdate<T extends string> = any;
 
 // Product types
 export type Product = Tables<'products'> & { category_name?: string };
@@ -354,153 +358,8 @@ export function useCreateCustomer() {
 }
 
 // ============== ADMIN ==============
-
-const ADMIN_SESSION_KEY = 'admin_session';
-
-export type AdminUser = {
-  authenticated: boolean;
-  username: string;
-  email?: string;
-  requiresPasswordChange?: boolean;
-};
-
-export function useGetAdminMe() {
-  return useQuery({
-    queryKey: ['adminMe'],
-    queryFn: async (): Promise<AdminUser | null> => {
-      const sessionId = localStorage.getItem(ADMIN_SESSION_KEY);
-      if (!sessionId) return null;
-
-      const { data, error } = await supabase
-        .from('admin_sessions')
-        .select('*')
-        .eq('id', sessionId)
-        .gt('expires_at', new Date().toISOString())
-        .single();
-
-      if (error || !data) {
-        localStorage.removeItem(ADMIN_SESSION_KEY);
-        return null;
-      }
-
-      return {
-        authenticated: true,
-        username: data.username,
-        email: data.email,
-      };
-    },
-  });
-}
-
-export function useAdminLogin() {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: async ({
-      username,
-      password,
-    }: {
-      username: string;
-      password: string;
-    }) => {
-      const { data, error } = await supabase.rpc('verify_owner_login', {
-        p_username: username,
-        p_password: password,
-      });
-
-      if (error) throw new Error('Login failed');
-      if (!data?.success) throw new Error(data?.error || 'Invalid credentials');
-
-      const sessionId = crypto.randomUUID();
-      const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
-
-      const { error: sessionError } = await supabase.from('admin_sessions').insert({
-        id: sessionId,
-        username: data.username,
-        email: data.email,
-        expires_at: expiresAt,
-      });
-
-      if (sessionError) throw sessionError;
-
-      localStorage.setItem(ADMIN_SESSION_KEY, sessionId);
-      return {
-        success: true,
-        requiresPasswordChange: data.requires_password_change
-      };
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['adminMe'] });
-      supabase?.from('activity_logs').insert({
-        action: 'admin_login',
-        entity_type: 'admin_session',
-        details: { username },
-        user_agent: typeof navigator !== 'undefined' ? navigator.userAgent : null,
-      }).then(() => {});
-    },
-  });
-}
-
-export function useAdminLogout() {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: async () => {
-      const sessionId = localStorage.getItem(ADMIN_SESSION_KEY);
-      if (sessionId) {
-        await supabase.from('admin_sessions').delete().eq('id', sessionId);
-        localStorage.removeItem(ADMIN_SESSION_KEY);
-      }
-    },
-    onSuccess: () => {
-      queryClient.clear();
-    },
-  });
-}
-
-export function useChangePassword() {
-  return useMutation({
-    mutationFn: async ({
-      currentPassword,
-      newPassword,
-    }: {
-      currentPassword: string;
-      newPassword: string;
-    }) => {
-      const { data, error } = await supabase.rpc('change_owner_password', {
-        p_current_password: currentPassword,
-        p_new_password: newPassword,
-      });
-
-      if (error) throw new Error('Failed to change password');
-      if (!data?.success) throw new Error(data?.error || 'Password change failed');
-
-      return { success: true };
-    },
-  });
-}
-
-export function useUpdateOwnerProfile() {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: async ({
-      username,
-      email,
-    }: {
-      username?: string;
-      email?: string;
-    }) => {
-      const { data, error } = await supabase.rpc('update_owner_credentials', {
-        p_username: username,
-        p_email: email,
-      });
-
-      if (error) throw new Error('Failed to update profile');
-      return { success: true };
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['adminMe'] });
-    },
-  });
-}
+// Authentication is handled exclusively via Supabase Auth (JWT).
+// See useAdminAuth() in hooks/use-data.ts for the single source of truth.
 
 // ============== DASHBOARD STATS ==============
 
