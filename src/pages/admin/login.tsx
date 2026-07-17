@@ -189,6 +189,14 @@ export default function AdminLogin() {
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
       <div className="max-w-md w-full">
         <div className="text-center mb-8">
+          <button
+            type="button"
+            onClick={() => window.history.back()}
+            className="inline-flex items-center gap-1.5 text-sm text-navy-400 hover:text-navy-600 mb-4 transition-colors"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Back
+          </button>
           <div className="w-16 h-16 rounded-full border-2 border-navy-600 flex items-center justify-center mx-auto mb-4 bg-white shadow-sm">
             <span className="text-primary-600 font-display font-bold text-2xl">T</span>
           </div>
