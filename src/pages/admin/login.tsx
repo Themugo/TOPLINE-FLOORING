@@ -48,6 +48,14 @@ export default function AdminLogin() {
   const { login } = useAdminAuth();
   const [, setLocation] = useLocation();
 
+  const goBack = () => {
+    if (window.history.length > 1) {
+      window.history.back();
+    } else {
+      setLocation('/');
+    }
+  };
+
   const passwordStrength = useCallback((pw: string): { score: number; label: string; color: string } => {
     let score = 0;
     if (pw.length >= 8) score++;
@@ -191,7 +199,7 @@ export default function AdminLogin() {
         <div className="text-center mb-8">
           <button
             type="button"
-            onClick={() => window.history.back()}
+            onClick={goBack}
             className="inline-flex items-center gap-1.5 text-sm text-navy-400 hover:text-navy-600 mb-4 transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
