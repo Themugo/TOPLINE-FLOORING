@@ -26,7 +26,7 @@ export function useListHeroSlides() {
       const { data, error } = await supabase
         .from('hero_slides')
         .select('*')
-        .order('sort_order');
+        .order('display_order');
       if (error) throw error;
       return data || [];
     },
@@ -55,7 +55,7 @@ export function useCreateHeroSlide() {
 export function useUpdateHeroSlide() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async ({ id, data }: { id: number; data: any }) => {
+    mutationFn: async ({ id, data }: { id: string; data: any }) => {
       const { data: result, error } = await supabase
         .from('hero_slides')
         .update(data)
@@ -75,7 +75,7 @@ export function useUpdateHeroSlide() {
 export function useDeleteHeroSlide() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (id: number) => {
+    mutationFn: async (id: string) => {
       const { error } = await supabase.from('hero_slides').delete().eq('id', id);
       if (error) throw error;
     },
@@ -94,7 +94,7 @@ export function useListTestimonials() {
       const { data, error } = await supabase
         .from('testimonials')
         .select('*')
-        .order('sort_order');
+        .order('display_order');
       if (error) throw error;
       return data || [];
     },
@@ -123,7 +123,7 @@ export function useCreateTestimonial() {
 export function useUpdateTestimonial() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async ({ id, data }: { id: number; data: any }) => {
+    mutationFn: async ({ id, data }: { id: string; data: any }) => {
       const { data: result, error } = await supabase
         .from('testimonials')
         .update(data)
@@ -143,7 +143,7 @@ export function useUpdateTestimonial() {
 export function useDeleteTestimonial() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (id: number) => {
+    mutationFn: async (id: string) => {
       const { error } = await supabase.from('testimonials').delete().eq('id', id);
       if (error) throw error;
     },
@@ -162,7 +162,7 @@ export function useListPartners() {
       const { data, error } = await supabase
         .from('partners')
         .select('*')
-        .order('sort_order');
+        .order('display_order');
       if (error) throw error;
       return data || [];
     },
@@ -191,7 +191,7 @@ export function useCreatePartner() {
 export function useUpdatePartner() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async ({ id, data }: { id: number; data: any }) => {
+    mutationFn: async ({ id, data }: { id: string; data: any }) => {
       const { data: result, error } = await supabase
         .from('partners')
         .update(data)
@@ -211,7 +211,7 @@ export function useUpdatePartner() {
 export function useDeletePartner() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (id: number) => {
+    mutationFn: async (id: string) => {
       const { error } = await supabase.from('partners').delete().eq('id', id);
       if (error) throw error;
     },
@@ -243,7 +243,7 @@ export function useListQuotations(filters?: { status?: string }) {
   });
 }
 
-export function useGetQuotation(id: number) {
+export function useGetQuotation(id: string) {
   return useQuery({
     queryKey: ['quotation', id],
     queryFn: async () => {
@@ -263,7 +263,7 @@ export function useGetQuotation(id: number) {
 export function useUpdateQuotation() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async ({ id, data }: { id: number; data: any }) => {
+    mutationFn: async ({ id, data }: { id: string; data: any }) => {
       const { data: result, error } = await supabase
         .from('quotations')
         .update({ ...data, updated_at: new Date().toISOString() })
@@ -292,7 +292,7 @@ export function useListSettings() {
       if (error) throw error;
       const settings: Record<string, string> = {};
       (data || []).forEach((s: any) => {
-        settings[s.key] = s.value || '';
+        settings[s.setting_key] = s.setting_value || '';
       });
       return settings;
     },

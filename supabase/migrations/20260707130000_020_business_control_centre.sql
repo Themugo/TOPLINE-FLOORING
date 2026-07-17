@@ -92,6 +92,25 @@ CREATE TABLE IF NOT EXISTS site_visits (
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- Suppliers Table (created before materials for FK reference)
+CREATE TABLE IF NOT EXISTS suppliers (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  supplier_code TEXT UNIQUE,
+  name TEXT NOT NULL,
+  contact_person TEXT,
+  email TEXT,
+  phone TEXT,
+  address TEXT,
+  city TEXT,
+  country TEXT DEFAULT 'Kenya',
+  is_preferred BOOLEAN DEFAULT false,
+  payment_terms TEXT,
+  notes TEXT,
+  is_active BOOLEAN DEFAULT true,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
 -- Materials Inventory Table
 CREATE TABLE IF NOT EXISTS materials (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -128,25 +147,6 @@ CREATE TABLE IF NOT EXISTS stock_movements (
   notes TEXT,
   performed_by UUID REFERENCES auth.users(id),
   created_at TIMESTAMPTZ DEFAULT NOW()
-);
-
--- Suppliers Table (if not exists)
-CREATE TABLE IF NOT EXISTS suppliers (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  supplier_code TEXT UNIQUE,
-  name TEXT NOT NULL,
-  contact_person TEXT,
-  email TEXT,
-  phone TEXT,
-  address TEXT,
-  city TEXT,
-  country TEXT DEFAULT 'Kenya',
-  is_preferred BOOLEAN DEFAULT false,
-  payment_terms TEXT,
-  notes TEXT,
-  is_active BOOLEAN DEFAULT true,
-  created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- Purchase Orders Table

@@ -2,6 +2,7 @@ import { CartProvider } from '@/hooks/use-cart';
 import { AdminAuthGuard, AdminPublicRoute } from '@/components/admin/AdminGuard';
 import { ToastContainer } from '@/components/ui/toast';
 import { ThemeApplier } from '@/components/ThemeApplier';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { useLocation } from 'wouter';
 import { lazy, Suspense, useEffect } from 'react';
 
@@ -21,6 +22,11 @@ import NotFound from '@/pages/not-found';
 const About = lazy(() => import('@/pages/about'));
 const FAQ = lazy(() => import('@/pages/faq'));
 const ServiceDetail = lazy(() => import('@/pages/service-detail'));
+const Compare = lazy(() => import('@/pages/compare'));
+const TrackOrder = lazy(() => import('@/pages/track-order'));
+const CheckoutSuccess = lazy(() => import('@/pages/checkout-success'));
+const Industries = lazy(() => import('@/pages/industries'));
+const Market = lazy(() => import('@/pages/market'));
 
 // Admin Pages (lazy-loaded)
 const AdminLogin = lazy(() => import('@/pages/admin/login'));
@@ -193,6 +199,46 @@ function Router() {
     return <Cart />;
   }
 
+  if (location === '/compare') {
+    return (
+      <Suspense fallback={<PublicLoading />}>
+        <Compare />
+      </Suspense>
+    );
+  }
+
+  if (location === '/track-order') {
+    return (
+      <Suspense fallback={<PublicLoading />}>
+        <TrackOrder />
+      </Suspense>
+    );
+  }
+
+  if (location === '/checkout-success') {
+    return (
+      <Suspense fallback={<PublicLoading />}>
+        <CheckoutSuccess />
+      </Suspense>
+    );
+  }
+
+  if (location === '/industries') {
+    return (
+      <Suspense fallback={<PublicLoading />}>
+        <Industries />
+      </Suspense>
+    );
+  }
+
+  if (location === '/market') {
+    return (
+      <Suspense fallback={<PublicLoading />}>
+        <Market />
+      </Suspense>
+    );
+  }
+
   if (location === '/about') {
     return (
       <Suspense fallback={<PublicLoading />}>
@@ -231,9 +277,11 @@ function Router() {
 function App() {
   return (
     <CartProvider>
-      <ThemeApplier />
-      <Router />
-      <ToastContainer />
+      <ErrorBoundary>
+        <ThemeApplier />
+        <Router />
+        <ToastContainer />
+      </ErrorBoundary>
     </CartProvider>
   );
 }

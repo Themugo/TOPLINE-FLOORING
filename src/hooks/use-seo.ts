@@ -5,6 +5,12 @@ const DEFAULT_TITLE = 'Topline Flooring & Waterproofing';
 const DEFAULT_DESCRIPTION = 'Professional flooring and waterproofing solutions for industrial, commercial, and residential projects across Kenya.';
 const SITE_URL = 'https://toplineflooring.co.ke';
 
+const SEO_KEYS = [
+  'description', 'keywords', 'author', 'robots',
+  'og:title', 'og:description', 'og:image', 'og:type', 'og:url', 'og:site_name', 'og:locale',
+  'twitter:card', 'twitter:title', 'twitter:description', 'twitter:image',
+];
+
 function setMetaTag(attr: 'name' | 'property', key: string, content: string | null | undefined) {
   if (!content) return;
   let tag = document.querySelector<HTMLMetaElement>(`meta[${attr}="${key}"]`);
@@ -14,6 +20,11 @@ function setMetaTag(attr: 'name' | 'property', key: string, content: string | nu
     document.head.appendChild(tag);
   }
   tag.setAttribute('content', content);
+}
+
+function removeMetaTag(attr: 'name' | 'property', key: string) {
+  const tag = document.querySelector<HTMLMetaElement>(`meta[${attr}="${key}"]`);
+  if (tag) tag.remove();
 }
 
 function setCanonical(url: string | null | undefined) {
@@ -27,12 +38,11 @@ function setCanonical(url: string | null | undefined) {
   link.setAttribute('href', url);
 }
 
-/**
- * Fetches the SEO settings an admin configured for this page (via
- * Admin -> SEO Manager) and applies them to the document title and
- * meta tags including Open Graph and Twitter Card tags.
- * Falls back to sensible site-wide defaults if no row exists yet.
- */
+function removeCanonical() {
+  const link = document.querySelector<HTMLLinkElement>('link[rel="canonical"]');
+  if (link) link.remove();
+}
+
 export function useSeoMeta(
   pageType: string,
   pageId?: string | null,
@@ -55,18 +65,15 @@ export function useSeoMeta(
 
       document.title = title;
 
-      // Standard meta
       setMetaTag('name', 'description', description);
       setMetaTag('name', 'keywords', data?.meta_keywords);
       setMetaTag('name', 'author', 'Topline Flooring and Waterproofing');
 
-      // Robots
       const robotsParts: string[] = [];
       robotsParts.push(data?.no_index ? 'noindex' : 'index');
       robotsParts.push(data?.no_follow ? 'nofollow' : 'follow');
       setMetaTag('name', 'robots', robotsParts.join(', '));
 
-      // Open Graph
       setMetaTag('property', 'og:title', data?.og_title || title);
       setMetaTag('property', 'og:description', data?.og_description || description);
       setMetaTag('property', 'og:image', image ? (image.startsWith('http') ? image : `${SITE_URL}${image}`) : undefined);
@@ -75,7 +82,6 @@ export function useSeoMeta(
       setMetaTag('property', 'og:site_name', 'Topline Flooring & Waterproofing');
       setMetaTag('property', 'og:locale', 'en_KE');
 
-      // Twitter Card
       setMetaTag('name', 'twitter:card', 'summary_large_image');
       setMetaTag('name', 'twitter:title', data?.og_title || title);
       setMetaTag('name', 'twitter:description', data?.og_description || description);
@@ -84,7 +90,6 @@ export function useSeoMeta(
         setMetaTag('name', 'twitter:image', twitterImage);
       }
 
-      // Canonical
       setCanonical(canonicalUrl);
     }
 
@@ -92,6 +97,13 @@ export function useSeoMeta(
 
     return () => {
       cancelled = true;
+      SEO_KEYS.forEach((key) => {
+        const attr = key.startsWith('og:') ? 'property' : 'name';
+        removeMetaTag(attr, key);
+      });
+      removeCanonical();
+      document.title = DEFAULT_TITLE;
+      setMetaTag('name', 'description', DEFAULT_DESCRIPTION);
     };
   }, [pageType, pageId, fallback?.title, fallback?.description, fallback?.image]);
 }

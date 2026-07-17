@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { CustomerLayout } from "@/components/layout/CustomerLayout";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
-import { Building2, Warehouse, ShoppingBag, Hospital, School, Building, Ship, Trees, ArrowRight } from "lucide-react";
+import { Building2, Warehouse, ShoppingBag, Stethoscope, School, Building, Ship, Trees, ArrowRight } from "lucide-react";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -12,7 +12,7 @@ const FALLBACK_INDUSTRIES = [
   { icon: "Warehouse", title: "Industrial", desc: "Heavy-duty flooring and waterproofing for factories, warehouses, and manufacturing plants.", href: "/shop?type=service" },
   { icon: "Building2", title: "Commercial", desc: "High-traffic flooring solutions for offices, retail spaces, and commercial complexes.", href: "/shop?type=service" },
   { icon: "ShoppingBag", title: "Retail", desc: "Durable and aesthetically pleasing floors for showrooms, malls, and stores.", href: "/shop?type=service" },
-  { icon: "Hospital", title: "Healthcare", desc: "Hygienic, chemical-resistant flooring for hospitals, clinics, and laboratories.", href: "/shop?type=service" },
+  { icon: "Stethoscope", title: "Healthcare", desc: "Hygienic, chemical-resistant flooring for hospitals, clinics, and laboratories.", href: "/shop?type=service" },
   { icon: "School", title: "Education", desc: "Safe and durable flooring for schools, universities, and training facilities.", href: "/shop?type=service" },
   { icon: "Building", title: "Residential", desc: "Quality flooring and waterproofing for apartments, homes, and housing complexes.", href: "/shop?type=service" },
   { icon: "Ship", title: "Marine", desc: "Waterproofing and coating solutions for docks, ports, and marine structures.", href: "/shop?type=service" },
@@ -20,7 +20,7 @@ const FALLBACK_INDUSTRIES = [
 ];
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const ICON_MAP: Record<string, any> = { Building2, Warehouse, ShoppingBag, Hospital, School, Building, Ship, Trees };
+const ICON_MAP: Record<string, any> = { Building2, Warehouse, ShoppingBag, Stethoscope, School, Building, Ship, Trees };
 
 export default function Industries() {
   usePageVisit("/industries");
@@ -41,7 +41,7 @@ export default function Industries() {
       .order("display_order")
       .then(({ data }) => {
         if (data && data.length > 0) {
-          const icons = ["Building2", "Warehouse", "ShoppingBag", "Hospital", "School", "Building", "Ship", "Trees"];
+          const icons = ["Building2", "Warehouse", "ShoppingBag", "Stethoscope", "School", "Building", "Ship", "Trees"];
           const mapped = data.map((c, i) => ({
             icon: icons[i % icons.length],
             title: c.name,

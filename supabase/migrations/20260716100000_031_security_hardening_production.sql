@@ -131,9 +131,9 @@ BEGIN
     p_message := left(p_message, 5000);
   END IF;
 
-  -- Insert into leads (uses customer_name column from migration 020)
+  -- Insert into leads (uses column names from migration 020 schema)
   INSERT INTO public.leads (
-    customer_name, email, phone, source, status, notes, county, project_type
+    customer_name, email, phone, source, lead_stage, follow_up_notes, project_location
   ) VALUES (
     v_name_trimmed,
     v_email_trimmed,
@@ -141,8 +141,7 @@ BEGIN
     'quotation_request',
     'new',
     format('Service: %s\nBudget: %s\nTimeline: %s\nMessage: %s', p_service, p_budget_range, p_timeline, p_message),
-    trim(p_county),
-    trim(p_project_type)
+    trim(p_county)
   ) RETURNING id INTO v_lead_id;
 
   -- Insert into quotations
@@ -318,32 +317,29 @@ BEGIN
   FROM public.coupons
   WHERE upper(code) = upper(trim(p_code))
     AND is_active = true
-    AND (expires_at IS NULL OR expires_at > now())
-    AND (max_uses IS NULL OR used_count < max_uses);
+    AND (end_date IS NULL OR end_date > now())
+    AND (max_uses IS NULL OR current_uses < max_uses);
 
   IF v_coupon IS NULL THEN
     RETURN json_build_object('valid', false, 'error', 'Invalid or expired coupon');
   END IF;
 
-  IF v_coupon.min_order_amount > 0 AND p_order_total < v_coupon.min_order_amount THEN
+  IF v_coupon.min_order_value > 0 AND p_order_total < v_coupon.min_order_value THEN
     RETURN json_build_object('valid', false, 'error', 'Minimum order not met');
   END IF;
 
-  IF v_coupon.discount_type = 'percentage' THEN
+  IF v_coupon.coupon_type = 'percentage' THEN
     v_discount := p_order_total * (v_coupon.discount_value / 100);
-    IF v_coupon.max_discount_amount IS NOT NULL AND v_discount > v_coupon.max_discount_amount THEN
-      v_discount := v_coupon.max_discount_amount;
-    END IF;
   ELSE
     v_discount := v_coupon.discount_value;
   END IF;
 
   -- Increment usage
-  UPDATE public.coupons SET used_count = used_count + 1 WHERE id = v_coupon.id;
+  UPDATE public.coupons SET current_uses = current_uses + 1 WHERE id = v_coupon.id;
 
   RETURN json_build_object(
     'valid', true,
-    'discount_type', v_coupon.discount_type,
+    'discount_type', v_coupon.coupon_type,
     'discount_value', v_coupon.discount_value,
     'discount_amount', v_discount,
     'code', v_coupon.code

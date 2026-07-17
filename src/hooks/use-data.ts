@@ -36,19 +36,16 @@ function errorMessage(err: unknown, fallback: string): string {
 
 // Site Settings
 export function useSiteSettings() {
-  const [settings, setSettings] = useState<Record<string, any>>({});
-  const [loading, setLoading] = useState(true);
+  const [settings, setSettings] = useState<Record<string, any>>(settingsCache || {});
+  const [loading, setLoading] = useState(!settingsCache);
   const [error, setError] = useState<string | null>(null);
 
   const fetchSettings = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      const { data, error: err } = await supabase.from('site_settings').select('*');
-      if (err) throw err;
-      const obj: Record<string, any> = {};
-      (data || []).forEach((s) => { obj[s.setting_key] = s.setting_value; });
-      setSettings(obj);
+      const result = await fetchSettingsOnce();
+      setSettings(result);
     } catch (err) {
       setError(errorMessage(err, 'Failed to load site settings'));
     } finally {
@@ -64,10 +61,34 @@ export function useSiteSettings() {
       { onConflict: 'setting_key' }
     );
     if (err) throw err;
+    settingsCache = null;
     await fetchSettings();
   };
 
   return { settings, loading, error, updateSetting, refetch: fetchSettings };
+}
+
+// Module-level cache for site settings to avoid redundant fetches
+let settingsCache: Record<string, any> | null = null;
+let settingsFetchPromise: Promise<Record<string, any>> | null = null;
+
+async function fetchSettingsOnce(): Promise<Record<string, any>> {
+  if (settingsCache) return settingsCache;
+  if (settingsFetchPromise) return settingsFetchPromise;
+
+  settingsFetchPromise = (async () => {
+    const { data, error: err } = await supabase.from('site_settings').select('*');
+    if (err) throw err;
+    const obj: Record<string, any> = {};
+    (data || []).forEach((s) => {
+      obj[s.setting_key] = typeof s.setting_value === 'object' ? s.setting_value : JSON.parse(s.setting_value || '{}');
+    });
+    settingsCache = obj;
+    settingsFetchPromise = null;
+    return obj;
+  })();
+
+  return settingsFetchPromise;
 }
 
 // Navigation Menus
@@ -1278,5 +1299,5 @@ export function useProductComparison() {
     setComparison(next);
   };
 
-  return { comparison, loading, addToComparison, removeFromComparison, clearComparison };
+  return { comparison, addToComparison, removeFromComparison, clearComparison };
 }

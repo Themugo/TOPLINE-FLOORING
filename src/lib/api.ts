@@ -33,9 +33,6 @@ export type Customer = Tables<'customers'>;
 export type CustomerInsert = TablesInsert<'customers'>;
 export type CustomerUpdate = TablesUpdate<'customers'>;
 
-// Admin session types
-export type AdminSession = Tables<'admin_sessions'>;
-
 // Dashboard stats type
 export type DashboardStats = {
   totalOrders: number;
@@ -52,8 +49,7 @@ export type OrderWithItems = Order & { items: OrderItem[] };
 // ============== PRODUCTS ==============
 
 export function useListProducts(filters?: {
-  categoryId?: number;
-  productType?: 'service' | 'material';
+  categoryId?: string;
   search?: string;
   featured?: boolean;
 }) {
@@ -67,9 +63,6 @@ export function useListProducts(filters?: {
 
       if (filters?.categoryId) {
         query = query.eq('category_id', filters.categoryId);
-      }
-      if (filters?.productType) {
-        query = query.eq('product_type', filters.productType);
       }
       if (filters?.featured) {
         query = query.eq('featured', true);
@@ -89,7 +82,7 @@ export function useListProducts(filters?: {
   });
 }
 
-export function useGetProduct(id: number) {
+export function useGetProduct(id: string) {
   return useQuery({
     queryKey: ['product', id],
     queryFn: async (): Promise<Product | null> => {
@@ -130,7 +123,7 @@ export function useCreateProduct() {
 export function useUpdateProduct() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async ({ id, data }: { id: number; data: ProductUpdate }) => {
+    mutationFn: async ({ id, data }: { id: string; data: ProductUpdate }) => {
       const { data: result, error } = await supabase
         .from('products')
         .update(data)
@@ -150,7 +143,7 @@ export function useUpdateProduct() {
 export function useDeleteProduct() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (id: number) => {
+    mutationFn: async (id: string) => {
       const { error } = await supabase.from('products').delete().eq('id', id);
       if (error) throw error;
     },
@@ -197,7 +190,7 @@ export function useCreateCategory() {
 export function useUpdateCategory() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async ({ id, data }: { id: number; data: CategoryUpdate }) => {
+    mutationFn: async ({ id, data }: { id: string; data: CategoryUpdate }) => {
       const { data: result, error } = await supabase
         .from('categories')
         .update(data)
@@ -216,7 +209,7 @@ export function useUpdateCategory() {
 export function useDeleteCategory() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (id: number) => {
+    mutationFn: async (id: string) => {
       const { error } = await supabase.from('categories').delete().eq('id', id);
       if (error) throw error;
     },
@@ -248,7 +241,7 @@ export function useListOrders(filters?: { status?: string }) {
   });
 }
 
-export function useGetOrder(id: number) {
+export function useGetOrder(id: string) {
   return useQuery({
     queryKey: ['order', id],
     queryFn: async (): Promise<OrderWithItems | null> => {
@@ -310,7 +303,7 @@ export function useCreateOrder() {
 export function useUpdateOrder() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async ({ id, data }: { id: number; data: OrderUpdate }) => {
+    mutationFn: async ({ id, data }: { id: string; data: OrderUpdate }) => {
       const { data: result, error } = await supabase
         .from('orders')
         .update({ ...data, updated_at: new Date().toISOString() })
@@ -429,7 +422,7 @@ export function useGetOrdersByStatus() {
 
 // Query keys for invalidation
 export const getListProductsQueryKey = (filters?: Parameters<typeof useListProducts>[0]) => ['products', filters];
-export const getGetProductQueryKey = (id: number) => ['product', id];
+export const getGetProductQueryKey = (id: string) => ['product', id];
 export const getListOrdersQueryKey = () => ['orders'];
 export const getGetDashboardStatsQueryKey = () => ['dashboardStats'];
 export const getGetRecentOrdersQueryKey = () => ['recentOrders'];
