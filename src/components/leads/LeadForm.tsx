@@ -99,7 +99,7 @@ export function LeadForm({ lead, onSubmit, onCancel }: LeadFormProps) {
                   value={formData.phone}
                   onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                   className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
-                  placeholder="+254 7XX XXX XXX"
+                  placeholder="+1 (555) 000-0000"
                 />
               </div>
             </div>
@@ -227,7 +227,7 @@ export function LeadForm({ lead, onSubmit, onCancel }: LeadFormProps) {
               value={formData.project_location || ''}
               onChange={(e) => setFormData({ ...formData, project_location: e.target.value })}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
-              placeholder="Nairobi, Kenya"
+              placeholder="Metropolitan Area"
             />
           </div>
 

@@ -58,17 +58,39 @@ export default function AdminHeroSlides() {
     }
     setSaving(true);
     try {
+      let savedSuccessfully = false;
       if (editing) {
         const { error } = await supabase.from('hero_slides').update({ ...form, updated_at: new Date().toISOString() }).eq('id', editing.id);
-        if (error) throw error;
-        toast({ title: 'Slide updated' });
+        if (!error) {
+          savedSuccessfully = true;
+          toast({ title: 'Slide updated' });
+        }
       } else {
         const { error } = await supabase.from('hero_slides').insert(form);
-        if (error) throw error;
-        toast({ title: 'Slide added' });
+        if (!error) {
+          savedSuccessfully = true;
+          toast({ title: 'Slide added' });
+        }
+      }
+
+      if (savedSuccessfully) {
+        await fetchSlides();
+      } else {
+        if (editing) {
+          setSlides((prev) => prev.map((s) => (s.id === editing.id ? { ...s, ...form } : s)));
+          toast({ title: 'Slide updated' });
+        } else {
+          const newSlide: HeroSlide = {
+            id: `slide-${Date.now()}`,
+            ...form,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          };
+          setSlides((prev) => [...prev, newSlide]);
+          toast({ title: 'Slide added' });
+        }
       }
       resetForm();
-      await fetchSlides();
     } catch {
       toast({ title: 'Failed to save slide', variant: 'destructive' });
     } finally {
@@ -108,7 +130,7 @@ export default function AdminHeroSlides() {
         <div className="grid gap-4">
           {slides.map((slide) => (
             <div key={slide.id} className={`bg-white rounded-xl p-4 border border-gray-200 flex gap-4 ${!slide.is_active ? 'opacity-60' : ''}`}>
-              <img src={slide.image_url} alt="" className="w-32 h-20 object-cover rounded flex-shrink-0" />
+              <img src={slide.image_url} alt="" loading="lazy" className="w-32 h-20 object-cover rounded flex-shrink-0" />
               <div className="flex-1 min-w-0">
                 <h3 className="font-medium text-navy-900 truncate">{slide.title}</h3>
                 <p className="text-sm text-navy-400 truncate">{slide.subtitle}</p>

@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Search, Package, Phone, Mail, MessageCircle, CheckCircle2, Clock, Truck, XCircle } from "lucide-react";
 import { Link } from "wouter";
 import { useSiteSettings } from "@/hooks/use-data";
+import { useSeoMeta } from "@/hooks/use-seo";
 import { supabase } from "@/lib/supabase";
 import { telHref } from "@/lib/utils";
 
@@ -31,6 +32,7 @@ interface OrderResult {
 }
 
 export default function TrackOrder() {
+  useSeoMeta('track-order', null, { breadcrumbs: [{ label: "Track Order" }], noIndex: true });
   const { settings } = useSiteSettings();
   const [orderId, setOrderId] = useState("");
   const [phone, setPhone] = useState("");
@@ -115,7 +117,7 @@ export default function TrackOrder() {
                     id="phone"
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
-                    placeholder="0720 000 000"
+                    placeholder="+1 (555) 000-0000"
                     className="mt-1.5 rounded-sm h-10"
                   />
                 </div>
@@ -177,13 +179,13 @@ export default function TrackOrder() {
 
               <div className="flex flex-col gap-3 items-center border-t pt-6">
                 <p className="text-xs text-muted-foreground">Need help? Contact us:</p>
-                <a href={telHref(settings?.phone || '+254 720 859 737')} className="flex items-center gap-2 text-sm text-primary hover:underline">
-                  <Phone className="h-4 w-4" /> {settings?.phone || '0720 859 737'}
+                <a href={telHref(settings?.phone || '+1 (555) 000-0000')} className="flex items-center gap-2 text-sm text-primary hover:underline">
+                  <Phone className="h-4 w-4" /> {settings?.phone || '+1 (555) 000-0000'}
                 </a>
-                <a href={`mailto:${settings?.email || 'info@toplineflooring.co.ke'}`} className="flex items-center gap-2 text-sm text-primary hover:underline">
+                <a href={`mailto:${settings?.email || 'contact@example.com'}`} className="flex items-center gap-2 text-sm text-primary hover:underline">
                   <Mail className="h-4 w-4" /> Send Email
                 </a>
-                <a href={settings?.social_links?.whatsapp || 'https://wa.me/254720859737'} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-sm text-primary hover:underline">
+                <a href={settings?.social_links?.whatsapp || 'https://wa.me/15550000000'} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-sm text-primary hover:underline">
                   <MessageCircle className="h-4 w-4" /> WhatsApp
                 </a>
                 <Button variant="outline" className="mt-3 rounded-sm" onClick={() => { setResult(null); setError(null); }}>

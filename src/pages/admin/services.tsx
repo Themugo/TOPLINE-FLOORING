@@ -123,6 +123,7 @@ export default function AdminServices() {
                 <img
                   src={withFallback(service.image_url, getServicePlaceholder(service.name))}
                   alt={service.name}
+                  loading="lazy"
                   className="w-full h-full object-cover"
                 />
               </div>

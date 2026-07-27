@@ -128,6 +128,7 @@ export function ProductComparison({ products, onRemove, onClearAll }: ProductCom
                       <img
                         src={product.image_url}
                         alt={product.name}
+                        loading="lazy"
                         className="w-full h-32 object-cover rounded-lg mb-3"
                       />
                     )}

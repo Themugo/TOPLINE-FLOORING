@@ -3,6 +3,7 @@ import { Search, Globe, Save, AlertCircle, Plus, X, Trash2 } from 'lucide-react'
 import { AdminLayout } from '@/pages/admin/dashboard';
 import { supabase } from '@/lib/supabase';
 import { useToast } from '@/hooks/use-toast';
+import { useCMS } from '@/context/CMSContext';
 import type { SeoPage } from '@/lib/types';
 
 export default function AdminSeo() {
@@ -21,6 +22,7 @@ function SeoContent() {
   const [showNewPage, setShowNewPage] = useState(false);
   const [newPageForm, setNewPageForm] = useState({ page_type: 'product', page_id: '' });
   const { toast } = useToast();
+  const { refetch: refetchCms } = useCMS();
 
   const fetchSeoPages = useCallback(async () => {
     setLoading(true);
@@ -103,6 +105,7 @@ function SeoContent() {
       toast({ type: 'error', message: 'Failed to save SEO settings' });
     } else {
       toast({ type: 'success', message: 'SEO settings saved' });
+      await refetchCms();
       fetchSeoPages();
     }
   };
@@ -329,7 +332,7 @@ function SeoContent() {
                   value={selectedPage.canonical_url || ''}
                   onChange={(e) => updateField('canonical_url', e.target.value)}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
-                  placeholder="https://topline.co.ke/page"
+                  placeholder="https://example.com/page"
                 />
               </div>
 
@@ -405,7 +408,7 @@ function SeoContent() {
               {selectedPage.meta_title || 'Page Title'}
             </p>
             <p className="text-green-700 text-sm mb-2">
-              {selectedPage.canonical_url || `https://topline.co.ke/${selectedPage.page_type}`}
+              {selectedPage.canonical_url || `https://example.com/${selectedPage.page_type}`}
             </p>
             <p className="text-gray-600 text-sm">
               {selectedPage.meta_description || 'No description set. Add a meta description to improve click-through rates.'}

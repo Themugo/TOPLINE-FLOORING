@@ -73,6 +73,7 @@ export function ProductGallery({ images, videoUrl, videoThumbnail, image360Url, 
                   <img
                     src={selectedMedia.thumbnail}
                     alt="Video thumbnail"
+                    loading="lazy"
                     className="w-full h-full object-cover"
                   />
                 ) : (
@@ -141,6 +142,7 @@ export function ProductGallery({ images, videoUrl, videoThumbnail, image360Url, 
                 <img
                   src={media.url}
                   alt={`Thumbnail ${idx + 1}`}
+                  loading="lazy"
                   className="w-full h-full object-cover"
                 />
               )}
@@ -149,6 +151,7 @@ export function ProductGallery({ images, videoUrl, videoThumbnail, image360Url, 
                   <img
                     src={media.thumbnail || media.url}
                     alt="Video thumbnail"
+                    loading="lazy"
                     className="w-full h-full object-cover"
                   />
                   <div className="absolute inset-0 flex items-center justify-center bg-black/30">

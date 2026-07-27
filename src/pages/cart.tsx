@@ -2,12 +2,14 @@ import { useState, useMemo } from 'react';
 import { Link, useLocation } from 'wouter';
 import { Trash2, ShoppingCart, ArrowLeft, Minus, Plus, Tag, X, Truck } from 'lucide-react';
 import { CustomerLayout } from '@/components/layout/CustomerLayout';
+import { Breadcrumbs } from '@/components/Breadcrumbs';
 import { useCart } from '@/hooks/use-cart';
 import { useDeliveryZones } from '@/hooks/use-data';
 import { formatKES } from '@/lib/utils';
 import { getProductPlaceholder, withFallback } from '@/lib/placeholders';
 import { supabase } from '@/lib/supabase';
 import { useToast } from '@/hooks/use-toast';
+import { useSeoMeta } from '@/hooks/use-seo';
 
 interface FormData {
   name: string;
@@ -32,6 +34,7 @@ interface AppliedCoupon {
 }
 
 export default function Cart() {
+  useSeoMeta('cart', null, { breadcrumbs: [{ label: 'Materials Shop', href: '/shop' }, { label: 'Shopping Cart' }], noIndex: true });
   const { items, removeFromCart, updateQuantity, clearCart, totalPrice } = useCart();
   const { zones } = useDeliveryZones();
   const [, setLocation] = useLocation();
@@ -185,6 +188,7 @@ export default function Cart() {
   if (items.length === 0) {
     return (
       <CustomerLayout>
+        <Breadcrumbs items={[{ label: 'Materials Shop', href: '/shop' }, { label: 'Shopping Cart' }]} />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-20">
           <div className="text-center">
             <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
@@ -207,6 +211,7 @@ export default function Cart() {
 
   return (
     <CustomerLayout>
+      <Breadcrumbs items={[{ label: 'Materials Shop', href: '/shop' }, { label: 'Shopping Cart' }]} />
       <div className="bg-gray-50 min-h-screen">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
           <Link
@@ -233,6 +238,7 @@ export default function Cart() {
                           <img
                             src={withFallback(product.image_url, getProductPlaceholder(product.category?.slug || product.category?.name))}
                             alt={product.name}
+                            loading="lazy"
                             className="w-full h-full object-cover"
                           />
                         </div>
@@ -434,7 +440,7 @@ export default function Cart() {
                       value={form.phone}
                       onChange={(e) => setForm({ ...form, phone: e.target.value })}
                       className={`input ${errors.phone ? 'border-red-500' : ''}`}
-                      placeholder="+254 700 123 456"
+                      placeholder="+1 (555) 000-0000"
                     />
                     {errors.phone && (
                       <p className="text-red-500 text-xs mt-1">{errors.phone}</p>

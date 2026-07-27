@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { AdminLayout } from './dashboard';
 import { supabase } from "@/lib/supabase";
 import { useToast } from "@/hooks/use-toast";
+import { useCMS } from "@/context/CMSContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -35,6 +36,7 @@ export default function AdminNavigation() {
   const [editing, setEditing] = useState<NavItem | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const { toast } = useToast();
+  const { refetch: refetchCms } = useCMS();
 
   useEffect(() => {
     fetchItems();
@@ -60,6 +62,7 @@ export default function AdminNavigation() {
     toast({ title: editing ? "Item updated" : "Item created" });
     setDialogOpen(false);
     setEditing(null);
+    await refetchCms();
     fetchItems();
   };
 
@@ -67,11 +70,13 @@ export default function AdminNavigation() {
     const { error } = await supabase.from("navigation_menus").delete().eq("id", id);
     if (error) { toast({ title: "Error", description: error.message, variant: "destructive" }); return; }
     toast({ title: "Item deleted" });
+    await refetchCms();
     fetchItems();
   };
 
   const toggleActive = async (item: NavItem) => {
     await supabase.from("navigation_menus").update({ is_active: !item.is_active }).eq("id", item.id);
+    await refetchCms();
     fetchItems();
   };
 

@@ -3,6 +3,7 @@ import { Palette } from 'lucide-react';
 import { AdminLayout } from './dashboard';
 import { supabase } from '@/lib/supabase';
 import { useToast } from '@/hooks/use-toast';
+import { useCMS } from '@/context/CMSContext';
 import type { ThemeSetting } from '@/lib/types';
 
 const presets = [
@@ -23,6 +24,7 @@ export default function AdminTheme() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const { toast } = useToast();
+  const { refetch: refetchCms } = useCMS();
 
   useEffect(() => {
     fetchTheme();
@@ -45,6 +47,7 @@ export default function AdminTheme() {
     setSaving(true);
     try {
       await supabase.from('theme_settings').update({ ...theme, updated_at: new Date().toISOString() }).eq('id', theme.id);
+      await refetchCms();
       toast({ title: 'Theme saved successfully' });
     } catch {
       toast({ title: 'Failed to save theme', variant: 'destructive' });

@@ -5,9 +5,9 @@ import { useCart } from '@/hooks/use-cart';
 import { useSiteSettings } from '@/hooks/use-data';
 import { telHref } from '@/lib/utils';
 
-const DEFAULT_PHONE = '+254 700 123 456';
-const DEFAULT_EMAIL = 'info@toplineflooring.co.ke';
-const DEFAULT_ADDRESS = 'Nairobi, Kenya';
+const DEFAULT_PHONE = '+1 (555) 000-0000';
+const DEFAULT_EMAIL = 'contact@example.com';
+const DEFAULT_ADDRESS = '123 Industrial Parkway, Commerce City, ST';
 
 export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -15,7 +15,7 @@ export function Header() {
   const { totalItems } = useCart();
   const { settings } = useSiteSettings();
 
-  const siteName = settings.site_info?.name || 'TOPLINE';
+  const siteName = settings.site_info?.name || 'Your Flooring Company';
   const [firstWord, ...restWords] = siteName.split(' ');
   const tagline = settings.site_info?.tagline || 'FLOORING & WATERPROOFING';
   const phone = settings.contact?.phone || DEFAULT_PHONE;
@@ -72,6 +72,7 @@ export function Header() {
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-navy-200 hover:text-primary-400 transition-colors"
+                    aria-label={`Visit our ${key} page`}
                   >
                     <Icon className="w-3.5 h-3.5" />
                   </a>

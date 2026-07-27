@@ -1,11 +1,14 @@
 import { useState, useEffect } from 'react';
 import { CustomerLayout } from '@/components/layout/CustomerLayout';
+import { Breadcrumbs } from '@/components/Breadcrumbs';
 import { ProductComparison } from '@/components/comparison/ProductComparison';
 import { useProductComparison } from '@/hooks/use-data';
+import { useSeoMeta } from '@/hooks/use-seo';
 import { supabase } from '@/lib/supabase';
 import type { Product } from '@/lib/types';
 
 export default function Compare() {
+  useSeoMeta('compare', null, { breadcrumbs: [{ label: 'Materials Shop', href: '/shop' }, { label: 'Product Comparison' }] });
   const { comparison, loading, clearComparison, removeFromComparison } = useProductComparison();
   const [products, setProducts] = useState<Product[]>([]);
 
@@ -34,6 +37,7 @@ export default function Compare() {
 
   return (
     <CustomerLayout>
+      <Breadcrumbs items={[{ label: 'Materials Shop', href: '/shop' }, { label: 'Product Comparison' }]} />
       <div className="min-h-screen bg-gray-50 py-8 lg:py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="mb-8">

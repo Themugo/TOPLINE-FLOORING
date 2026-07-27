@@ -6,6 +6,7 @@ import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { useCmsContent } from "@/hooks/use-cms-content";
 import { useSeoMeta } from "@/hooks/use-seo";
+import { useSiteSettings } from "@/hooks/use-data";
 
 const defaultValues = [
   { icon: Shield, label: "Durable", desc: "Long-lasting solutions built to withstand the harshest conditions", color: "bg-green-600" },
@@ -22,15 +23,19 @@ const iconMap: Record<string, typeof Shield> = {
 
 export default function About() {
   usePageVisit("/about");
+  const { settings } = useSiteSettings();
+  const companyName = settings.site_info?.name || settings.company?.name || 'Your Flooring Company';
+
   useSeoMeta('about', null, {
-    title: 'About Us | Topline Flooring & Waterproofing',
-    description: 'Learn about Topline Flooring and Waterproofing - Kenya\'s trusted partner for professional flooring and waterproofing solutions for over 10 years.',
+    title: `About Us | ${companyName}`,
+    description: `Learn about ${companyName} - Your trusted partner for professional flooring and waterproofing solutions.`,
+    breadcrumbs: [{ label: 'About Us' }],
   });
   const { content } = useCmsContent("about");
 
   const heroTitle = content.hero?.title || "Who We Are";
   const heroSubtitle = content.hero?.subtitle || "Building Trust and Protection, One Surface at a Time";
-  const missionText = content.mission?.text || "For over 10 years, Topline Flooring and Waterproofing has been the trusted partner for professional flooring and waterproofing solutions across Kenya and East Africa.";
+  const missionText = content.mission?.text || `For over 10 years, ${companyName} has been the trusted partner for professional flooring and waterproofing solutions.`;
   const missionVision = content.mission?.vision || "";
   const valuesRaw = content.values?.items;
   const teamTitle = content.team?.title || "Over 10 Years of Excellence";

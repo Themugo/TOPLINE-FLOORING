@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight, Phone, ArrowRight } from "lucide-react";
 import { useSiteSettings } from "@/hooks/use-data";
 import { telHref } from "@/lib/utils";
+import { ensureRealImage } from "@/lib/placeholders";
 
 type Slide = {
   id: string | number;
@@ -134,7 +135,7 @@ export default function HeroSlider({
           key={s.id}
           className="absolute inset-0 bg-cover bg-center bg-no-repeat"
           style={{
-            backgroundImage: `url(${s.image_url})`,
+            backgroundImage: `url(${ensureRealImage(s.image_url, 'hero', s.id || i)})`,
             opacity: i === currentSlide ? 1 : 0,
             zIndex: i === currentSlide ? 1 : 0,
             transition: "opacity 600ms ease-in-out, transform 600ms ease-in-out",
@@ -152,7 +153,7 @@ export default function HeroSlider({
       <div className="absolute inset-0 z-20 flex flex-col justify-center lg:justify-end pb-12 sm:pb-16 md:pb-20 lg:pb-24 px-4 sm:px-8 md:px-16">
         <div className="max-w-4xl transition-all duration-500 ease-in-out">
           <p className="text-primary text-xs sm:text-sm uppercase tracking-[0.25em] font-sans font-medium mb-2 sm:mb-3 drop-shadow-sm">
-            {settings?.company_name || 'Topline Flooring & Waterproofing'}
+            {settings?.company_name || 'Your Flooring Company'}
           </p>
           <h1 className="font-display text-xl sm:text-2xl md:text-3xl lg:text-5xl font-bold text-white leading-tight mb-2 sm:mb-3 max-w-4xl drop-shadow-lg">
             {slides[currentSlide].title}
@@ -170,13 +171,13 @@ export default function HeroSlider({
                 </Button>
               </Link>
             )}
-            <a href={telHref(settings?.phone || '+254 720 859 737')}>
+            <a href={telHref(settings?.phone || '+1 (555) 000-0000')}>
               <Button
                 variant="outline"
                 className="border-white/40 text-white hover:bg-white/10 font-sans font-medium px-4 sm:px-6 h-10 sm:h-11 rounded-sm tracking-wide backdrop-blur-sm text-xs sm:text-sm shadow-lg"
               >
                 <Phone className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary" />
-                {settings?.phone || '0720 859 737'}
+                {settings?.phone || '+1 (555) 000-0000'}
               </Button>
             </a>
           </div>

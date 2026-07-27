@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/lib/supabase";
 import { usePageVisit } from "@/hooks/use-page-visit";
+import { useSeoMeta } from "@/hooks/use-seo";
 
 const FALLBACK_INDUSTRIES = [
   { icon: "Warehouse", title: "Industrial", desc: "Heavy-duty flooring and waterproofing for factories, warehouses, and manufacturing plants.", href: "/shop?type=service" },
@@ -24,6 +25,7 @@ const ICON_MAP: Record<string, any> = { Building2, Warehouse, ShoppingBag, Steth
 
 export default function Industries() {
   usePageVisit("/industries");
+  useSeoMeta('industries', null, { breadcrumbs: [{ label: "Industries Served" }] });
 
   const [industries, setIndustries] = useState<{ icon: string; title: string; desc: string; href: string }[]>(FALLBACK_INDUSTRIES);
   const [loading, setLoading] = useState(true);

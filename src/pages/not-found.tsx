@@ -1,14 +1,15 @@
-import { useEffect } from 'react';
 import { Link } from 'wouter';
 import { CustomerLayout } from '@/components/layout/CustomerLayout';
 import { ArrowLeft } from 'lucide-react';
+import { useSeoMeta } from '@/hooks/use-seo';
 
 export default function NotFound() {
-  useEffect(() => {
-    document.title = 'Page Not Found | Topline Flooring & Waterproofing';
-    const meta = document.querySelector('meta[name="robots"]');
-    if (meta) meta.setAttribute('content', 'noindex, nofollow');
-  }, []);
+  useSeoMeta('not-found', null, {
+    title: '404 Page Not Found',
+    description: 'The requested page could not be found.',
+    noIndex: true,
+    noFollow: true,
+  });
 
   return (
     <CustomerLayout>

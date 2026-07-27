@@ -48,7 +48,7 @@ export default function AdminQuotations() {
 
   const handleDownloadPdf = (q: Quotation) => {
     generateQuotationPdf(q, q.items || [], {
-      name: settings.site_info?.name || 'Topline Flooring & Waterproofing',
+      name: settings.site_info?.name || 'Your Flooring Company',
       tagline: settings.site_info?.tagline,
       phone: settings.contact?.phone,
       email: settings.contact?.email,

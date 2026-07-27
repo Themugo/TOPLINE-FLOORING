@@ -88,7 +88,7 @@ export default function AdminInvoices() {
 
   const handleDownloadPdf = (inv: Invoice) => {
     generateInvoicePdf(inv, inv.items || [], inv.payments || [], {
-      name: settings.site_info?.name || 'Topline Flooring & Waterproofing',
+      name: settings.site_info?.name || 'Your Flooring Company',
       tagline: settings.site_info?.tagline,
       phone: settings.contact?.phone,
       email: settings.contact?.email,
@@ -360,7 +360,7 @@ function InvoiceDetail({
             <input type="number" placeholder="Amount" className="input text-sm" value={payment.amount} onChange={(e) => setPayment({ ...payment, amount: e.target.value })} />
             <select className="input text-sm" value={payment.method} onChange={(e) => setPayment({ ...payment, method: e.target.value as PaymentMethod })}>
               <option value="cash">Cash</option>
-              <option value="mpesa">M-Pesa</option>
+              <option value="mpesa">Mobile Money / Digital Transfer</option>
               <option value="bank_transfer">Bank Transfer</option>
               <option value="card">Card</option>
               <option value="cheque">Cheque</option>

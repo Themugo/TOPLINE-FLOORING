@@ -43,7 +43,7 @@ if (!supabaseUrl || !supabaseKey) {
 }
 
 const supabase = createClient(supabaseUrl, supabaseKey);
-const BASE = 'https://toplineflooring.co.ke';
+const BASE = process.env.VITE_SITE_URL || 'https://example.com';
 const today = new Date().toISOString().split('T')[0];
 
 const staticUrls = [
@@ -89,7 +89,7 @@ async function main() {
   const urls = [...staticUrls];
 
   for (const slug of productSlugs) {
-    urls.push({ loc: `/shop/${slug}`, changefreq: 'weekly', priority: '0.8' });
+    urls.push({ loc: `/product/${slug}`, changefreq: 'weekly', priority: '0.8' });
   }
   for (const slug of serviceSlugs) {
     urls.push({ loc: `/service/${slug}`, changefreq: 'monthly', priority: '0.7' });

@@ -2,6 +2,8 @@ import { useLocation } from 'wouter';
 import { useEffect, useState } from 'react';
 import { CheckCircle, Package, Phone } from 'lucide-react';
 import { CustomerLayout } from '@/components/layout/CustomerLayout';
+import { Breadcrumbs } from '@/components/Breadcrumbs';
+import { useSeoMeta } from '@/hooks/use-seo';
 import { Link } from 'wouter';
 import { formatKES } from '@/lib/utils';
 
@@ -16,6 +18,7 @@ interface OrderSummary {
 }
 
 export default function OrderConfirmation() {
+  useSeoMeta('order-confirmation', null, { breadcrumbs: [{ label: 'Materials Shop', href: '/shop' }, { label: 'Order Confirmation' }], noIndex: true });
   const [location] = useLocation();
   const orderId = location.split('/order-confirmation/')[1] || '';
   const [summary, setSummary] = useState<OrderSummary | null>(null);
@@ -35,6 +38,7 @@ export default function OrderConfirmation() {
 
   return (
     <CustomerLayout>
+      <Breadcrumbs items={[{ label: 'Materials Shop', href: '/shop' }, { label: 'Order Confirmation' }]} />
       <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-20">
         <div className="text-center">
           <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">

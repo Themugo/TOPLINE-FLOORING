@@ -4,13 +4,13 @@ import { useSiteSettings, useServices } from '@/hooks/use-data';
 import { telHref } from '@/lib/utils';
 
 const DEFAULTS = {
-  name: 'TOPLINE',
+  name: 'Your Flooring Company',
   tagline: 'FLOORING & WATERPROOFING',
   description:
-    'Professional flooring and waterproofing solutions for industrial, commercial, and residential projects across Kenya and East Africa.',
-  phone: '+254 700 123 456',
-  email: 'info@toplineflooring.co.ke',
-  address: 'Industrial Area, Nairobi, Kenya',
+    'Professional flooring and waterproofing solutions for commercial, industrial, and residential projects.',
+  phone: '+1 (555) 000-0000',
+  email: 'contact@example.com',
+  address: '123 Industrial Parkway, Commerce City, ST 12345',
 };
 
 export function Footer() {
@@ -162,6 +162,7 @@ export function Footer() {
                     target="_blank"
                     rel="noopener noreferrer"
                     className="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center text-navy-600 hover:bg-primary-500 hover:text-white transition-colors"
+                    aria-label={`Visit our ${key} page`}
                   >
                     <Icon className="w-4 h-4" />
                   </a>

@@ -37,7 +37,7 @@ const defaultFaqs: FaqItem[] = [
   {
     id: "5",
     question: "What areas do you serve?",
-    answer: "We serve Nairobi, major cities across Kenya, and select locations in East Africa. Contact us to confirm service availability in your area.",
+    answer: "We serve commercial, industrial, and residential clients across all regional metro zones. Contact us to confirm service availability for your specific location.",
     category: "General",
   },
   {

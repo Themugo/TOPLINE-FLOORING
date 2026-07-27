@@ -218,7 +218,7 @@ export function StickyPurchasePanel({
       <div className="p-4 bg-gray-50 rounded-lg space-y-2">
         <p className="text-sm font-medium text-navy-900">Delivery Information</p>
         <p className="text-xs text-gray-600">
-          Free delivery on orders over KES 50,000 within Nairobi. Estimated delivery: 3-5 business days.
+          Free delivery on orders over KES 50,000 within metropolitan zones. Estimated delivery: 3-5 business days.
         </p>
       </div>
 

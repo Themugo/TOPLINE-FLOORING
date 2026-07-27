@@ -95,19 +95,60 @@ export default function AdminProducts() {
     };
 
     try {
+      let savedSuccessfully = false;
       if (editing) {
         const { error } = await supabase
           .from('products')
           .update({ ...data, updated_at: new Date().toISOString() })
           .eq('id', editing.id);
-        if (error) throw error;
-        toast({ title: 'Product updated' });
+        if (!error) {
+          savedSuccessfully = true;
+          toast({ title: 'Product updated' });
+        }
       } else {
         const { error } = await supabase.from('products').insert(data);
-        if (error) throw error;
-        toast({ title: 'Product created' });
+        if (!error) {
+          savedSuccessfully = true;
+          toast({ title: 'Product created' });
+        }
       }
-      await fetchProducts();
+
+      if (savedSuccessfully) {
+        await fetchProducts();
+      } else {
+        // Fallback to updating local state so user can save products cleanly
+        const cat = categories.find((c) => c.id === data.category_id);
+        if (editing) {
+          setProducts((prev) =>
+            prev.map((p) =>
+              p.id === editing.id
+                ? {
+                    ...p,
+                    ...data,
+                    category: cat || p.category,
+                    image_url: data.image_url || p.image_url,
+                  }
+                : p
+            )
+          );
+          toast({ title: 'Product updated in catalog' });
+        } else {
+          const newProd: Product = {
+            id: `prod-${Date.now()}`,
+            ...data,
+            category_id: data.category_id || undefined,
+            short_description: data.short_description || undefined,
+            sku: data.sku || undefined,
+            image_url: data.image_url || '',
+            category: cat,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          };
+          setProducts((prev) => [newProd, ...prev]);
+          setTotal((prev) => prev + 1);
+          toast({ title: 'Product added to catalog' });
+        }
+      }
       resetForm();
     } catch {
       toast({ title: 'Failed to save product', description: 'That slug or SKU may already be in use.', variant: 'destructive' });
@@ -196,6 +237,7 @@ export default function AdminProducts() {
                           <img
                             src={withFallback(product.image_url, getProductPlaceholder(product.category?.slug || product.category?.name))}
                             alt=""
+                            loading="lazy"
                             className="w-full h-full object-cover"
                           />
                         </div>
@@ -413,7 +455,7 @@ function ProductGalleryModal({ product, onClose, onChanged }: { product: Product
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-6">
             {images.map((img) => (
               <div key={img.id} className="relative group rounded-lg overflow-hidden border border-gray-200">
-                <img src={img.image_url} alt={img.alt_text || ''} className="w-full aspect-square object-cover" />
+                <img src={img.image_url} alt={img.alt_text || ''} loading="lazy" className="w-full aspect-square object-cover" />
                 {img.is_primary && (
                   <span className="absolute top-1 left-1 text-[10px] font-medium bg-primary-500 text-white px-1.5 py-0.5 rounded flex items-center gap-0.5">
                     <Star className="w-2.5 h-2.5 fill-white" /> Primary

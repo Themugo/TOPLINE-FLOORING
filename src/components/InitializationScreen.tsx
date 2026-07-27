@@ -14,7 +14,7 @@ export function InitializationScreen() {
                 Configuration Required
               </h1>
               <p className="text-slate-600 mt-1">
-                Topline Flooring & Waterproofing
+                Your Flooring Company
               </p>
             </div>
           </div>

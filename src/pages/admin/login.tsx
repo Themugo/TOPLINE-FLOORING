@@ -7,7 +7,7 @@ import { supabase } from '@/lib/supabase';
 const SESSION_TIMEOUT_MS = 30 * 60 * 1000; // 30 minutes inactivity
 const ACTIVITY_EVENTS = ['mousedown', 'keydown', 'scroll', 'touchstart'];
 
-export function useSessionTimeout() {
+function useSessionTimeout() {
   useEffect(() => {
     let timeoutId: ReturnType<typeof setTimeout>;
 
@@ -35,6 +35,7 @@ export function useSessionTimeout() {
 }
 
 export default function AdminLogin() {
+  useSessionTimeout();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -211,7 +212,7 @@ export default function AdminLogin() {
           <h1 className="font-display text-2xl font-bold text-primary-600">
             Admin Portal
           </h1>
-          <p className="text-navy-500 mt-1">Topline Flooring & Waterproofing</p>
+          <p className="text-navy-500 mt-1">Your Flooring Company</p>
         </div>
 
         <div className="bg-white rounded-xl p-8 border border-gray-200 shadow-sm">

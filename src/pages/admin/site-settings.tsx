@@ -1,13 +1,16 @@
 import { useState, useEffect } from 'react';
-import { Save, Globe, Phone, Image, Code } from 'lucide-react';
+import { Save, Globe, Phone, Code } from 'lucide-react';
 import { AdminLayout } from './dashboard';
 import { supabase } from '@/lib/supabase';
 import { useToast } from '@/hooks/use-toast';
+import { useCMS } from '@/context/CMSContext';
+import { ImageUpload } from '@/components/ui/image-upload';
 
 export default function AdminSiteSettings() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const { toast } = useToast();
+  const { refetch: refetchCms } = useCMS();
   const [activeTab, setActiveTab] = useState('general');
 
   const [settings, setSettings] = useState({
@@ -49,6 +52,7 @@ export default function AdminSiteSettings() {
           { onConflict: 'setting_key' }
         );
       }
+      await refetchCms();
       toast({ title: 'Settings saved successfully' });
     } catch {
       toast({ title: 'Failed to save settings', variant: 'destructive' });
@@ -101,7 +105,7 @@ export default function AdminSiteSettings() {
                   value={settings.site_info.name}
                   onChange={(e) => updateSetting('site_info', { ...settings.site_info, name: e.target.value })}
                   className="input"
-                  placeholder="Topline Flooring & Waterproofing"
+                  placeholder="Your Flooring Company"
                 />
               </div>
               <div>
@@ -151,7 +155,7 @@ export default function AdminSiteSettings() {
                     value={settings.contact.email}
                     onChange={(e) => updateSetting('contact', { ...settings.contact, email: e.target.value })}
                     className="input"
-                    placeholder="info@toplineflooring.co.ke"
+                    placeholder="contact@example.com"
                   />
                 </div>
                 <div>
@@ -161,7 +165,7 @@ export default function AdminSiteSettings() {
                     value={settings.contact.phone}
                     onChange={(e) => updateSetting('contact', { ...settings.contact, phone: e.target.value })}
                     className="input"
-                    placeholder="+254 700 123 456"
+                    placeholder="+1 (555) 000-0000"
                   />
                 </div>
                 <div>
@@ -171,7 +175,7 @@ export default function AdminSiteSettings() {
                     value={settings.contact.phone_alt}
                     onChange={(e) => updateSetting('contact', { ...settings.contact, phone_alt: e.target.value })}
                     className="input"
-                    placeholder="+254 733 987 654"
+                    placeholder="+1 (555) 000-0001"
                   />
                 </div>
                 <div>
@@ -181,7 +185,7 @@ export default function AdminSiteSettings() {
                     value={settings.contact.whatsapp}
                     onChange={(e) => updateSetting('contact', { ...settings.contact, whatsapp: e.target.value })}
                     className="input"
-                    placeholder="254700123456"
+                    placeholder="15550000000"
                   />
                   <p className="text-xs text-gray-500 mt-1">Format: country code + number (no + sign)</p>
                 </div>
@@ -193,7 +197,7 @@ export default function AdminSiteSettings() {
                   value={settings.contact.address}
                   onChange={(e) => updateSetting('contact', { ...settings.contact, address: e.target.value })}
                   className="input"
-                  placeholder="Industrial Area, Nairobi, Kenya"
+                  placeholder="123 Industrial Parkway, Commerce City, ST 12345"
                 />
               </div>
             </div>
@@ -265,7 +269,7 @@ export default function AdminSiteSettings() {
                   value={settings.social_links.facebook}
                   onChange={(e) => updateSetting('social_links', { ...settings.social_links, facebook: e.target.value })}
                   className="input"
-                  placeholder="https://facebook.com/toplineflooring"
+                  placeholder="https://facebook.com/yourflooringcompany"
                 />
               </div>
               <div>
@@ -275,7 +279,7 @@ export default function AdminSiteSettings() {
                   value={settings.social_links.instagram}
                   onChange={(e) => updateSetting('social_links', { ...settings.social_links, instagram: e.target.value })}
                   className="input"
-                  placeholder="https://instagram.com/toplineflooring"
+                  placeholder="https://instagram.com/yourflooringcompany"
                 />
               </div>
               <div>
@@ -285,7 +289,7 @@ export default function AdminSiteSettings() {
                   value={settings.social_links.linkedin}
                   onChange={(e) => updateSetting('social_links', { ...settings.social_links, linkedin: e.target.value })}
                   className="input"
-                  placeholder="https://linkedin.com/company/toplineflooring"
+                  placeholder="https://linkedin.com/company/yourflooringcompany"
                 />
               </div>
               <div>
@@ -295,7 +299,7 @@ export default function AdminSiteSettings() {
                   value={settings.social_links.twitter}
                   onChange={(e) => updateSetting('social_links', { ...settings.social_links, twitter: e.target.value })}
                   className="input"
-                  placeholder="https://twitter.com/toplineflooring"
+                  placeholder="https://twitter.com/yourflooringcompany"
                 />
               </div>
             </div>
@@ -313,7 +317,7 @@ export default function AdminSiteSettings() {
                 value={settings.seo_defaults.meta_title}
                 onChange={(e) => updateSetting('seo_defaults', { ...settings.seo_defaults, meta_title: e.target.value })}
                 className="input"
-                placeholder="Topline Flooring & Waterproofing | Nairobi, Kenya"
+                placeholder="Your Flooring Company | Professional Flooring Solutions"
               />
               <p className="text-xs text-gray-500 mt-1">{settings.seo_defaults.meta_title?.length || 0}/60 characters</p>
             </div>
@@ -328,13 +332,12 @@ export default function AdminSiteSettings() {
               <p className="text-xs text-gray-500 mt-1">{settings.seo_defaults.meta_description?.length || 0}/160 characters</p>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Default OG Image URL</label>
-              <input
-                type="url"
+              <label className="block text-sm font-medium text-gray-700 mb-1">Default OG Share Image</label>
+              <ImageUpload
                 value={settings.seo_defaults.og_image}
-                onChange={(e) => updateSetting('seo_defaults', { ...settings.seo_defaults, og_image: e.target.value })}
-                className="input"
-                placeholder="https://..."
+                onChange={(url) => updateSetting('seo_defaults', { ...settings.seo_defaults, og_image: url })}
+                folder="branding"
+                label="OG Share Image"
               />
             </div>
           </div>
@@ -344,26 +347,26 @@ export default function AdminSiteSettings() {
         {activeTab === 'appearance' && (
           <div className="space-y-6">
             <div className="bg-white rounded-xl border border-gray-200 p-6 space-y-4">
-              <h2 className="font-semibold text-gray-900">Logo & Favicon</h2>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Logo URL</label>
-                <input
-                  type="url"
-                  value={settings.logo.url}
-                  onChange={(e) => updateSetting('logo', { ...settings.logo, url: e.target.value })}
-                  className="input"
-                  placeholder="/logo.svg"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Favicon URL</label>
-                <input
-                  type="url"
-                  value={settings.favicon.url}
-                  onChange={(e) => updateSetting('favicon', { ...settings.favicon, url: e.target.value })}
-                  className="input"
-                  placeholder="/favicon.svg"
-                />
+              <h2 className="font-semibold text-gray-900">Logo & Favicon Asset Selection</h2>
+              <div className="grid md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Header Logo</label>
+                  <ImageUpload
+                    value={settings.logo.url}
+                    onChange={(url) => updateSetting('logo', { ...settings.logo, url })}
+                    folder="branding"
+                    label="Header Logo"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Browser Favicon</label>
+                  <ImageUpload
+                    value={settings.favicon.url}
+                    onChange={(url) => updateSetting('favicon', { ...settings.favicon, url })}
+                    folder="branding"
+                    label="Favicon Icon"
+                  />
+                </div>
               </div>
             </div>
             <div className="bg-white rounded-xl border border-gray-200 p-6 space-y-4">
@@ -375,7 +378,7 @@ export default function AdminSiteSettings() {
                   value={settings.footer.copyright}
                   onChange={(e) => updateSetting('footer', { ...settings.footer, copyright: e.target.value })}
                   className="input"
-                  placeholder="Topline Flooring and Waterproofing. All rights reserved."
+                  placeholder="Your Flooring Company. All rights reserved."
                 />
               </div>
               <label className="flex items-center gap-2">

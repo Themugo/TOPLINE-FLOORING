@@ -95,7 +95,7 @@ export default function AdminPartners() {
                 <tr key={p.id} className="hover:bg-gray-50">
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-3">
-                      {p.logo_url && <img src={p.logo_url} alt="" className="h-8" />}
+                      {p.logo_url && <img src={p.logo_url} alt="" loading="lazy" className="h-8" />}
                       <span className="font-medium text-navy-900">{p.name}</span>
                     </div>
                   </td>

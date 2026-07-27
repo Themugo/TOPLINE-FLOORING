@@ -84,19 +84,19 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(cartReducer, { items: [] });
 
   useEffect(() => {
-    const savedCart = localStorage.getItem('topline_cart');
+    const savedCart = localStorage.getItem('flooring_app_cart');
     if (savedCart) {
       try {
         const items = JSON.parse(savedCart);
         dispatch({ type: 'LOAD_CART', items });
       } catch {
-        localStorage.removeItem('topline_cart');
+        localStorage.removeItem('flooring_app_cart');
       }
     }
   }, []);
 
   useEffect(() => {
-    localStorage.setItem('topline_cart', JSON.stringify(state.items));
+    localStorage.setItem('flooring_app_cart', JSON.stringify(state.items));
   }, [state.items]);
 
   const addItem = (product: Product) => {

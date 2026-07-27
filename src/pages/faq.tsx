@@ -12,12 +12,17 @@ import { useSiteSettings } from "@/hooks/use-data";
 
 export default function FAQ() {
   usePageVisit("/faq");
-  useSeoMeta('faq', null, {
-    title: 'FAQs | Topline Flooring & Waterproofing',
-    description: 'Frequently asked questions about flooring and waterproofing services, materials, pricing, and project timelines from Topline Flooring Kenya.',
-  });
   const { items, loading } = useFaqItems();
   const { settings } = useSiteSettings();
+  const companyName = settings.site_info?.name || settings.company?.name || 'Your Flooring Company';
+  const whatsappNumber = (settings.contact?.whatsapp || settings.contact?.phone || '15550000000').replace(/\D/g, '');
+
+  useSeoMeta('faq', null, {
+    title: `FAQs | ${companyName}`,
+    description: `Frequently asked questions about flooring and waterproofing services, materials, pricing, and project timelines from ${companyName}.`,
+    breadcrumbs: [{ label: 'FAQs' }],
+    faqData: items.map(faq => ({ question: faq.question, answer: faq.answer })),
+  });
   const [openIndex, setOpenIndex] = useState<number | null>(null);
 
   const categories = [...new Set(items.map((item) => item.category || "General").filter(Boolean))];
@@ -108,7 +113,7 @@ export default function FAQ() {
               <Link href="/contact">
                 <Button className="rounded-sm">Contact Us</Button>
               </Link>
-              <a href={settings?.social_links?.whatsapp || 'https://wa.me/254720859737'} target="_blank" rel="noopener noreferrer">
+              <a href={settings?.social_links?.whatsapp || `https://wa.me/${whatsappNumber}`} target="_blank" rel="noopener noreferrer">
                 <Button variant="outline" className="rounded-sm">
                   <MessageCircle className="mr-2 h-4 w-4" /> WhatsApp
                 </Button>

@@ -1,3 +1,4 @@
+import { CMSProvider, useCMS } from '@/context/CMSContext';
 import { CartProvider } from '@/hooks/use-cart';
 import { AdminAuthGuard, AdminPublicRoute } from '@/components/admin/AdminGuard';
 import { ToastContainer } from '@/components/ui/toast';
@@ -8,17 +9,17 @@ import { lazy, Suspense, useEffect } from 'react';
 
 // Pages
 import Home from '@/pages/home';
-import Shop from '@/pages/shop';
-import ShopDetail from '@/pages/shop-detail';
-import Cart from '@/pages/cart';
-import OrderConfirmation from '@/pages/order-confirmation';
-import Contact from '@/pages/contact';
-import Quotation from '@/pages/quotation';
-import Services from '@/pages/services';
-import Portfolio from '@/pages/portfolio';
 import NotFound from '@/pages/not-found';
 
 // Lazy-loaded pages
+const Shop = lazy(() => import('@/pages/shop'));
+const ShopDetail = lazy(() => import('@/pages/shop-detail'));
+const Cart = lazy(() => import('@/pages/cart'));
+const OrderConfirmation = lazy(() => import('@/pages/order-confirmation'));
+const Contact = lazy(() => import('@/pages/contact'));
+const Quotation = lazy(() => import('@/pages/quotation'));
+const Services = lazy(() => import('@/pages/services'));
+const Portfolio = lazy(() => import('@/pages/portfolio'));
 const About = lazy(() => import('@/pages/about'));
 const FAQ = lazy(() => import('@/pages/faq'));
 const ServiceDetail = lazy(() => import('@/pages/service-detail'));
@@ -176,27 +177,51 @@ function Router() {
   }
 
   if (location === '/shop') {
-    return <Shop />;
+    return (
+      <Suspense fallback={<PublicLoading />}>
+        <Shop />
+      </Suspense>
+    );
   }
 
   if (location === '/contact') {
-    return <Contact />;
+    return (
+      <Suspense fallback={<PublicLoading />}>
+        <Contact />
+      </Suspense>
+    );
   }
 
   if (location === '/quotation') {
-    return <Quotation />;
+    return (
+      <Suspense fallback={<PublicLoading />}>
+        <Quotation />
+      </Suspense>
+    );
   }
 
   if (location === '/services') {
-    return <Services />;
+    return (
+      <Suspense fallback={<PublicLoading />}>
+        <Services />
+      </Suspense>
+    );
   }
 
   if (location === '/portfolio') {
-    return <Portfolio />;
+    return (
+      <Suspense fallback={<PublicLoading />}>
+        <Portfolio />
+      </Suspense>
+    );
   }
 
   if (location === '/cart') {
-    return <Cart />;
+    return (
+      <Suspense fallback={<PublicLoading />}>
+        <Cart />
+      </Suspense>
+    );
   }
 
   if (location === '/compare') {
@@ -264,25 +289,68 @@ function Router() {
   }
 
   if (location.startsWith('/product/')) {
-    return <ShopDetail />;
+    return (
+      <Suspense fallback={<PublicLoading />}>
+        <ShopDetail />
+      </Suspense>
+    );
   }
 
   if (location.startsWith('/order-confirmation/')) {
-    return <OrderConfirmation />;
+    return (
+      <Suspense fallback={<PublicLoading />}>
+        <OrderConfirmation />
+      </Suspense>
+    );
   }
 
   return <NotFound />;
 }
 
+function useCMSInitializer() {
+  const { cms, loading, error, refetch } = useCMS();
+
+  useEffect(() => {
+    // Dynamically synchronize HTML document title with CMS site settings
+    const siteTitle = cms?.website_settings?.site_info?.site_title;
+    if (siteTitle) {
+      document.title = siteTitle;
+    }
+  }, [cms]);
+
+  return {
+    cms,
+    loading,
+    error,
+    refetch,
+    siteInfo: cms?.website_settings?.site_info,
+    company: cms?.website_settings?.company,
+    contact: cms?.website_settings?.contact,
+    theme: cms?.theme_settings,
+  };
+}
+
+function AppContent() {
+  useCMSInitializer();
+
+  return (
+    <ErrorBoundary>
+      <ThemeApplier />
+      <Router />
+      <ToastContainer />
+    </ErrorBoundary>
+  );
+}
+
 function App() {
   return (
-    <CartProvider>
-      <ErrorBoundary>
-        <ThemeApplier />
-        <Router />
-        <ToastContainer />
-      </ErrorBoundary>
-    </CartProvider>
+    <ErrorBoundary>
+      <CMSProvider>
+        <CartProvider>
+          <AppContent />
+        </CartProvider>
+      </CMSProvider>
+    </ErrorBoundary>
   );
 }
 

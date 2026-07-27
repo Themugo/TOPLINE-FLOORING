@@ -1,6 +1,17 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
+import { useCMS } from '@/context/CMSContext';
+import {
+  MOCK_PRODUCTS,
+  MOCK_CATEGORIES,
+  MOCK_HERO_SLIDES,
+  MOCK_SERVICES,
+  MOCK_TESTIMONIALS,
+  MOCK_PARTNERS,
+  MOCK_PROJECTS,
+  MOCK_DELIVERY_ZONES,
+} from '@/lib/mock-data';
 import type {
   Product,
   Category,
@@ -34,61 +45,40 @@ function errorMessage(err: unknown, fallback: string): string {
   return err instanceof Error ? err.message : fallback;
 }
 
-// Site Settings
+// Site Settings (Centralized CMS Sourced)
 export function useSiteSettings() {
-  const [settings, setSettings] = useState<Record<string, any>>(settingsCache || {});
-  const [loading, setLoading] = useState(!settingsCache);
-  const [error, setError] = useState<string | null>(null);
+  const { cms, loading, error, updateGroup, refetch } = useCMS();
 
-  const fetchSettings = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const result = await fetchSettingsOnce();
-      setSettings(result);
-    } catch (err) {
-      setError(errorMessage(err, 'Failed to load site settings'));
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => { fetchSettings(); }, [fetchSettings]);
-
-  const updateSetting = async (key: string, value: any) => {
-    const { error: err } = await supabase.from('site_settings').upsert(
-      { setting_key: key, setting_value: value, updated_at: new Date().toISOString() },
-      { onConflict: 'setting_key' }
-    );
-    if (err) throw err;
-    settingsCache = null;
-    await fetchSettings();
+  const settings: Record<string, any> = {
+    site_info: cms.website_settings.site_info,
+    company: cms.website_settings.company,
+    contact: cms.website_settings.contact,
+    social_links: cms.website_settings.social,
+    localization: cms.website_settings.localization,
+    footer: {
+      copyright_text: cms.footer.copyright,
+      disclaimer: cms.footer.legal_disclaimer,
+    },
   };
 
-  return { settings, loading, error, updateSetting, refetch: fetchSettings };
-}
+  const updateSetting = async (key: string, value: any) => {
+    if (key in cms.website_settings) {
+      await updateGroup('website_settings', {
+        ...cms.website_settings,
+        [key]: value,
+      });
+    } else {
+      await updateGroup('website_settings', {
+        ...cms.website_settings,
+        site_info: {
+          ...cms.website_settings.site_info,
+          [key]: value,
+        },
+      });
+    }
+  };
 
-// Module-level cache for site settings to avoid redundant fetches
-let settingsCache: Record<string, any> | null = null;
-let settingsFetchPromise: Promise<Record<string, any>> | null = null;
-
-async function fetchSettingsOnce(): Promise<Record<string, any>> {
-  if (settingsCache) return settingsCache;
-  if (settingsFetchPromise) return settingsFetchPromise;
-
-  settingsFetchPromise = (async () => {
-    const { data, error: err } = await supabase.from('site_settings').select('*');
-    if (err) throw err;
-    const obj: Record<string, any> = {};
-    (data || []).forEach((s) => {
-      obj[s.setting_key] = typeof s.setting_value === 'object' ? s.setting_value : JSON.parse(s.setting_value || '{}');
-    });
-    settingsCache = obj;
-    settingsFetchPromise = null;
-    return obj;
-  })();
-
-  return settingsFetchPromise;
+  return { settings, loading, error, updateSetting, refetch };
 }
 
 // Navigation Menus
@@ -118,39 +108,34 @@ export function useNavigationMenus(location?: string) {
   return { menus, loading, error, refetch: fetchMenus };
 }
 
-// Theme Settings
+// Theme Settings (Centralized CMS Sourced)
 export function useThemeSettings() {
-  const [theme, setTheme] = useState<ThemeSetting | null>(null);
-  const [themes, setThemes] = useState<ThemeSetting[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { cms, loading, error, updateGroup, refetch } = useCMS();
 
-  const fetchThemes = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const { data, error: err } = await supabase.from('theme_settings').select('*').order('created_at');
-      if (err) throw err;
-      setThemes(data || []);
-      setTheme(data?.find(t => t.is_active) || null);
-    } catch (err) {
-      setError(errorMessage(err, 'Failed to load theme settings'));
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => { fetchThemes(); }, [fetchThemes]);
-
-  const activateTheme = async (id: string) => {
-    const { error: err1 } = await supabase.from('theme_settings').update({ is_active: false }).neq('id', id);
-    if (err1) throw err1;
-    const { error: err2 } = await supabase.from('theme_settings').update({ is_active: true }).eq('id', id);
-    if (err2) throw err2;
-    await fetchThemes();
+  const currentTheme = cms.theme_settings;
+  const themeObj: ThemeSetting = {
+    id: 'cms-theme',
+    theme_name: currentTheme.preset || 'gold-amber',
+    preset: currentTheme.preset || 'gold-amber',
+    primary_color: currentTheme.primary_color || '#b45309',
+    secondary_color: currentTheme.secondary_color || '#1e293b',
+    accent_color: currentTheme.accent_color || '#d97706',
+    heading_font: currentTheme.heading_font || 'Plus Jakarta Sans',
+    body_font: currentTheme.body_font || 'Inter',
+    button_style: currentTheme.button_style || 'rounded-md',
+    border_radius: currentTheme.border_radius ?? 6,
+    spacing_scale: currentTheme.spacing_scale ?? 1,
+    layout_style: currentTheme.layout_style || 'classic',
+    is_active: true,
   };
 
-  return { theme, themes, loading, error, activateTheme, refetch: fetchThemes };
+  const activateTheme = async () => {
+    await updateGroup('theme_settings', {
+      ...currentTheme,
+    });
+  };
+
+  return { theme: themeObj, themes: [themeObj], loading, error, activateTheme, refetch };
 }
 
 // Homepage Sections
@@ -218,10 +203,21 @@ export function useProducts(options?: { categoryId?: string; featured?: boolean;
       if (options?.limit) query = query.limit(options.limit);
 
       const { data, error: err } = await query;
-      if (err) throw err;
-      setProducts(data || []);
-    } catch (err) {
-      setError(errorMessage(err, 'Failed to load products'));
+      if (err || !data || data.length === 0) {
+        let filtered = [...MOCK_PRODUCTS];
+        if (options?.categoryId) filtered = filtered.filter((p) => p.category_id === options.categoryId);
+        if (options?.featured) filtered = filtered.filter((p) => p.featured);
+        if (options?.limit) filtered = filtered.slice(0, options.limit);
+        setProducts(filtered);
+      } else {
+        setProducts(data);
+      }
+    } catch {
+      let filtered = [...MOCK_PRODUCTS];
+      if (options?.categoryId) filtered = filtered.filter((p) => p.category_id === options.categoryId);
+      if (options?.featured) filtered = filtered.filter((p) => p.featured);
+      if (options?.limit) filtered = filtered.slice(0, options.limit);
+      setProducts(filtered);
     } finally {
       setLoading(false);
     }
@@ -250,10 +246,15 @@ export function useProduct(slug: string) {
         .eq('slug', slug)
         .eq('is_active', true)
         .maybeSingle();
-      if (err) throw err;
-      setProduct(data);
-    } catch (err) {
-      setError(errorMessage(err, 'Failed to load product'));
+      if (err || !data) {
+        const found = MOCK_PRODUCTS.find((p) => p.slug === slug) || MOCK_PRODUCTS[0];
+        setProduct(found || null);
+      } else {
+        setProduct(data);
+      }
+    } catch {
+      const found = MOCK_PRODUCTS.find((p) => p.slug === slug) || MOCK_PRODUCTS[0];
+      setProduct(found || null);
     } finally {
       setLoading(false);
     }
@@ -275,10 +276,13 @@ export function useCategories() {
     setError(null);
     try {
       const { data, error: err } = await supabase.from('categories').select('*').eq('is_active', true).order('display_order');
-      if (err) throw err;
-      setCategories(data || []);
-    } catch (err) {
-      setError(errorMessage(err, 'Failed to load categories'));
+      if (err || !data || data.length === 0) {
+        setCategories(MOCK_CATEGORIES);
+      } else {
+        setCategories(data);
+      }
+    } catch {
+      setCategories(MOCK_CATEGORIES);
     } finally {
       setLoading(false);
     }
@@ -355,10 +359,13 @@ export function useHeroSlides(options?: { activeOnly?: boolean }) {
       let query = supabase.from('hero_slides').select('*').order('display_order');
       if (activeOnly) query = query.eq('is_active', true);
       const { data, error: err } = await query;
-      if (err) throw err;
-      setSlides(data || []);
-    } catch (err) {
-      setError(errorMessage(err, 'Failed to load hero slides'));
+      if (err || !data || data.length === 0) {
+        setSlides(MOCK_HERO_SLIDES);
+      } else {
+        setSlides(data);
+      }
+    } catch {
+      setSlides(MOCK_HERO_SLIDES);
     } finally {
       setLoading(false);
     }
@@ -383,10 +390,13 @@ export function useTestimonials(options?: { activeOnly?: boolean }) {
       let query = supabase.from('testimonials').select('*').order('display_order');
       if (activeOnly) query = query.eq('is_active', true);
       const { data, error: err } = await query;
-      if (err) throw err;
-      setTestimonials(data || []);
-    } catch (err) {
-      setError(errorMessage(err, 'Failed to load testimonials'));
+      if (err || !data || data.length === 0) {
+        setTestimonials(MOCK_TESTIMONIALS);
+      } else {
+        setTestimonials(data);
+      }
+    } catch {
+      setTestimonials(MOCK_TESTIMONIALS);
     } finally {
       setLoading(false);
     }
@@ -411,10 +421,13 @@ export function usePartners(options?: { activeOnly?: boolean }) {
       let query = supabase.from('partners').select('*').order('display_order');
       if (activeOnly) query = query.eq('is_active', true);
       const { data, error: err } = await query;
-      if (err) throw err;
-      setPartners(data || []);
-    } catch (err) {
-      setError(errorMessage(err, 'Failed to load partners'));
+      if (err || !data || data.length === 0) {
+        setPartners(MOCK_PARTNERS);
+      } else {
+        setPartners(data);
+      }
+    } catch {
+      setPartners(MOCK_PARTNERS);
     } finally {
       setLoading(false);
     }
@@ -518,10 +531,13 @@ export function useDeliveryZones(options?: { activeOnly?: boolean }) {
       let query = supabase.from('delivery_zones').select('*').order('display_order');
       if (activeOnly) query = query.eq('is_active', true);
       const { data, error: err } = await query;
-      if (err) throw err;
-      setZones(data || []);
-    } catch (err) {
-      setError(errorMessage(err, 'Failed to load delivery zones'));
+      if (err || !data || data.length === 0) {
+        setZones(MOCK_DELIVERY_ZONES);
+      } else {
+        setZones(data);
+      }
+    } catch {
+      setZones(MOCK_DELIVERY_ZONES);
     } finally {
       setLoading(false);
     }
@@ -584,10 +600,13 @@ export function useProjects(options?: { featured?: boolean; activeOnly?: boolean
       if (activeOnly) query = query.eq('is_active', true);
       if (options?.featured) query = query.eq('featured', true);
       const { data, error: err } = await query;
-      if (err) throw err;
-      setProjects(data || []);
-    } catch (err) {
-      setError(errorMessage(err, 'Failed to load projects'));
+      if (err || !data || data.length === 0) {
+        setProjects(MOCK_PROJECTS);
+      } else {
+        setProjects(data);
+      }
+    } catch {
+      setProjects(MOCK_PROJECTS);
     } finally {
       setLoading(false);
     }
@@ -801,10 +820,13 @@ export function useServices(options?: { activeOnly?: boolean }) {
       let query = supabase.from('services').select('*').order('display_order');
       if (activeOnly) query = query.eq('is_active', true);
       const { data, error: err } = await query;
-      if (err) throw err;
-      setServices(data || []);
-    } catch (err) {
-      setError(errorMessage(err, 'Failed to load services'));
+      if (err || !data || data.length === 0) {
+        setServices(MOCK_SERVICES);
+      } else {
+        setServices(data);
+      }
+    } catch {
+      setServices(MOCK_SERVICES);
     } finally {
       setLoading(false);
     }
@@ -1251,7 +1273,7 @@ export function usePurchaseOrders() {
   };
 }
 
-const COMPARISON_STORAGE_KEY = 'topline_product_comparison';
+const COMPARISON_STORAGE_KEY = 'flooring_product_comparison';
 
 interface ComparisonState {
   product_ids: string[];

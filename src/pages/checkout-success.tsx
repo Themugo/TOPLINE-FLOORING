@@ -1,10 +1,13 @@
 import { useEffect } from 'react';
 import { Link } from 'wouter';
 import { CustomerLayout } from '@/components/layout/CustomerLayout';
+import { Breadcrumbs } from '@/components/Breadcrumbs';
 import { CheckCircle2, MessageCircle, Phone } from 'lucide-react';
 import { useCart } from '@/hooks/use-cart';
+import { useSeoMeta } from '@/hooks/use-seo';
 
 export default function CheckoutSuccess() {
+  useSeoMeta('checkout-success', null, { breadcrumbs: [{ label: 'Materials Shop', href: '/shop' }, { label: 'Order Received' }], noIndex: true });
   const { clearCart } = useCart();
 
   useEffect(() => {
@@ -13,6 +16,7 @@ export default function CheckoutSuccess() {
 
   return (
     <CustomerLayout>
+      <Breadcrumbs items={[{ label: 'Materials Shop', href: '/shop' }, { label: 'Order Received' }]} />
       <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-20">
         <div className="text-center">
           <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">

@@ -1,49 +1,35 @@
-import { useState, useEffect } from "react";
-import { supabase } from "@/lib/supabase";
-
-interface CmsContent {
-  id?: string;
-  page: string;
-  section: string;
-  content: Record<string, string>;
-  updated_at?: string;
-}
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { useCMS } from '@/context/CMSContext';
 
 export function useCmsContent(page: string) {
-  const [content, setContent] = useState<Record<string, Record<string, string>>>({});
-  const [loading, setLoading] = useState(true);
+  const { cms, loading } = useCMS();
 
-  useEffect(() => {
-    if (!supabase) {
-      setLoading(false);
-      return;
-    }
+  let mapped: Record<string, any> = {};
 
-    const fetchContent = async () => {
-      try {
-        const { data, error } = await supabase
-          .from("cms_content")
-          .select("*")
-          .eq("page", page);
-
-        if (error) throw error;
-
-        if (data && data.length > 0) {
-          const mapped: Record<string, Record<string, string>> = {};
-          data.forEach((item: CmsContent) => {
-            mapped[item.section] = item.content;
-          });
-          setContent(mapped);
-        }
-      } catch (err) {
-        console.warn(`Failed to load CMS content for page "${page}":`, err);
-      } finally {
-        setLoading(false);
-      }
+  if (page === 'about') {
+    mapped = {
+      hero: cms.about.hero,
+      story: cms.about.story,
+      mission: cms.about.mission,
+      vision: cms.about.vision,
+      core_values: cms.about.core_values,
+      stats: cms.about.stats,
     };
+  } else if (page === 'home') {
+    mapped = {
+      hero_slides: cms.homepage.hero_slides,
+      value_props: cms.homepage.value_props,
+      banner: cms.homepage.banner,
+    };
+  } else if (page === 'contact') {
+    mapped = {
+      header: cms.contact.header,
+      offices: cms.contact.offices,
+      map_settings: cms.contact.map_settings,
+    };
+  } else if (cms[page as keyof typeof cms]) {
+    mapped = cms[page as keyof typeof cms] as any;
+  }
 
-    fetchContent();
-  }, [page]);
-
-  return { content, loading };
+  return { content: mapped, loading };
 }

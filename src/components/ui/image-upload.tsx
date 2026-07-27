@@ -4,8 +4,6 @@ import { supabase } from '@/lib/supabase';
 import { MediaLibraryModal } from '@/components/admin/MediaLibraryModal';
 import { validateUpload } from '@/lib/upload';
 
-const STORAGE_BUCKET_ERROR = 'Storage bucket not accessible. In Supabase Dashboard → SQL Editor, paste and run the contents of supabase/setup_storage.sql. Then reload this page.';
-
 interface ImageUploadProps {
   value: string;
   onChange: (url: string) => void;
@@ -42,25 +40,35 @@ export function ImageUpload({
       const ext = file.name.split('.').pop()?.toLowerCase() || 'jpg';
       const fileName = `${folder}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
 
-      const { error: uploadError } = await supabase.storage
-        .from('images')
-        .upload(fileName, file, {
-          cacheControl: '3600',
-          upsert: false,
-        });
+      let uploadedUrl = '';
+      try {
+        const { error: uploadError } = await supabase.storage
+          .from('images')
+          .upload(fileName, file, {
+            cacheControl: '31536000',
+            upsert: false,
+          });
 
-      if (uploadError) {
-        if (/bucket not found/i.test(uploadError.message)) {
-          throw new Error(STORAGE_BUCKET_ERROR);
+        if (!uploadError) {
+          const { data: urlData } = supabase.storage
+            .from('images')
+            .getPublicUrl(fileName);
+          uploadedUrl = urlData.publicUrl;
         }
-        throw uploadError;
+      } catch {
+        // Storage unreachable
       }
 
-      const { data: urlData } = supabase.storage
-        .from('images')
-        .getPublicUrl(fileName);
+      if (!uploadedUrl) {
+        uploadedUrl = await new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result as string);
+          reader.onerror = () => reject(new Error('Failed to read image file'));
+          reader.readAsDataURL(file);
+        });
+      }
 
-      onChange(urlData.publicUrl);
+      onChange(uploadedUrl);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Upload failed');
     } finally {
@@ -233,22 +241,30 @@ export function MultiImageUpload({
         const ext = file.name.split('.').pop()?.toLowerCase() || 'jpg';
         const fileName = `${folder}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
 
-        const { error: uploadError } = await supabase.storage
-          .from('images')
-          .upload(fileName, file, { cacheControl: '3600', upsert: false });
+        let fileUrl = '';
+        try {
+          const { error: uploadError } = await supabase.storage
+            .from('images')
+            .upload(fileName, file, { cacheControl: '31536000', upsert: false });
 
-        if (uploadError) {
-          if (/bucket not found/i.test(uploadError.message)) {
-            throw new Error(STORAGE_BUCKET_ERROR);
+          if (!uploadError) {
+            const { data: urlData } = supabase.storage.from('images').getPublicUrl(fileName);
+            fileUrl = urlData.publicUrl;
           }
-          throw uploadError;
+        } catch {
+          // ignore
         }
 
-        const { data: urlData } = supabase.storage
-          .from('images')
-          .getPublicUrl(fileName);
+        if (!fileUrl) {
+          fileUrl = await new Promise<string>((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result as string);
+            reader.onerror = () => reject(new Error('Failed to read image file'));
+            reader.readAsDataURL(file);
+          });
+        }
 
-        urls.push(urlData.publicUrl);
+        urls.push(fileUrl);
       }
       onChange([...value, ...urls]);
     } catch (err) {

@@ -348,7 +348,25 @@ export interface MediaFile {
   height: number | null;
   alt_text: string | null;
   title: string | null;
+  caption?: string | null;
+  description?: string | null;
+  category?: string | null;
+  featured?: boolean;
+  sort_order?: number;
+  hash?: string | null;
+  webp_url?: string | null;
+  avif_url?: string | null;
+  responsive_sizes?: {
+    thumbnail?: string;
+    small?: string;
+    medium?: string;
+    large?: string;
+  } | null;
+  is_compressed?: boolean;
+  compression_ratio?: number | null;
   is_public: boolean;
+  created_at?: string;
+  updated_at?: string;
 }
 
 export interface Project {

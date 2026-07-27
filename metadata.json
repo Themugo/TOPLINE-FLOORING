@@ -1,0 +1,6 @@
+{
+  "name": "Flooring & Waterproofing Template",
+  "description": "Commercial & Industrial Flooring Solutions, Epoxy, Waterproofing, and Management Platform",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

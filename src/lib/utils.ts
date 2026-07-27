@@ -20,8 +20,11 @@ export function telHref(phone: string): string {
 }
 
 export function formatPhone(phone: string): string {
-  // Format Kenyan phone numbers
+  // Format phone numbers
   const cleaned = phone.replace(/\D/g, '');
+  if (cleaned.length === 11 && cleaned.startsWith('1')) {
+    return `+1 (${cleaned.slice(1, 4)}) ${cleaned.slice(4, 7)}-${cleaned.slice(7)}`;
+  }
   if (cleaned.startsWith('254')) {
     return `+${cleaned.slice(0, 3)} ${cleaned.slice(3, 6)} ${cleaned.slice(6, 9)} ${cleaned.slice(9)}`;
   }
@@ -32,7 +35,7 @@ export function formatPhone(phone: string): string {
 }
 
 export function formatDate(date: string): string {
-  return new Date(date).toLocaleDateString('en-KE', {
+  return new Date(date).toLocaleDateString('en-US', {
     year: 'numeric',
     month: 'long',
     day: 'numeric',

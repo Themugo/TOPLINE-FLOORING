@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { CustomerLayout } from "@/components/layout/CustomerLayout";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
+import { useSeoMeta } from "@/hooks/use-seo";
 import { supabase } from "@/lib/supabase";
 import { Building2, Award, Shield, Zap, Users, CheckCircle2 } from "lucide-react";
 
@@ -15,15 +16,16 @@ interface Partner {
 }
 
 const DEFAULT_PARTNERS = [
-  { name: "Sika Kenya", description: "Construction chemicals and solutions", icon: Building2 },
-  { name: "BASF", description: "Chemical construction materials", icon: Award },
-  { name: "Mapei", description: "Adhesives and chemical products", icon: Shield },
-  { name: "Fosroc", description: "Construction chemicals", icon: Zap },
-  { name: "Holcim", description: "Building materials", icon: Users },
-  { name: "Bamburi Cement", description: "Cement and concrete solutions", icon: CheckCircle2 },
+  { name: "Industrial Polymers Global", description: "Construction chemicals and resin solutions", icon: Building2 },
+  { name: "Apex Chemical Systems", description: "Advanced chemical construction materials", icon: Award },
+  { name: "Global Coating Labs", description: "High-grade adhesives and sealants", icon: Shield },
+  { name: "Titan Materials Corp", description: "Specialty construction chemical systems", icon: Zap },
+  { name: "MasterBuild Solutions", description: "Commercial building materials", icon: Users },
+  { name: "Structural Cement Tech", description: "High-performance concrete solutions", icon: CheckCircle2 },
 ];
 
 export default function Market() {
+  useSeoMeta('market', null, { breadcrumbs: [{ label: "Partners" }] });
   const [partners, setPartners] = useState<Partner[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -91,6 +93,7 @@ export default function Market() {
                         <img
                           src={partner.logo_url}
                           alt={partner.name}
+                          loading="lazy"
                           className="h-12 w-12 object-contain"
                         />
                       ) : (

@@ -4,7 +4,7 @@ import { Link } from 'wouter';
 import { useProducts } from '@/hooks/use-data';
 import { formatKES } from '@/lib/utils';
 
-const SEARCH_HISTORY_KEY = 'topline_search_history';
+const SEARCH_HISTORY_KEY = 'product_search_history';
 const MAX_HISTORY = 5;
 
 interface AdvancedSearchProps {
@@ -161,6 +161,7 @@ export function AdvancedSearch({ placeholder = 'Search products...', onSearch }:
                     <img
                       src={product.image_url}
                       alt={product.name}
+                      loading="lazy"
                       className="w-12 h-12 object-cover rounded"
                     />
                   )}
