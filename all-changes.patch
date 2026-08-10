@@ -1,0 +1,1269 @@
+From 6945000d3b027787b92c7728a24a7cf9556cba40 Mon Sep 17 00:00:00 2001
+From: Claude <agent@local>
+Date: Mon, 10 Aug 2026 04:51:14 +0300
+Subject: [PATCH 1/2] feat: add warehouse management (multi-location stock,
+ transfers)
+
+- New tables: warehouses, warehouse_stock, stock_transfers
+- inventory_movements gains an optional warehouse_id
+- Transfers auto-numbered (TR-YYYY-####) and trigger-applied:
+  validates source stock, moves warehouse_stock, logs a matching
+  in/out inventory_movements pair. products.stock_quantity (the
+  storefront total) is untouched by transfers - only relocated.
+- Seeds a default 'Main Warehouse' and backfills warehouse_stock
+  from existing products.stock_quantity so it's useful immediately.
+- New admin page /admin/warehouses: Warehouses CRUD, Stock by
+  Location (set exact per-warehouse quantity), Transfers (move +
+  history). Wired into AdminLayout nav and App.tsx routes.
+- useWarehouses/useWarehouseStock/useStockTransfers hooks added
+  following the existing useSuppliers/usePurchaseOrders pattern.
+---
+ src/App.tsx                                   |   2 +
+ src/hooks/use-data.ts                         | 103 +++++
+ src/lib/types.ts                              |  45 ++
+ src/pages/admin/dashboard.tsx                 |   2 +
+ src/pages/admin/warehouses.tsx                | 435 ++++++++++++++++++
+ ...0260810080000_040_warehouse_management.sql | 143 ++++++
+ 6 files changed, 730 insertions(+)
+ create mode 100644 src/pages/admin/warehouses.tsx
+ create mode 100644 supabase/migrations/20260810080000_040_warehouse_management.sql
+
+diff --git a/src/App.tsx b/src/App.tsx
+index 06c74ca..e4a0c73 100644
+--- a/src/App.tsx
++++ b/src/App.tsx
+@@ -56,6 +56,7 @@ const AdminCRM = lazy(() => import('@/pages/admin/crm'));
+ const AdminServices = lazy(() => import('@/pages/admin/services'));
+ const AdminInvoices = lazy(() => import('@/pages/admin/invoices'));
+ const AdminSuppliers = lazy(() => import('@/pages/admin/suppliers'));
++const AdminWarehouses = lazy(() => import('@/pages/admin/warehouses'));
+ const AdminProductBrands = lazy(() => import('@/pages/admin/product-brands'));
+ const AdminProductImages = lazy(() => import('@/pages/admin/product-images'));
+ const AdminProductSpecs = lazy(() => import('@/pages/admin/product-specifications'));
+@@ -125,6 +126,7 @@ function Router() {
+     '/admin/services': AdminServices,
+     '/admin/invoices': AdminInvoices,
+     '/admin/suppliers': AdminSuppliers,
++    '/admin/warehouses': AdminWarehouses,
+     '/admin/products': AdminProducts,
+     '/admin/categories': AdminCategories,
+     '/admin/customers': AdminCustomers,
+diff --git a/src/hooks/use-data.ts b/src/hooks/use-data.ts
+index 24088cc..8c679a9 100644
+--- a/src/hooks/use-data.ts
++++ b/src/hooks/use-data.ts
+@@ -39,6 +39,9 @@ import type {
+   Invoice,
+   Supplier,
+   PurchaseOrder,
++  Warehouse,
++  WarehouseStock,
++  StockTransfer,
+ } from '@/lib/types';
+ 
+ function errorMessage(err: unknown, fallback: string): string {
+@@ -1273,6 +1276,106 @@ export function usePurchaseOrders() {
+   };
+ }
+ 
++export function useWarehouses() {
++  const [warehouses, setWarehouses] = useState<Warehouse[]>([]);
++  const [loading, setLoading] = useState(true);
++
++  const refetch = useCallback(async () => {
++    setLoading(true);
++    try {
++      const { data, error: err } = await supabase.from('warehouses').select('*').order('is_default', { ascending: false }).order('name');
++      if (err) throw err;
++      setWarehouses(data || []);
++    } finally {
++      setLoading(false);
++    }
++  }, []);
++
++  useEffect(() => { refetch(); }, [refetch]);
++
++  const createWarehouse = async (warehouse: Partial<Warehouse>) => {
++    const { data, error: err } = await supabase.from('warehouses').insert(warehouse).select().single();
++    if (err) throw err;
++    await refetch();
++    return data as Warehouse;
++  };
++
++  const updateWarehouse = async (id: string, updates: Partial<Warehouse>) => {
++    const { error: err } = await supabase.from('warehouses').update({ ...updates, updated_at: new Date().toISOString() }).eq('id', id);
++    if (err) throw err;
++    await refetch();
++  };
++
++  const deleteWarehouse = async (id: string) => {
++    const { error: err } = await supabase.from('warehouses').delete().eq('id', id);
++    if (err) throw err;
++    await refetch();
++  };
++
++  return { warehouses, loading, refetch, createWarehouse, updateWarehouse, deleteWarehouse };
++}
++
++export function useWarehouseStock(warehouseId?: string) {
++  const [stock, setStock] = useState<WarehouseStock[]>([]);
++  const [loading, setLoading] = useState(true);
++
++  const refetch = useCallback(async () => {
++    setLoading(true);
++    try {
++      let query = supabase
++        .from('warehouse_stock')
++        .select('*, product:products(id, name, sku), warehouse:warehouses(id, name, code)')
++        .order('updated_at', { ascending: false });
++      if (warehouseId) query = query.eq('warehouse_id', warehouseId);
++      const { data, error: err } = await query;
++      if (err) throw err;
++      setStock(data || []);
++    } finally {
++      setLoading(false);
++    }
++  }, [warehouseId]);
++
++  useEffect(() => { refetch(); }, [refetch]);
++
++  return { stock, loading, refetch };
++}
++
++export function useStockTransfers() {
++  const [transfers, setTransfers] = useState<StockTransfer[]>([]);
++  const [loading, setLoading] = useState(true);
++
++  const refetch = useCallback(async () => {
++    setLoading(true);
++    try {
++      const { data, error: err } = await supabase
++        .from('stock_transfers')
++        .select('*, from_warehouse:warehouses!stock_transfers_from_warehouse_id_fkey(*), to_warehouse:warehouses!stock_transfers_to_warehouse_id_fkey(*), product:products(id, name, sku)')
++        .order('created_at', { ascending: false })
++        .limit(100);
++      if (err) throw err;
++      setTransfers(data || []);
++    } finally {
++      setLoading(false);
++    }
++  }, []);
++
++  useEffect(() => { refetch(); }, [refetch]);
++
++  const createTransfer = async (transfer: { from_warehouse_id: string; to_warehouse_id: string; product_id: string; quantity: number; notes?: string | null }) => {
++    const { data: userData } = await supabase.auth.getUser();
++    const { data, error: err } = await supabase
++      .from('stock_transfers')
++      .insert({ ...transfer, status: 'completed', created_by: userData.user?.id || null })
++      .select('*, from_warehouse:warehouses!stock_transfers_from_warehouse_id_fkey(*), to_warehouse:warehouses!stock_transfers_to_warehouse_id_fkey(*), product:products(id, name, sku)')
++      .single();
++    if (err) throw err;
++    await refetch();
++    return data as StockTransfer;
++  };
++
++  return { transfers, loading, refetch, createTransfer };
++}
++
+ const COMPARISON_STORAGE_KEY = 'flooring_product_comparison';
+ 
+ interface ComparisonState {
+diff --git a/src/lib/types.ts b/src/lib/types.ts
+index 7e4cc08..83de56c 100644
+--- a/src/lib/types.ts
++++ b/src/lib/types.ts
+@@ -420,6 +420,7 @@ export interface InventoryMovement {
+   id: string;
+   product_id: string;
+   variant_id: string | null;
++  warehouse_id: string | null;
+   movement_type: 'in' | 'out' | 'adjustment';
+   quantity: number;
+   previous_stock: number | null;
+@@ -430,6 +431,7 @@ export interface InventoryMovement {
+   created_by: string | null;
+   created_at: string;
+   product?: Product;
++  warehouse?: Warehouse;
+ }
+ 
+ export interface InventoryAlert {
+@@ -614,3 +616,46 @@ export interface PurchaseOrderItem {
+   product?: Product;
+ }
+ 
++// ============================================================
++// Warehouse management
++// ============================================================
++export interface Warehouse {
++  id: string;
++  name: string;
++  code: string | null;
++  address: string | null;
++  phone: string | null;
++  manager_name: string | null;
++  is_default: boolean;
++  is_active: boolean;
++  created_at: string;
++  updated_at: string;
++}
++
++export interface WarehouseStock {
++  id: string;
++  warehouse_id: string;
++  product_id: string;
++  quantity: number;
++  updated_at: string;
++  warehouse?: Warehouse;
++  product?: Product;
++}
++
++export type StockTransferStatus = 'completed' | 'cancelled';
++
++export interface StockTransfer {
++  id: string;
++  transfer_number: string;
++  from_warehouse_id: string | null;
++  to_warehouse_id: string | null;
++  product_id: string | null;
++  quantity: number;
++  status: StockTransferStatus;
++  notes: string | null;
++  created_by: string | null;
++  created_at: string;
++  from_warehouse?: Warehouse;
++  to_warehouse?: Warehouse;
++  product?: Product;
++}
+diff --git a/src/pages/admin/dashboard.tsx b/src/pages/admin/dashboard.tsx
+index 55c10b9..4ca59c1 100644
+--- a/src/pages/admin/dashboard.tsx
++++ b/src/pages/admin/dashboard.tsx
+@@ -34,6 +34,7 @@ import {
+   ChevronRight,
+   ExternalLink,
+   CheckCircle2,
++  Building2,
+ } from 'lucide-react';
+ import { useAdminAuth } from '@/hooks/use-data';
+ import { useState, useEffect, useMemo, useCallback } from 'react';
+@@ -87,6 +88,7 @@ const NAV_GROUPS: NavGroup[] = [
+       { href: '/admin/categories', label: 'Categories', icon: FolderOpen },
+       { href: '/admin/inventory', label: 'Inventory', icon: Warehouse },
+       { href: '/admin/suppliers', label: 'Suppliers & POs', icon: Truck },
++      { href: '/admin/warehouses', label: 'Warehouses', icon: Building2 },
+       { href: '/admin/projects', label: 'Projects', icon: FolderKanban },
+     ],
+   },
+diff --git a/src/pages/admin/warehouses.tsx b/src/pages/admin/warehouses.tsx
+new file mode 100644
+index 0000000..2e356ec
+--- /dev/null
++++ b/src/pages/admin/warehouses.tsx
+@@ -0,0 +1,435 @@
++import { useState } from 'react';
++import { Plus, X, Trash2, Building2, Pencil, ArrowLeftRight, PackageSearch } from 'lucide-react';
++import { AdminLayout } from './dashboard';
++import { useWarehouses, useWarehouseStock, useStockTransfers, useProducts } from '@/hooks/use-data';
++import { useToast } from '@/hooks/use-toast';
++import { formatDateTime } from '@/lib/utils';
++import { supabase } from '@/lib/supabase';
++import type { Warehouse } from '@/lib/types';
++
++export default function AdminWarehouses() {
++  const [tab, setTab] = useState<'warehouses' | 'stock' | 'transfers'>('warehouses');
++
++  return (
++    <AdminLayout title="Warehouses">
++      <div className="flex gap-1 mb-6 border-b border-gray-200">
++        <button
++          onClick={() => setTab('warehouses')}
++          className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${tab === 'warehouses' ? 'border-primary-500 text-primary-600' : 'border-transparent text-navy-400 hover:text-navy-600'}`}
++        >
++          Warehouses
++        </button>
++        <button
++          onClick={() => setTab('stock')}
++          className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${tab === 'stock' ? 'border-primary-500 text-primary-600' : 'border-transparent text-navy-400 hover:text-navy-600'}`}
++        >
++          Stock by Location
++        </button>
++        <button
++          onClick={() => setTab('transfers')}
++          className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${tab === 'transfers' ? 'border-primary-500 text-primary-600' : 'border-transparent text-navy-400 hover:text-navy-600'}`}
++        >
++          Transfers
++        </button>
++      </div>
++
++      {tab === 'warehouses' && <WarehousesTab />}
++      {tab === 'stock' && <StockTab />}
++      {tab === 'transfers' && <TransfersTab />}
++    </AdminLayout>
++  );
++}
++
++function WarehousesTab() {
++  const { warehouses, loading, createWarehouse, updateWarehouse, deleteWarehouse } = useWarehouses();
++  const { toast } = useToast();
++  const [showForm, setShowForm] = useState(false);
++  const [editing, setEditing] = useState<Warehouse | null>(null);
++  const [saving, setSaving] = useState(false);
++  const [form, setForm] = useState({ name: '', code: '', address: '', phone: '', manager_name: '', is_default: false, is_active: true });
++
++  const resetForm = () => {
++    setForm({ name: '', code: '', address: '', phone: '', manager_name: '', is_default: false, is_active: true });
++    setEditing(null);
++    setShowForm(false);
++  };
++
++  const handleSubmit = async (e: React.FormEvent) => {
++    e.preventDefault();
++    setSaving(true);
++    try {
++      if (editing) {
++        await updateWarehouse(editing.id, form);
++        toast({ title: 'Warehouse updated' });
++      } else {
++        await createWarehouse(form);
++        toast({ title: 'Warehouse added' });
++      }
++      resetForm();
++    } catch {
++      toast({ title: 'Failed to save warehouse', variant: 'destructive' });
++    } finally {
++      setSaving(false);
++    }
++  };
++
++  const handleDelete = async (id: string) => {
++    if (!confirm('Delete this warehouse? Stock records tied to it will also be removed.')) return;
++    try {
++      await deleteWarehouse(id);
++      toast({ title: 'Warehouse deleted' });
++    } catch {
++      toast({ title: 'Failed to delete warehouse', variant: 'destructive' });
++    }
++  };
++
++  return (
++    <div>
++      <div className="mb-4">
++        <button onClick={() => setShowForm(true)} className="btn-primary flex items-center gap-2">
++          <Plus className="w-4 h-4" /> Add Warehouse
++        </button>
++      </div>
++
++      {loading ? (
++        <div className="text-center py-12 text-navy-400">Loading warehouses...</div>
++      ) : warehouses.length === 0 ? (
++        <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
++          <Building2 className="w-10 h-10 text-gray-300 mx-auto mb-3" />
++          <p className="text-navy-500 mb-4">No warehouses yet.</p>
++          <button onClick={() => setShowForm(true)} className="btn-primary">Add Your First Warehouse</button>
++        </div>
++      ) : (
++        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
++          <div className="overflow-x-auto">
++            <table className="w-full">
++              <thead className="bg-gray-50 border-b">
++                <tr>
++                  <th className="text-left px-6 py-3 text-xs font-medium text-navy-400 uppercase">Name</th>
++                  <th className="text-left px-6 py-3 text-xs font-medium text-navy-400 uppercase">Code</th>
++                  <th className="text-left px-6 py-3 text-xs font-medium text-navy-400 uppercase">Manager</th>
++                  <th className="text-left px-6 py-3 text-xs font-medium text-navy-400 uppercase">Phone</th>
++                  <th className="text-left px-6 py-3 text-xs font-medium text-navy-400 uppercase">Status</th>
++                  <th className="text-left px-6 py-3 text-xs font-medium text-navy-400 uppercase">Actions</th>
++                </tr>
++              </thead>
++              <tbody className="divide-y">
++                {warehouses.map((w) => (
++                  <tr key={w.id} className="hover:bg-gray-50">
++                    <td className="px-6 py-4 font-medium text-navy-900">
++                      {w.name}
++                      {w.is_default && <span className="ml-2 text-xs px-2 py-0.5 rounded-full bg-primary-100 text-primary-700">Default</span>}
++                    </td>
++                    <td className="px-6 py-4 text-sm font-mono text-navy-500">{w.code || '-'}</td>
++                    <td className="px-6 py-4 text-sm text-navy-500">{w.manager_name || '-'}</td>
++                    <td className="px-6 py-4 text-sm text-navy-500">{w.phone || '-'}</td>
++                    <td className="px-6 py-4">
++                      <span className={`text-xs px-2 py-1 rounded font-medium ${w.is_active ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-navy-500'}`}>
++                        {w.is_active ? 'Active' : 'Inactive'}
++                      </span>
++                    </td>
++                    <td className="px-6 py-4">
++                      <button
++                        onClick={() => {
++                          setEditing(w);
++                          setForm({ name: w.name, code: w.code || '', address: w.address || '', phone: w.phone || '', manager_name: w.manager_name || '', is_default: w.is_default, is_active: w.is_active });
++                          setShowForm(true);
++                        }}
++                        className="p-2 text-navy-500 hover:text-primary-600" title="Edit"
++                      >
++                        <Pencil className="w-4 h-4" />
++                      </button>
++                      <button onClick={() => handleDelete(w.id)} className="p-2 text-navy-500 hover:text-red-600" title="Delete"><Trash2 className="w-4 h-4" /></button>
++                    </td>
++                  </tr>
++                ))}
++              </tbody>
++            </table>
++          </div>
++        </div>
++      )}
++
++      {showForm && (
++        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50" onClick={resetForm}>
++          <div className="bg-white rounded-xl max-w-md w-full p-6" onClick={(e) => e.stopPropagation()}>
++            <div className="flex justify-between items-center mb-4">
++              <h2 className="font-semibold text-lg text-navy-900">{editing ? 'Edit Warehouse' : 'Add Warehouse'}</h2>
++              <button onClick={resetForm}><X className="w-5 h-5 text-navy-400" /></button>
++            </div>
++            <form onSubmit={handleSubmit} className="space-y-3">
++              <input required placeholder="Warehouse name *" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="input" />
++              <input placeholder="Code (e.g. MAIN, NRB-01)" value={form.code} onChange={(e) => setForm({ ...form, code: e.target.value })} className="input" />
++              <input placeholder="Manager name" value={form.manager_name} onChange={(e) => setForm({ ...form, manager_name: e.target.value })} className="input" />
++              <input placeholder="Phone" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} className="input" />
++              <textarea placeholder="Address" value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} className="input min-h-[60px]" />
++              <label className="flex items-center gap-2 text-sm text-navy-600">
++                <input type="checkbox" checked={form.is_default} onChange={(e) => setForm({ ...form, is_default: e.target.checked })} />
++                Default warehouse
++              </label>
++              <label className="flex items-center gap-2 text-sm text-navy-600">
++                <input type="checkbox" checked={form.is_active} onChange={(e) => setForm({ ...form, is_active: e.target.checked })} />
++                Active
++              </label>
++              <div className="flex gap-3 pt-2">
++                <button type="button" onClick={resetForm} className="btn-secondary flex-1">Cancel</button>
++                <button type="submit" disabled={saving} className="btn-primary flex-1">{saving ? 'Saving...' : editing ? 'Update' : 'Create'}</button>
++              </div>
++            </form>
++          </div>
++        </div>
++      )}
++    </div>
++  );
++}
++
++function StockTab() {
++  const { warehouses } = useWarehouses();
++  const [filterWarehouse, setFilterWarehouse] = useState('');
++  const { stock, loading, refetch } = useWarehouseStock(filterWarehouse || undefined);
++  const { products } = useProducts();
++  const { toast } = useToast();
++  const [showForm, setShowForm] = useState(false);
++  const [saving, setSaving] = useState(false);
++  const [form, setForm] = useState({ warehouse_id: '', product_id: '', quantity: 0, notes: '' });
++
++  const handleSetStock = async (e: React.FormEvent) => {
++    e.preventDefault();
++    if (!form.warehouse_id || !form.product_id) {
++      toast({ title: 'Select a warehouse and a product', variant: 'destructive' });
++      return;
++    }
++    setSaving(true);
++    try {
++      const { data: existing } = await supabase
++        .from('warehouse_stock')
++        .select('quantity')
++        .eq('warehouse_id', form.warehouse_id)
++        .eq('product_id', form.product_id)
++        .maybeSingle();
++      const previous = existing?.quantity ?? 0;
++
++      const { error: upsertError } = await supabase
++        .from('warehouse_stock')
++        .upsert({ warehouse_id: form.warehouse_id, product_id: form.product_id, quantity: form.quantity, updated_at: new Date().toISOString() }, { onConflict: 'warehouse_id,product_id' });
++      if (upsertError) throw upsertError;
++
++      if (previous !== form.quantity) {
++        await supabase.from('inventory_movements').insert({
++          product_id: form.product_id,
++          warehouse_id: form.warehouse_id,
++          movement_type: 'adjustment',
++          quantity: Math.abs(form.quantity - previous),
++          previous_stock: previous,
++          new_stock: form.quantity,
++          reference_type: 'warehouse_adjustment',
++          notes: form.notes || 'Warehouse stock set manually',
++        });
++      }
++
++      toast({ title: 'Warehouse stock updated' });
++      setShowForm(false);
++      setForm({ warehouse_id: '', product_id: '', quantity: 0, notes: '' });
++      await refetch();
++    } catch {
++      toast({ title: 'Failed to update stock', variant: 'destructive' });
++    } finally {
++      setSaving(false);
++    }
++  };
++
++  return (
++    <div>
++      <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
++        <select value={filterWarehouse} onChange={(e) => setFilterWarehouse(e.target.value)} className="input max-w-xs">
++          <option value="">All warehouses</option>
++          {warehouses.map((w) => <option key={w.id} value={w.id}>{w.name}</option>)}
++        </select>
++        <button onClick={() => setShowForm(true)} className="btn-primary flex items-center gap-2">
++          <Plus className="w-4 h-4" /> Set Stock
++        </button>
++      </div>
++
++      {loading ? (
++        <div className="text-center py-12 text-navy-400">Loading stock...</div>
++      ) : stock.length === 0 ? (
++        <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
++          <PackageSearch className="w-10 h-10 text-gray-300 mx-auto mb-3" />
++          <p className="text-navy-500">No stock allocated to a warehouse yet.</p>
++        </div>
++      ) : (
++        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
++          <div className="overflow-x-auto">
++            <table className="w-full">
++              <thead className="bg-gray-50 border-b">
++                <tr>
++                  <th className="text-left px-6 py-3 text-xs font-medium text-navy-400 uppercase">Product</th>
++                  <th className="text-left px-6 py-3 text-xs font-medium text-navy-400 uppercase">SKU</th>
++                  <th className="text-left px-6 py-3 text-xs font-medium text-navy-400 uppercase">Warehouse</th>
++                  <th className="text-left px-6 py-3 text-xs font-medium text-navy-400 uppercase">Quantity</th>
++                  <th className="text-left px-6 py-3 text-xs font-medium text-navy-400 uppercase">Updated</th>
++                </tr>
++              </thead>
++              <tbody className="divide-y">
++                {stock.map((row) => (
++                  <tr key={row.id} className="hover:bg-gray-50">
++                    <td className="px-6 py-4 font-medium text-navy-900">{row.product?.name || 'Unknown product'}</td>
++                    <td className="px-6 py-4 text-sm text-navy-400">{row.product?.sku || '-'}</td>
++                    <td className="px-6 py-4 text-sm text-navy-600">{row.warehouse?.name || '-'}</td>
++                    <td className="px-6 py-4 text-navy-700">{row.quantity}</td>
++                    <td className="px-6 py-4 text-sm text-navy-400">{formatDateTime(row.updated_at)}</td>
++                  </tr>
++                ))}
++              </tbody>
++            </table>
++          </div>
++        </div>
++      )}
++
++      {showForm && (
++        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50" onClick={() => setShowForm(false)}>
++          <div className="bg-white rounded-xl max-w-md w-full p-6" onClick={(e) => e.stopPropagation()}>
++            <div className="flex justify-between items-center mb-4">
++              <h2 className="font-semibold text-lg text-navy-900">Set Warehouse Stock</h2>
++              <button onClick={() => setShowForm(false)}><X className="w-5 h-5 text-navy-400" /></button>
++            </div>
++            <form onSubmit={handleSetStock} className="space-y-3">
++              <select required value={form.warehouse_id} onChange={(e) => setForm({ ...form, warehouse_id: e.target.value })} className="input">
++                <option value="">Select warehouse</option>
++                {warehouses.map((w) => <option key={w.id} value={w.id}>{w.name}</option>)}
++              </select>
++              <select required value={form.product_id} onChange={(e) => setForm({ ...form, product_id: e.target.value })} className="input">
++                <option value="">Select product</option>
++                {products.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
++              </select>
++              <input type="number" required min={0} placeholder="Quantity" value={form.quantity || ''} onChange={(e) => setForm({ ...form, quantity: parseInt(e.target.value) || 0 })} className="input" />
++              <textarea placeholder="Notes (optional)" value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} className="input min-h-[60px]" />
++              <p className="text-xs text-navy-400 bg-blue-50 rounded-lg p-3">
++                This sets the exact quantity held at this location and logs an inventory movement. It does not change the product's total stock used storefront-wide - use Transfers to move stock between warehouses, or the main Inventory page to adjust total stock.
++              </p>
++              <div className="flex gap-3">
++                <button type="button" onClick={() => setShowForm(false)} className="btn-secondary flex-1">Cancel</button>
++                <button type="submit" disabled={saving} className="btn-primary flex-1">{saving ? 'Saving...' : 'Save'}</button>
++              </div>
++            </form>
++          </div>
++        </div>
++      )}
++    </div>
++  );
++}
++
++function TransfersTab() {
++  const { warehouses } = useWarehouses();
++  const { products } = useProducts();
++  const { transfers, loading, createTransfer } = useStockTransfers();
++  const { toast } = useToast();
++  const [showForm, setShowForm] = useState(false);
++  const [saving, setSaving] = useState(false);
++  const [form, setForm] = useState({ from_warehouse_id: '', to_warehouse_id: '', product_id: '', quantity: 1, notes: '' });
++
++  const handleTransfer = async (e: React.FormEvent) => {
++    e.preventDefault();
++    if (form.from_warehouse_id === form.to_warehouse_id) {
++      toast({ title: 'Source and destination must differ', variant: 'destructive' });
++      return;
++    }
++    setSaving(true);
++    try {
++      const transfer = await createTransfer({
++        from_warehouse_id: form.from_warehouse_id,
++        to_warehouse_id: form.to_warehouse_id,
++        product_id: form.product_id,
++        quantity: form.quantity,
++        notes: form.notes || null,
++      });
++      toast({ title: 'Stock transferred', description: transfer.transfer_number });
++      setShowForm(false);
++      setForm({ from_warehouse_id: '', to_warehouse_id: '', product_id: '', quantity: 1, notes: '' });
++    } catch (err) {
++      const message = err instanceof Error ? err.message : 'Failed to transfer stock';
++      toast({ title: message.includes('Insufficient stock') ? 'Insufficient stock at source warehouse' : 'Failed to transfer stock', variant: 'destructive' });
++    } finally {
++      setSaving(false);
++    }
++  };
++
++  return (
++    <div>
++      <div className="mb-4">
++        <button onClick={() => setShowForm(true)} className="btn-primary flex items-center gap-2" disabled={warehouses.length < 2}>
++          <ArrowLeftRight className="w-4 h-4" /> Transfer Stock
++        </button>
++        {warehouses.length < 2 && <p className="text-xs text-navy-400 mt-2">Add at least two warehouses to transfer stock between them.</p>}
++      </div>
++
++      {loading ? (
++        <div className="text-center py-12 text-navy-400">Loading transfers...</div>
++      ) : transfers.length === 0 ? (
++        <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
++          <ArrowLeftRight className="w-10 h-10 text-gray-300 mx-auto mb-3" />
++          <p className="text-navy-500">No stock transfers recorded yet.</p>
++        </div>
++      ) : (
++        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
++          <div className="overflow-x-auto">
++            <table className="w-full">
++              <thead className="bg-gray-50 border-b">
++                <tr>
++                  <th className="text-left px-6 py-3 text-xs font-medium text-navy-400 uppercase">Transfer #</th>
++                  <th className="text-left px-6 py-3 text-xs font-medium text-navy-400 uppercase">Product</th>
++                  <th className="text-left px-6 py-3 text-xs font-medium text-navy-400 uppercase">From</th>
++                  <th className="text-left px-6 py-3 text-xs font-medium text-navy-400 uppercase">To</th>
++                  <th className="text-left px-6 py-3 text-xs font-medium text-navy-400 uppercase">Qty</th>
++                  <th className="text-left px-6 py-3 text-xs font-medium text-navy-400 uppercase">Date</th>
++                </tr>
++              </thead>
++              <tbody className="divide-y">
++                {transfers.map((t) => (
++                  <tr key={t.id} className="hover:bg-gray-50">
++                    <td className="px-6 py-4 text-sm font-mono text-navy-500">{t.transfer_number}</td>
++                    <td className="px-6 py-4 font-medium text-navy-900">{t.product?.name || '-'}</td>
++                    <td className="px-6 py-4 text-sm text-navy-600">{t.from_warehouse?.name || '-'}</td>
++                    <td className="px-6 py-4 text-sm text-navy-600">{t.to_warehouse?.name || '-'}</td>
++                    <td className="px-6 py-4 text-navy-700">{t.quantity}</td>
++                    <td className="px-6 py-4 text-sm text-navy-400">{formatDateTime(t.created_at)}</td>
++                  </tr>
++                ))}
++              </tbody>
++            </table>
++          </div>
++        </div>
++      )}
++
++      {showForm && (
++        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50" onClick={() => setShowForm(false)}>
++          <div className="bg-white rounded-xl max-w-md w-full p-6" onClick={(e) => e.stopPropagation()}>
++            <div className="flex justify-between items-center mb-4">
++              <h2 className="font-semibold text-lg text-navy-900">Transfer Stock</h2>
++              <button onClick={() => setShowForm(false)}><X className="w-5 h-5 text-navy-400" /></button>
++            </div>
++            <form onSubmit={handleTransfer} className="space-y-3">
++              <select required value={form.product_id} onChange={(e) => setForm({ ...form, product_id: e.target.value })} className="input">
++                <option value="">Select product</option>
++                {products.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
++              </select>
++              <select required value={form.from_warehouse_id} onChange={(e) => setForm({ ...form, from_warehouse_id: e.target.value })} className="input">
++                <option value="">From warehouse</option>
++                {warehouses.map((w) => <option key={w.id} value={w.id}>{w.name}</option>)}
++              </select>
++              <select required value={form.to_warehouse_id} onChange={(e) => setForm({ ...form, to_warehouse_id: e.target.value })} className="input">
++                <option value="">To warehouse</option>
++                {warehouses.map((w) => <option key={w.id} value={w.id}>{w.name}</option>)}
++              </select>
++              <input type="number" required min={1} placeholder="Quantity" value={form.quantity || ''} onChange={(e) => setForm({ ...form, quantity: parseInt(e.target.value) || 0 })} className="input" />
++              <textarea placeholder="Notes (optional)" value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} className="input min-h-[60px]" />
++              <div className="flex gap-3">
++                <button type="button" onClick={() => setShowForm(false)} className="btn-secondary flex-1">Cancel</button>
++                <button type="submit" disabled={saving} className="btn-primary flex-1">{saving ? 'Transferring...' : 'Transfer'}</button>
++              </div>
++            </form>
++          </div>
++        </div>
++      )}
++    </div>
++  );
++}
+diff --git a/supabase/migrations/20260810080000_040_warehouse_management.sql b/supabase/migrations/20260810080000_040_warehouse_management.sql
+new file mode 100644
+index 0000000..85c59d7
+--- /dev/null
++++ b/supabase/migrations/20260810080000_040_warehouse_management.sql
+@@ -0,0 +1,143 @@
++-- ============================================================
++-- Warehouse Management
++-- Adds multi-location stock tracking on top of the existing single
++-- stock_quantity/inventory_movements system:
++--   - warehouses: physical/logical storage locations
++--   - warehouse_stock: per-warehouse quantity breakdown for a product
++--   - stock_transfers: move stock between warehouses, logged as a
++--     pair of inventory_movements (out of source, in to destination)
++-- products.stock_quantity remains the single source of truth for
++-- total stock (used across the storefront, cart, low-stock alerts).
++-- warehouse_stock is an additive breakdown of where that stock lives.
++-- ============================================================
++
++CREATE TABLE IF NOT EXISTS warehouses (
++  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
++  name text NOT NULL,
++  code text UNIQUE,
++  address text,
++  phone text,
++  manager_name text,
++  is_default boolean DEFAULT false,
++  is_active boolean DEFAULT true,
++  created_at timestamptz DEFAULT now(),
++  updated_at timestamptz DEFAULT now()
++);
++
++CREATE TABLE IF NOT EXISTS warehouse_stock (
++  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
++  warehouse_id uuid NOT NULL REFERENCES warehouses(id) ON DELETE CASCADE,
++  product_id uuid NOT NULL REFERENCES products(id) ON DELETE CASCADE,
++  quantity integer NOT NULL DEFAULT 0 CHECK (quantity >= 0),
++  updated_at timestamptz DEFAULT now(),
++  UNIQUE (warehouse_id, product_id)
++);
++
++CREATE TABLE IF NOT EXISTS stock_transfers (
++  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
++  transfer_number text UNIQUE,
++  from_warehouse_id uuid REFERENCES warehouses(id) ON DELETE SET NULL,
++  to_warehouse_id uuid REFERENCES warehouses(id) ON DELETE SET NULL,
++  product_id uuid REFERENCES products(id) ON DELETE CASCADE,
++  quantity integer NOT NULL CHECK (quantity > 0),
++  status text NOT NULL DEFAULT 'completed' CHECK (status IN ('completed', 'cancelled')),
++  notes text,
++  created_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
++  created_at timestamptz DEFAULT now(),
++  CONSTRAINT different_warehouses CHECK (from_warehouse_id IS DISTINCT FROM to_warehouse_id)
++);
++
++-- Movements can now optionally be tied to the warehouse they affected.
++ALTER TABLE inventory_movements ADD COLUMN IF NOT EXISTS warehouse_id uuid REFERENCES warehouses(id) ON DELETE SET NULL;
++
++CREATE INDEX IF NOT EXISTS idx_warehouse_stock_warehouse ON warehouse_stock(warehouse_id);
++CREATE INDEX IF NOT EXISTS idx_warehouse_stock_product ON warehouse_stock(product_id);
++CREATE INDEX IF NOT EXISTS idx_stock_transfers_from ON stock_transfers(from_warehouse_id);
++CREATE INDEX IF NOT EXISTS idx_stock_transfers_to ON stock_transfers(to_warehouse_id);
++CREATE INDEX IF NOT EXISTS idx_stock_transfers_product ON stock_transfers(product_id);
++CREATE INDEX IF NOT EXISTS idx_inventory_movements_warehouse ON inventory_movements(warehouse_id);
++
++ALTER TABLE warehouses ENABLE ROW LEVEL SECURITY;
++ALTER TABLE warehouse_stock ENABLE ROW LEVEL SECURITY;
++ALTER TABLE stock_transfers ENABLE ROW LEVEL SECURITY;
++
++CREATE POLICY "staff_access_warehouses" ON warehouses FOR ALL TO authenticated USING (true) WITH CHECK (true);
++CREATE POLICY "staff_access_warehouse_stock" ON warehouse_stock FOR ALL TO authenticated USING (true) WITH CHECK (true);
++CREATE POLICY "staff_access_stock_transfers" ON stock_transfers FOR ALL TO authenticated USING (true) WITH CHECK (true);
++
++-- Auto-number transfers the same way purchase orders are numbered.
++CREATE SEQUENCE IF NOT EXISTS transfer_number_seq;
++CREATE OR REPLACE FUNCTION set_transfer_number()
++RETURNS trigger LANGUAGE plpgsql AS $$
++BEGIN
++  IF NEW.transfer_number IS NULL THEN
++    NEW.transfer_number := 'TR-' || to_char(now(), 'YYYY') || '-' || lpad(nextval('transfer_number_seq')::text, 4, '0');
++  END IF;
++  RETURN NEW;
++END;
++$$;
++DROP TRIGGER IF EXISTS trg_set_transfer_number ON stock_transfers;
++CREATE TRIGGER trg_set_transfer_number BEFORE INSERT ON stock_transfers
++  FOR EACH ROW EXECUTE FUNCTION set_transfer_number();
++
++-- Applying a transfer: move quantity from source warehouse_stock into
++-- destination warehouse_stock and log a matching pair of
++-- inventory_movements ('out' at source, 'in' at destination). Total
++-- products.stock_quantity is unaffected - stock is only relocated.
++CREATE OR REPLACE FUNCTION apply_stock_transfer()
++RETURNS trigger LANGUAGE plpgsql AS $$
++DECLARE
++  v_from_qty integer;
++BEGIN
++  IF NEW.status <> 'completed' THEN
++    RETURN NEW;
++  END IF;
++
++  IF NEW.from_warehouse_id IS NOT NULL THEN
++    SELECT quantity INTO v_from_qty FROM warehouse_stock
++      WHERE warehouse_id = NEW.from_warehouse_id AND product_id = NEW.product_id
++      FOR UPDATE;
++
++    IF COALESCE(v_from_qty, 0) < NEW.quantity THEN
++      RAISE EXCEPTION 'Insufficient stock in source warehouse: have %, need %', COALESCE(v_from_qty, 0), NEW.quantity;
++    END IF;
++
++    UPDATE warehouse_stock SET quantity = quantity - NEW.quantity, updated_at = now()
++      WHERE warehouse_id = NEW.from_warehouse_id AND product_id = NEW.product_id;
++
++    INSERT INTO inventory_movements (product_id, warehouse_id, movement_type, quantity, previous_stock, new_stock, reference_type, reference_id, notes)
++    VALUES (NEW.product_id, NEW.from_warehouse_id, 'out', NEW.quantity, v_from_qty, COALESCE(v_from_qty, 0) - NEW.quantity, 'stock_transfer', NEW.id::text, COALESCE(NEW.notes, 'Transfer ' || NEW.transfer_number));
++  END IF;
++
++  IF NEW.to_warehouse_id IS NOT NULL THEN
++    INSERT INTO warehouse_stock (warehouse_id, product_id, quantity)
++    VALUES (NEW.to_warehouse_id, NEW.product_id, NEW.quantity)
++    ON CONFLICT (warehouse_id, product_id)
++    DO UPDATE SET quantity = warehouse_stock.quantity + EXCLUDED.quantity, updated_at = now();
++
++    INSERT INTO inventory_movements (product_id, warehouse_id, movement_type, quantity, previous_stock, new_stock, reference_type, reference_id, notes)
++    SELECT NEW.product_id, NEW.to_warehouse_id, 'in', NEW.quantity, ws.quantity - NEW.quantity, ws.quantity, 'stock_transfer', NEW.id::text, COALESCE(NEW.notes, 'Transfer ' || NEW.transfer_number)
++    FROM warehouse_stock ws WHERE ws.warehouse_id = NEW.to_warehouse_id AND ws.product_id = NEW.product_id;
++  END IF;
++
++  RETURN NEW;
++END;
++$$;
++DROP TRIGGER IF EXISTS trg_apply_stock_transfer ON stock_transfers;
++CREATE TRIGGER trg_apply_stock_transfer
++  AFTER INSERT ON stock_transfers
++  FOR EACH ROW EXECUTE FUNCTION apply_stock_transfer();
++
++-- Seed a default warehouse and allocate all existing stock to it, so
++-- the feature is immediately useful without a manual setup step.
++INSERT INTO warehouses (name, code, is_default, is_active)
++SELECT 'Main Warehouse', 'MAIN', true, true
++WHERE NOT EXISTS (SELECT 1 FROM warehouses);
++
++INSERT INTO warehouse_stock (warehouse_id, product_id, quantity)
++SELECT w.id, p.id, COALESCE(p.stock_quantity, 0)
++FROM products p
++CROSS JOIN (SELECT id FROM warehouses WHERE is_default = true LIMIT 1) w
++WHERE NOT EXISTS (
++  SELECT 1 FROM warehouse_stock ws WHERE ws.warehouse_id = w.id AND ws.product_id = p.id
++);
+-- 
+2.34.1
+
+
+From 1129c8cde17d876b06006c4387f1fe7e666f6483 Mon Sep 17 00:00:00 2001
+From: Claude <agent@local>
+Date: Mon, 10 Aug 2026 05:18:00 +0300
+Subject: [PATCH 2/2] feat(homepage): trust bar + admin-editable microcopy, fix
+ add-section bug
+
+- New 'Trust Bar' homepage section type: admin adds up to 6 stat
+  chips (value + label), rendered as an elevated card overlapping
+  the hero's bottom edge. Hidden entirely until admin adds at least
+  one stat - no fabricated claims ship by default.
+- badge_text is now admin-editable for the Services, About,
+  Products, and Testimonials sections (the small eyebrow label
+  above each heading), with the previous copy as the fallback.
+- view_all_text (Services, Products), add_to_cart_text (Products),
+  and phone_button_text (CTA) are now admin-editable the same way.
+- Fixed a bug in Homepage Builder's 'Add Section': it omitted the
+  required section_key column, so adding a new section (e.g.
+  re-adding a deleted one) would fail against the NOT NULL
+  constraint. Now sets section_key = section_type on create.
+- Dynamic Tailwind class for the trust bar's column count is looked
+  up from a static map (Tailwind's JIT scanner needs literal class
+  names, not string interpolation) - verified the compiled CSS
+  actually contains sm:grid-cols-{1..6} after build.
+---
+ src/pages/admin/homepage-builder.tsx | 181 ++++++++++++++++++++++-----
+ src/pages/home.tsx                   |  57 +++++++--
+ 2 files changed, 199 insertions(+), 39 deletions(-)
+
+diff --git a/src/pages/admin/homepage-builder.tsx b/src/pages/admin/homepage-builder.tsx
+index fbded3b..f1f5ac1 100644
+--- a/src/pages/admin/homepage-builder.tsx
++++ b/src/pages/admin/homepage-builder.tsx
+@@ -8,6 +8,7 @@ import type { HomepageSection } from '@/lib/types';
+ 
+ const SECTION_TYPES: { value: string; label: string }[] = [
+   { value: 'hero', label: 'Hero Slider' },
++  { value: 'trust_bar', label: 'Trust Bar (stats strip)' },
+   { value: 'services', label: 'Services' },
+   { value: 'about', label: 'About Us' },
+   { value: 'products', label: 'Products/Materials' },
+@@ -18,12 +19,13 @@ const SECTION_TYPES: { value: string; label: string }[] = [
+ 
+ const SECTION_DEFAULTS: Record<string, Partial<HomepageSection>> = {
+   hero: { title: 'Hero Slider', content: { slide_interval: 6000, overlay_opacity: 60, transition: 'fade', show_featured_products: true, show_featured_services: true } },
+-  services: { title: 'Our Services', subtitle: 'Professional flooring and waterproofing solutions', content: { max_items: 8 } },
+-  about: { title: 'Who We Are', subtitle: '', content: { paragraph_1: '', paragraph_2: '', image_url: '', stats: [] } },
+-  products: { title: 'Materials Shop', subtitle: 'Premium materials from trusted brands', content: { limit: 6 } },
+-  testimonials: { title: 'What Clients Say', subtitle: '', content: { max_items: 4 } },
++  trust_bar: { title: 'Trust Bar', subtitle: '', content: { items: [] } },
++  services: { title: 'Our Services', subtitle: 'Professional flooring and waterproofing solutions', content: { max_items: 8, badge_text: 'What We Offer', view_all_text: 'View All Services' } },
++  about: { title: 'Who We Are', subtitle: '', content: { paragraph_1: '', paragraph_2: '', image_url: '', stats: [], badge_text: 'About Us' } },
++  products: { title: 'Materials Shop', subtitle: 'Premium materials from trusted brands', content: { limit: 6, badge_text: 'Materials Shop', view_all_text: 'View Full Catalog', add_to_cart_text: 'Add to Cart' } },
++  testimonials: { title: 'What Clients Say', subtitle: '', content: { max_items: 4, badge_text: 'Client Feedback' } },
+   partners: { title: 'Our Certified Partners', subtitle: '', content: { max_items: 10 } },
+-  cta: { title: 'Ready to Start Your Project?', subtitle: 'Get in touch with our team for a free consultation and quotation.', content: { cta_text: 'Get Free Quote', cta_link: '/quotation' } },
++  cta: { title: 'Ready to Start Your Project?', subtitle: 'Get in touch with our team for a free consultation and quotation.', content: { cta_text: 'Get Free Quote', cta_link: '/quotation', phone_button_text: 'Call Technical Team' } },
+ };
+ 
+ export default function AdminHomepageBuilder() {
+@@ -85,6 +87,7 @@ export default function AdminHomepageBuilder() {
+     try {
+       await createSection({
+         section_type: sectionType,
++        section_key: sectionType,
+         title: defaults.title || sectionType,
+         subtitle: defaults.subtitle || '',
+         is_active: true,
+@@ -257,6 +260,11 @@ interface AboutStat {
+   label: string;
+ }
+ 
++interface TrustBarItem {
++  value: string;
++  label: string;
++}
++
+ function SectionEditor({ section, onSave, onClose, saving }: { section: HomepageSection; onSave: (u: Partial<HomepageSection>) => void; onClose: () => void; saving: boolean }) {
+   const [form, setForm] = useState({
+     title: section.title || '',
+@@ -283,6 +291,23 @@ function SectionEditor({ section, onSave, onClose, saving }: { section: Homepage
+     setForm({ ...form, content: { ...form.content, stats: aboutStats.filter((_, i) => i !== index) } });
+   };
+ 
++  const trustItems: TrustBarItem[] = Array.isArray(form.content.items) ? form.content.items : [];
++
++  const updateTrustItem = (index: number, field: keyof TrustBarItem, value: string) => {
++    const next = [...trustItems];
++    next[index] = { ...next[index], [field]: value };
++    setForm({ ...form, content: { ...form.content, items: next } });
++  };
++
++  const addTrustItem = () => {
++    if (trustItems.length >= 6) return;
++    setForm({ ...form, content: { ...form.content, items: [...trustItems, { value: '', label: '' }] } });
++  };
++
++  const removeTrustItem = (index: number) => {
++    setForm({ ...form, content: { ...form.content, items: trustItems.filter((_, i) => i !== index) } });
++  };
++
+   return (
+     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50" onClick={onClose}>
+       <div className="bg-white rounded-xl max-w-lg w-full p-6 max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+@@ -313,6 +338,56 @@ function SectionEditor({ section, onSave, onClose, saving }: { section: Homepage
+             />
+           </div>
+ 
++          {/* Badge / eyebrow text - shown above the heading on the live site */}
++          {['services', 'about', 'products', 'testimonials'].includes(section.section_type) && (
++            <div>
++              <label className="block text-sm font-medium text-gray-700 mb-1">Badge / Eyebrow Text</label>
++              <input
++                type="text"
++                value={form.content.badge_text || ''}
++                onChange={(e) => setForm({ ...form, content: { ...form.content, badge_text: e.target.value } })}
++                className="input"
++                placeholder="Small label shown above the heading"
++              />
++            </div>
++          )}
++
++          {/* Trust Bar-specific */}
++          {section.section_type === 'trust_bar' && (
++            <div>
++              <label className="block text-sm font-medium text-gray-700 mb-2">Stats (e.g. "15+ / Years in Business"). Only add numbers you can stand behind - these display as credibility claims.</label>
++              <div className="space-y-2">
++                {trustItems.map((item, i) => (
++                  <div key={i} className="flex items-center gap-2">
++                    <input
++                      placeholder="Value (15+)"
++                      value={item.value}
++                      onChange={(e) => updateTrustItem(i, 'value', e.target.value)}
++                      className="input flex-1"
++                    />
++                    <input
++                      placeholder="Label (Years in Business)"
++                      value={item.label}
++                      onChange={(e) => updateTrustItem(i, 'label', e.target.value)}
++                      className="input flex-1"
++                    />
++                    <button type="button" onClick={() => removeTrustItem(i)} className="p-2 text-red-500 flex-shrink-0">
++                      <Trash2 className="w-4 h-4" />
++                    </button>
++                  </div>
++                ))}
++              </div>
++              {trustItems.length < 6 && (
++                <button type="button" onClick={addTrustItem} className="mt-2 text-sm text-primary-600 hover:text-primary-700 font-medium flex items-center gap-1">
++                  <Plus className="w-4 h-4" /> Add Stat
++                </button>
++              )}
++              {trustItems.length === 0 && (
++                <p className="text-xs text-gray-400 mt-2">No stats yet - this section stays hidden on the live site until you add at least one.</p>
++              )}
++            </div>
++          )}
++
+           {/* Hero-specific */}
+           {section.section_type === 'hero' && (
+             <>
+@@ -423,19 +498,31 @@ function SectionEditor({ section, onSave, onClose, saving }: { section: Homepage
+ 
+           {/* Services-specific */}
+           {section.section_type === 'services' && (
+-            <div>
+-              <label className="block text-sm font-medium text-gray-700 mb-1">Max Services to Show</label>
+-              <select
+-                value={form.content.max_items || 8}
+-                onChange={(e) => setForm({ ...form, content: { ...form.content, max_items: parseInt(e.target.value) } })}
+-                className="input"
+-              >
+-                <option value={4}>4</option>
+-                <option value={6}>6</option>
+-                <option value={8}>8</option>
+-                <option value={12}>12</option>
+-              </select>
+-            </div>
++            <>
++              <div>
++                <label className="block text-sm font-medium text-gray-700 mb-1">Max Services to Show</label>
++                <select
++                  value={form.content.max_items || 8}
++                  onChange={(e) => setForm({ ...form, content: { ...form.content, max_items: parseInt(e.target.value) } })}
++                  className="input"
++                >
++                  <option value={4}>4</option>
++                  <option value={6}>6</option>
++                  <option value={8}>8</option>
++                  <option value={12}>12</option>
++                </select>
++              </div>
++              <div>
++                <label className="block text-sm font-medium text-gray-700 mb-1">"View All" Link Text</label>
++                <input
++                  type="text"
++                  value={form.content.view_all_text || ''}
++                  onChange={(e) => setForm({ ...form, content: { ...form.content, view_all_text: e.target.value } })}
++                  className="input"
++                  placeholder="View All Services"
++                />
++              </div>
++            </>
+           )}
+ 
+           {/* Testimonials-specific */}
+@@ -474,19 +561,41 @@ function SectionEditor({ section, onSave, onClose, saving }: { section: Homepage
+ 
+           {/* Products-specific */}
+           {section.section_type === 'products' && (
+-            <div>
+-              <label className="block text-sm font-medium text-gray-700 mb-1">Products to Show</label>
+-              <select
+-                value={form.content.limit || 6}
+-                onChange={(e) => setForm({ ...form, content: { ...form.content, limit: parseInt(e.target.value) } })}
+-                className="input"
+-              >
+-                <option value={3}>3</option>
+-                <option value={6}>6</option>
+-                <option value={9}>9</option>
+-                <option value={12}>12</option>
+-              </select>
+-            </div>
++            <>
++              <div>
++                <label className="block text-sm font-medium text-gray-700 mb-1">Products to Show</label>
++                <select
++                  value={form.content.limit || 6}
++                  onChange={(e) => setForm({ ...form, content: { ...form.content, limit: parseInt(e.target.value) } })}
++                  className="input"
++                >
++                  <option value={3}>3</option>
++                  <option value={6}>6</option>
++                  <option value={9}>9</option>
++                  <option value={12}>12</option>
++                </select>
++              </div>
++              <div>
++                <label className="block text-sm font-medium text-gray-700 mb-1">"View All" Link Text</label>
++                <input
++                  type="text"
++                  value={form.content.view_all_text || ''}
++                  onChange={(e) => setForm({ ...form, content: { ...form.content, view_all_text: e.target.value } })}
++                  className="input"
++                  placeholder="View Full Catalog"
++                />
++              </div>
++              <div>
++                <label className="block text-sm font-medium text-gray-700 mb-1">"Add to Cart" Button Text</label>
++                <input
++                  type="text"
++                  value={form.content.add_to_cart_text || ''}
++                  onChange={(e) => setForm({ ...form, content: { ...form.content, add_to_cart_text: e.target.value } })}
++                  className="input"
++                  placeholder="Add to Cart"
++                />
++              </div>
++            </>
+           )}
+ 
+           {/* CTA-specific */}
+@@ -511,6 +620,16 @@ function SectionEditor({ section, onSave, onClose, saving }: { section: Homepage
+                   placeholder="/quotation"
+                 />
+               </div>
++              <div>
++                <label className="block text-sm font-medium text-gray-700 mb-1">Phone Button Text</label>
++                <input
++                  type="text"
++                  value={form.content.phone_button_text || ''}
++                  onChange={(e) => setForm({ ...form, content: { ...form.content, phone_button_text: e.target.value } })}
++                  className="input"
++                  placeholder="Call Technical Team"
++                />
++              </div>
+             </>
+           )}
+ 
+diff --git a/src/pages/home.tsx b/src/pages/home.tsx
+index 58b33bc..9b26977 100644
+--- a/src/pages/home.tsx
++++ b/src/pages/home.tsx
+@@ -11,6 +11,18 @@ import { useCart } from '@/hooks/use-cart';
+ import { useImagePreloader } from '@/hooks/use-image-preloader';
+ import type { Product } from '@/lib/types';
+ 
++// Tailwind's JIT compiler only picks up class names it can see literally in
++// source, so the trust bar's column count is looked up from this static map
++// rather than interpolated directly into a class string.
++const TRUST_BAR_GRID_COLS: Record<number, string> = {
++  1: 'sm:grid-cols-1',
++  2: 'sm:grid-cols-2',
++  3: 'sm:grid-cols-3',
++  4: 'sm:grid-cols-4',
++  5: 'sm:grid-cols-5',
++  6: 'sm:grid-cols-6',
++};
++
+ interface HeroSlideData {
+   id: string;
+   title: string;
+@@ -80,6 +92,19 @@ export default function Home() {
+   const testimonialsMaxItems = Number(testimonialsSection?.content?.max_items) || 4;
+   const ctaSection = getSection('cta');
+   const ctaContent = ctaSection?.content || {};
++  const phoneButtonText = ctaContent.phone_button_text || 'Call Technical Team';
++
++  const trustBarSection = getSection('trust_bar');
++  const trustBarItems: { value: string; label: string }[] = Array.isArray(trustBarSection?.content?.items) ? trustBarSection.content.items.filter((i: { value: string; label: string }) => i.value && i.label) : [];
++  const showTrustBar = trustBarItems.length > 0 && isSectionVisible('trust_bar');
++
++  const servicesBadgeText = servicesSection?.content?.badge_text || 'What We Offer';
++  const servicesViewAllText = servicesSection?.content?.view_all_text || 'View All Services';
++  const aboutBadgeText = aboutSection?.content?.badge_text || 'About Us';
++  const productsBadgeText = productsSection?.content?.badge_text || 'Materials Shop';
++  const productsViewAllText = productsSection?.content?.view_all_text || 'View Full Catalog';
++  const addToCartText = productsSection?.content?.add_to_cart_text || 'Add to Cart';
++  const testimonialsBadgeText = testimonialsSection?.content?.badge_text || 'Client Feedback';
+ 
+   // Combine hero slides with services, featured products, and project showcases
+   const allSlides: HeroSlideData[] = useMemo(() => {
+@@ -319,13 +344,29 @@ export default function Home() {
+         )}
+       </section>
+ 
++      {/* Trust Bar - elevated stats card overlapping the hero, admin-configurable in Homepage Builder */}
++      {showTrustBar && (
++        <section className="relative z-30 px-4 sm:px-6 lg:px-8">
++          <div className="max-w-5xl mx-auto -mt-8 sm:-mt-10 lg:-mt-12 bg-white rounded-2xl shadow-xl border border-gray-100 px-6 sm:px-10 py-6 sm:py-8">
++            <div className={`grid grid-cols-2 gap-6 sm:gap-4 divide-y-0 ${TRUST_BAR_GRID_COLS[Math.min(trustBarItems.length, 6)] || 'sm:grid-cols-4'}`}>
++              {trustBarItems.slice(0, 6).map((item, i) => (
++                <div key={i} className="text-center sm:border-l sm:first:border-l-0 border-gray-100 sm:px-4">
++                  <p className="font-display text-2xl sm:text-3xl lg:text-4xl font-bold text-navy-950">{item.value}</p>
++                  <p className="text-xs sm:text-sm text-navy-500 font-medium mt-1">{item.label}</p>
++                </div>
++              ))}
++            </div>
++          </div>
++        </section>
++      )}
++
+       {/* Services Section */}
+       {isSectionVisible('services') && (
+       <section className={`${servicesSection?.padding || 'py-16 lg:py-20'} bg-white`} style={sectionStyle('services')}>
+         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+           <div className="text-center max-w-3xl mx-auto mb-12">
+             <span className="inline-block px-3 py-1 rounded-full bg-primary-50 text-primary-600 border border-primary-100 text-xs font-semibold uppercase tracking-wider mb-2">
+-              What We Offer
++              {servicesBadgeText}
+             </span>
+             <h2 className="font-display text-2xl lg:text-4xl font-bold text-navy-950 tracking-tight mb-3">
+               {servicesSection?.title || 'Our Services'}
+@@ -403,7 +444,7 @@ export default function Home() {
+                 href="/services"
+                 className="inline-flex items-center gap-2 text-primary-600 hover:text-primary-700 font-bold text-sm hover:gap-3 transition-all"
+               >
+-                <span>View All Services</span>
++                <span>{servicesViewAllText}</span>
+                 <ArrowRight className="w-4 h-4" />
+               </Link>
+             </div>
+@@ -419,7 +460,7 @@ export default function Home() {
+           <div className="grid lg:grid-cols-2 gap-10 lg:gap-16 items-center">
+             <div>
+               <span className="inline-block px-3 py-1 rounded-full bg-primary-50 text-primary-600 border border-primary-100 text-xs font-semibold uppercase tracking-wider mb-2">
+-                About Us
++                {aboutBadgeText}
+               </span>
+               <h2 className="font-display text-2xl lg:text-4xl font-bold text-navy-950 tracking-tight mb-4">
+                 {aboutSection?.title || 'Who We Are'}
+@@ -470,7 +511,7 @@ export default function Home() {
+           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-10">
+             <div>
+               <span className="inline-block px-3 py-1 rounded-full bg-primary-50 text-primary-600 border border-primary-100 text-xs font-semibold uppercase tracking-wider mb-2">
+-                Materials Shop
++                {productsBadgeText}
+               </span>
+               <h2 className="font-display text-2xl lg:text-4xl font-bold text-navy-950 tracking-tight">
+                 {productsSection?.title || 'Featured Materials'}
+@@ -478,7 +519,7 @@ export default function Home() {
+               <p className="text-gray-600 text-sm lg:text-base mt-1">{productsSection?.subtitle || 'Premium flooring chemicals and waterproofing products'}</p>
+             </div>
+             <Link href="/shop" className="inline-flex items-center gap-1.5 text-primary-600 hover:text-primary-700 font-bold text-sm group self-start sm:self-auto">
+-              <span>View Full Catalog</span>
++              <span>{productsViewAllText}</span>
+               <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+             </Link>
+           </div>
+@@ -523,7 +564,7 @@ export default function Home() {
+                       onClick={() => handleAddToCart(product)}
+                       className="text-xs bg-primary-500 hover:bg-primary-600 text-white px-3 py-1.5 rounded-lg font-semibold transition-all shadow-2xs hover:shadow-sm"
+                     >
+-                      Add to Cart
++                      {addToCartText}
+                     </button>
+                   </div>
+                 </div>
+@@ -577,7 +618,7 @@ export default function Home() {
+           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+             <div className="text-center max-w-2xl mx-auto mb-12">
+               <span className="inline-block px-3 py-1 rounded-full bg-primary-50 text-primary-600 border border-primary-100 text-xs font-semibold uppercase tracking-wider mb-2">
+-                Client Feedback
++                {testimonialsBadgeText}
+               </span>
+               <h2 className="font-display text-2xl lg:text-4xl font-bold text-navy-950 tracking-tight">
+                 {testimonialsSection?.title || 'What Our Clients Say'}
+@@ -627,7 +668,7 @@ export default function Home() {
+             </Link>
+             <a href={telHref(phone)} className="w-full sm:w-auto bg-navy-800/80 hover:bg-navy-800 border border-navy-700 text-white px-8 py-3.5 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2">
+               <Phone className="w-4 h-4 text-primary-400" />
+-              <span>Call Technical Team</span>
++              <span>{phoneButtonText}</span>
+             </a>
+           </div>
+         </div>
+-- 
+2.34.1
+

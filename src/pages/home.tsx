@@ -11,6 +11,18 @@ import { useCart } from '@/hooks/use-cart';
 import { useImagePreloader } from '@/hooks/use-image-preloader';
 import type { Product } from '@/lib/types';
 
+// Tailwind's JIT compiler only picks up class names it can see literally in
+// source, so the trust bar's column count is looked up from this static map
+// rather than interpolated directly into a class string.
+const TRUST_BAR_GRID_COLS: Record<number, string> = {
+  1: 'sm:grid-cols-1',
+  2: 'sm:grid-cols-2',
+  3: 'sm:grid-cols-3',
+  4: 'sm:grid-cols-4',
+  5: 'sm:grid-cols-5',
+  6: 'sm:grid-cols-6',
+};
+
 interface HeroSlideData {
   id: string;
   title: string;
@@ -80,6 +92,19 @@ export default function Home() {
   const testimonialsMaxItems = Number(testimonialsSection?.content?.max_items) || 4;
   const ctaSection = getSection('cta');
   const ctaContent = ctaSection?.content || {};
+  const phoneButtonText = ctaContent.phone_button_text || 'Call Technical Team';
+
+  const trustBarSection = getSection('trust_bar');
+  const trustBarItems: { value: string; label: string }[] = Array.isArray(trustBarSection?.content?.items) ? trustBarSection.content.items.filter((i: { value: string; label: string }) => i.value && i.label) : [];
+  const showTrustBar = trustBarItems.length > 0 && isSectionVisible('trust_bar');
+
+  const servicesBadgeText = servicesSection?.content?.badge_text || 'What We Offer';
+  const servicesViewAllText = servicesSection?.content?.view_all_text || 'View All Services';
+  const aboutBadgeText = aboutSection?.content?.badge_text || 'About Us';
+  const productsBadgeText = productsSection?.content?.badge_text || 'Materials Shop';
+  const productsViewAllText = productsSection?.content?.view_all_text || 'View Full Catalog';
+  const addToCartText = productsSection?.content?.add_to_cart_text || 'Add to Cart';
+  const testimonialsBadgeText = testimonialsSection?.content?.badge_text || 'Client Feedback';
 
   // Combine hero slides with services, featured products, and project showcases
   const allSlides: HeroSlideData[] = useMemo(() => {
@@ -319,13 +344,29 @@ export default function Home() {
         )}
       </section>
 
+      {/* Trust Bar - elevated stats card overlapping the hero, admin-configurable in Homepage Builder */}
+      {showTrustBar && (
+        <section className="relative z-30 px-4 sm:px-6 lg:px-8">
+          <div className="max-w-5xl mx-auto -mt-8 sm:-mt-10 lg:-mt-12 bg-white rounded-2xl shadow-xl border border-gray-100 px-6 sm:px-10 py-6 sm:py-8">
+            <div className={`grid grid-cols-2 gap-6 sm:gap-4 divide-y-0 ${TRUST_BAR_GRID_COLS[Math.min(trustBarItems.length, 6)] || 'sm:grid-cols-4'}`}>
+              {trustBarItems.slice(0, 6).map((item, i) => (
+                <div key={i} className="text-center sm:border-l sm:first:border-l-0 border-gray-100 sm:px-4">
+                  <p className="font-display text-2xl sm:text-3xl lg:text-4xl font-bold text-navy-950">{item.value}</p>
+                  <p className="text-xs sm:text-sm text-navy-500 font-medium mt-1">{item.label}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* Services Section */}
       {isSectionVisible('services') && (
       <section className={`${servicesSection?.padding || 'py-16 lg:py-20'} bg-white`} style={sectionStyle('services')}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-3xl mx-auto mb-12">
             <span className="inline-block px-3 py-1 rounded-full bg-primary-50 text-primary-600 border border-primary-100 text-xs font-semibold uppercase tracking-wider mb-2">
-              What We Offer
+              {servicesBadgeText}
             </span>
             <h2 className="font-display text-2xl lg:text-4xl font-bold text-navy-950 tracking-tight mb-3">
               {servicesSection?.title || 'Our Services'}
@@ -403,7 +444,7 @@ export default function Home() {
                 href="/services"
                 className="inline-flex items-center gap-2 text-primary-600 hover:text-primary-700 font-bold text-sm hover:gap-3 transition-all"
               >
-                <span>View All Services</span>
+                <span>{servicesViewAllText}</span>
                 <ArrowRight className="w-4 h-4" />
               </Link>
             </div>
@@ -419,7 +460,7 @@ export default function Home() {
           <div className="grid lg:grid-cols-2 gap-10 lg:gap-16 items-center">
             <div>
               <span className="inline-block px-3 py-1 rounded-full bg-primary-50 text-primary-600 border border-primary-100 text-xs font-semibold uppercase tracking-wider mb-2">
-                About Us
+                {aboutBadgeText}
               </span>
               <h2 className="font-display text-2xl lg:text-4xl font-bold text-navy-950 tracking-tight mb-4">
                 {aboutSection?.title || 'Who We Are'}
@@ -470,7 +511,7 @@ export default function Home() {
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-10">
             <div>
               <span className="inline-block px-3 py-1 rounded-full bg-primary-50 text-primary-600 border border-primary-100 text-xs font-semibold uppercase tracking-wider mb-2">
-                Materials Shop
+                {productsBadgeText}
               </span>
               <h2 className="font-display text-2xl lg:text-4xl font-bold text-navy-950 tracking-tight">
                 {productsSection?.title || 'Featured Materials'}
@@ -478,7 +519,7 @@ export default function Home() {
               <p className="text-gray-600 text-sm lg:text-base mt-1">{productsSection?.subtitle || 'Premium flooring chemicals and waterproofing products'}</p>
             </div>
             <Link href="/shop" className="inline-flex items-center gap-1.5 text-primary-600 hover:text-primary-700 font-bold text-sm group self-start sm:self-auto">
-              <span>View Full Catalog</span>
+              <span>{productsViewAllText}</span>
               <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
             </Link>
           </div>
@@ -523,7 +564,7 @@ export default function Home() {
                       onClick={() => handleAddToCart(product)}
                       className="text-xs bg-primary-500 hover:bg-primary-600 text-white px-3 py-1.5 rounded-lg font-semibold transition-all shadow-2xs hover:shadow-sm"
                     >
-                      Add to Cart
+                      {addToCartText}
                     </button>
                   </div>
                 </div>
@@ -577,7 +618,7 @@ export default function Home() {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center max-w-2xl mx-auto mb-12">
               <span className="inline-block px-3 py-1 rounded-full bg-primary-50 text-primary-600 border border-primary-100 text-xs font-semibold uppercase tracking-wider mb-2">
-                Client Feedback
+                {testimonialsBadgeText}
               </span>
               <h2 className="font-display text-2xl lg:text-4xl font-bold text-navy-950 tracking-tight">
                 {testimonialsSection?.title || 'What Our Clients Say'}
@@ -627,7 +668,7 @@ export default function Home() {
             </Link>
             <a href={telHref(phone)} className="w-full sm:w-auto bg-navy-800/80 hover:bg-navy-800 border border-navy-700 text-white px-8 py-3.5 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2">
               <Phone className="w-4 h-4 text-primary-400" />
-              <span>Call Technical Team</span>
+              <span>{phoneButtonText}</span>
             </a>
           </div>
         </div>

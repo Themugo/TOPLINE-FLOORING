@@ -34,6 +34,7 @@ import {
   ChevronRight,
   ExternalLink,
   CheckCircle2,
+  Building2,
 } from 'lucide-react';
 import { useAdminAuth } from '@/hooks/use-data';
 import { useState, useEffect, useMemo, useCallback } from 'react';
@@ -87,6 +88,7 @@ const NAV_GROUPS: NavGroup[] = [
       { href: '/admin/categories', label: 'Categories', icon: FolderOpen },
       { href: '/admin/inventory', label: 'Inventory', icon: Warehouse },
       { href: '/admin/suppliers', label: 'Suppliers & POs', icon: Truck },
+      { href: '/admin/warehouses', label: 'Warehouses', icon: Building2 },
       { href: '/admin/projects', label: 'Projects', icon: FolderKanban },
     ],
   },

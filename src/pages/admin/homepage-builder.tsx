@@ -8,6 +8,7 @@ import type { HomepageSection } from '@/lib/types';
 
 const SECTION_TYPES: { value: string; label: string }[] = [
   { value: 'hero', label: 'Hero Slider' },
+  { value: 'trust_bar', label: 'Trust Bar (stats strip)' },
   { value: 'services', label: 'Services' },
   { value: 'about', label: 'About Us' },
   { value: 'products', label: 'Products/Materials' },
@@ -18,12 +19,13 @@ const SECTION_TYPES: { value: string; label: string }[] = [
 
 const SECTION_DEFAULTS: Record<string, Partial<HomepageSection>> = {
   hero: { title: 'Hero Slider', content: { slide_interval: 6000, overlay_opacity: 60, transition: 'fade', show_featured_products: true, show_featured_services: true } },
-  services: { title: 'Our Services', subtitle: 'Professional flooring and waterproofing solutions', content: { max_items: 8 } },
-  about: { title: 'Who We Are', subtitle: '', content: { paragraph_1: '', paragraph_2: '', image_url: '', stats: [] } },
-  products: { title: 'Materials Shop', subtitle: 'Premium materials from trusted brands', content: { limit: 6 } },
-  testimonials: { title: 'What Clients Say', subtitle: '', content: { max_items: 4 } },
+  trust_bar: { title: 'Trust Bar', subtitle: '', content: { items: [] } },
+  services: { title: 'Our Services', subtitle: 'Professional flooring and waterproofing solutions', content: { max_items: 8, badge_text: 'What We Offer', view_all_text: 'View All Services' } },
+  about: { title: 'Who We Are', subtitle: '', content: { paragraph_1: '', paragraph_2: '', image_url: '', stats: [], badge_text: 'About Us' } },
+  products: { title: 'Materials Shop', subtitle: 'Premium materials from trusted brands', content: { limit: 6, badge_text: 'Materials Shop', view_all_text: 'View Full Catalog', add_to_cart_text: 'Add to Cart' } },
+  testimonials: { title: 'What Clients Say', subtitle: '', content: { max_items: 4, badge_text: 'Client Feedback' } },
   partners: { title: 'Our Certified Partners', subtitle: '', content: { max_items: 10 } },
-  cta: { title: 'Ready to Start Your Project?', subtitle: 'Get in touch with our team for a free consultation and quotation.', content: { cta_text: 'Get Free Quote', cta_link: '/quotation' } },
+  cta: { title: 'Ready to Start Your Project?', subtitle: 'Get in touch with our team for a free consultation and quotation.', content: { cta_text: 'Get Free Quote', cta_link: '/quotation', phone_button_text: 'Call Technical Team' } },
 };
 
 export default function AdminHomepageBuilder() {
@@ -85,6 +87,7 @@ export default function AdminHomepageBuilder() {
     try {
       await createSection({
         section_type: sectionType,
+        section_key: sectionType,
         title: defaults.title || sectionType,
         subtitle: defaults.subtitle || '',
         is_active: true,
@@ -257,6 +260,11 @@ interface AboutStat {
   label: string;
 }
 
+interface TrustBarItem {
+  value: string;
+  label: string;
+}
+
 function SectionEditor({ section, onSave, onClose, saving }: { section: HomepageSection; onSave: (u: Partial<HomepageSection>) => void; onClose: () => void; saving: boolean }) {
   const [form, setForm] = useState({
     title: section.title || '',
@@ -281,6 +289,23 @@ function SectionEditor({ section, onSave, onClose, saving }: { section: Homepage
 
   const removeAboutStat = (index: number) => {
     setForm({ ...form, content: { ...form.content, stats: aboutStats.filter((_, i) => i !== index) } });
+  };
+
+  const trustItems: TrustBarItem[] = Array.isArray(form.content.items) ? form.content.items : [];
+
+  const updateTrustItem = (index: number, field: keyof TrustBarItem, value: string) => {
+    const next = [...trustItems];
+    next[index] = { ...next[index], [field]: value };
+    setForm({ ...form, content: { ...form.content, items: next } });
+  };
+
+  const addTrustItem = () => {
+    if (trustItems.length >= 6) return;
+    setForm({ ...form, content: { ...form.content, items: [...trustItems, { value: '', label: '' }] } });
+  };
+
+  const removeTrustItem = (index: number) => {
+    setForm({ ...form, content: { ...form.content, items: trustItems.filter((_, i) => i !== index) } });
   };
 
   return (
@@ -312,6 +337,56 @@ function SectionEditor({ section, onSave, onClose, saving }: { section: Homepage
               className="input"
             />
           </div>
+
+          {/* Badge / eyebrow text - shown above the heading on the live site */}
+          {['services', 'about', 'products', 'testimonials'].includes(section.section_type) && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Badge / Eyebrow Text</label>
+              <input
+                type="text"
+                value={form.content.badge_text || ''}
+                onChange={(e) => setForm({ ...form, content: { ...form.content, badge_text: e.target.value } })}
+                className="input"
+                placeholder="Small label shown above the heading"
+              />
+            </div>
+          )}
+
+          {/* Trust Bar-specific */}
+          {section.section_type === 'trust_bar' && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Stats (e.g. "15+ / Years in Business"). Only add numbers you can stand behind - these display as credibility claims.</label>
+              <div className="space-y-2">
+                {trustItems.map((item, i) => (
+                  <div key={i} className="flex items-center gap-2">
+                    <input
+                      placeholder="Value (15+)"
+                      value={item.value}
+                      onChange={(e) => updateTrustItem(i, 'value', e.target.value)}
+                      className="input flex-1"
+                    />
+                    <input
+                      placeholder="Label (Years in Business)"
+                      value={item.label}
+                      onChange={(e) => updateTrustItem(i, 'label', e.target.value)}
+                      className="input flex-1"
+                    />
+                    <button type="button" onClick={() => removeTrustItem(i)} className="p-2 text-red-500 flex-shrink-0">
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+              {trustItems.length < 6 && (
+                <button type="button" onClick={addTrustItem} className="mt-2 text-sm text-primary-600 hover:text-primary-700 font-medium flex items-center gap-1">
+                  <Plus className="w-4 h-4" /> Add Stat
+                </button>
+              )}
+              {trustItems.length === 0 && (
+                <p className="text-xs text-gray-400 mt-2">No stats yet - this section stays hidden on the live site until you add at least one.</p>
+              )}
+            </div>
+          )}
 
           {/* Hero-specific */}
           {section.section_type === 'hero' && (
@@ -423,19 +498,31 @@ function SectionEditor({ section, onSave, onClose, saving }: { section: Homepage
 
           {/* Services-specific */}
           {section.section_type === 'services' && (
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Max Services to Show</label>
-              <select
-                value={form.content.max_items || 8}
-                onChange={(e) => setForm({ ...form, content: { ...form.content, max_items: parseInt(e.target.value) } })}
-                className="input"
-              >
-                <option value={4}>4</option>
-                <option value={6}>6</option>
-                <option value={8}>8</option>
-                <option value={12}>12</option>
-              </select>
-            </div>
+            <>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Max Services to Show</label>
+                <select
+                  value={form.content.max_items || 8}
+                  onChange={(e) => setForm({ ...form, content: { ...form.content, max_items: parseInt(e.target.value) } })}
+                  className="input"
+                >
+                  <option value={4}>4</option>
+                  <option value={6}>6</option>
+                  <option value={8}>8</option>
+                  <option value={12}>12</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">"View All" Link Text</label>
+                <input
+                  type="text"
+                  value={form.content.view_all_text || ''}
+                  onChange={(e) => setForm({ ...form, content: { ...form.content, view_all_text: e.target.value } })}
+                  className="input"
+                  placeholder="View All Services"
+                />
+              </div>
+            </>
           )}
 
           {/* Testimonials-specific */}
@@ -474,19 +561,41 @@ function SectionEditor({ section, onSave, onClose, saving }: { section: Homepage
 
           {/* Products-specific */}
           {section.section_type === 'products' && (
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Products to Show</label>
-              <select
-                value={form.content.limit || 6}
-                onChange={(e) => setForm({ ...form, content: { ...form.content, limit: parseInt(e.target.value) } })}
-                className="input"
-              >
-                <option value={3}>3</option>
-                <option value={6}>6</option>
-                <option value={9}>9</option>
-                <option value={12}>12</option>
-              </select>
-            </div>
+            <>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Products to Show</label>
+                <select
+                  value={form.content.limit || 6}
+                  onChange={(e) => setForm({ ...form, content: { ...form.content, limit: parseInt(e.target.value) } })}
+                  className="input"
+                >
+                  <option value={3}>3</option>
+                  <option value={6}>6</option>
+                  <option value={9}>9</option>
+                  <option value={12}>12</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">"View All" Link Text</label>
+                <input
+                  type="text"
+                  value={form.content.view_all_text || ''}
+                  onChange={(e) => setForm({ ...form, content: { ...form.content, view_all_text: e.target.value } })}
+                  className="input"
+                  placeholder="View Full Catalog"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">"Add to Cart" Button Text</label>
+                <input
+                  type="text"
+                  value={form.content.add_to_cart_text || ''}
+                  onChange={(e) => setForm({ ...form, content: { ...form.content, add_to_cart_text: e.target.value } })}
+                  className="input"
+                  placeholder="Add to Cart"
+                />
+              </div>
+            </>
           )}
 
           {/* CTA-specific */}
@@ -509,6 +618,16 @@ function SectionEditor({ section, onSave, onClose, saving }: { section: Homepage
                   onChange={(e) => setForm({ ...form, content: { ...form.content, cta_link: e.target.value } })}
                   className="input"
                   placeholder="/quotation"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Phone Button Text</label>
+                <input
+                  type="text"
+                  value={form.content.phone_button_text || ''}
+                  onChange={(e) => setForm({ ...form, content: { ...form.content, phone_button_text: e.target.value } })}
+                  className="input"
+                  placeholder="Call Technical Team"
                 />
               </div>
             </>

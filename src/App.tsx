@@ -56,6 +56,7 @@ const AdminCRM = lazy(() => import('@/pages/admin/crm'));
 const AdminServices = lazy(() => import('@/pages/admin/services'));
 const AdminInvoices = lazy(() => import('@/pages/admin/invoices'));
 const AdminSuppliers = lazy(() => import('@/pages/admin/suppliers'));
+const AdminWarehouses = lazy(() => import('@/pages/admin/warehouses'));
 const AdminProductBrands = lazy(() => import('@/pages/admin/product-brands'));
 const AdminProductImages = lazy(() => import('@/pages/admin/product-images'));
 const AdminProductSpecs = lazy(() => import('@/pages/admin/product-specifications'));
@@ -125,6 +126,7 @@ function Router() {
     '/admin/services': AdminServices,
     '/admin/invoices': AdminInvoices,
     '/admin/suppliers': AdminSuppliers,
+    '/admin/warehouses': AdminWarehouses,
     '/admin/products': AdminProducts,
     '/admin/categories': AdminCategories,
     '/admin/customers': AdminCustomers,
