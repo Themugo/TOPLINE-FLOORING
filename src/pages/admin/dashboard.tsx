@@ -44,7 +44,7 @@ import { RevenueTrendChart } from '@/components/admin/RevenueTrendChart';
 
 interface AdminLayoutProps {
   children: React.ReactNode;
-  title: string;
+  title?: string;
   subtitle?: string;
   actions?: React.ReactNode;
 }

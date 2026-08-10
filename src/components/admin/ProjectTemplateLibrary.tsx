@@ -746,7 +746,7 @@ export function ProjectTemplateLibrary({
                         : 'border-transparent hover:text-gray-900'
                     }`}
                   >
-                    Cost Line Items ({selectedTemplate.default_expense_items.length})
+                    Cost Line Items ({(selectedTemplate.default_expense_items ?? []).length})
                   </button>
                 </div>
 
@@ -817,7 +817,7 @@ export function ProjectTemplateLibrary({
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-100">
-                          {selectedTemplate.default_expense_items.map((exp, idx) => (
+                          {(selectedTemplate.default_expense_items ?? []).map((exp, idx) => (
                             <tr key={idx} className="hover:bg-gray-50">
                               <td className="p-3">
                                 <span className="px-2 py-0.5 bg-gray-100 text-gray-700 font-bold uppercase text-[9px] rounded">

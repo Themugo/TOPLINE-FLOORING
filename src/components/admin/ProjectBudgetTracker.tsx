@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import {
   DollarSign,
   TrendingUp,
@@ -763,6 +763,7 @@ export function ProjectBudgetTracker({
 
                       <button
                         onClick={() =>
+                          item.id &&
                           handleDeleteExpense(activeProjectForExpense.id, item.id)
                         }
                         className="p-1.5 text-gray-400 hover:text-rose-600 rounded-lg transition-colors"

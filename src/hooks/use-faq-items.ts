@@ -83,21 +83,24 @@ export function useFaqItems() {
       return;
     }
 
-    supabase
-      .from("faq_items")
-      .select("*")
-      .order("display_order")
-      .then(({ data }) => {
+    const load = async () => {
+      try {
+        const { data } = await supabase
+          .from("faq_items")
+          .select("*")
+          .order("display_order");
         if (data && data.length > 0) {
           setItems(data as FaqItem[]);
         } else {
           setItems(defaultFaqs);
         }
-      })
-      .catch(() => {
+      } catch {
         setItems(defaultFaqs);
-      })
-      .finally(() => setLoading(false));
+      } finally {
+        setLoading(false);
+      }
+    };
+    load();
   }, []);
 
   return { items, loading };

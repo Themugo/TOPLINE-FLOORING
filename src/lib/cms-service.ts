@@ -39,7 +39,7 @@ export async function fetchCMSContentStore(): Promise<CMSContentStore> {
 
       if (dbSettings && dbSettings.length > 0) {
         dbSettings.forEach((row) => {
-          const key = row.setting_key as CMSGroupKey;
+          const key = String(row.setting_key);
           let val = row.setting_value;
           if (typeof val === 'string') {
             try {
@@ -57,9 +57,10 @@ export async function fetchCMSContentStore(): Promise<CMSContentStore> {
             };
           } else if (key === 'site_info' || key === 'company' || key === 'contact' || key === 'social') {
             // Legacy site_settings compatibility mapping into website_settings
-            (mergedStore.website_settings as any)[key] = {
-              ...(mergedStore.website_settings as any)[key],
-              ...val,
+            const ws = mergedStore.website_settings as unknown as Record<string, unknown>;
+            ws[key] = {
+              ...(ws[key] as Record<string, unknown>),
+              ...(val as Record<string, unknown>),
             };
           }
         });

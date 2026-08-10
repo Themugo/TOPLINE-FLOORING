@@ -29,7 +29,7 @@ export class ErrorBoundary extends Component<Props, State> {
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     this.setState({ errorInfo });
-    logError(error, errorInfo);
+    logError(error, errorInfo).catch(() => {});
   }
 
   handleReset = () => {

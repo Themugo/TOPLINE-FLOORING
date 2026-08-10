@@ -97,8 +97,8 @@ export function MediaAssetAuditor({ onClose }: { onClose?: () => void }) {
       trackUsage(slide.image_url, `Homepage Hero Slide #${idx + 1}`);
       trackUsage(slide.background_image, `Homepage Hero Background #${idx + 1}`);
     });
-    if (cms.homepage?.banner?.image_url) {
-      trackUsage(cms.homepage.banner.image_url, 'Homepage Banner');
+    if (cms.homepage?.banner?.background_image) {
+      trackUsage(cms.homepage.banner.background_image, 'Homepage Banner');
     }
 
     // 2. Scan Website Settings
@@ -267,7 +267,7 @@ export function MediaAssetAuditor({ onClose }: { onClose?: () => void }) {
   const handleRemoveUnused = async () => {
     const unusedIssues = auditReport.issues.filter((i) => i.type === 'unused' && i.mediaFileId);
     if (unusedIssues.length === 0) {
-      toast({ type: 'info', message: 'No unused media assets to remove.' });
+      toast({ type: 'default', message: 'No unused media assets to remove.' });
       return;
     }
 
@@ -291,7 +291,7 @@ export function MediaAssetAuditor({ onClose }: { onClose?: () => void }) {
   const handleAutoFillAltText = async () => {
     const missingAltIssues = auditReport.issues.filter((i) => i.type === 'missing_alt' && i.mediaFileId);
     if (missingAltIssues.length === 0) {
-      toast({ type: 'info', message: 'All media files already have alt text.' });
+      toast({ type: 'default', message: 'All media files already have alt text.' });
       return;
     }
 
@@ -326,7 +326,7 @@ export function MediaAssetAuditor({ onClose }: { onClose?: () => void }) {
   const handleOptimizeOversized = async () => {
     const oversizedIssues = auditReport.issues.filter((i) => i.type === 'oversized' && i.mediaFileId);
     if (oversizedIssues.length === 0) {
-      toast({ type: 'info', message: 'No oversized images found.' });
+      toast({ type: 'default', message: 'No oversized images found.' });
       return;
     }
 

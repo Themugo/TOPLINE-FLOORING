@@ -16,6 +16,7 @@ import type {
   Product,
   Category,
   HeroSlide,
+  Service,
   Testimonial,
   Partner,
   Order,
@@ -185,7 +186,7 @@ export function useHomepageSections() {
 }
 
 // Products
-export function useProducts(options?: { categoryId?: string; featured?: boolean; limit?: number; brandId?: string }) {
+export function useProducts(options?: { categoryId?: string; featured?: boolean; limit?: number; brandId?: string; search?: string }) {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -203,6 +204,7 @@ export function useProducts(options?: { categoryId?: string; featured?: boolean;
       if (options?.categoryId) query = query.eq('category_id', options.categoryId);
       if (options?.featured) query = query.eq('featured', true);
       if (options?.brandId) query = query.eq('brand_id', options.brandId);
+      if (options?.search) query = query.or(`name.ilike.%${options.search}%,slug.ilike.%${options.search}%,sku.ilike.%${options.search}%`);
       if (options?.limit) query = query.limit(options.limit);
 
       const { data, error: err } = await query;
@@ -210,6 +212,15 @@ export function useProducts(options?: { categoryId?: string; featured?: boolean;
         let filtered = [...MOCK_PRODUCTS];
         if (options?.categoryId) filtered = filtered.filter((p) => p.category_id === options.categoryId);
         if (options?.featured) filtered = filtered.filter((p) => p.featured);
+        if (options?.search) {
+          const q = options.search.toLowerCase();
+          filtered = filtered.filter(
+            (p) =>
+              p.name.toLowerCase().includes(q) ||
+              p.slug.toLowerCase().includes(q) ||
+              (p.sku || '').toLowerCase().includes(q)
+          );
+        }
         if (options?.limit) filtered = filtered.slice(0, options.limit);
         setProducts(filtered);
       } else {
@@ -219,12 +230,21 @@ export function useProducts(options?: { categoryId?: string; featured?: boolean;
       let filtered = [...MOCK_PRODUCTS];
       if (options?.categoryId) filtered = filtered.filter((p) => p.category_id === options.categoryId);
       if (options?.featured) filtered = filtered.filter((p) => p.featured);
+      if (options?.search) {
+        const q = options.search.toLowerCase();
+        filtered = filtered.filter(
+          (p) =>
+            p.name.toLowerCase().includes(q) ||
+            p.slug.toLowerCase().includes(q) ||
+            (p.sku || '').toLowerCase().includes(q)
+        );
+      }
       if (options?.limit) filtered = filtered.slice(0, options.limit);
       setProducts(filtered);
     } finally {
       setLoading(false);
     }
-  }, [options?.categoryId, options?.featured, options?.limit, options?.brandId]);
+  }, [options?.categoryId, options?.featured, options?.limit, options?.brandId, options?.search]);
 
   useEffect(() => {
     refetch();
@@ -710,6 +730,7 @@ export function useInventoryAlerts() {
 export function useAdminAuth() {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState<{ email?: string } | null>(null);
 
   useEffect(() => {
     let mounted = true;
@@ -717,11 +738,13 @@ export function useAdminAuth() {
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (!mounted) return;
       setIsAuthenticated(!!session);
+      setUser(session?.user ?? null);
       setLoading(false);
     });
 
     const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
       setIsAuthenticated(!!session);
+      setUser(session?.user ?? null);
     });
 
     return () => {
@@ -739,7 +762,7 @@ export function useAdminAuth() {
     await supabase.auth.signOut();
   };
 
-  return { isAuthenticated, loading, login, logout };
+  return { isAuthenticated, loading, user, login, logout };
 }
 
 // Media Library
@@ -792,22 +815,6 @@ export function useSeoPages() {
   useEffect(() => { refetch(); }, [refetch]);
 
   return { pages, loading, error, refetch };
-}
-
-// Services
-export interface Service {
-  id: string;
-  name: string;
-  slug: string;
-  description: string;
-  short_description?: string;
-  image_url: string;
-  icon?: string;
-  features?: string[];
-  display_order: number;
-  is_active: boolean;
-  created_at: string;
-  updated_at: string;
 }
 
 export function useServices(options?: { activeOnly?: boolean }) {
@@ -1424,5 +1431,5 @@ export function useProductComparison() {
     setComparison(next);
   };
 
-  return { comparison, addToComparison, removeFromComparison, clearComparison };
+  return { comparison, loading: false, addToComparison, removeFromComparison, clearComparison };
 }

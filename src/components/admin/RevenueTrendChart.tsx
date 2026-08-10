@@ -82,7 +82,7 @@ export function RevenueTrendChart() {
             <XAxis dataKey="date" tick={{ fontSize: 11 }} stroke="#94a3b8" />
             <YAxis tick={{ fontSize: 11 }} stroke="#94a3b8" tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`} />
             <Tooltip
-              formatter={(value: number) => [formatKES(value), 'Revenue']}
+              formatter={(value) => [formatKES(Number(value) || 0), 'Revenue']}
               contentStyle={{ borderRadius: '8px', border: '1px solid #e2e8f0', fontSize: '12px' }}
             />
             <Area type="monotone" dataKey="revenue" stroke="#1e3a5f" strokeWidth={2} fill="url(#revenueGrad)" />

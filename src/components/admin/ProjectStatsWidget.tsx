@@ -5,7 +5,7 @@ import type { Project } from '@/lib/types';
 
 interface ProjectStatsWidgetProps {
   projects: Project[];
-  selectedCategory: string;
+  selectedCategory: string | null;
   onSelectCategory: (category: string) => void;
 }
 

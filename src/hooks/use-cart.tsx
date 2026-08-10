@@ -84,19 +84,33 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(cartReducer, { items: [] });
 
   useEffect(() => {
-    const savedCart = localStorage.getItem('flooring_app_cart');
+    let savedCart: string | null = null;
+    try {
+      savedCart = localStorage.getItem('flooring_app_cart');
+    } catch {
+      // storage unavailable (private mode, blocked cookies) - start empty
+      return;
+    }
     if (savedCart) {
       try {
         const items = JSON.parse(savedCart);
         dispatch({ type: 'LOAD_CART', items });
       } catch {
-        localStorage.removeItem('flooring_app_cart');
+        try {
+          localStorage.removeItem('flooring_app_cart');
+        } catch {
+          // ignore storage failures
+        }
       }
     }
   }, []);
 
   useEffect(() => {
-    localStorage.setItem('flooring_app_cart', JSON.stringify(state.items));
+    try {
+      localStorage.setItem('flooring_app_cart', JSON.stringify(state.items));
+    } catch {
+      // storage unavailable - skip persisting cart
+    }
   }, [state.items]);
 
   const addItem = (product: Product) => {

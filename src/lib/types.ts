@@ -1,4 +1,19 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+export interface Service {
+  id: string;
+  name: string;
+  slug: string;
+  description: string;
+  short_description: string | null;
+  image_url: string;
+  icon: string | null;
+  features: string[];
+  display_order: number;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface Category {
   id: string;
   name: string;
@@ -33,6 +48,29 @@ export interface Product {
   stock_quantity: number;
   low_stock_threshold: number;
   related_products: string[];
+  sale_price?: number | null;
+  is_new_arrival?: boolean;
+  is_best_seller?: boolean;
+  is_clearance?: boolean;
+  collection?: string | null;
+  material?: string | null;
+  origin_country?: string | null;
+  warranty_years?: number | null;
+  warranty_description?: string | null;
+  thickness_mm?: number | null;
+  weight_kg?: number | null;
+  dimensions?: string | null;
+  pack_size?: string | null;
+  coverage_per_unit?: string | null;
+  installation_method?: string | null;
+  is_indoor?: boolean;
+  is_outdoor?: boolean;
+  room_suitability?: string[];
+  slip_rating?: string | null;
+  water_resistance?: string | null;
+  abrasion_rating?: string | null;
+  fire_rating?: string | null;
+  barcode?: string | null;
   created_at: string;
   updated_at: string;
   category?: Category;
@@ -71,6 +109,13 @@ export interface ProductVariant {
   attributes: Record<string, any>;
   is_active: boolean;
   display_order: number;
+  is_default: boolean;
+  sale_price: number | null;
+  thickness_mm: number | null;
+  weight_kg: number | null;
+  pack_size: string | null;
+  barcode: string | null;
+  low_stock_threshold: number;
 }
 
 export interface ProductDocument {
@@ -148,6 +193,7 @@ export interface HeroSlide {
   subtitle: string | null;
   description: string | null;
   image_url: string;
+  background_image?: string | null;
   button_text: string | null;
   button_link: string | null;
   display_order: number;
@@ -385,9 +431,19 @@ export interface Project {
   challenge: string | null;
   solution: string | null;
   results: string | null;
+  summary?: string | null;
+  image_url?: string | null;
   featured: boolean;
   is_active: boolean;
   display_order: number;
+  status?: string | null;
+  budget?: number | null;
+  estimated_budget?: number | null;
+  actual_expenses?: number | null;
+  expense_items?: ProjectExpenseItem[];
+  materials_used?: string | null;
+  created_at?: string;
+  updated_at?: string;
   images?: ProjectImage[];
 }
 
@@ -398,6 +454,63 @@ export interface ProjectImage {
   image_type: 'before' | 'after' | 'progress' | 'other';
   caption: string | null;
   display_order: number;
+}
+
+export interface ProjectExpenseItem {
+  id?: string;
+  project_id?: string;
+  category: string;
+  description: string;
+  estimated_amount: number;
+  actual_amount: number;
+  date?: string;
+  notes?: string;
+}
+
+export interface ProjectTemplatePhase {
+  id: string;
+  name: string;
+  estimated_days: number;
+  tasks: string[];
+}
+
+export interface ProjectTemplate {
+  id: string;
+  name: string;
+  category: string;
+  service_type: string;
+  description: string;
+  default_materials: string;
+  default_estimated_budget: number;
+  default_area_size: string;
+  phases: ProjectTemplatePhase[];
+  default_expense_items?: ProjectExpenseItem[];
+}
+
+export interface ProjectDocument {
+  id: string;
+  project_id: string;
+  name: string;
+  doc_type: string;
+  file_url: string;
+  file_size: string;
+  uploaded_at: string;
+  uploaded_by: string;
+  notes: string;
+}
+
+export interface AdminAlertNotification {
+  id: string;
+  type: string;
+  title: string;
+  message: string;
+  project_id?: string;
+  project_title?: string;
+  crm_lead_id?: string;
+  severity: 'info' | 'warning' | 'danger';
+  created_at: string;
+  read: boolean;
+  action_label?: string;
 }
 
 export interface SeoPage {
@@ -464,20 +577,36 @@ export type LeadStatus = 'new' | 'contacted' | 'qualified' | 'proposal' | 'negot
 
 export interface Lead {
   id: string;
-  name: string;
+  lead_number: string | null;
+  customer_name: string;
+  company_name: string | null;
   email: string | null;
   phone: string | null;
-  company: string | null;
-  source: string;
-  status: LeadStatus;
-  estimated_value: number | null;
-  lost_reason: string | null;
+  preferred_contact_method: string | null;
+  source: string | null;
+  interested_products: string[];
+  interested_services: string[];
+  budget_range: string | null;
+  project_location: string | null;
+  project_address: string | null;
+  lead_stage: string | null;
   assigned_to: string | null;
-  converted_customer_id: string | null;
-  converted_quotation_id: string | null;
-  notes: string | null;
+  follow_up_date: string | null;
+  follow_up_notes: string | null;
+  outcome: string | null;
+  outcome_reason: string | null;
+  communication_history: unknown[];
+  created_by: string | null;
   created_at: string;
   updated_at: string;
+  name?: string;
+  company?: string | null;
+  status?: LeadStatus;
+  estimated_value?: number | null;
+  lost_reason?: string | null;
+  converted_customer_id?: string | null;
+  converted_quotation_id?: string | null;
+  notes?: string | null;
   lead_notes?: LeadNote[];
   lead_reminders?: LeadReminder[];
 }

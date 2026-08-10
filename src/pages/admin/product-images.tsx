@@ -9,6 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Switch } from "@/components/ui/switch";
 import { Plus, Pencil, Trash2, Search, Image as ImageIcon } from "lucide-react";
 import { supabase } from "@/lib/supabase";
+import { ImageUpload } from "@/components/ui/image-upload";
 
 type ProductImage = {
   id: string;
@@ -205,9 +206,23 @@ export default function ProductImages() {
               </Select>
             </div>
             <div>
-              <Label className="text-xs uppercase tracking-widest font-sans">Image URL *</Label>
-              <Input value={form.image_url} onChange={e => setF("image_url", e.target.value)} className="mt-1 rounded-sm" placeholder="https://..." required />
-              {form.image_url && <img src={form.image_url} alt="" className="mt-2 h-32 w-full object-cover rounded-sm border border-border" onError={e => (e.currentTarget.style.display = "none")} />}
+              <Label className="text-xs uppercase tracking-widest font-sans">Image *</Label>
+              <ImageUpload
+                label=""
+                value={form.image_url}
+                onChange={(url) => setF("image_url", url)}
+                folder="products"
+                className="mt-1"
+              />
+              {!form.image_url && (
+                <Input
+                  value={form.image_url}
+                  onChange={e => setF("image_url", e.target.value)}
+                  className="mt-2 rounded-sm text-xs"
+                  placeholder="...or paste an image URL directly"
+                  required
+                />
+              )}
             </div>
             <div>
               <Label className="text-xs uppercase tracking-widest font-sans">Alt Text</Label>

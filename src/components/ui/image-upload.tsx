@@ -22,11 +22,13 @@ export function ImageUpload({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [warning, setWarning] = useState<string | null>(null);
   const [dragOver, setDragOver] = useState(false);
   const [libraryOpen, setLibraryOpen] = useState(false);
 
   async function uploadFile(file: File) {
     setError(null);
+    setWarning(null);
 
     const validation = validateUpload(file);
     if (!validation.valid) {
@@ -54,12 +56,15 @@ export function ImageUpload({
             .from('images')
             .getPublicUrl(fileName);
           uploadedUrl = urlData.publicUrl;
+        } else {
+          console.error('Storage upload failed:', uploadError);
         }
-      } catch {
-        // Storage unreachable
+      } catch (storageErr) {
+        console.error('Storage unreachable:', storageErr);
       }
 
       if (!uploadedUrl) {
+        setWarning('Cloud storage isn\'t set up yet, so this photo is embedded directly on the page instead of uploaded. It will still show, but ask your developer to run the storage setup script so future uploads work properly.');
         uploadedUrl = await new Promise<string>((resolve, reject) => {
           const reader = new FileReader();
           reader.onload = () => resolve(reader.result as string);
@@ -185,6 +190,9 @@ export function ImageUpload({
       {error && (
         <p className="mt-1.5 text-xs text-red-600">{error}</p>
       )}
+      {warning && (
+        <p className="mt-1.5 text-xs text-amber-600">{warning}</p>
+      )}
 
       <input
         ref={fileInputRef}
@@ -223,13 +231,16 @@ export function MultiImageUpload({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [warning, setWarning] = useState<string | null>(null);
 
   async function uploadFiles(files: FileList) {
     setError(null);
+    setWarning(null);
     setUploading(true);
 
     try {
       const urls: string[] = [];
+      let usedFallback = false;
       for (const file of Array.from(files)) {
         const validation = validateUpload(file);
         if (!validation.valid) {
@@ -250,12 +261,15 @@ export function MultiImageUpload({
           if (!uploadError) {
             const { data: urlData } = supabase.storage.from('images').getPublicUrl(fileName);
             fileUrl = urlData.publicUrl;
+          } else {
+            console.error('Storage upload failed:', uploadError);
           }
-        } catch {
-          // ignore
+        } catch (storageErr) {
+          console.error('Storage unreachable:', storageErr);
         }
 
         if (!fileUrl) {
+          usedFallback = true;
           fileUrl = await new Promise<string>((resolve, reject) => {
             const reader = new FileReader();
             reader.onload = () => resolve(reader.result as string);
@@ -265,6 +279,9 @@ export function MultiImageUpload({
         }
 
         urls.push(fileUrl);
+      }
+      if (usedFallback) {
+        setWarning('Cloud storage isn\'t set up yet, so these photos are embedded directly on the page instead of uploaded. They will still show, but ask your developer to run the storage setup script so future uploads work properly.');
       }
       onChange([...value, ...urls]);
     } catch (err) {
@@ -318,6 +335,7 @@ export function MultiImageUpload({
       </div>
 
       {error && <p className="mt-1.5 text-xs text-red-600">{error}</p>}
+      {warning && <p className="mt-1.5 text-xs text-amber-600">{warning}</p>}
 
       <input
         ref={fileInputRef}

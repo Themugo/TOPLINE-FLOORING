@@ -2,12 +2,9 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from './supabase';
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-type Tables<T extends string> = Record<string, any>;
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-type TablesInsert<T extends string> = Record<string, any>;
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-type TablesUpdate<T extends string> = Record<string, any>;
+type Tables<T extends string> = Record<string, any> & { __table?: T };
+type TablesInsert<T extends string> = Record<string, any> & { __table?: T };
+type TablesUpdate<T extends string> = Record<string, any> & { __table?: T };
 
 // Product types
 export type Product = Tables<'products'> & { category_name?: string };

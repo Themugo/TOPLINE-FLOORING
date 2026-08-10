@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { Plus, X, Pencil, Trash2, Eye, EyeOff, GripVertical } from 'lucide-react';
 import { AdminLayout } from './dashboard';
-import { useServices, Service } from '@/hooks/use-data';
+import { useServices } from '@/hooks/use-data';
+import type { Service } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 import { ImageUpload } from '@/components/ui/image-upload';
 import { getServicePlaceholder, withFallback } from '@/lib/placeholders';

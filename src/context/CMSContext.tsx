@@ -60,8 +60,8 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           [key]: updated,
         }));
 
-        if (key === 'theme_settings' && (data as Record<string, unknown>)?.primary_color) {
-          applyPrimaryColorRamp(String((data as Record<string, unknown>).primary_color));
+        if (key === 'theme_settings' && (data as unknown as Record<string, unknown>)?.primary_color) {
+          applyPrimaryColorRamp(String((data as unknown as Record<string, unknown>).primary_color));
         }
       } catch (err) {
         console.error(`[CMSProvider] Error updating group "${key}":`, err);

@@ -218,11 +218,11 @@ export const DEFAULT_CMS_STORE: CMSContentStore = {
   services: {
     catalog: MOCK_SERVICES.map((s) => ({
       id: s.id,
-      title: s.title,
+      title: s.name,
       slug: s.slug,
       description: s.description,
-      short_description: s.short_description,
-      icon: s.icon,
+      short_description: s.short_description || '',
+      icon: s.icon || '',
       image_url: s.image_url,
       features: s.features,
       is_active: s.is_active,

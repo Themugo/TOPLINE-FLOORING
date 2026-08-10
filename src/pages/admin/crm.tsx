@@ -78,7 +78,7 @@ export default function AdminCRM() {
   };
 
   const totalPipelineValue = leads
-    .filter((l) => !['won', 'lost'].includes(l.status))
+    .filter((l) => !['won', 'lost'].includes(l.status || ''))
     .reduce((sum, l) => sum + (l.estimated_value || 0), 0);
 
   return (

@@ -264,7 +264,7 @@ export default function Home() {
               alt={slide.title}
               className="w-full h-full object-cover object-center transition-transform duration-1000 ease-out"
               loading={index === 0 ? 'eager' : 'lazy'}
-              fetchpriority={index === 0 ? 'high' : 'auto'}
+              fetchPriority={index === 0 ? 'high' : 'auto'}
               onError={(e) => {
                 e.currentTarget.src = getRandomRealImage('flooring', index);
               }}

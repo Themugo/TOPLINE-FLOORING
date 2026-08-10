@@ -30,7 +30,7 @@ export function LeadList({ leads, loading, onEdit, onDelete, onAddNew }: LeadLis
     const matchesSearch = 
       lead.customer_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       lead.company_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      lead.phone.includes(searchQuery) ||
+      lead.phone?.includes(searchQuery) ||
       lead.email?.toLowerCase().includes(searchQuery.toLowerCase());
     
     const matchesStage = stageFilter === 'all' || lead.lead_stage === stageFilter;
@@ -173,7 +173,7 @@ export function LeadList({ leads, loading, onEdit, onDelete, onAddNew }: LeadLis
                     </td>
                     <td className="px-6 py-4">
                       <span className={`inline-block px-2 py-1 text-xs font-medium rounded-full ${STAGE_COLORS[lead.lead_stage as keyof typeof STAGE_COLORS]}`}>
-                        {lead.lead_stage.replace('_', ' ')}
+                        {lead.lead_stage?.replace('_', ' ') || ''}
                       </span>
                     </td>
                     <td className="px-6 py-4">

@@ -633,6 +633,29 @@ export default function AdminProjects() {
         <ProjectGalleryModal project={galleryProject} onClose={() => setGalleryProject(null)} />
       )}
 
+      {/* Standalone Project Document Vault Modal */}
+      {selectedDocProject && (
+        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-2xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl max-w-4xl w-full max-h-[90vh] overflow-y-auto p-6 shadow-2xl border border-gray-200 relative">
+            <button
+              onClick={() => setSelectedDocProject(null)}
+              className="absolute top-5 right-5 p-2 text-gray-400 hover:text-gray-700 rounded-full hover:bg-gray-100 transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+            <div className="mb-4">
+              <span className="text-[11px] font-extrabold uppercase tracking-wider text-indigo-600">
+                Project Document Management
+              </span>
+              <h2 className="font-bold text-lg text-gray-900">
+                {selectedDocProject.title}
+              </h2>
+            </div>
+            <ProjectDocumentManager project={selectedDocProject} />
+          </div>
+        </div>
+      )}
+
       {/* Project Template Library Modal */}
       <ProjectTemplateLibrary
         isOpen={showTemplateModal}
@@ -922,29 +945,6 @@ function ProjectGalleryModal({ project, onClose }: { project: Project; onClose: 
               alt="Zoomed project preview"
               className="max-w-full max-h-[80vh] object-contain rounded-xl shadow-2xl border border-gray-800"
             />
-          </div>
-        </div>
-      )}
-
-      {/* Standalone Project Document Vault Modal */}
-      {selectedDocProject && (
-        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-2xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl max-w-4xl w-full max-h-[90vh] overflow-y-auto p-6 shadow-2xl border border-gray-200 relative">
-            <button
-              onClick={() => setSelectedDocProject(null)}
-              className="absolute top-5 right-5 p-2 text-gray-400 hover:text-gray-700 rounded-full hover:bg-gray-100 transition-colors"
-            >
-              <X className="w-5 h-5" />
-            </button>
-            <div className="mb-4">
-              <span className="text-[11px] font-extrabold uppercase tracking-wider text-indigo-600">
-                Project Document Management
-              </span>
-              <h2 className="font-bold text-lg text-gray-900">
-                {selectedDocProject.title}
-              </h2>
-            </div>
-            <ProjectDocumentManager project={selectedDocProject} />
           </div>
         </div>
       )}

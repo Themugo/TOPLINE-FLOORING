@@ -314,7 +314,8 @@ function useCMSInitializer() {
 
   useEffect(() => {
     // Dynamically synchronize HTML document title with CMS site settings
-    const siteTitle = cms?.website_settings?.site_info?.site_title;
+    const siteTitle =
+      cms?.website_settings?.site_info?.name || document.title;
     if (siteTitle) {
       document.title = siteTitle;
     }

@@ -36,12 +36,13 @@ export default function Industries() {
       return;
     }
 
-    supabase
-      .from("categories")
-      .select("*")
-      .eq("is_active", true)
-      .order("display_order")
-      .then(({ data }) => {
+    const load = async () => {
+      try {
+        const { data } = await supabase
+          .from("categories")
+          .select("*")
+          .eq("is_active", true)
+          .order("display_order");
         if (data && data.length > 0) {
           const icons = ["Building2", "Warehouse", "ShoppingBag", "Stethoscope", "School", "Building", "Ship", "Trees"];
           const mapped = data.map((c, i) => ({
@@ -52,9 +53,13 @@ export default function Industries() {
           }));
           setIndustries(mapped);
         }
-      })
-      .catch(console.warn)
-      .finally(() => setLoading(false));
+      } catch {
+        console.warn("Failed to load industries");
+      } finally {
+        setLoading(false);
+      }
+    };
+    load();
   }, []);
 
   return (

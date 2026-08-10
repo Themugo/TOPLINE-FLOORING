@@ -826,6 +826,7 @@ function UploadModal({
 
     setUploading(true);
     const filesToInsert: Record<string, unknown>[] = [];
+    let usedFallback = false;
 
     for (const rawFile of selectedFiles) {
       try {
@@ -856,12 +857,15 @@ function UploadModal({
           if (!uploadError) {
             const { data: urlData } = supabase.storage.from('images').getPublicUrl(storagePath);
             fileUrl = urlData.publicUrl;
+          } else {
+            console.error('Storage upload failed:', uploadError);
           }
-        } catch {
-          // fallback
+        } catch (storageErr) {
+          console.error('Storage unreachable:', storageErr);
         }
 
         if (!fileUrl) {
+          usedFallback = true;
           fileUrl = await new Promise<string>((resolve, reject) => {
             const reader = new FileReader();
             reader.onload = () => resolve(reader.result as string);
@@ -903,6 +907,9 @@ function UploadModal({
 
       if (error) {
         toast({ type: 'error', message: 'Failed to save asset records' });
+      } else if (usedFallback) {
+        toast({ type: 'error', message: `${filesToInsert.length} asset(s) saved, but cloud storage isn't set up - photos were embedded directly instead of uploaded. Run the storage setup script (see supabase/setup_storage.sql) so this works properly.` });
+        onSuccess();
       } else {
         toast({ type: 'success', message: `${filesToInsert.length} asset(s) uploaded successfully` });
         onSuccess();

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Save, Globe, Phone, Code } from 'lucide-react';
+import { Save, Globe, Phone, Code, Image as ImageIcon } from 'lucide-react';
 import { AdminLayout } from './dashboard';
 import { supabase } from '@/lib/supabase';
 import { useToast } from '@/hooks/use-toast';
@@ -69,7 +69,7 @@ export default function AdminSiteSettings() {
     { id: 'contact', label: 'Contact', icon: Phone },
     { id: 'social', label: 'Social', icon: Code },
     { id: 'seo', label: 'SEO', icon: Code },
-    { id: 'appearance', label: 'Appearance', icon: Image },
+    { id: 'appearance', label: 'Appearance', icon: ImageIcon },
   ];
 
   if (loading) return <AdminLayout title="Site Settings"><div className="text-center py-12">Loading...</div></AdminLayout>;
