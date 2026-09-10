@@ -37,8 +37,8 @@ export function InitializationScreen() {
                   <span>- Your Supabase project URL</span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <code className="bg-slate-200 px-2 py-1 rounded text-xs font-mono">VITE_SUPABASE_ANON_KEY</code>
-                  <span>- Your Supabase anonymous key</span>
+                  <code className="bg-slate-200 px-2 py-1 rounded text-xs font-mono">VITE_SUPABASE_PUBLISHABLE_KEY</code>
+                  <span>- Your Supabase publishable key</span>
                 </li>
               </ul>
             </div>

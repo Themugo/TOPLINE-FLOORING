@@ -2,7 +2,7 @@
  * Build-time sitemap generator.
  *
  * Run:  node scripts/generate-sitemap.mjs
- * Requires VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in .env
+ * Uses VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY (legacy anon key supported) when available.
  *
  * Outputs: public/sitemap.xml
  */
@@ -17,7 +17,7 @@ const root = resolve(__dirname, '..');
 
 // Load .env
 let supabaseUrl = process.env.VITE_SUPABASE_URL;
-let supabaseKey = process.env.VITE_SUPABASE_ANON_KEY;
+let supabaseKey = process.env.VITE_SUPABASE_PUBLISHABLE_KEY || process.env.VITE_SUPABASE_ANON_KEY;
 
 if (!supabaseUrl || !supabaseKey) {
   try {
@@ -30,7 +30,8 @@ if (!supabaseUrl || !supabaseKey) {
       const key = trimmed.slice(0, eqIdx).trim();
       const val = trimmed.slice(eqIdx + 1).trim();
       if (key === 'VITE_SUPABASE_URL') supabaseUrl = val;
-      if (key === 'VITE_SUPABASE_ANON_KEY') supabaseKey = val;
+      if (key === 'VITE_SUPABASE_PUBLISHABLE_KEY') supabaseKey = val;
+      if (!supabaseKey && key === 'VITE_SUPABASE_ANON_KEY') supabaseKey = val;
     }
   } catch {
     // .env not found

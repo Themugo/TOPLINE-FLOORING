@@ -10,7 +10,8 @@
     "build:all": "node scripts/generate-sitemap.mjs && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "typecheck": "tsc --noEmit -p tsconfig.app.json"
+    "typecheck": "tsc --noEmit -p tsconfig.app.json",
+    "verify:supabase": "node scripts/verify-supabase-target.mjs"
   },
   "dependencies": {
     "@radix-ui/react-accordion": "^1.2.16",

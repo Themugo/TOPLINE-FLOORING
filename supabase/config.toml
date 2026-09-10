@@ -1,0 +1,12 @@
+# Topline Flooring & Water Roofing — Supabase project configuration
+# Project ref is safe to commit; secrets must remain in environment variables.
+project_id = "jypkhvknfgoqrhwzbdwi"
+
+[auth]
+enabled = true
+
+[auth.email]
+enabled = true
+
+[db]
+major_version = 15

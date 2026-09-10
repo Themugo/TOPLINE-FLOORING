@@ -1,6 +1,7 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL?.trim();
+const TOPLINE_SUPABASE_URL = 'https://jypkhvknfgoqrhwzbdwi.supabase.co';
+const supabaseUrl = (import.meta.env.VITE_SUPABASE_URL || TOPLINE_SUPABASE_URL)?.trim();
 const supabasePublishableKey = (
   import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || import.meta.env.VITE_SUPABASE_ANON_KEY
 )?.trim();
@@ -16,7 +17,7 @@ const supabasePublishableKey = (
 export const isSupabaseConfigured = Boolean(supabaseUrl && supabasePublishableKey);
 
 const CONFIGURATION_ERROR =
-  'Supabase is not configured. Set VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY before using database-backed features.';
+  'Supabase is not configured. Set VITE_SUPABASE_PUBLISHABLE_KEY before using database-backed features. The project URL is pinned to the dedicated Topline Supabase project.';
 
 const noOpFetch: typeof fetch = async () => {
   throw new Error(CONFIGURATION_ERROR);
