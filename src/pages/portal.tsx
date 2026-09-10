@@ -1,0 +1,93 @@
+import { useEffect, useState } from 'react';
+import { CustomerLayout } from '@/components/layout/CustomerLayout';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { CheckCircle2, Clock, FileText, LogOut, Package, ShieldCheck, Truck } from 'lucide-react';
+import { supabase, isSupabaseConfigured } from '@/lib/supabase';
+import { getCustomerPortalData, requestCustomerMagicLink, signOutCustomer, type CustomerPortalData } from '@/lib/customer-portal';
+import { useSeoMeta } from '@/hooks/use-seo';
+import { telHref } from '@/lib/utils';
+import { useSiteSettings } from '@/hooks/use-data';
+
+const orderIcon = (status: string) => {
+  if (['completed', 'delivered'].includes(status)) return <CheckCircle2 className="h-5 w-5" />;
+  if (['processing', 'confirmed'].includes(status)) return <Truck className="h-5 w-5" />;
+  return <Clock className="h-5 w-5" />;
+};
+
+function SignIn() {
+  const [email, setEmail] = useState('');
+  const [sent, setSent] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault(); setLoading(true); setError(null);
+    try { await requestCustomerMagicLink(email); setSent(true); }
+    catch (err) { setError(err instanceof Error ? err.message : 'Unable to send the sign-in link.'); }
+    finally { setLoading(false); }
+  };
+  return (
+    <section className="py-20">
+      <div className="container mx-auto max-w-md px-6">
+        <Card>
+          <CardHeader className="text-center">
+            <ShieldCheck className="mx-auto mb-3 h-8 w-8 text-primary" />
+            <CardTitle>Customer Portal</CardTitle>
+            <p className="text-sm text-muted-foreground">Access your quotations and orders securely.</p>
+          </CardHeader>
+          <CardContent>
+            {sent ? <div className="text-center space-y-3"><CheckCircle2 className="mx-auto h-10 w-10 text-green-600" /><h2 className="font-semibold">Check your email</h2><p className="text-sm text-muted-foreground">We sent a secure sign-in link to <strong>{email}</strong>.</p></div> : (
+              <form onSubmit={submit} className="space-y-4">
+                <div><Label htmlFor="portal-email">Email address</Label><Input id="portal-email" type="email" required value={email} onChange={e => setEmail(e.target.value)} placeholder="you@company.co.ke" className="mt-1.5" /></div>
+                {error && <p className="text-sm text-destructive">{error}</p>}
+                <Button className="w-full" disabled={loading || !isSupabaseConfigured}>{loading ? 'Sending…' : 'Email me a sign-in link'}</Button>
+                {!isSupabaseConfigured && <p className="text-xs text-muted-foreground">The customer portal becomes available after the production Supabase environment is configured.</p>}
+              </form>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+    </section>
+  );
+}
+
+export default function Portal() {
+  useSeoMeta('customer-portal', null, { noIndex: true });
+  const { settings } = useSiteSettings();
+  const [data, setData] = useState<CustomerPortalData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [signedIn, setSignedIn] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!isSupabaseConfigured) { setLoading(false); return; }
+    let mounted = true;
+    const load = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) { if (mounted) { setSignedIn(false); setLoading(false); } return; }
+      try { const portal = await getCustomerPortalData(); if (mounted) { setData(portal); setSignedIn(true); } }
+      catch (err) { if (mounted) setError(err instanceof Error ? err.message : 'Your customer portal is not available.'); }
+      finally { if (mounted) setLoading(false); }
+    };
+    void load();
+    const { data: listener } = supabase.auth.onAuthStateChange(() => { void load(); });
+    return () => { mounted = false; listener.subscription.unsubscribe(); };
+  }, []);
+
+  if (loading) return <CustomerLayout><div className="min-h-[50vh] flex items-center justify-center text-sm text-muted-foreground">Loading your portal…</div></CustomerLayout>;
+  if (!signedIn || !data) return <CustomerLayout><SignIn /></CustomerLayout>;
+
+  return <CustomerLayout>
+    <section className="bg-secondary text-secondary-foreground py-16"><div className="container mx-auto px-6 md:px-12 flex flex-col md:flex-row md:items-end justify-between gap-6"><div><p className="text-primary text-xs uppercase tracking-[0.2em] mb-2">My Topline</p><h1 className="font-display text-4xl font-bold text-white">Welcome, {data.customer.name}</h1><p className="text-secondary-foreground/60 mt-2">Your quotations and orders in one place.</p></div><Button variant="outline" className="w-fit" onClick={() => void signOutCustomer()}><LogOut className="h-4 w-4 mr-2" /> Sign out</Button></div></section>
+    <section className="py-12"><div className="container mx-auto px-6 md:px-12 space-y-8">
+      {error && <p className="rounded-md border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive">{error}</p>}
+      <div className="grid md:grid-cols-2 gap-6">
+        <Card><CardHeader><CardTitle className="flex items-center gap-2"><FileText className="h-5 w-5" /> Quotations</CardTitle></CardHeader><CardContent className="space-y-3">{data.quotations.length ? data.quotations.map(q => <div key={q.id} className="border rounded-md p-4 flex justify-between gap-4"><div><p className="font-medium">{q.quotation_number || q.id.slice(0,8)}</p><p className="text-xs text-muted-foreground">{q.project_type || q.service || 'Project enquiry'} · {new Date(q.created_at).toLocaleDateString('en-KE')}</p></div><div className="text-right"><p className="text-sm font-medium capitalize">{q.status}</p><p className="text-xs text-muted-foreground">KES {Number(q.total_amount || 0).toLocaleString()}</p></div></div>) : <p className="text-sm text-muted-foreground">No quotations are linked to this account yet.</p>}</CardContent></Card>
+        <Card><CardHeader><CardTitle className="flex items-center gap-2"><Package className="h-5 w-5" /> Orders</CardTitle></CardHeader><CardContent className="space-y-3">{data.orders.length ? data.orders.map(o => <div key={o.id} className="border rounded-md p-4"><div className="flex justify-between gap-4"><div className="flex gap-3">{orderIcon(o.status)}<div><p className="font-medium">{o.order_number || o.id.slice(0,8)}</p><p className="text-xs text-muted-foreground">{new Date(o.created_at).toLocaleDateString('en-KE')}</p></div></div><div className="text-right"><p className="text-sm font-medium capitalize">{o.status}</p><p className="text-xs">KES {Number(o.total_amount).toLocaleString()}</p></div></div>{o.items?.length ? <div className="mt-3 border-t pt-3 space-y-1">{o.items.map((i, idx) => <div key={idx} className="flex justify-between text-sm"><span>{i.product_name} × {i.quantity} {i.unit}</span><span>KES {(Number(i.unit_price) * Number(i.quantity)).toLocaleString()}</span></div>)}</div> : null}</div>) : <p className="text-sm text-muted-foreground">No orders are linked to this account yet.</p>}</CardContent></Card>
+      </div>
+      <Card><CardContent className="p-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4"><div><p className="font-semibold">Need help with an order?</p><p className="text-sm text-muted-foreground">Call {settings?.phone || 'our team'} or request a new quotation.</p></div><div className="flex gap-3"><a href={telHref(settings?.phone || '')}><Button variant="outline">Call us</Button></a><a href="/quotation"><Button>Request quotation</Button></a></div></CardContent></Card>
+    </div></section>
+  </CustomerLayout>;
+}

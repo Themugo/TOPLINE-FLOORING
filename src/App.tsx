@@ -25,6 +25,7 @@ const FAQ = lazy(() => import('@/pages/faq'));
 const ServiceDetail = lazy(() => import('@/pages/service-detail'));
 const Compare = lazy(() => import('@/pages/compare'));
 const TrackOrder = lazy(() => import('@/pages/track-order'));
+const Portal = lazy(() => import('@/pages/portal'));
 const CheckoutSuccess = lazy(() => import('@/pages/checkout-success'));
 const Industries = lazy(() => import('@/pages/industries'));
 const Market = lazy(() => import('@/pages/market'));
@@ -234,6 +235,14 @@ function Router() {
     return (
       <Suspense fallback={<PublicLoading />}>
         <Compare />
+      </Suspense>
+    );
+  }
+
+  if (location === '/portal') {
+    return (
+      <Suspense fallback={<PublicLoading />}>
+        <Portal />
       </Suspense>
     );
   }
