@@ -7,7 +7,7 @@ import { useCart } from '@/hooks/use-cart';
 import { useDeliveryZones } from '@/hooks/use-data';
 import { formatKES } from '@/lib/utils';
 import { getProductPlaceholder, withFallback } from '@/lib/placeholders';
-import { supabase } from '@/lib/supabase';
+import { createCustomerOrder, validateCoupon } from '@/lib/commerce';
 import { useToast } from '@/hooks/use-toast';
 import { useSeoMeta } from '@/hooks/use-seo';
 
@@ -70,15 +70,9 @@ export default function Cart() {
     setValidatingCoupon(true);
     setCouponError('');
     try {
-      const { data, error } = await supabase.rpc('validate_coupon', {
-        p_code: couponCode.trim(),
-        p_order_total: totalPrice,
-      });
-      if (error) throw error;
-
-      const result = data?.[0];
+      const result = await validateCoupon(couponCode, totalPrice);
       if (!result || !result.valid) {
-        setCouponError(result?.message || 'Invalid coupon code');
+        setCouponError(result?.error || 'Invalid coupon code');
         setAppliedCoupon(null);
         return;
       }
@@ -124,29 +118,25 @@ export default function Cart() {
       // SECURITY DEFINER RPC. This lets an anonymous shopper check out
       // without needing SELECT/UPDATE/DELETE rights on customer data,
       // which is enforced by RLS everywhere else in the database.
-      // Delivery fee and coupon discount were computed from
-      // server-validated data (active delivery zone rows, and the
-      // validate_coupon RPC), so the final total sent here is trustworthy.
-      const { data: orderId, error } = await supabase.rpc('create_customer_order', {
-        p_name: form.name,
-        p_email: form.email,
-        p_phone: form.phone,
-        p_notes: form.notes || null,
-        p_total_amount: finalTotal,
-        p_items: items.map((item) => ({
+      // The database recalculates prices, delivery and coupon discounts
+      // inside the transaction. Client totals are display-only.
+      const result = await createCustomerOrder({
+        name: form.name,
+        email: form.email,
+        phone: form.phone,
+        notes: form.notes,
+        items: items.map((item) => ({
           product_id: item.product.id,
           product_name: item.product.name,
           quantity: item.quantity,
-          unit_price: item.product.price,
         })),
-        p_coupon_id: appliedCoupon?.id || null,
-        p_delivery_zone_id: selectedZoneId || null,
-        p_delivery_address: form.deliveryAddress || null,
-        p_delivery_charge: deliveryCharge,
-        p_discount_amount: discountAmount,
+        couponId: appliedCoupon?.id || null,
+        deliveryZoneId: selectedZoneId || null,
+        deliveryAddress: form.deliveryAddress || null,
       });
 
-      if (error) throw error;
+      const orderId = result.order_id;
+      if (!orderId) throw new Error('Order was created without an order reference');
 
       // Stash a summary for the confirmation page to display. We don't
       // grant anon a SELECT policy on `orders` (it would let anyone read
@@ -158,10 +148,10 @@ export default function Cart() {
           `order_summary_${orderId}`,
           JSON.stringify({
             items: items.map((item) => ({ name: item.product.name, quantity: item.quantity, price: item.product.price })),
-            subtotal: totalPrice,
-            deliveryCharge,
-            discountAmount,
-            total: finalTotal,
+            subtotal: result.subtotal ?? totalPrice,
+            deliveryCharge: result.delivery_charge ?? deliveryCharge,
+            discountAmount: result.discount_amount ?? discountAmount,
+            total: result.total ?? finalTotal,
             deliveryZoneName: selectedZone?.zone_name || null,
             deliveryAddress: form.deliveryAddress || null,
           })

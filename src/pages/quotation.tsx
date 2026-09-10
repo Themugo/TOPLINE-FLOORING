@@ -3,7 +3,7 @@ import { FileText, Send, CheckCircle2, ShieldCheck, Calculator, Sparkles, ArrowR
 import { CustomerLayout } from '@/components/layout/CustomerLayout';
 import { Breadcrumbs } from '@/components/Breadcrumbs';
 import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/lib/supabase';
+import { submitQuotationRequest } from '@/lib/commerce';
 import { useSeoMeta } from '@/hooks/use-seo';
 import { useImagePreloader } from '@/hooks/use-image-preloader';
 import { useSiteSettings } from '@/hooks/use-data';
@@ -84,18 +84,16 @@ export default function Quotation() {
     setSubmitting(true);
 
     try {
-      const { error } = await supabase.rpc('submit_quotation_request', {
-        p_name: form.name,
-        p_email: form.email,
-        p_phone: form.phone,
-        p_company: form.company || null,
-        p_project_type: form.project_type,
-        p_area_size: form.area_size,
-        p_location: form.location,
-        p_message: `Substrate: ${form.substrate_condition} | Timeline: ${form.timeline}\nDetails: ${form.message}`,
+      await submitQuotationRequest({
+        name: form.name,
+        email: form.email,
+        phone: form.phone,
+        county: form.location,
+        projectType: form.project_type,
+        service: form.project_type,
+        message: `Company: ${form.company || 'Not provided'}\nArea: ${form.area_size} sqm\nSubstrate: ${form.substrate_condition}\nDetails: ${form.message}`,
+        timeline: form.timeline,
       });
-
-      if (error) throw error;
 
       const refCode = `RFQ-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`;
       setRfqReference(refCode);

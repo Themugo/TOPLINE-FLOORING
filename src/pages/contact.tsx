@@ -4,7 +4,7 @@ import { CustomerLayout } from '@/components/layout/CustomerLayout';
 import { Breadcrumbs } from '@/components/Breadcrumbs';
 import { useToast } from '@/hooks/use-toast';
 import { useSiteSettings } from '@/hooks/use-data';
-import { supabase } from '@/lib/supabase';
+import { submitQuotationRequest } from '@/lib/commerce';
 import { telHref } from '@/lib/utils';
 import { useSeoMeta } from '@/hooks/use-seo';
 import { useImagePreloader } from '@/hooks/use-image-preloader';
@@ -41,15 +41,15 @@ export default function Contact() {
     setSubmitting(true);
 
     try {
-      const { error } = await supabase.rpc('submit_quotation_request', {
-        p_name: form.name,
-        p_email: form.email,
-        p_phone: form.phone,
-        p_project_type: form.subject || 'General Contact Message',
-        p_message: form.message,
+      await submitQuotationRequest({
+        name: form.name,
+        email: form.email,
+        phone: form.phone,
+        county: 'General Inquiry',
+        projectType: 'General Contact Message',
+        service: form.subject || 'General Contact Message',
+        message: form.message,
       });
-
-      if (error) throw error;
 
       toast({
         title: 'Message Sent Successfully',
