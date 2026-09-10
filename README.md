@@ -64,7 +64,8 @@ Copy `.env.example` to `.env` and provide the credentials for the **Topline Supa
 
 ```text
 VITE_SUPABASE_URL=https://<topline-project-ref>.supabase.co
-VITE_SUPABASE_ANON_KEY=<topline-anon-key>
+VITE_SUPABASE_PUBLISHABLE_KEY=sb_publishable_<topline-project-key>
+# Legacy anon keys remain supported for compatibility: VITE_SUPABASE_ANON_KEY=<topline-anon-key>
 ```
 
 Optional:
@@ -80,11 +81,11 @@ No Supabase project, service-role key, password, or deployment credential belong
 
 The business portal uses Supabase Auth email/password sessions. There are **no default usernames or passwords** in the application documentation.
 
-Staff roles and granular permissions will be established in the dedicated infrastructure/RBAC phase. Authentication alone is not treated as a complete authorization model.
+Staff membership, roles, granular permissions and database-enforced RLS are established by the Phase-3 infrastructure foundation. Authentication alone is not treated as a complete authorization model.
 
 ## Database status
 
-The current `supabase/migrations/` directory contains historical development migrations and is not yet the canonical production migration chain. Do not blindly apply the whole directory to a new production database. The infrastructure phase will create a clean baseline and verified migration sequence.
+The historical migration files are frozen prototype history. Phase 3 establishes a canonical forward migration policy and the staff/RBAC security foundation. Because no dedicated Topline remote project has been linked yet, the repository does not pretend to have reconciled an unknown remote migration history. A formal baseline squash is only safe after the dedicated project is inspected.
 
 ## Architecture
 

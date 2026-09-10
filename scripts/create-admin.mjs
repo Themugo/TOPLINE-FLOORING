@@ -49,5 +49,34 @@ if (error) {
   process.exit(1);
 }
 
-console.log(`Admin user created: ${data.user.email} (id: ${data.user.id})`);
-console.log('You can now log in at /admin/login with this email and password.');
+const { data: ownerRole, error: roleError } = await supabase
+  .from('staff_roles')
+  .select('id')
+  .eq('code', 'owner')
+  .single();
+
+if (roleError || !ownerRole) {
+  console.error('Admin user was created, but the owner role could not be found:', roleError?.message ?? 'missing owner role');
+  process.exit(1);
+}
+
+const { error: profileError } = await supabase
+  .from('staff_profiles')
+  .insert({ user_id: data.user.id, display_name: email.split('@')[0], is_active: true });
+
+if (profileError) {
+  console.error('Admin user was created, but staff profile creation failed:', profileError.message);
+  process.exit(1);
+}
+
+const { error: assignmentError } = await supabase
+  .from('staff_role_assignments')
+  .insert({ user_id: data.user.id, role_id: ownerRole.id });
+
+if (assignmentError) {
+  console.error('Admin user was created, but owner role assignment failed:', assignmentError.message);
+  process.exit(1);
+}
+
+console.log(`Admin user created and assigned Topline owner role: ${data.user.email} (id: ${data.user.id})`);
+console.log('You can now log in at /admin/login with this email and password. The account is a Topline staff identity; authorization is enforced by database RBAC/RLS.');

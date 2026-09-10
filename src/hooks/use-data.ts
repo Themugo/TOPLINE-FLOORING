@@ -2,6 +2,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { isSupabaseConfigured, supabase } from '@/lib/supabase';
 import { useCMS } from '@/context/CMSContext';
+import { getCurrentStaffProfile, type StaffProfile } from '@/lib/staff-rbac';
 import {
   MOCK_PRODUCTS,
   MOCK_CATEGORIES,
@@ -731,6 +732,7 @@ export function useAdminAuth() {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<{ email?: string } | null>(null);
+  const [staffProfile, setStaffProfile] = useState<StaffProfile | null>(null);
 
   useEffect(() => {
     let mounted = true;
@@ -742,11 +744,25 @@ export function useAdminAuth() {
       return () => { mounted = false; };
     }
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
       if (!mounted) return;
-      setIsAuthenticated(!!session);
       setUser(session?.user ?? null);
-      setLoading(false);
+      if (!session) {
+        setStaffProfile(null);
+        setIsAuthenticated(false);
+        setLoading(false);
+        return;
+      }
+      try {
+        const profile = await getCurrentStaffProfile();
+        setStaffProfile(profile);
+        setIsAuthenticated(Boolean(profile?.is_active));
+      } catch {
+        setStaffProfile(null);
+        setIsAuthenticated(false);
+      } finally {
+        setLoading(false);
+      }
     }).catch(() => {
       if (!mounted) return;
       setIsAuthenticated(false);
@@ -756,8 +772,21 @@ export function useAdminAuth() {
 
     const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
       if (!mounted) return;
-      setIsAuthenticated(!!session);
       setUser(session?.user ?? null);
+      if (!session) {
+        setStaffProfile(null);
+        setIsAuthenticated(false);
+        return;
+      }
+      void getCurrentStaffProfile().then((profile) => {
+        if (!mounted) return;
+        setStaffProfile(profile);
+        setIsAuthenticated(Boolean(profile?.is_active));
+      }).catch(() => {
+        if (!mounted) return;
+        setStaffProfile(null);
+        setIsAuthenticated(false);
+      });
     });
 
     return () => {
@@ -768,14 +797,27 @@ export function useAdminAuth() {
 
   const login = async (email: string, password: string): Promise<boolean> => {
     const { error } = await supabase.auth.signInWithPassword({ email, password });
-    return !error;
+    if (error) return false;
+    try {
+      const profile = await getCurrentStaffProfile();
+      if (!profile?.is_active) {
+        await supabase.auth.signOut();
+        return false;
+      }
+      setStaffProfile(profile);
+      setIsAuthenticated(true);
+      return true;
+    } catch {
+      await supabase.auth.signOut();
+      return false;
+    }
   };
 
   const logout = async () => {
     await supabase.auth.signOut();
   };
 
-  return { isAuthenticated, loading, user, login, logout };
+  return { isAuthenticated, loading, user, staffProfile, login, logout };
 }
 
 // Media Library

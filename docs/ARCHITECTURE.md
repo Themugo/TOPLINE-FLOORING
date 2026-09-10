@@ -33,14 +33,15 @@ The former generic `src/lib/api.ts` and unused `src/lib/admin-api.ts` layers hav
 
 Admin/staff authentication uses **Supabase Auth** sessions. Browser storage flags, plaintext passwords, hard-coded admin credentials, and custom client-side authentication are not valid authentication mechanisms.
 
-A future RBAC phase will add staff records, roles and permissions on top of the authenticated Supabase identity. Authentication and authorization are intentionally separate concerns.
+Phase 3 adds `staff_profiles`, roles, permissions, role assignments and invitations on top of the authenticated Supabase identity. Database RLS is the authoritative authorization layer.
 
 ## Configuration boundary
 
 Required browser configuration:
 
 - `VITE_SUPABASE_URL`
-- `VITE_SUPABASE_ANON_KEY`
+- `VITE_SUPABASE_PUBLISHABLE_KEY` (preferred)
+- `VITE_SUPABASE_ANON_KEY` (legacy compatibility)
 
 Optional diagnostics configuration:
 
@@ -51,9 +52,9 @@ When Supabase configuration is absent during UI-only development, the client tra
 
 ## Database migrations
 
-The existing migration directory is **historical work product, not yet the canonical production migration chain**. It contains duplicate/overlapping timestamps and generations. Do not tell operators to blindly apply the directory in filename order.
+The historical migration directory is **historical work product, not yet the canonical production migration chain**. It contains duplicate/overlapping timestamps and generations. Do not tell operators to blindly apply the directory in filename order.
 
-A later infrastructure phase will establish:
+The Phase-3 infrastructure foundation establishes:
 
 - one clean baseline migration,
 - deterministic incremental migrations,

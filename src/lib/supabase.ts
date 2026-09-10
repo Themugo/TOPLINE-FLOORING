@@ -1,7 +1,9 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL?.trim();
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY?.trim();
+const supabasePublishableKey = (
+  import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || import.meta.env.VITE_SUPABASE_ANON_KEY
+)?.trim();
 
 /**
  * Supabase is the persistence/auth boundary for the single Topline business.
@@ -11,10 +13,10 @@ const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY?.trim();
  * clear configuration error instead of sending requests to a fake project.
  * Production deployments must provide both public Supabase values.
  */
-export const isSupabaseConfigured = Boolean(supabaseUrl && supabaseAnonKey);
+export const isSupabaseConfigured = Boolean(supabaseUrl && supabasePublishableKey);
 
 const CONFIGURATION_ERROR =
-  'Supabase is not configured. Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY before using database-backed features.';
+  'Supabase is not configured. Set VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY before using database-backed features.';
 
 const noOpFetch: typeof fetch = async () => {
   throw new Error(CONFIGURATION_ERROR);
@@ -22,7 +24,7 @@ const noOpFetch: typeof fetch = async () => {
 
 export const supabase: SupabaseClient = createClient(
   supabaseUrl || 'https://missing-supabase-configuration.invalid',
-  supabaseAnonKey || 'missing-supabase-anon-key',
+  supabasePublishableKey || 'missing-supabase-publishable-key',
   {
     global: {
       fetch: isSupabaseConfigured ? fetch : noOpFetch,

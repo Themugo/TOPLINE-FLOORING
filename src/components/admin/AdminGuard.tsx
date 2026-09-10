@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useLocation } from 'wouter';
 import { isSupabaseConfigured, supabase } from '@/lib/supabase';
+import { getCurrentStaffProfile } from '@/lib/staff-rbac';
 
 interface AdminGuardProps {
   children: React.ReactNode;
@@ -17,55 +18,60 @@ function LoadingScreen() {
   );
 }
 
-// Guards real admin pages: requires a live Supabase Auth session.
-// The session is a signed JWT verified server-side by every RLS policy,
-// so this check cannot be bypassed by editing browser storage.
+// Guards real admin pages: requires a live Supabase Auth session plus an active Topline staff membership.
+// Database RLS remains authoritative; this guard only prevents unauthorized staff
+// from entering the business portal UI.
 export function AdminAuthGuard({ children }: AdminGuardProps) {
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+  const [isAuthorized, setIsAuthorized] = useState<boolean | null>(null);
   const [, setLocation] = useLocation();
 
-  const handleRedirect = useCallback(() => {
-    setLocation('/admin/login');
-  }, [setLocation]);
+  const verifyStaffSession = useCallback(async () => {
+    if (!isSupabaseConfigured) return false;
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) return false;
+
+    try {
+      const profile = await getCurrentStaffProfile();
+      return Boolean(profile?.is_active);
+    } catch {
+      return false;
+    }
+  }, []);
 
   useEffect(() => {
     let mounted = true;
 
     if (!isSupabaseConfigured) {
-      handleRedirect();
+      setIsAuthorized(false);
+      setLocation('/admin/login');
       return () => { mounted = false; };
     }
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    const check = async () => {
+      const authorized = await verifyStaffSession();
       if (!mounted) return;
-      if (!session) {
-        handleRedirect();
+      if (!authorized) {
+        setIsAuthorized(false);
+        setLocation('/admin/login');
         return;
       }
-      setIsAuthenticated(true);
-    }).catch(() => {
-      if (mounted) handleRedirect();
-    });
+      setIsAuthorized(true);
+    };
 
-    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (!mounted) return;
-      if (!session) {
-        handleRedirect();
-      } else {
-        setIsAuthenticated(true);
-      }
+    void check();
+
+    const { data: listener } = supabase.auth.onAuthStateChange(() => {
+      void check();
     });
 
     return () => {
       mounted = false;
       listener.subscription.unsubscribe();
     };
-  }, [handleRedirect]);
+  }, [setLocation, verifyStaffSession]);
 
-  if (isAuthenticated === null) {
-    return <LoadingScreen />;
-  }
-
+  if (isAuthorized === null) return <LoadingScreen />;
+  if (!isAuthorized) return null;
   return <>{children}</>;
 }
 
@@ -83,11 +89,20 @@ export function AdminPublicRoute({ children }: { children: React.ReactNode }) {
       return () => { mounted = false; };
     }
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
       if (!mounted) return;
-      if (session) {
-        setLocation('/admin');
+      if (!session) {
+        setChecked(true);
         return;
+      }
+      try {
+        const profile = await getCurrentStaffProfile();
+        if (profile?.is_active) {
+          setLocation('/admin');
+          return;
+        }
+      } catch {
+        // Treat failed staff lookup as unauthorised and keep the login route visible.
       }
       setChecked(true);
     }).catch(() => {
