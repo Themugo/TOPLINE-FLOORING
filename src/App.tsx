@@ -47,6 +47,8 @@ const AdminTheme = lazy(() => import('@/pages/admin/theme'));
 const AdminHomepageBuilder = lazy(() => import('@/pages/admin/homepage-builder'));
 const AdminDeliveryZones = lazy(() => import('@/pages/admin/delivery-zones'));
 const AdminProjects = lazy(() => import('@/pages/admin/projects'));
+const AdminSiteVisits = lazy(() => import('@/pages/admin/site-visits'));
+const AdminProjectDelivery = lazy(() => import('@/pages/admin/project-delivery'));
 const AdminPromotions = lazy(() => import('@/pages/admin/promotions'));
 const AdminInventory = lazy(() => import('@/pages/admin/inventory'));
 const AdminMediaLibrary = lazy(() => import('@/pages/admin/media-library'));
@@ -145,6 +147,8 @@ function Router() {
     '/admin/homepage': AdminHomepageBuilder,
     '/admin/delivery-zones': AdminDeliveryZones,
     '/admin/projects': AdminProjects,
+    '/admin/site-visits': AdminSiteVisits,
+    '/admin/project-delivery': AdminProjectDelivery,
     '/admin/promotions': AdminPromotions,
     '/admin/inventory': AdminInventory,
     '/admin/media-library': AdminMediaLibrary,

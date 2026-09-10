@@ -92,7 +92,9 @@ const NAV_GROUPS: NavGroup[] = [
       { href: '/admin/inventory', label: 'Inventory', icon: Warehouse },
       { href: '/admin/suppliers', label: 'Suppliers & POs', icon: Truck },
       { href: '/admin/warehouses', label: 'Warehouses', icon: Building2 },
+      { href: '/admin/site-visits', label: 'Site Visits', icon: ClipboardList },
       { href: '/admin/projects', label: 'Projects', icon: FolderKanban },
+      { href: '/admin/project-delivery', label: 'Project Delivery', icon: ClipboardList },
     ],
   },
   {

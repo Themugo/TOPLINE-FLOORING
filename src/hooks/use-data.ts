@@ -974,17 +974,11 @@ export function useLeads(options?: { status?: string }) {
 
   // Converts a lead into a real customer record and marks it won.
   const convertLead = async (id: string) => {
-    const lead = leads.find((l) => l.id === id);
-    if (!lead) throw new Error('Lead not found');
-
-    const { data: customer, error: custErr } = await supabase
-      .from('customers')
-      .insert({ name: lead.name, email: lead.email || '', phone: lead.phone || '' })
-      .select()
-      .single();
-    if (custErr) throw custErr;
-
-    await updateLead(id, { status: 'won', converted_customer_id: customer.id });
+    const result = await convertLeadToCustomer(id);
+    if (!result.success || !result.customer_id) throw new Error(result.error || 'Lead conversion failed');
+    await refetch();
+    const { data: customer, error } = await supabase.from('customers').select('*').eq('id', result.customer_id).single();
+    if (error) throw error;
     return customer;
   };
 

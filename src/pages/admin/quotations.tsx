@@ -7,6 +7,7 @@ import { supabase } from '@/lib/supabase';
 import { generateQuotationPdf } from '@/lib/pdf';
 import { useToast } from '@/hooks/use-toast';
 import type { Quotation, QuotationItem, QuotationStatus } from '@/lib/types';
+import { convertQuotationToOrder } from '@/lib/lifecycle';
 
 const STATUS_FLOW: { value: QuotationStatus; label: string; color: string }[] = [
   { value: 'draft', label: 'Draft', color: 'bg-gray-100 text-gray-700' },
@@ -61,52 +62,19 @@ export default function AdminQuotations() {
       toast({ title: 'Add line items before converting to an order', variant: 'destructive' });
       return;
     }
-    if (!confirm(`Convert quotation ${q.quotation_number || ''} into a real order?`)) return;
+    if (!confirm(`Convert quotation ${q.quotation_number || ''} into an order and project?`)) return;
 
     try {
-      const { data: customer, error: custErr } = await supabase
-        .from('customers')
-        .insert({ name: q.name, email: q.email, phone: q.phone })
-        .select()
-        .single();
-      if (custErr) throw custErr;
-
-      const { data: order, error: orderErr } = await supabase
-        .from('orders')
-        .insert({
-          customer_id: customer.id,
-          customer_name: q.name,
-          customer_email: q.email,
-          customer_phone: q.phone,
-          total_amount: q.total_amount,
-          notes: `Converted from quotation ${q.quotation_number || q.id}`,
-          status: 'pending',
-        })
-        .select()
-        .single();
-      if (orderErr) throw orderErr;
-
-      const orderItems = q.items.map((item) => ({
-        order_id: order.id,
-        product_id: item.product_id,
-        product_name: item.description,
-        quantity: Math.round(item.quantity),
-        unit_price: item.unit_price,
-      }));
-      const { error: itemsErr } = await supabase.from('order_items').insert(orderItems);
-      if (itemsErr) throw itemsErr;
-
-      await supabase.from('quotations').update({
-        status: 'converted',
-        converted_order_id: order.id,
-        updated_at: new Date().toISOString(),
-      }).eq('id', q.id);
-
-      toast({ title: 'Converted to order', description: `Order created for ${q.name}` });
+      const result = await convertQuotationToOrder(q.id, q.project_type ? `${q.project_type} — ${q.name}` : undefined);
+      if (!result.success) throw new Error(result.error || 'Conversion failed');
+      toast({
+        title: 'Quotation converted',
+        description: `Order and project created for ${q.name}`,
+      });
       refetch();
       setSelected(null);
-    } catch {
-      toast({ title: 'Failed to convert to order', variant: 'destructive' });
+    } catch (error) {
+      toast({ title: 'Failed to convert quotation', description: error instanceof Error ? error.message : undefined, variant: 'destructive' });
     }
   };
 
