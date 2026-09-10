@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState, useEffect, useCallback } from 'react';
-import { supabase } from '@/lib/supabase';
+import { isSupabaseConfigured, supabase } from '@/lib/supabase';
 import { useCMS } from '@/context/CMSContext';
 import {
   MOCK_PRODUCTS,
@@ -735,14 +735,27 @@ export function useAdminAuth() {
   useEffect(() => {
     let mounted = true;
 
+    if (!isSupabaseConfigured) {
+      setIsAuthenticated(false);
+      setUser(null);
+      setLoading(false);
+      return () => { mounted = false; };
+    }
+
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (!mounted) return;
       setIsAuthenticated(!!session);
       setUser(session?.user ?? null);
       setLoading(false);
+    }).catch(() => {
+      if (!mounted) return;
+      setIsAuthenticated(false);
+      setUser(null);
+      setLoading(false);
     });
 
     const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!mounted) return;
       setIsAuthenticated(!!session);
       setUser(session?.user ?? null);
     });

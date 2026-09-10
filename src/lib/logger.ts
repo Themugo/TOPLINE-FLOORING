@@ -1,5 +1,3 @@
-import { supabase } from './supabase';
-
 export type LogLevel = 'error' | 'warn' | 'info' | 'debug';
 
 export interface LogPayload {
@@ -22,14 +20,23 @@ export interface LoggerOptions {
   enableConsoleOutput?: boolean;
 }
 
+/**
+ * Client-side diagnostic logger.
+ *
+ * There is deliberately no hard dependency on an undocumented `/api/logs`
+ * route or on database writes. A future backend/observability endpoint can be
+ * enabled with VITE_LOGGING_API_ENDPOINT without coupling the browser app to
+ * a deployment-specific API shape.
+ */
 class CentralizedLoggingService {
-  private apiEndpoint: string;
-  private maxBufferSize: number;
-  private enableConsoleOutput: boolean;
+  private readonly apiEndpoint: string | null;
+  private readonly maxBufferSize: number;
+  private readonly enableConsoleOutput: boolean;
   private logBuffer: LogPayload[] = [];
 
   constructor(options: LoggerOptions = {}) {
-    this.apiEndpoint = options.apiEndpoint || (import.meta.env.VITE_LOGGING_API_ENDPOINT as string) || '/api/logs';
+    const configuredEndpoint = options.apiEndpoint || import.meta.env.VITE_LOGGING_API_ENDPOINT;
+    this.apiEndpoint = configuredEndpoint?.trim() || null;
     this.maxBufferSize = options.maxBufferSize || 100;
     this.enableConsoleOutput = options.enableConsoleOutput !== false;
   }
@@ -45,97 +52,50 @@ class CentralizedLoggingService {
   ): LogPayload {
     const isError = errorOrMessage instanceof Error;
     const message = isError ? errorOrMessage.message : String(errorOrMessage);
-    const name = isError ? errorOrMessage.name : undefined;
-    const stack = isError ? errorOrMessage.stack : undefined;
-
     return {
       id: this.generateId(),
       level,
       message: message || 'Unknown log message',
-      name,
-      stack: stack ? stack.slice(0, 3000) : undefined,
-      componentStack: details?.componentStack ? details.componentStack.slice(0, 3000) : undefined,
+      name: isError ? errorOrMessage.name : undefined,
+      stack: isError && errorOrMessage.stack ? errorOrMessage.stack.slice(0, 3000) : undefined,
+      componentStack: details?.componentStack?.slice(0, 3000),
       context: details?.context || {},
       timestamp: new Date().toISOString(),
       url: typeof window !== 'undefined' ? window.location.href : '',
       userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : '',
-      environment: (import.meta.env.MODE as string) || 'production',
+      environment: import.meta.env.MODE || 'production',
     };
   }
 
   private addToBuffer(payload: LogPayload): void {
     this.logBuffer.unshift(payload);
-    if (this.logBuffer.length > this.maxBufferSize) {
-      this.logBuffer.pop();
-    }
+    if (this.logBuffer.length > this.maxBufferSize) this.logBuffer.pop();
   }
 
   private printConsole(payload: LogPayload): void {
     if (!this.enableConsoleOutput) return;
-
-    const prefix = `[CentralizedLogger][${payload.level.toUpperCase()}][${payload.timestamp}]`;
-    switch (payload.level) {
-      case 'error':
-        console.error(prefix, payload.message, payload);
-        break;
-      case 'warn':
-        console.warn(prefix, payload.message, payload);
-        break;
-      case 'info':
-        console.info(prefix, payload.message, payload);
-        break;
-      case 'debug':
-      default:
-        console.log(prefix, payload.message, payload);
-        break;
-    }
+    const prefix = `[ToplineLogger][${payload.level.toUpperCase()}]`;
+    if (payload.level === 'error') console.error(prefix, payload.message, payload);
+    else if (payload.level === 'warn') console.warn(prefix, payload.message, payload);
+    else if (payload.level === 'info') console.info(prefix, payload.message, payload);
+    else console.debug(prefix, payload.message, payload);
   }
 
-  private async dispatchToApi(payload: LogPayload): Promise<boolean> {
+  private async dispatch(payload: LogPayload): Promise<void> {
+    if (!this.apiEndpoint) return;
     try {
-      const response = await fetch(this.apiEndpoint, {
+      await fetch(this.apiEndpoint, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-Log-Level': payload.level,
-        },
+        headers: { 'Content-Type': 'application/json', 'X-Log-Level': payload.level },
         body: JSON.stringify(payload),
+        keepalive: true,
       });
-
-      if (response.ok) {
-        return true;
-      }
     } catch {
-      // Endpoint may not be serving dynamic routes if mock mode or static fallback
-    }
-
-    // Fallback: report to Supabase activity_logs table for analysis
-    try {
-      const { error } = await supabase.from('activity_logs').insert({
-        action: `system_log_${payload.level}`,
-        entity_type: 'centralized_logger',
-        details: {
-          id: payload.id,
-          level: payload.level,
-          message: payload.message,
-          name: payload.name,
-          stack: payload.stack,
-          componentStack: payload.componentStack,
-          context: payload.context,
-          url: payload.url,
-          environment: payload.environment,
-          timestamp: payload.timestamp,
-        },
-        user_agent: payload.userAgent,
-      });
-
-      return !error;
-    } catch {
-      return false;
+      // Diagnostics must never create a second application failure.
     }
   }
 
-  public async log(
+  async log(
     level: LogLevel,
     errorOrMessage: Error | string,
     details?: { componentStack?: string; context?: Record<string, unknown> }
@@ -143,51 +103,34 @@ class CentralizedLoggingService {
     const payload = this.buildPayload(level, errorOrMessage, details);
     this.addToBuffer(payload);
     this.printConsole(payload);
-
-    await this.dispatchToApi(payload);
+    await this.dispatch(payload);
     return payload;
   }
 
-  public async logError(
-    errorOrMessage: Error | string,
-    details?: { componentStack?: string; context?: Record<string, unknown> }
-  ): Promise<LogPayload> {
+  logError(errorOrMessage: Error | string, details?: { componentStack?: string; context?: Record<string, unknown> }) {
     return this.log('error', errorOrMessage, details);
   }
 
-  public async logWarning(
-    message: string,
-    context?: Record<string, unknown>
-  ): Promise<LogPayload> {
+  logWarning(message: string, context?: Record<string, unknown>) {
     return this.log('warn', message, { context });
   }
 
-  public async logInfo(
-    message: string,
-    context?: Record<string, unknown>
-  ): Promise<LogPayload> {
+  logInfo(message: string, context?: Record<string, unknown>) {
     return this.log('info', message, { context });
   }
 
-  public sendBeacon(level: LogLevel, message: string, context?: Record<string, unknown>): void {
+  sendBeacon(level: LogLevel, message: string, context?: Record<string, unknown>): void {
+    if (!this.apiEndpoint || typeof navigator === 'undefined' || !navigator.sendBeacon) return;
     const payload = this.buildPayload(level, message, { context });
-    if (typeof navigator !== 'undefined' && navigator.sendBeacon) {
-      try {
-        const blob = new Blob([JSON.stringify(payload)], { type: 'application/json' });
-        navigator.sendBeacon(this.apiEndpoint, blob);
-      } catch {
-        // Fallback silently
-      }
+    try {
+      navigator.sendBeacon(this.apiEndpoint, new Blob([JSON.stringify(payload)], { type: 'application/json' }));
+    } catch {
+      // Diagnostics must never create a second application failure.
     }
   }
 
-  public getRecentLogs(): LogPayload[] {
-    return [...this.logBuffer];
-  }
-
-  public clearLogs(): void {
-    this.logBuffer = [];
-  }
+  getRecentLogs(): LogPayload[] { return [...this.logBuffer]; }
+  clearLogs(): void { this.logBuffer = []; }
 }
 
 export const loggingService = new CentralizedLoggingService();

@@ -230,7 +230,6 @@ CREATE POLICY "anon_access_admin_settings" ON admin_settings FOR ALL TO anon, au
 -- Insert default admin credentials
 INSERT INTO admin_settings (setting_key, setting_value) VALUES
   ('admin_username', 'admin'),
-  ('admin_password', 'admin123')
 ON CONFLICT (setting_key) DO NOTHING;
 
 -- Create indexes for better query performance

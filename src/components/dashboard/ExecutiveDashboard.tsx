@@ -1,10 +1,11 @@
 import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/lib/supabase';
 import { 
   TrendingUp, Users, FolderKanban, 
   DollarSign, AlertTriangle, Package, 
   RefreshCw, BarChart3, Activity
 } from 'lucide-react';
-import { useGetDashboardStats, useGetRecentOrders } from '@/lib/api';
 import { formatKES } from '@/lib/utils';
 
 interface MetricCardProps {
@@ -37,9 +38,59 @@ function MetricCard({ title, value, icon, color = 'blue' }: MetricCardProps) {
   );
 }
 
+type DashboardStats = {
+  totalOrders: number;
+  pendingOrders: number;
+  completedOrders: number;
+  totalRevenue: number;
+  totalProducts: number;
+  totalCustomers: number;
+};
+
+type RecentOrder = {
+  id: string;
+  customer_name?: string | null;
+  customer_email?: string | null;
+  total_amount?: number | null;
+  status: string;
+};
+
 export function ExecutiveDashboard() {
-  const { data: stats, isLoading: loading } = useGetDashboardStats();
-  const { data: recentOrders } = useGetRecentOrders();
+  const { data: stats, isLoading: loading } = useQuery({
+    queryKey: ['executiveDashboardStats'],
+    queryFn: async (): Promise<DashboardStats> => {
+      const [ordersResult, productsResult, customersResult] = await Promise.all([
+        supabase.from('orders').select('status, total_amount'),
+        supabase.from('products').select('id', { count: 'exact', head: true }),
+        supabase.from('customers').select('id', { count: 'exact', head: true }),
+      ]);
+      if (ordersResult.error) throw ordersResult.error;
+      if (productsResult.error) throw productsResult.error;
+      if (customersResult.error) throw customersResult.error;
+      const orders = ordersResult.data || [];
+      return {
+        totalOrders: orders.length,
+        pendingOrders: orders.filter((o) => o.status === 'pending').length,
+        completedOrders: orders.filter((o) => o.status === 'completed').length,
+        totalRevenue: orders.filter((o) => o.status !== 'cancelled').reduce((sum, o) => sum + Number(o.total_amount || 0), 0),
+        totalProducts: productsResult.count || 0,
+        totalCustomers: customersResult.count || 0,
+      };
+    },
+  });
+
+  const { data: recentOrders } = useQuery({
+    queryKey: ['executiveDashboardRecentOrders'],
+    queryFn: async (): Promise<RecentOrder[]> => {
+      const { data, error } = await supabase
+        .from('orders')
+        .select('id, customer_name, customer_email, total_amount, status')
+        .order('created_at', { ascending: false })
+        .limit(10);
+      if (error) throw error;
+      return (data || []) as RecentOrder[];
+    },
+  });
   const [refreshing, setRefreshing] = useState(false);
 
   const handleRefresh = async () => {

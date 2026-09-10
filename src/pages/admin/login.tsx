@@ -2,13 +2,15 @@ import { useState, useEffect, useCallback } from 'react';
 import { useLocation } from 'wouter';
 import { Lock, Mail, AlertCircle, Eye, EyeOff, ArrowLeft } from 'lucide-react';
 import { useAdminAuth } from '@/hooks/use-data';
-import { supabase } from '@/lib/supabase';
+import { isSupabaseConfigured, supabase } from '@/lib/supabase';
 
 const SESSION_TIMEOUT_MS = 30 * 60 * 1000; // 30 minutes inactivity
 const ACTIVITY_EVENTS = ['mousedown', 'keydown', 'scroll', 'touchstart'];
 
 function useSessionTimeout() {
   useEffect(() => {
+    if (!isSupabaseConfigured) return;
+
     let timeoutId: ReturnType<typeof setTimeout>;
 
     const resetTimer = () => {
@@ -76,6 +78,11 @@ export default function AdminLogin() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    if (!isSupabaseConfigured) {
+      setError('Admin login is unavailable until Supabase is configured.');
+      return;
+    }
+
     setLoading(true);
 
     const success = await login(email, password);

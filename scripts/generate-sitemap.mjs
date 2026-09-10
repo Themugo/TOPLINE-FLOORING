@@ -37,13 +37,13 @@ if (!supabaseUrl || !supabaseKey) {
   }
 }
 
-if (!supabaseUrl || !supabaseKey) {
-  console.error('Missing VITE_SUPABASE_URL or VITE_SUPABASE_ANON_KEY');
+const hasSupabase = Boolean(supabaseUrl && supabaseKey);
+const supabase = hasSupabase ? createClient(supabaseUrl, supabaseKey) : null;
+const BASE = process.env.VITE_SITE_URL?.trim();
+if (!BASE) {
+  console.error('Missing VITE_SITE_URL. Set the canonical Topline production domain before generating a sitemap.');
   process.exit(1);
 }
-
-const supabase = createClient(supabaseUrl, supabaseKey);
-const BASE = process.env.VITE_SITE_URL || 'https://example.com';
 const today = new Date().toISOString().split('T')[0];
 
 const staticUrls = [
@@ -62,6 +62,10 @@ function escXml(s) {
 }
 
 async function fetchSlugs(table, slugCol = 'slug', activeCol = 'is_active') {
+  if (!supabase) {
+    return [];
+  }
+
   try {
     const { data, error } = await supabase
       .from(table)
@@ -77,6 +81,7 @@ async function fetchSlugs(table, slugCol = 'slug', activeCol = 'is_active') {
 
 async function main() {
   console.log('Generating sitemap.xml...');
+  if (!hasSupabase) console.log('  Supabase not configured; generating static sitemap routes only.');
 
   const [productSlugs, serviceSlugs, projectSlugs] = await Promise.all([
     fetchSlugs('products'),

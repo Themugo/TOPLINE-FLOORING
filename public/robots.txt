@@ -4,4 +4,3 @@ Disallow: /admin/
 Disallow: /cart
 Disallow: /order-confirmation/
 
-Sitemap: https://example.com/sitemap.xml

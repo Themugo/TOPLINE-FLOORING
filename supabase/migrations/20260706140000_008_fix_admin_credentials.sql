@@ -7,10 +7,9 @@ UPDATE admin_settings SET setting_key = 'username' WHERE setting_key = 'admin_us
 UPDATE admin_settings SET setting_key = 'password' WHERE setting_key = 'admin_password';
 
 -- Ensure the password is properly hashed with bcrypt
-UPDATE admin_settings 
-SET setting_value = crypt('admin123', gen_salt('bf'))
-WHERE setting_key = 'password' 
-AND setting_value = 'admin123';
+UPDATE admin_settings
+SET setting_value = NULL
+WHERE setting_key = 'password';
 
 -- Set email if not exists
 INSERT INTO admin_settings (setting_key, setting_value) 

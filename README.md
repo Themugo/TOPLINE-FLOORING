@@ -1,93 +1,99 @@
 # Topline Flooring & Waterproofing
 
-A professional e-commerce platform for flooring and waterproofing services in Nairobi, Kenya.
+A dedicated business website and operations portal for Topline Flooring & Waterproofing in Kenya.
 
-## Features
+## Product scope
 
-- **Product Catalog**: Browse services and materials with categories
-- **Shopping Cart**: Add items, manage quantities, checkout
-- **Order Management**: Track orders and status updates
-- **Admin Dashboard**: Manage products, categories, orders, and customers
-- **Responsive Design**: Works on all device sizes
+This is a **single-client business system**, not a SaaS/multi-tenant product. It combines:
 
-## Tech Stack
+- Public marketing website and service catalogue
+- Product catalogue and shopping flow
+- Quote and enquiry capture
+- Customer/order tracking
+- Authenticated business/admin portal
+- Product, inventory, project, CRM, quotation, invoicing and content-management capabilities
 
-- **Frontend**: React 18, TypeScript, Tailwind CSS v4
-- **State Management**: TanStack Query v5
-- **Routing**: Wouter
-- **UI Components**: Radix UI primitives
-- **Backend**: Supabase (PostgreSQL, Auth)
-- **Build Tool**: Vite
+## Technology
 
-## Getting Started
+- React 18 + TypeScript
+- Vite
+- Tailwind CSS
+- TanStack Query
+- Wouter
+- Radix UI primitives
+- Supabase PostgreSQL + Auth (planned production infrastructure)
 
-### Prerequisites
+## Local development
+
+### Requirements
 
 - Node.js 18+
-- npm or pnpm
+- npm
 
-### Installation
+### Install
 
 ```bash
 npm install
 ```
 
-### Development
+### Run
 
 ```bash
 npm run dev
 ```
 
-### Build
+### Validate
 
 ```bash
+npm run typecheck
+npm run lint
 npm run build
 ```
 
-### Preview Production Build
+### Preview
 
 ```bash
 npm run preview
 ```
 
-## Environment Variables
+For sitemap generation, also set `VITE_SITE_URL` to the real Topline production domain and run `npm run build:all`.
 
-Create a `.env` file with:
+## Environment
 
+Copy `.env.example` to `.env` and provide the credentials for the **Topline Supabase project** when database-backed features are enabled:
+
+```text
+VITE_SUPABASE_URL=https://<topline-project-ref>.supabase.co
+VITE_SUPABASE_ANON_KEY=<topline-anon-key>
 ```
-VITE_SUPABASE_URL=your_supabase_url
-VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+
+Optional:
+
+```text
+VITE_SITE_URL=https://<topline-production-domain>
+VITE_LOGGING_API_ENDPOINT=https://<approved-observability-endpoint>
 ```
 
-## Admin Access
+No Supabase project, service-role key, password, or deployment credential belongs in this repository.
 
-- Username: `admin`
-- Password: `admin123`
+## Authentication
 
-## License
+The business portal uses Supabase Auth email/password sessions. There are **no default usernames or passwords** in the application documentation.
 
-All rights reserved. Topline Flooring and Waterproofing.
+Staff roles and granular permissions will be established in the dedicated infrastructure/RBAC phase. Authentication alone is not treated as a complete authorization model.
+
+## Database status
+
+The current `supabase/migrations/` directory contains historical development migrations and is not yet the canonical production migration chain. Do not blindly apply the whole directory to a new production database. The infrastructure phase will create a clean baseline and verified migration sequence.
+
+## Architecture
+
+See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for the Phase-1 application boundary and data-access rules.
 
 ## Deployment
 
-### Vercel Deployment
+Production deployment requires the Topline Supabase project and verified database/RLS configuration before the authenticated business portal is enabled. See `DEPLOYMENT.md` for the current deployment notes and infrastructure prerequisites.
 
-1. Push code to GitHub repository
-2. Import project in Vercel
-3. Add environment variables:
-   - `VITE_SUPABASE_URL`
-   - `VITE_SUPABASE_ANON_KEY`
-4. Deploy
+## License
 
-### Environment Setup
-
-Copy `.env.example` to `.env` and fill in your Supabase credentials.
-
-## Security
-
-- Never commit `.env` file
-- Change default admin credentials immediately after deployment
-- Enable Supabase Row Level Security (RLS) policies (see `SUPABASE_RLS_POLICIES.md`)
-- Use HTTPS in production
-- Regularly update dependencies
-- Default admin password after migration: `ToplineSecure2024!` (CHANGE IMMEDIATELY)
+All rights reserved. Topline Flooring & Waterproofing.

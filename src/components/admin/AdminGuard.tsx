@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useLocation } from 'wouter';
-import { supabase } from '@/lib/supabase';
+import { isSupabaseConfigured, supabase } from '@/lib/supabase';
 
 interface AdminGuardProps {
   children: React.ReactNode;
@@ -30,6 +30,11 @@ export function AdminAuthGuard({ children }: AdminGuardProps) {
 
   useEffect(() => {
     let mounted = true;
+
+    if (!isSupabaseConfigured) {
+      handleRedirect();
+      return () => { mounted = false; };
+    }
 
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (!mounted) return;
@@ -72,6 +77,11 @@ export function AdminPublicRoute({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     let mounted = true;
+
+    if (!isSupabaseConfigured) {
+      setChecked(true);
+      return () => { mounted = false; };
+    }
 
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (!mounted) return;

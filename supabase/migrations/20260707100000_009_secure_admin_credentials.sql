@@ -1,11 +1,8 @@
--- IMPORTANT: This migration sets a secure default password
--- CHANGE THIS IMMEDIATELY AFTER DEPLOYMENT
--- Run: UPDATE admin_settings SET setting_value = crypt('YOUR_NEW_PASSWORD', gen_salt('bf')) WHERE setting_key = 'password';
-
+-- Legacy plaintext/custom-admin credential storage is explicitly cleared.
 -- Set a more secure default password (change this immediately!)
--- Default: ToplineSecure2024!
+-- Historical credential-repair migration retained for audit history.
 UPDATE admin_settings 
-SET setting_value = crypt('ToplineSecure2024!', gen_salt('bf'))
+SET setting_value = NULL
 WHERE setting_key = 'password';
 
 -- Set requires_password_change to true to force password change on first login

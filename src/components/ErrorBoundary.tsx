@@ -1,6 +1,6 @@
 import { Component, type ReactNode, type ErrorInfo } from 'react';
 import { AlertTriangle, RefreshCw, Home, RotateCcw, ChevronDown, ChevronUp } from 'lucide-react';
-import { logError } from '@/services/logging';
+import { logError } from '@/lib/logger';
 
 interface Props {
   children: ReactNode;
