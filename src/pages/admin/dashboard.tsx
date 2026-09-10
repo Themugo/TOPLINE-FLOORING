@@ -73,6 +73,7 @@ const NAV_GROUPS: NavGroup[] = [
       { href: '/admin/crm', label: 'CRM / Leads', icon: Users },
       { href: '/admin/orders', label: 'Orders', icon: ShoppingCart },
       { href: '/admin/invoices', label: 'Invoices', icon: FileText },
+      { href: '/admin/finance', label: 'Finance Command Center', icon: BarChart3 },
       { href: '/admin/customers', label: 'Customers', icon: Users },
       { href: '/admin/quotations', label: 'Quotations', icon: FileText },
     ],

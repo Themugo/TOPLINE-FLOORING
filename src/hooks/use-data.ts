@@ -1118,84 +1118,19 @@ export function useInvoices(options?: { status?: string }) {
 
   useEffect(() => { refetch(); }, [refetch]);
 
-  const recordPayment = async (invoiceId: string, amount: number, method: string, reference?: string) => {
-    const { data: userData } = await supabase.auth.getUser();
-    const { error: err } = await supabase.from('payments').insert({
-      invoice_id: invoiceId,
-      amount,
-      method,
-      reference: reference || null,
-      recorded_by: userData.user?.id || null,
-    });
-    if (err) throw err;
-    await refetch();
-  };
+  const recordPayment = async (invoiceId: string, amount: number, method: string, reference?: string) => { await recordInvoicePaymentTransaction(invoiceId, amount, method, reference); await refetch(); };
 
-  const createInvoice = async (invoice: {
-    customer_id?: string | null;
-    order_id?: string | null;
-    quotation_id?: string | null;
-    customer_name: string;
-    customer_email?: string | null;
-    customer_phone?: string | null;
-    billing_address?: string | null;
-    tax_rate?: number;
-    due_date?: string | null;
-    notes?: string | null;
-  }) => {
-    const { data, error: err } = await supabase
-      .from('invoices')
-      .insert({ ...invoice, status: 'draft', tax_rate: invoice.tax_rate ?? 16 })
-      .select()
-      .single();
-    if (err) throw err;
-    await refetch();
-    return data as Invoice;
-  };
+  const createInvoice = async (invoice: { customer_id?: string | null; order_id?: string | null; quotation_id?: string | null; customer_name: string; customer_email?: string | null; customer_phone?: string | null; billing_address?: string | null; tax_rate?: number; due_date?: string | null; notes?: string | null; }) => { const result = await createInvoiceTransaction(invoice); await refetch(); const fresh = (await supabase.from('invoices').select('*').eq('id', result.invoice_id).single()).data; return fresh as Invoice; };
 
-  const recalcInvoiceTotals = async (invoiceId: string, taxRate: number) => {
-    const { data: items } = await supabase.from('invoice_items').select('line_total').eq('invoice_id', invoiceId);
-    const subtotal = (items || []).reduce((sum, i) => sum + Number(i.line_total), 0);
-    const taxAmount = subtotal * (taxRate / 100);
-    await supabase.from('invoices').update({
-      subtotal,
-      tax_amount: taxAmount,
-      total_amount: subtotal + taxAmount,
-      updated_at: new Date().toISOString(),
-    }).eq('id', invoiceId);
-  };
+  const recalcInvoiceTotals = async (invoiceId: string, taxRate: number) => { void taxRate; await refetch(); };
 
-  const addInvoiceItem = async (invoiceId: string, item: { description: string; quantity: number; unit_price: number }, taxRate: number) => {
-    const { error: err } = await supabase.from('invoice_items').insert({
-      invoice_id: invoiceId,
-      description: item.description,
-      quantity: item.quantity,
-      unit_price: item.unit_price,
-      line_total: item.quantity * item.unit_price,
-    });
-    if (err) throw err;
-    await recalcInvoiceTotals(invoiceId, taxRate);
-    await refetch();
-  };
+  const addInvoiceItem = async (invoiceId: string, item: { description: string; quantity: number; unit_price: number }, taxRate: number) => { void taxRate; await addInvoiceItemTransaction(invoiceId,item); await refetch(); };
 
-  const removeInvoiceItem = async (invoiceId: string, itemId: string, taxRate: number) => {
-    const { error: err } = await supabase.from('invoice_items').delete().eq('id', itemId);
-    if (err) throw err;
-    await recalcInvoiceTotals(invoiceId, taxRate);
-    await refetch();
-  };
+  const removeInvoiceItem = async (invoiceId: string, itemId: string, taxRate: number) => { void taxRate; const {error}=await supabase.from('invoice_items').delete().eq('id',itemId); if(error)throw error; await refetch(); };
 
-  const updateInvoiceStatus = async (invoiceId: string, status: string) => {
-    const { error: err } = await supabase.from('invoices').update({ status, updated_at: new Date().toISOString() }).eq('id', invoiceId);
-    if (err) throw err;
-    await refetch();
-  };
+  const updateInvoiceStatus = async (invoiceId: string, status: string) => { await updateInvoiceStatusTransaction(invoiceId,status); await refetch(); };
 
-  const deleteInvoice = async (invoiceId: string) => {
-    const { error: err } = await supabase.from('invoices').delete().eq('id', invoiceId);
-    if (err) throw err;
-    await refetch();
-  };
+  const deleteInvoice = async (invoiceId: string) => { const {error}=await supabase.from('invoices').delete().eq('id',invoiceId); if(error)throw error; await refetch(); };
 
   return {
     invoices,
