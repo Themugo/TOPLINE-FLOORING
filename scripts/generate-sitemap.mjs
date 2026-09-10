@@ -56,6 +56,8 @@ const staticUrls = [
   { loc: '/faq', changefreq: 'monthly', priority: '0.6' },
   { loc: '/contact', changefreq: 'monthly', priority: '0.8' },
   { loc: '/quotation', changefreq: 'monthly', priority: '0.8' },
+  { loc: '/industries', changefreq: 'monthly', priority: '0.8' },
+  { loc: '/market', changefreq: 'monthly', priority: '0.6' },
 ];
 
 function escXml(s) {

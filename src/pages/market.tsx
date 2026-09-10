@@ -3,7 +3,8 @@ import { CustomerLayout } from "@/components/layout/CustomerLayout";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { useSeoMeta } from "@/hooks/use-seo";
 import { supabase } from "@/lib/supabase";
-import { Building2, Award, Shield, Zap, Users, CheckCircle2 } from "lucide-react";
+import { Building2, ArrowRight, CheckCircle2 } from "lucide-react";
+import { Link } from 'wouter';
 
 interface Partner {
   id: string;
@@ -15,14 +16,7 @@ interface Partner {
   sort_order: number;
 }
 
-const DEFAULT_PARTNERS = [
-  { name: "Industrial Polymers Global", description: "Construction chemicals and resin solutions", icon: Building2 },
-  { name: "Apex Chemical Systems", description: "Advanced chemical construction materials", icon: Award },
-  { name: "Global Coating Labs", description: "High-grade adhesives and sealants", icon: Shield },
-  { name: "Titan Materials Corp", description: "Specialty construction chemical systems", icon: Zap },
-  { name: "MasterBuild Solutions", description: "Commercial building materials", icon: Users },
-  { name: "Structural Cement Tech", description: "High-performance concrete solutions", icon: CheckCircle2 },
-];
+
 
 export default function Market() {
   useSeoMeta('market', null, { breadcrumbs: [{ label: "Partners" }] });
@@ -40,25 +34,11 @@ export default function Market() {
       .select('*')
       .eq('is_active', true)
       .order('sort_order');
-    if (data && data.length > 0) {
-      setPartners(data as Partner[]);
-    } else {
-      // Use default partners if none in database
-      setPartners(DEFAULT_PARTNERS.map((p, i) => ({
-        id: `default-${i}`,
-        name: p.name,
-        description: p.description,
-        is_active: true,
-        sort_order: i,
-      })) as Partner[]);
-    }
+    if (data) setPartners(data as Partner[]);
     setLoading(false);
   };
 
-  const getPartnerIcon = (index: number) => {
-    const icons = [Building2, Award, Shield, Zap, Users, CheckCircle2];
-    return icons[index % icons.length];
-  };
+  const getPartnerIcon = () => Building2;
 
   return (
     <CustomerLayout>
@@ -81,10 +61,23 @@ export default function Market() {
             <div className="text-center py-20">
               <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-primary border-r-transparent" />
             </div>
+          ) : partners.length === 0 ? (
+            <div className="max-w-3xl mx-auto text-center py-12">
+              <div className="mx-auto mb-5 h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center">
+                <CheckCircle2 className="h-8 w-8 text-primary" />
+              </div>
+              <h2 className="section-heading">Trusted systems. Professional delivery.</h2>
+              <p className="section-subtitle mx-auto">
+                Our team selects flooring, coating and waterproofing systems based on the demands of each project rather than relying on a fixed product list.
+              </p>
+              <Link href="/quotation" className="btn-primary mt-7">
+                Discuss Your Project <ArrowRight className="ml-2 h-4 w-4" />
+              </Link>
+            </div>
           ) : (
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
-              {partners.map((partner, index) => {
-                const Icon = getPartnerIcon(index);
+              {partners.map((partner) => {
+                const Icon = getPartnerIcon();
                 return (
                   <div key={partner.id} className="group bg-card border border-border hover:border-primary/40 hover:shadow-xl transition-all duration-300 rounded-sm p-8 flex flex-col items-center text-center">
                     {/* Logo/Icon */}
