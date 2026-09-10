@@ -72,3 +72,9 @@ Secrets and local environment files remain ignored by Git. Service-role credenti
 ## Phase-1 completion criteria
 
 Phase 1 is complete when the repository has one application root, no duplicate data/API layer that is actively required, one Supabase client boundary, Supabase Auth as the only auth model, no default credentials in documentation, no deployment-specific fake project fallback, no undocumented logging API dependency, and a buildable source tree ready for the dedicated infrastructure/RBAC work that follows.
+
+## Operational portal initiatives
+
+Phase 6 establishes a Sales Command Center over the canonical CRM → quotation → order → invoice workflow.
+Phase 7 establishes an Operations Command Center over inventory → procurement → warehouse → project delivery.
+Phase 8 keeps the admin shell as the stable portal frame, with lazy-loaded modules and explicit failure states.

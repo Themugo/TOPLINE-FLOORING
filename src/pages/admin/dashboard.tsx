@@ -35,6 +35,7 @@ import {
   ExternalLink,
   CheckCircle2,
   Building2,
+  BriefcaseBusiness,
 } from 'lucide-react';
 import { useAdminAuth } from '@/hooks/use-data';
 import { useState, useEffect, useMemo, useCallback } from 'react';
@@ -68,6 +69,7 @@ const NAV_GROUPS: NavGroup[] = [
   {
     label: 'Sales',
     items: [
+      { href: '/admin/sales', label: 'Sales Command Center', icon: BriefcaseBusiness },
       { href: '/admin/crm', label: 'CRM / Leads', icon: Users },
       { href: '/admin/orders', label: 'Orders', icon: ShoppingCart },
       { href: '/admin/invoices', label: 'Invoices', icon: FileText },
@@ -86,6 +88,7 @@ const NAV_GROUPS: NavGroup[] = [
       { href: '/admin/product-documents', label: 'Documents', icon: FileDoc },
       { href: '/admin/services', label: 'Services', icon: Wrench },
       { href: '/admin/categories', label: 'Categories', icon: FolderOpen },
+      { href: '/admin/operations', label: 'Operations Command Center', icon: ClipboardList },
       { href: '/admin/inventory', label: 'Inventory', icon: Warehouse },
       { href: '/admin/suppliers', label: 'Suppliers & POs', icon: Truck },
       { href: '/admin/warehouses', label: 'Warehouses', icon: Building2 },
@@ -281,7 +284,7 @@ function AdminLayout({ children, title, subtitle, actions }: AdminLayoutProps) {
                 <h1 className="font-display font-bold text-navy-900 leading-tight text-sm">
                   Flooring Admin
                 </h1>
-                <p className="text-[11px] text-gray-500 font-medium">Production CMS v2.0</p>
+                <p className="text-[11px] text-gray-500 font-medium">Topline Business Portal</p>
               </div>
             </Link>
             <button

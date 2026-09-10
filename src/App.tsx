@@ -66,6 +66,8 @@ const AdminNavigation = lazy(() => import('@/pages/admin/navigation'));
 const AdminBackups = lazy(() => import('@/pages/admin/backups'));
 const AdminAuditLogs = lazy(() => import('@/pages/admin/audit-logs'));
 const AdminLeads = lazy(() => import('@/pages/admin/leads'));
+const AdminSalesCommandCenter = lazy(() => import('@/pages/admin/sales-command-center'));
+const AdminOperationsCommandCenter = lazy(() => import('@/pages/admin/operations-command-center'));
 
 function AdminLoading() {
   return (
@@ -122,6 +124,8 @@ function Router() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const adminRoutes: Record<string, React.LazyExoticComponent<React.ComponentType<any>>> = {
     '/admin/orders': AdminOrders,
+    '/admin/sales': AdminSalesCommandCenter,
+    '/admin/operations': AdminOperationsCommandCenter,
     '/admin/crm': AdminCRM,
     '/admin/services': AdminServices,
     '/admin/invoices': AdminInvoices,

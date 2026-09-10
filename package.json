@@ -11,7 +11,8 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit -p tsconfig.app.json",
-    "verify:supabase": "node scripts/verify-supabase-target.mjs"
+    "verify:supabase": "node scripts/verify-supabase-target.mjs",
+    "verify:phases-6-8": "node scripts/verify-phase-6-8.mjs"
   },
   "dependencies": {
     "@radix-ui/react-accordion": "^1.2.16",
