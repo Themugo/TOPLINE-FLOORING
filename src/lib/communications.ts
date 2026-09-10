@@ -1,2 +1,21 @@
 import { supabase } from '@/lib/supabase';
-export async function logCustomerCommunication(input:{customerId:string;channel:string;message:string;subject?:string;direction?:string;projectId?:string|null;orderId?:string|null;invoiceId?:string|null;status?:string;externalReference?:string|null}) { const {data,error}=await supabase.rpc('log_customer_communication',{p_customer_id:input.customerId,p_channel:input.channel,p_message:input.message,p_subject:input.subject||null,p_direction:input.direction||'outbound',p_project_id:input.projectId||null,p_order_id:input.orderId||null,p_invoice_id:input.invoiceId||null,p_status:input.status||'logged',p_external_reference:input.externalReference||null}); if(error)throw error; return data as string; }
+
+export interface QueueMessageInput {
+  customerId: string;
+  channel: 'email' | 'whatsapp' | 'sms';
+  recipient: string;
+  message: string;
+  subject?: string;
+}
+
+export async function queueCustomerMessage(input: QueueMessageInput): Promise<string> {
+  const { data, error } = await supabase.rpc('queue_customer_message', {
+    p_customer_id: input.customerId,
+    p_channel: input.channel,
+    p_recipient: input.recipient,
+    p_message: input.message,
+    p_subject: input.subject || null,
+  });
+  if (error) throw error;
+  return String(data);
+}

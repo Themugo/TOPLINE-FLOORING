@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { CheckCircle2, Clock, FileText, LogOut, Package, ShieldCheck, Truck } from 'lucide-react';
 import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 import { getCustomerPortalData, requestCustomerMagicLink, signOutCustomer, type CustomerPortalData } from '@/lib/customer-portal';
+import { getCustomerJourney, type CustomerJourneyEvent } from '@/lib/customer-journey';
 import { useSeoMeta } from '@/hooks/use-seo';
 import { telHref } from '@/lib/utils';
 import { useSiteSettings } from '@/hooks/use-data';
@@ -22,6 +23,7 @@ function SignIn() {
   const [sent, setSent] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [journey, setJourney] = useState<CustomerJourneyEvent[]>([]);
   const submit = async (e: React.FormEvent) => {
     e.preventDefault(); setLoading(true); setError(null);
     try { await requestCustomerMagicLink(email); setSent(true); }
@@ -60,6 +62,7 @@ export default function Portal() {
   const [loading, setLoading] = useState(true);
   const [signedIn, setSignedIn] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [journey, setJourney] = useState<CustomerJourneyEvent[]>([]);
 
   useEffect(() => {
     if (!isSupabaseConfigured) { setLoading(false); return; }
@@ -67,7 +70,7 @@ export default function Portal() {
     const load = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) { if (mounted) { setSignedIn(false); setLoading(false); } return; }
-      try { const portal = await getCustomerPortalData(); if (mounted) { setData(portal); setSignedIn(true); } }
+      try { const portal = await getCustomerPortalData(); const journeyEvents = await getCustomerJourney(); if (mounted) { setData(portal); setJourney(journeyEvents); setSignedIn(true); } }
       catch (err) { if (mounted) setError(err instanceof Error ? err.message : 'Your customer portal is not available.'); }
       finally { if (mounted) setLoading(false); }
     };
@@ -87,7 +90,8 @@ export default function Portal() {
         <Card><CardHeader><CardTitle className="flex items-center gap-2"><FileText className="h-5 w-5" /> Quotations</CardTitle></CardHeader><CardContent className="space-y-3">{data.quotations.length ? data.quotations.map(q => <div key={q.id} className="border rounded-md p-4 flex justify-between gap-4"><div><p className="font-medium">{q.quotation_number || q.id.slice(0,8)}</p><p className="text-xs text-muted-foreground">{q.project_type || q.service || 'Project enquiry'} · {new Date(q.created_at).toLocaleDateString('en-KE')}</p></div><div className="text-right"><p className="text-sm font-medium capitalize">{q.status}</p><p className="text-xs text-muted-foreground">KES {Number(q.total_amount || 0).toLocaleString()}</p></div></div>) : <p className="text-sm text-muted-foreground">No quotations are linked to this account yet.</p>}</CardContent></Card>
         <Card><CardHeader><CardTitle className="flex items-center gap-2"><Package className="h-5 w-5" /> Orders</CardTitle></CardHeader><CardContent className="space-y-3">{data.orders.length ? data.orders.map(o => <div key={o.id} className="border rounded-md p-4"><div className="flex justify-between gap-4"><div className="flex gap-3">{orderIcon(o.status)}<div><p className="font-medium">{o.order_number || o.id.slice(0,8)}</p><p className="text-xs text-muted-foreground">{new Date(o.created_at).toLocaleDateString('en-KE')}</p></div></div><div className="text-right"><p className="text-sm font-medium capitalize">{o.status}</p><p className="text-xs">KES {Number(o.total_amount).toLocaleString()}</p></div></div>{o.items?.length ? <div className="mt-3 border-t pt-3 space-y-1">{o.items.map((i, idx) => <div key={idx} className="flex justify-between text-sm"><span>{i.product_name} × {i.quantity} {i.unit}</span><span>KES {(Number(i.unit_price) * Number(i.quantity)).toLocaleString()}</span></div>)}</div> : null}</div>) : <p className="text-sm text-muted-foreground">No orders are linked to this account yet.</p>}</CardContent></Card>
       </div>
-      <Card><CardContent className="p-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4"><div><p className="font-semibold">Need help with an order?</p><p className="text-sm text-muted-foreground">Call {settings?.phone || 'our team'} or request a new quotation.</p></div><div className="flex gap-3"><a href={telHref(settings?.phone || '')}><Button variant="outline">Call us</Button></a><a href="/quotation"><Button>Request quotation</Button></a></div></CardContent></Card>
+      <Card><CardHeader><CardTitle>Activity Timeline</CardTitle></CardHeader><CardContent>{journey.length ? <div className="space-y-4">{journey.map(event => <div key={event.id} className="flex gap-3"><div className="mt-1 h-2.5 w-2.5 rounded-full bg-primary shrink-0"/><div><p className="text-sm font-medium">{event.title}</p><p className="text-sm text-muted-foreground">{event.message}</p><p className="text-xs text-muted-foreground mt-1">{new Date(event.created_at).toLocaleString('en-KE')}</p></div></div>)}</div> : <p className="text-sm text-muted-foreground">Your account activity will appear here as your quotation, order, project and invoice progress changes.</p>}</CardContent></Card>
+            <Card><CardContent className="p-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4"><div><p className="font-semibold">Need help with an order?</p><p className="text-sm text-muted-foreground">Call {settings?.phone || 'our team'} or request a new quotation.</p></div><div className="flex gap-3"><a href={telHref(settings?.phone || '')}><Button variant="outline">Call us</Button></a><a href="/quotation"><Button>Request quotation</Button></a></div></CardContent></Card>
     </div></section>
   </CustomerLayout>;
 }

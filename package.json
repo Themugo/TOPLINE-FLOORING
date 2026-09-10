@@ -16,7 +16,8 @@
     "verify:phases-9-11": "node scripts/verify-phase-9-11.mjs",
     "verify:phases-12-14": "node scripts/verify-phase-12-14.mjs",
     "verify:phases-15-17": "node scripts/verify-phases-15-17.mjs",
-    "verify:phases-21-23": "node scripts/verify-phases-21-23.mjs"
+    "verify:phases-21-23": "node scripts/verify-phases-21-23.mjs",
+    "verify:phases-24-26": "node scripts/verify-phases-24-26.mjs"
   },
   "dependencies": {
     "@radix-ui/react-accordion": "^1.2.16",

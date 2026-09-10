@@ -70,6 +70,7 @@ const AdminNavigation = lazy(() => import('@/pages/admin/navigation'));
 const AdminBackups = lazy(() => import('@/pages/admin/backups'));
 const AdminAuditLogs = lazy(() => import('@/pages/admin/audit-logs'));
 const AdminLeads = lazy(() => import('@/pages/admin/leads'));
+const AdminCommunications = lazy(() => import('@/pages/admin/communications'));
 const AdminSalesCommandCenter = lazy(() => import('@/pages/admin/sales-command-center'));
 const AdminOperationsCommandCenter = lazy(() => import('@/pages/admin/operations-command-center'));
 
@@ -166,6 +167,7 @@ function Router() {
     '/admin/backups': AdminBackups,
     '/admin/audit-logs': AdminAuditLogs,
     '/admin/leads': AdminLeads,
+    '/admin/communications': AdminCommunications,
   };
 
   const AdminComponent = adminRoutes[location as keyof typeof adminRoutes];
