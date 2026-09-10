@@ -54,16 +54,14 @@ When Supabase configuration is absent during UI-only development, the client tra
 
 The historical migration directory is **historical work product, not yet the canonical production migration chain**. It contains duplicate/overlapping timestamps and generations. Do not tell operators to blindly apply the directory in filename order.
 
-The Phase-3 infrastructure foundation establishes:
+Phase 4 establishes the canonical database foundation. The active chain is:
 
-- one clean baseline migration,
-- deterministic incremental migrations,
-- database environment separation,
-- RLS policies,
-- staff/RBAC model,
-- storage policies,
-- production seed strategy, and
-- migration verification.
+- `20260910000000_topline_canonical_schema.sql` — normalized schema baseline,
+- `20260910090000_032_commerce_contract_hardening.sql` — transaction hardening,
+- `20260910100000_033_staff_rbac_audit_foundation.sql` — Auth/RBAC/RLS/audit, and
+- `20260910110000_topline_rpc_contracts.sql` — RPC contracts reconciled to the canonical model.
+
+The former prototype migrations are retained under `supabase/migrations_legacy/` and are not deployed. The dedicated Topline Supabase project must be provisioned independently of CALQULUS-PMS.
 
 ## Repository hygiene
 

@@ -89,14 +89,11 @@ export async function createCustomerOrder(input: CreateCustomerOrderInput): Prom
     p_name: input.name.trim(),
     p_email: input.email.trim(),
     p_phone: input.phone.trim(),
-    p_notes: input.notes?.trim() || '',
-    p_total_amount: 0,
     p_items: input.items,
     p_coupon_id: input.couponId || null,
     p_delivery_zone_id: input.deliveryZoneId || null,
     p_delivery_address: input.deliveryAddress?.trim() || null,
-    p_delivery_charge: 0,
-    p_discount_amount: 0,
+    p_notes: input.notes?.trim() || null,
   });
   if (error) throw error;
 
