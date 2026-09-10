@@ -12,14 +12,22 @@ This project is completely independent of CALQULUS-PMS. Do not substitute the CA
 
 ## Migration chain
 
-The active migration chain is intentionally small and canonical:
+The active migration chain is intentionally canonical and ordered:
 
 1. `20260910000000_topline_canonical_schema.sql` — normalized schema baseline.
-2. `20260910090000_032_commerce_contract_hardening.sql` — Phase 2 transaction hardening.
-3. `20260910100000_033_staff_rbac_audit_foundation.sql` — Phase 3 authentication/RBAC/RLS/audit foundation.
-4. `20260910110000_topline_rpc_contracts.sql` — final RPC signatures reconciled to the canonical schema.
+2. `20260910090000_032_commerce_contract_hardening.sql` — commerce transaction hardening.
+3. `20260910100000_033_staff_rbac_audit_foundation.sql` — authentication/RBAC/RLS/audit foundation.
+4. `20260910110000_topline_rpc_contracts.sql` — canonical quotation/order RPC contracts.
+5. `20260910120000_catalogue_inventory_procurement_engine.sql` — catalogue, inventory and procurement transactions.
+6. `20260910130000_customer_portal_security.sql` — customer portal identity and private data access.
+7. `20260910140000_sales_project_lifecycle.sql` — CRM, quotation, order and project lifecycle.
+8. `20260910150000_project_delivery_field_operations.sql` — field delivery and completion operations.
+9. `20260910160000_finance_communications_analytics.sql` — finance, communications and analytics.
+10. `20260910170000_customer_journey_notifications.sql` — customer journey events and communication outbox.
 
 `migrations_legacy/` is forensic reference material and must not be deployed.
+
+Use `npm run verify:phases-30-32` before database validation to catch migration-contract drift early.
 
 ## Safe activation workflow
 
