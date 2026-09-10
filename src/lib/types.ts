@@ -724,6 +724,7 @@ export interface PurchaseOrder {
   id: string;
   po_number: string;
   supplier_id: string | null;
+  warehouse_id: string | null;
   status: PurchaseOrderStatus;
   expected_date: string | null;
   notes: string | null;

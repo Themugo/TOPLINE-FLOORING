@@ -1279,20 +1279,25 @@ export function usePurchaseOrders() {
 
   useEffect(() => { refetch(); }, [refetch]);
 
-  const createPurchaseOrder = async (po: { supplier_id: string | null; expected_date?: string | null; notes?: string | null }) => {
-    const { data: userData } = await supabase.auth.getUser();
-    const { data, error: err } = await supabase
-      .from('purchase_orders')
-      .insert({ ...po, status: 'draft', created_by: userData.user?.id || null })
-      .select('*, supplier:suppliers(*), items:purchase_order_items(*, product:products(*))')
-      .single();
+  const createPurchaseOrder = async (po: { supplier_id: string | null; warehouse_id: string; expected_date?: string | null; notes?: string | null }) => {
+    const { data: id, error: err } = await supabase.rpc('create_purchase_order', {
+      p_supplier_id: po.supplier_id, p_warehouse_id: po.warehouse_id, p_expected_date: po.expected_date || null, p_notes: po.notes || null,
+    });
     if (err) throw err;
+    const { data: created, error: fetchError } = await supabase
+      .from('purchase_orders')
+      .select('*, supplier:suppliers(*), items:purchase_order_items(*, product:products(*))')
+      .eq('id', id)
+      .single();
+    if (fetchError) throw fetchError;
     await refetch();
-    return data as PurchaseOrder;
+    return created as PurchaseOrder;
   };
 
   const addPurchaseOrderItem = async (poId: string, item: { product_id: string | null; description: string; quantity_ordered: number; unit_cost: number }) => {
-    const { error: err } = await supabase.from('purchase_order_items').insert({ purchase_order_id: poId, ...item, quantity_received: 0 });
+    const { error: err } = await supabase.rpc('add_purchase_order_item', {
+      p_purchase_order_id: poId, p_product_id: item.product_id, p_description: item.description, p_quantity: item.quantity_ordered, p_unit_cost: item.unit_cost,
+    });
     if (err) throw err;
     await refetch();
   };
@@ -1307,8 +1312,10 @@ export function usePurchaseOrders() {
   // (apply_goods_received, from migration 008) to automatically add
   // stock and log an inventory movement - this just records how much
   // came in.
-  const receiveItem = async (itemId: string, quantityReceived: number) => {
-    const { error: err } = await supabase.from('purchase_order_items').update({ quantity_received: quantityReceived }).eq('id', itemId);
+  const receiveItem = async (itemId: string, quantityReceived: number, currentReceived = 0) => {
+    const delta = quantityReceived - currentReceived;
+    if (delta <= 0) return;
+    const { error: err } = await supabase.rpc('receive_purchase_order_item', { p_item_id: itemId, p_quantity: delta });
     if (err) throw err;
     await refetch();
   };
@@ -1424,12 +1431,9 @@ export function useStockTransfers() {
   useEffect(() => { refetch(); }, [refetch]);
 
   const createTransfer = async (transfer: { from_warehouse_id: string; to_warehouse_id: string; product_id: string; quantity: number; notes?: string | null }) => {
-    const { data: userData } = await supabase.auth.getUser();
-    const { data, error: err } = await supabase
-      .from('stock_transfers')
-      .insert({ ...transfer, status: 'completed', created_by: userData.user?.id || null })
-      .select('*, from_warehouse:warehouses!stock_transfers_from_warehouse_id_fkey(*), to_warehouse:warehouses!stock_transfers_to_warehouse_id_fkey(*), product:products(id, name, sku)')
-      .single();
+    const { data, error: err } = await supabase.rpc('transfer_stock', {
+      p_from_warehouse_id: transfer.from_warehouse_id, p_to_warehouse_id: transfer.to_warehouse_id, p_product_id: transfer.product_id, p_quantity: transfer.quantity, p_notes: transfer.notes || null,
+    });
     if (err) throw err;
     await refetch();
     return data as StockTransfer;

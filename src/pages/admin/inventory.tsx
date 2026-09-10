@@ -42,53 +42,29 @@ export default function AdminInventory() {
   const handleAdjustment = async (e: React.FormEvent) => {
     e.preventDefault();
     const product = products.find(p => p.id === adjustmentForm.product_id);
-    if (!product) {
-      toast({ title: 'Select a product', variant: 'destructive' });
+    if (!product || adjustmentForm.quantity <= 0) {
+      toast({ title: 'Select a product and enter a positive quantity', variant: 'destructive' });
       return;
     }
-
-    const newStock = adjustmentForm.type === 'adjustment'
-      ? adjustmentForm.quantity
-      : product.stock_quantity + (adjustmentForm.type === 'in' ? adjustmentForm.quantity : -adjustmentForm.quantity);
-
-    if (newStock < 0) {
-      toast({ title: 'Stock cannot go below zero', variant: 'destructive' });
-      return;
-    }
-
     setSaving(true);
     try {
-      const { error: movementError } = await supabase.from('inventory_movements').insert({
-        product_id: adjustmentForm.product_id,
-        movement_type: adjustmentForm.type,
-        quantity: adjustmentForm.quantity,
-        previous_stock: product.stock_quantity,
-        new_stock: newStock,
-        notes: adjustmentForm.notes || null,
+      const { error } = await supabase.rpc('adjust_product_stock', {
+        p_product_id: adjustmentForm.product_id,
+        p_quantity: adjustmentForm.quantity,
+        p_movement_type: adjustmentForm.type,
+        p_notes: adjustmentForm.notes || null,
+        p_reference_type: 'manual_adjustment',
+        p_reference_id: null,
+        p_warehouse_id: null,
       });
-      if (movementError) throw movementError;
-
-      const { error: productError } = await supabase.from('products').update({ stock_quantity: newStock }).eq('id', adjustmentForm.product_id);
-      if (productError) throw productError;
-
-      if (newStock <= product.low_stock_threshold) {
-        await supabase.from('inventory_alerts').insert({
-          product_id: product.id,
-          alert_type: 'low_stock',
-          threshold: product.low_stock_threshold,
-          current_stock: newStock,
-        });
-      }
-
+      if (error) throw error;
       toast({ title: 'Stock adjustment recorded' });
       setShowAdjustment(false);
       setAdjustmentForm({ product_id: '', quantity: 0, type: 'in', notes: '' });
       await fetchData();
-    } catch {
-      toast({ title: 'Failed to record adjustment', variant: 'destructive' });
-    } finally {
-      setSaving(false);
-    }
+    } catch (err) {
+      toast({ title: 'Failed to record adjustment', description: err instanceof Error ? err.message : undefined, variant: 'destructive' });
+    } finally { setSaving(false); }
   };
 
   const resolveAlert = async (id: string) => {

@@ -200,31 +200,10 @@ function StockTab() {
     }
     setSaving(true);
     try {
-      const { data: existing } = await supabase
-        .from('warehouse_stock')
-        .select('quantity')
-        .eq('warehouse_id', form.warehouse_id)
-        .eq('product_id', form.product_id)
-        .maybeSingle();
-      const previous = existing?.quantity ?? 0;
-
-      const { error: upsertError } = await supabase
-        .from('warehouse_stock')
-        .upsert({ warehouse_id: form.warehouse_id, product_id: form.product_id, quantity: form.quantity, updated_at: new Date().toISOString() }, { onConflict: 'warehouse_id,product_id' });
+      const { error: upsertError } = await supabase.rpc('set_warehouse_stock', {
+        p_warehouse_id: form.warehouse_id, p_product_id: form.product_id, p_quantity: form.quantity, p_notes: form.notes || 'Warehouse stock set manually',
+      });
       if (upsertError) throw upsertError;
-
-      if (previous !== form.quantity) {
-        await supabase.from('inventory_movements').insert({
-          product_id: form.product_id,
-          warehouse_id: form.warehouse_id,
-          movement_type: 'adjustment',
-          quantity: Math.abs(form.quantity - previous),
-          previous_stock: previous,
-          new_stock: form.quantity,
-          reference_type: 'warehouse_adjustment',
-          notes: form.notes || 'Warehouse stock set manually',
-        });
-      }
 
       toast({ title: 'Warehouse stock updated' });
       setShowForm(false);

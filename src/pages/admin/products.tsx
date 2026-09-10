@@ -95,68 +95,19 @@ export default function AdminProducts() {
     };
 
     try {
-      let savedSuccessfully = false;
       if (editing) {
         const { error } = await supabase
           .from('products')
           .update({ ...data, updated_at: new Date().toISOString() })
           .eq('id', editing.id);
-        if (!error) {
-          savedSuccessfully = true;
-          toast({ title: 'Product updated' });
-        }
+        if (error) throw error;
+        toast({ title: 'Product updated' });
       } else {
         const { error } = await supabase.from('products').insert(data);
-        if (!error) {
-          savedSuccessfully = true;
-          toast({ title: 'Product created' });
-        }
+        if (error) throw error;
+        toast({ title: 'Product created' });
       }
-
-      if (savedSuccessfully) {
-        await fetchProducts();
-      } else {
-        // Fallback to updating local state so user can save products cleanly
-        const cat = categories.find((c) => c.id === data.category_id);
-        if (editing) {
-          setProducts((prev) =>
-            prev.map((p) =>
-              p.id === editing.id
-                ? {
-                    ...p,
-                    ...data,
-                    category: cat || p.category,
-                    image_url: data.image_url || p.image_url,
-                  }
-                : p
-            )
-          );
-          toast({ title: 'Product updated in catalog' });
-        } else {
-          const newProd: Product = {
-            id: `prod-${Date.now()}`,
-            ...data,
-            category_id: data.category_id || null,
-            short_description: data.short_description || null,
-            sku: data.sku || null,
-            image_url: data.image_url || '',
-            gallery_urls: [],
-            display_order: 0,
-            brand_id: null,
-            meta_title: null,
-            meta_description: null,
-            stock_quantity: 0,
-            low_stock_threshold: 0,
-            related_products: [],
-            category: cat,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-          };
-          setProducts((prev) => [newProd, ...prev]);
-          setTotal((prev) => prev + 1);
-          toast({ title: 'Product added to catalog' });
-        }
-      }
+      await fetchProducts();
       resetForm();
     } catch {
       toast({ title: 'Failed to save product', description: 'That slug or SKU may already be in use.', variant: 'destructive' });

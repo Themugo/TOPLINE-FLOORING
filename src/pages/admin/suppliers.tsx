@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Plus, X, Trash2, Truck, Pencil, PackageCheck } from 'lucide-react';
 import { AdminLayout } from './dashboard';
-import { useSuppliers, usePurchaseOrders, useProducts } from '@/hooks/use-data';
+import { useSuppliers, usePurchaseOrders, useProducts, useWarehouses } from '@/hooks/use-data';
 import { useToast } from '@/hooks/use-toast';
 import { formatKES, formatDateTime } from '@/lib/utils';
 import type { Supplier, PurchaseOrder, PurchaseOrderStatus } from '@/lib/types';
@@ -161,7 +161,8 @@ function PurchaseOrdersTab() {
   const [showForm, setShowForm] = useState(false);
   const [selected, setSelected] = useState<PurchaseOrder | null>(null);
   const [saving, setSaving] = useState(false);
-  const [form, setForm] = useState({ supplier_id: '', expected_date: '', notes: '' });
+  const { warehouses } = useWarehouses();
+  const [form, setForm] = useState({ supplier_id: '', warehouse_id: '', expected_date: '', notes: '' });
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -169,12 +170,13 @@ function PurchaseOrdersTab() {
     try {
       const po = await createPurchaseOrder({
         supplier_id: form.supplier_id || null,
+        warehouse_id: form.warehouse_id,
         expected_date: form.expected_date || null,
         notes: form.notes || null,
       });
       toast({ title: 'Purchase order created', description: po.po_number });
       setShowForm(false);
-      setForm({ supplier_id: '', expected_date: '', notes: '' });
+      setForm({ supplier_id: '', warehouse_id: '', expected_date: '', notes: '' });
       setSelected(po);
     } catch {
       toast({ title: 'Failed to create purchase order', variant: 'destructive' });
@@ -252,6 +254,10 @@ function PurchaseOrdersTab() {
               <button onClick={() => setShowForm(false)}><X className="w-5 h-5 text-navy-400" /></button>
             </div>
             <form onSubmit={handleCreate} className="space-y-3">
+              <select required value={form.warehouse_id} onChange={(e) => setForm({ ...form, warehouse_id: e.target.value })} className="input">
+                <option value="">Receiving warehouse *</option>
+                {warehouses.filter(w => w.is_active).map((w) => <option key={w.id} value={w.id}>{w.name}</option>)}
+              </select>
               <select value={form.supplier_id} onChange={(e) => setForm({ ...form, supplier_id: e.target.value })} className="input">
                 <option value="">Select supplier</option>
                 {suppliers.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
@@ -326,6 +332,7 @@ function PurchaseOrderDetail({ po, onClose }: { po: PurchaseOrder; onClose: () =
       <div className="bg-white rounded-xl max-w-2xl w-full p-6 max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
         <div className="flex justify-between items-center mb-4">
           <h2 className="font-semibold text-lg text-navy-900">PO {current.po_number} - {current.supplier?.name}</h2>
+          <p className="text-xs text-navy-400">Receiving: {current.warehouse_id ? 'Assigned warehouse' : 'Not assigned'}</p>
           <button onClick={onClose}><X className="w-5 h-5 text-navy-400" /></button>
         </div>
 
