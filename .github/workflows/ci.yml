@@ -27,6 +27,11 @@ jobs:
         run: npm run validate:local-db
       - name: Commerce Fulfillment 360 contract
         run: npm run verify:commerce-fulfillment-360
+      - name: Order Operations 360 type contract
+        run: npm run verify:order-operations-360
+
+      - name: Authorization + Order Operations 360 contract
+        run: npm run verify:authorization-order-360
       - name: Generated database type contract
         env:
           REQUIRE_GENERATED_TYPES: true

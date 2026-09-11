@@ -28,6 +28,7 @@ const required = [
   '20260911190000_055_reservation_expiry_and_operations.sql',
   '20260912000000_056_public_tracking_privacy.sql',
   '20260912010000_057_commerce_fulfillment_integrity.sql',
+  '20260912020000_058_authorization_order_operations_360.sql',
 ];
 
 const files = fs.readdirSync(migrationDir).filter((f) => f.endsWith('.sql')).sort();

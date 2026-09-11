@@ -158,6 +158,7 @@ export interface Customer {
 
 export interface Order {
   id: string;
+  order_number: string | null;
   customer_id: string;
   customer_name: string;
   customer_email: string;
