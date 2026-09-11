@@ -187,7 +187,7 @@ export function ExecutiveDashboard() {
                   <p className="text-sm text-gray-500">{order.customer_email}</p>
                 </div>
                 <div className="text-right">
-                  <p className="font-medium">{formatKES(order.total_amount)}</p>
+                  <p className="font-medium">{formatKES(Number(order.total_amount ?? 0))}</p>
                   <span className={`text-xs px-2 py-0.5 rounded-full ${
                     order.status === 'completed' ? 'bg-green-100 text-green-700' :
                     order.status === 'pending' ? 'bg-yellow-100 text-yellow-700' :

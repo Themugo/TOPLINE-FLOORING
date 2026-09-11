@@ -14,7 +14,7 @@ The deployment was failing after dependency installation. The previous configura
 
 The corrected path is:
 
-`Vercel -> npm run build -> vite build -> dist`
+`Vercel -> npm run build -> node ./node_modules/vite/bin/vite.js build -> dist`
 
 Node 22.x is pinned because Vercel supports Node 22.x for builds and recommends explicit major-version selection rather than an open-ended range.
 

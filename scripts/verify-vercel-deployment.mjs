@@ -15,7 +15,7 @@ function check(condition, message) {
 
 check(packageJson.type === 'module', 'package.json uses ESM mode');
 check(packageJson.engines?.node === '22.x', 'Vercel Node runtime is pinned to 22.x');
-check(packageJson.scripts?.build === 'vite build', 'production build script delegates to the Vite CLI');
+check(packageJson.scripts?.build === 'node ./node_modules/vite/bin/vite.js build', 'production build script delegates to the Vite CLI');
 check(vercelJson.buildCommand === 'npm run build', 'Vercel delegates the build to package.json');
 check(vercelJson.outputDirectory === 'dist', 'Vercel serves the Vite dist directory');
 check(vercelJson.framework === 'vite', 'Vercel framework is explicitly Vite');

@@ -1,5 +1,5 @@
 import { Link } from 'wouter';
-import { ArrowRight, BriefcaseBusiness, FileText, ShoppingCart, Users, TrendingUp } from 'lucide-react';
+import { ArrowRight, Briefcase, FileText, ShoppingCart, Users, TrendingUp } from 'lucide-react';
 import { AdminLayout } from './dashboard';
 import { supabase } from '@/lib/supabase';
 import { formatKES } from '@/lib/utils';
@@ -80,7 +80,7 @@ export default function SalesCommandCenter() {
       </div>
       <div className="grid lg:grid-cols-2 gap-6">
         <div className="bg-white border border-gray-200 rounded-xl p-6">
-          <div className="flex items-center gap-3 mb-5"><BriefcaseBusiness className="w-5 h-5 text-primary-600" /><h2 className="font-semibold text-navy-900">Commercial position</h2></div>
+          <div className="flex items-center gap-3 mb-5"><Briefcase className="w-5 h-5 text-primary-600" /><h2 className="font-semibold text-navy-900">Commercial position</h2></div>
           <div className="space-y-4">
             <div className="flex justify-between"><span className="text-sm text-gray-500">Order value in system</span><strong>{loading ? '—' : formatKES(snapshot.orderValue)}</strong></div>
             <div className="flex justify-between"><span className="text-sm text-gray-500">Outstanding invoices</span><strong className="text-red-600">{loading ? '—' : formatKES(snapshot.outstanding)}</strong></div>

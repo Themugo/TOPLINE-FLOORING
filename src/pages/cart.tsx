@@ -80,13 +80,13 @@ export default function Cart() {
       }
 
       setAppliedCoupon({
-        id: result.coupon_id,
+        id: result.coupon_id ?? '',
         code: couponCode.trim().toUpperCase(),
-        type: result.coupon_type,
-        value: result.discount_value,
-        discountAmount: result.discount_amount,
+        type: result.discount_type ?? 'fixed',
+        value: result.discount_value ?? 0,
+        discountAmount: result.discount_amount ?? 0,
       });
-      toast({ title: 'Coupon applied', description: `You saved ${formatKES(result.discount_amount)}` });
+      toast({ title: 'Coupon applied', description: `You saved ${formatKES(result.discount_amount ?? 0)}` });
     } catch {
       setCouponError('Could not validate coupon right now. Please try again.');
     } finally {

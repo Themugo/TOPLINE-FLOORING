@@ -35,7 +35,7 @@ import {
   ExternalLink,
   CheckCircle2,
   Building2,
-  BriefcaseBusiness,
+  Briefcase,
 } from 'lucide-react';
 import { useAdminAuth } from '@/hooks/use-data';
 import { useState, useEffect, useMemo, useCallback } from 'react';
@@ -69,7 +69,7 @@ const NAV_GROUPS: NavGroup[] = [
   {
     label: 'Sales',
     items: [
-      { href: '/admin/sales', label: 'Sales Command Center', icon: BriefcaseBusiness },
+      { href: '/admin/sales', label: 'Sales Command Center', icon: Briefcase },
       { href: '/admin/crm', label: 'CRM / Leads', icon: Users },
       { href: '/admin/orders', label: 'Orders', icon: ShoppingCart },
       { href: '/admin/invoices', label: 'Invoices', icon: FileText },

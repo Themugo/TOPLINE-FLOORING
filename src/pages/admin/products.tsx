@@ -371,7 +371,7 @@ function ProductGalleryModal({ product, onClose, onChanged }: { product: Product
     onChanged();
   };
 
-  const handleSetPrimary = async (imageId: string, imageUrl: string) => {
+  const handleSetPrimary = async (imageId: string) => {
     await setPrimaryProductImage(product.id, imageId);
     await fetchImages();
     onChanged();
@@ -413,7 +413,7 @@ function ProductGalleryModal({ product, onClose, onChanged }: { product: Product
                 )}
                 <div className="absolute top-1 right-1 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                   {!img.is_primary && (
-                    <button onClick={() => handleSetPrimary(img.id, img.image_url)} title="Make primary" className="p-1 bg-white/90 rounded text-navy-700 hover:text-primary-600">
+                    <button onClick={() => handleSetPrimary(img.id)} title="Make primary" className="p-1 bg-white/90 rounded text-navy-700 hover:text-primary-600">
                       <Star className="w-3 h-3" />
                     </button>
                   )}

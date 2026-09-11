@@ -251,7 +251,7 @@ function InvoiceDetail({
         description: newItem.description,
         quantity: Number(newItem.quantity) || 1,
         unit_price: Number(newItem.unit_price) || 0,
-      }, current.tax_rate);
+      });
       setNewItem({ description: '', quantity: '1', unit_price: '0' });
     } catch {
       toast({ title: 'Failed to add item', variant: 'destructive' });
@@ -262,7 +262,7 @@ function InvoiceDetail({
 
   const handleRemoveItem = async (itemId: string) => {
     try {
-      await removeInvoiceItem(current.id, itemId, current.tax_rate);
+      await removeInvoiceItem(current.id, itemId);
     } catch {
       toast({ title: 'Failed to remove item', variant: 'destructive' });
     }

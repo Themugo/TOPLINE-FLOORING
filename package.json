@@ -4,12 +4,12 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
+    "dev": "node ./node_modules/vite/bin/vite.js",
+    "build": "node ./node_modules/vite/bin/vite.js build",
     "build:sitemap": "node scripts/generate-sitemap.mjs",
     "build:all": "npm run build:sitemap && npm run build",
     "lint": "node ./node_modules/eslint/bin/eslint.js .",
-    "preview": "vite preview",
+    "preview": "node ./node_modules/vite/bin/vite.js preview",
     "typecheck": "node ./node_modules/typescript/bin/tsc -p tsconfig.app.json --noEmit",
     "verify:supabase": "node scripts/verify-supabase-target.mjs",
     "verify:phases-6-8": "node scripts/verify-phase-6-8.mjs",
@@ -38,7 +38,9 @@
     "verify:payment-provider-boundary": "node scripts/verify-payment-provider-boundary.mjs",
     "verify:release-candidate": "node scripts/verify-release-candidate.mjs",
     "verify:doctor": "node scripts/verify-toolchain.mjs",
-    "verify:vercel": "node scripts/verify-vercel-deployment.mjs"
+    "verify:vercel": "node scripts/verify-vercel-deployment.mjs",
+    "verify:invoice-hook-contract": "node scripts/verify-invoice-hook-contract.mjs",
+    "verify:public-tracking-contract": "node scripts/verify-public-tracking-contract.mjs"
   },
   "dependencies": {
     "@radix-ui/react-accordion": "^1.2.16",

@@ -3,6 +3,8 @@ import { useState, useEffect, useCallback } from 'react';
 import { isSupabaseConfigured, supabase } from '@/lib/supabase';
 import { useCMS } from '@/context/CMSContext';
 import { getCurrentStaffProfile, type StaffProfile } from '@/lib/staff-rbac';
+import { convertLeadToCustomer } from '@/lib/lifecycle';
+import { createInvoiceTransaction, addInvoiceItemTransaction, recordInvoicePaymentTransaction, updateInvoiceStatusTransaction, type InvoiceInput } from '@/lib/finance';
 import type {
   Product,
   Category,
@@ -1110,13 +1112,12 @@ export function useInvoices(options?: { status?: string }) {
 
   const recordPayment = async (invoiceId: string, amount: number, method: string, reference?: string) => { await recordInvoicePaymentTransaction(invoiceId, amount, method, reference); await refetch(); };
 
-  const createInvoice = async (invoice: { customer_id?: string | null; order_id?: string | null; quotation_id?: string | null; customer_name: string; customer_email?: string | null; customer_phone?: string | null; billing_address?: string | null; tax_rate?: number; due_date?: string | null; notes?: string | null; }) => { const result = await createInvoiceTransaction(invoice); await refetch(); const fresh = (await supabase.from('invoices').select('*').eq('id', result.invoice_id).single()).data; return fresh as Invoice; };
+  const createInvoice = async (invoice: InvoiceInput) => { const result = await createInvoiceTransaction(invoice); if (!result.invoice_id) throw new Error(result.error || 'Invoice was created without an invoice reference'); await refetch(); const fresh = (await supabase.from('invoices').select('*').eq('id', result.invoice_id).single()).data; return fresh as Invoice; };
 
-  const recalcInvoiceTotals = async (invoiceId: string, taxRate: number) => { void taxRate; await refetch(); };
 
-  const addInvoiceItem = async (invoiceId: string, item: { description: string; quantity: number; unit_price: number }, taxRate: number) => { void taxRate; await addInvoiceItemTransaction(invoiceId,item); await refetch(); };
+  const addInvoiceItem = async (invoiceId: string, item: { description: string; quantity: number; unit_price: number }) => { await addInvoiceItemTransaction(invoiceId, item); await refetch(); };
 
-  const removeInvoiceItem = async (invoiceId: string, itemId: string, taxRate: number) => { void taxRate; const {error}=await supabase.from('invoice_items').delete().eq('id',itemId); if(error)throw error; await refetch(); };
+  const removeInvoiceItem = async (_invoiceId: string, itemId: string) => { const {error}=await supabase.from('invoice_items').delete().eq('id',itemId); if(error)throw error; await refetch(); };
 
   const updateInvoiceStatus = async (invoiceId: string, status: string) => { await updateInvoiceStatusTransaction(invoiceId,status); await refetch(); };
 

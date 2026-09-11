@@ -46,6 +46,7 @@ export default function TrackOrder() {
       if (!orderId.trim() && !phone.trim()) { setError("Please enter an order number or phone number."); return; }
       const tracked = await trackOrder(orderId.trim(), phone.trim());
       if (!tracked?.found) { setError("No orders found matching your details. Please check and try again."); return; }
+      if (!tracked.order) { setError("No order details were returned. Please try again."); return; }
       setResult({ ...tracked.order, items: tracked.items || [], delivery: tracked.delivery });
     } catch { setError("Something went wrong. Please try again later."); } finally { setLoading(false); }
   };
