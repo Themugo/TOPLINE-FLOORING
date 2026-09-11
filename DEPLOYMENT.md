@@ -77,3 +77,21 @@ After the Supabase infrastructure is verified:
 ## 6. Operational rule
 
 A successful frontend build does **not** prove that the database, RLS, authentication or business workflows are production-ready. Production sign-off requires the infrastructure and security verification described above.
+
+
+## 7. Ecommerce stability foundation
+
+Migration `20260911160000_048_ecommerce_stability_foundation.sql` adds the production commerce boundary:
+
+- idempotent checkout;
+- stock reservations;
+- provider-neutral payment transactions;
+- staff-only order status mutation;
+- staff-only payment recording;
+- human-readable order numbers.
+
+Apply it only after the canonical schema and migrations 39–47 have been validated in a disposable/local database. Do not run `supabase db reset --linked` against the production project.
+
+## 8. Legacy migration rule
+
+WordPress remains online during ecommerce rollout. Product and service data should be imported only after client approval. Existing email, DNS and cPanel services are not prerequisites for the new database and should be migrated independently.

@@ -6,7 +6,6 @@ import { useSeoMeta } from '@/hooks/use-seo';
 import { Link } from 'wouter';
 import { supabase } from '@/lib/supabase';
 import { useImagePreloader } from '@/hooks/use-image-preloader';
-import { MOCK_PROJECTS } from '@/lib/mock-data';
 import type { Project, ProjectImage } from '@/lib/types';
 
 interface ProjectWithImages extends Project {
@@ -50,12 +49,11 @@ export default function Portfolio() {
         if (!error && data && data.length > 0) {
           setProjects(data as ProjectWithImages[]);
         } else {
-          // Fallback to rich mock projects if DB has no entries or on connection issues
-          setProjects(MOCK_PROJECTS as unknown as ProjectWithImages[]);
+          setProjects([]);
         }
       } catch (err) {
         console.warn('Using mock projects fallback:', err);
-        setProjects(MOCK_PROJECTS as unknown as ProjectWithImages[]);
+        setProjects([]);
       } finally {
         setLoading(false);
       }

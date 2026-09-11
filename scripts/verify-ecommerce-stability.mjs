@@ -1,0 +1,51 @@
+import fs from 'node:fs';
+import path from 'node:path';
+
+const root = process.cwd();
+const migrationDir = path.join(root, 'supabase', 'migrations');
+const required = [
+  '20260910000000_topline_canonical_schema.sql',
+  '20260910090000_032_commerce_contract_hardening.sql',
+  '20260910100000_033_staff_rbac_audit_foundation.sql',
+  '20260910110000_topline_rpc_contracts.sql',
+  '20260910120000_catalogue_inventory_procurement_engine.sql',
+  '20260910130000_customer_portal_security.sql',
+  '20260910140000_sales_project_lifecycle.sql',
+  '20260910150000_project_delivery_field_operations.sql',
+  '20260910160000_finance_communications_analytics.sql',
+  '20260910170000_customer_journey_notifications.sql',
+  '20260911080000_039_admin_mutation_security.sql',
+  '20260911090000_040_communication_outbox_delivery.sql',
+  '20260911100000_041_system_health_observability.sql',
+  '20260911110000_042_order_delivery_lifecycle.sql',
+  '20260911120000_043_delivery_proof_and_customer_tracking.sql',
+  '20260911130000_045_installation_workforce.sql',
+  '20260911140000_046_project_cost_ledger.sql',
+  '20260911150000_047_warranty_after_sales.sql',
+  '20260911160000_048_ecommerce_stability_foundation.sql',
+];
+
+const files = fs.readdirSync(migrationDir).filter((f) => f.endsWith('.sql')).sort();
+const missing = required.filter((f) => !files.includes(f));
+if (missing.length) {
+  console.error('Missing active migrations:', missing.join(', '));
+  process.exit(1);
+}
+if (files.length !== required.length) {
+  console.error(`Unexpected active migration count: ${files.length}; expected ${required.length}`);
+  console.error(files.join('\n'));
+  process.exit(1);
+}
+
+const source = fs.readFileSync(path.join(root, 'src/lib/commerce.ts'), 'utf8');
+const cart = fs.readFileSync(path.join(root, 'src/pages/cart.tsx'), 'utf8');
+const orders = fs.readFileSync(path.join(root, 'src/pages/admin/orders.tsx'), 'utf8');
+
+for (const token of ['create_secure_customer_order', 'idempotencyKey']) {
+  if (!source.includes(token)) throw new Error(`commerce.ts missing ${token}`);
+}
+if (!cart.includes('paymentMethod')) throw new Error('cart.tsx missing payment method');
+if (!cart.includes('checkoutIdempotencyKey')) throw new Error('cart.tsx missing checkout idempotency');
+if (!orders.includes('update_order_status_transaction')) throw new Error('admin order mutation is not using secure RPC');
+
+console.log(`Topline ecommerce stability verification passed. Active migrations: ${files.length}`);

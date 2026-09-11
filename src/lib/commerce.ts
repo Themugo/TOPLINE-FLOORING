@@ -72,6 +72,8 @@ export interface CreateCustomerOrderInput {
   couponId?: string | null;
   deliveryZoneId?: string | null;
   deliveryAddress?: string | null;
+  paymentMethod?: 'mpesa' | 'card' | 'bank_transfer' | 'cash' | 'cheque' | 'other' | null;
+  idempotencyKey?: string;
 }
 
 export interface CreateCustomerOrderResult {
@@ -85,15 +87,18 @@ export interface CreateCustomerOrderResult {
 }
 
 export async function createCustomerOrder(input: CreateCustomerOrderInput): Promise<CreateCustomerOrderResult> {
-  const { data, error } = await supabase.rpc('create_customer_order', {
+  const idempotencyKey = input.idempotencyKey?.trim() || crypto.randomUUID();
+  const { data, error } = await supabase.rpc('create_secure_customer_order', {
     p_name: input.name.trim(),
     p_email: input.email.trim(),
     p_phone: input.phone.trim(),
     p_items: input.items,
+    p_notes: input.notes?.trim() || '',
     p_coupon_id: input.couponId || null,
     p_delivery_zone_id: input.deliveryZoneId || null,
     p_delivery_address: input.deliveryAddress?.trim() || null,
-    p_notes: input.notes?.trim() || null,
+    p_payment_method: input.paymentMethod || null,
+    p_idempotency_key: idempotencyKey,
   });
   if (error) throw error;
 

@@ -24,6 +24,15 @@ The active migration chain is intentionally canonical and ordered:
 8. `20260910150000_project_delivery_field_operations.sql` — field delivery and completion operations.
 9. `20260910160000_finance_communications_analytics.sql` — finance, communications and analytics.
 10. `20260910170000_customer_journey_notifications.sql` — customer journey events and communication outbox.
+11. `20260911080000_039_admin_mutation_security.sql` — staff-only catalogue/inventory mutations.
+12. `20260911090000_040_communication_outbox_delivery.sql` — durable outbound communication state.
+13. `20260911100000_041_system_health_observability.sql` — operational health snapshot.
+14. `20260911110000_042_order_delivery_lifecycle.sql` — order payment state and delivery lifecycle.
+15. `20260911120000_043_delivery_proof_and_customer_tracking.sql` — delivery proof and public tracking.
+16. `20260911130000_045_installation_workforce.sql` — installation workforce controls.
+17. `20260911140000_046_project_cost_ledger.sql` — project cost/profitability ledger.
+18. `20260911150000_047_warranty_after_sales.sql` — warranty and after-sales service cases.
+19. `20260911160000_048_ecommerce_stability_foundation.sql` — idempotent checkout, stock reservations and provider-neutral payments.
 
 `migrations_legacy/` is forensic reference material and must not be deployed.
 

@@ -42,10 +42,10 @@ export default function AdminOrders() {
   useEffect(() => { fetchOrders(); }, [fetchOrders]);
 
   const updateStatus = async (orderId: string, status: string) => {
-    const { error } = await supabase
-      .from('orders')
-      .update({ status, updated_at: new Date().toISOString() })
-      .eq('id', orderId);
+    const { error } = await supabase.rpc('update_order_status_transaction', {
+      p_order_id: orderId,
+      p_status: status,
+    });
     if (error) {
       toast({ title: 'Failed to update order status', variant: 'destructive' });
       return;

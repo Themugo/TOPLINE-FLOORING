@@ -3,16 +3,6 @@ import { useState, useEffect, useCallback } from 'react';
 import { isSupabaseConfigured, supabase } from '@/lib/supabase';
 import { useCMS } from '@/context/CMSContext';
 import { getCurrentStaffProfile, type StaffProfile } from '@/lib/staff-rbac';
-import {
-  MOCK_PRODUCTS,
-  MOCK_CATEGORIES,
-  MOCK_HERO_SLIDES,
-  MOCK_SERVICES,
-  MOCK_TESTIMONIALS,
-  MOCK_PARTNERS,
-  MOCK_PROJECTS,
-  MOCK_DELIVERY_ZONES,
-} from '@/lib/mock-data';
 import type {
   Product,
   Category,
@@ -210,7 +200,7 @@ export function useProducts(options?: { categoryId?: string; featured?: boolean;
 
       const { data, error: err } = await query;
       if (err || !data || data.length === 0) {
-        let filtered = [...MOCK_PRODUCTS];
+        let filtered: any[] = [];
         if (options?.categoryId) filtered = filtered.filter((p) => p.category_id === options.categoryId);
         if (options?.featured) filtered = filtered.filter((p) => p.featured);
         if (options?.search) {
@@ -228,7 +218,7 @@ export function useProducts(options?: { categoryId?: string; featured?: boolean;
         setProducts(data);
       }
     } catch {
-      let filtered = [...MOCK_PRODUCTS];
+      let filtered: any[] = [];
       if (options?.categoryId) filtered = filtered.filter((p) => p.category_id === options.categoryId);
       if (options?.featured) filtered = filtered.filter((p) => p.featured);
       if (options?.search) {
@@ -271,13 +261,13 @@ export function useProduct(slug: string) {
         .eq('is_active', true)
         .maybeSingle();
       if (err || !data) {
-        const found = MOCK_PRODUCTS.find((p) => p.slug === slug) || MOCK_PRODUCTS[0];
+        const found = null;
         setProduct(found || null);
       } else {
         setProduct(data);
       }
     } catch {
-      const found = MOCK_PRODUCTS.find((p) => p.slug === slug) || MOCK_PRODUCTS[0];
+      const found = null;
       setProduct(found || null);
     } finally {
       setLoading(false);
@@ -301,12 +291,12 @@ export function useCategories() {
     try {
       const { data, error: err } = await supabase.from('categories').select('*').eq('is_active', true).order('display_order');
       if (err || !data || data.length === 0) {
-        setCategories(MOCK_CATEGORIES);
+        setCategories([]);
       } else {
         setCategories(data);
       }
     } catch {
-      setCategories(MOCK_CATEGORIES);
+      setCategories([]);
     } finally {
       setLoading(false);
     }
@@ -384,12 +374,12 @@ export function useHeroSlides(options?: { activeOnly?: boolean }) {
       if (activeOnly) query = query.eq('is_active', true);
       const { data, error: err } = await query;
       if (err || !data || data.length === 0) {
-        setSlides(MOCK_HERO_SLIDES);
+        setSlides([]);
       } else {
         setSlides(data);
       }
     } catch {
-      setSlides(MOCK_HERO_SLIDES);
+      setSlides([]);
     } finally {
       setLoading(false);
     }
@@ -415,12 +405,12 @@ export function useTestimonials(options?: { activeOnly?: boolean }) {
       if (activeOnly) query = query.eq('is_active', true);
       const { data, error: err } = await query;
       if (err || !data || data.length === 0) {
-        setTestimonials(MOCK_TESTIMONIALS);
+        setTestimonials([]);
       } else {
         setTestimonials(data);
       }
     } catch {
-      setTestimonials(MOCK_TESTIMONIALS);
+      setTestimonials([]);
     } finally {
       setLoading(false);
     }
@@ -446,12 +436,12 @@ export function usePartners(options?: { activeOnly?: boolean }) {
       if (activeOnly) query = query.eq('is_active', true);
       const { data, error: err } = await query;
       if (err || !data || data.length === 0) {
-        setPartners(MOCK_PARTNERS);
+        setPartners([]);
       } else {
         setPartners(data);
       }
     } catch {
-      setPartners(MOCK_PARTNERS);
+      setPartners([]);
     } finally {
       setLoading(false);
     }
@@ -556,12 +546,12 @@ export function useDeliveryZones(options?: { activeOnly?: boolean }) {
       if (activeOnly) query = query.eq('is_active', true);
       const { data, error: err } = await query;
       if (err || !data || data.length === 0) {
-        setZones(MOCK_DELIVERY_ZONES);
+        setZones([]);
       } else {
         setZones(data);
       }
     } catch {
-      setZones(MOCK_DELIVERY_ZONES);
+      setZones([]);
     } finally {
       setLoading(false);
     }
@@ -625,12 +615,12 @@ export function useProjects(options?: { featured?: boolean; activeOnly?: boolean
       if (options?.featured) query = query.eq('featured', true);
       const { data, error: err } = await query;
       if (err || !data || data.length === 0) {
-        setProjects(MOCK_PROJECTS);
+        setProjects([]);
       } else {
         setProjects(data);
       }
     } catch {
-      setProjects(MOCK_PROJECTS);
+      setProjects([]);
     } finally {
       setLoading(false);
     }
@@ -886,12 +876,12 @@ export function useServices(options?: { activeOnly?: boolean }) {
       if (activeOnly) query = query.eq('is_active', true);
       const { data, error: err } = await query;
       if (err || !data || data.length === 0) {
-        setServices(MOCK_SERVICES);
+        setServices([]);
       } else {
         setServices(data);
       }
     } catch {
-      setServices(MOCK_SERVICES);
+      setServices([]);
     } finally {
       setLoading(false);
     }

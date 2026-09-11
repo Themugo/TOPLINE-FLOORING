@@ -48,6 +48,8 @@ export default function Cart() {
   });
   const [errors, setErrors] = useState<FormErrors>({});
   const [submitting, setSubmitting] = useState(false);
+  const [checkoutIdempotencyKey] = useState(() => crypto.randomUUID());
+  const [paymentMethod, setPaymentMethod] = useState<'mpesa' | 'bank_transfer' | 'card'>('mpesa');
 
   const [selectedZoneId, setSelectedZoneId] = useState<string>('');
   const [couponCode, setCouponCode] = useState('');
@@ -133,6 +135,8 @@ export default function Cart() {
         couponId: appliedCoupon?.id || null,
         deliveryZoneId: selectedZoneId || null,
         deliveryAddress: form.deliveryAddress || null,
+        paymentMethod,
+        idempotencyKey: checkoutIdempotencyKey,
       });
 
       const orderId = result.order_id;
@@ -435,6 +439,24 @@ export default function Cart() {
                     {errors.phone && (
                       <p className="text-red-500 text-xs mt-1">{errors.phone}</p>
                     )}
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Payment Method
+                    </label>
+                    <select
+                      value={paymentMethod}
+                      onChange={(e) => setPaymentMethod(e.target.value as 'mpesa' | 'bank_transfer' | 'card')}
+                      className="input"
+                    >
+                      <option value="mpesa">M-Pesa — payment instructions after order</option>
+                      <option value="bank_transfer">Bank Transfer — payment instructions after order</option>
+                      <option value="card">Card — payment gateway integration</option>
+                    </select>
+                    <p className="text-xs text-gray-500 mt-1">
+                      Your order is secured first. Payment is recorded separately so Topline can add or change providers without changing your order history.
+                    </p>
                   </div>
 
                   <div>
