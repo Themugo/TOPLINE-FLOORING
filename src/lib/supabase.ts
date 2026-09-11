@@ -2,6 +2,7 @@ import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 
 const TOPLINE_SUPABASE_URL = 'https://jypkhvknfgoqrhwzbdwi.supabase.co';
 const supabaseUrl = (import.meta.env.VITE_SUPABASE_URL || TOPLINE_SUPABASE_URL)?.trim();
+const isSupabaseUrlValid = supabaseUrl === TOPLINE_SUPABASE_URL;
 const supabasePublishableKey = (
   import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || import.meta.env.VITE_SUPABASE_ANON_KEY
 )?.trim();
@@ -14,10 +15,11 @@ const supabasePublishableKey = (
  * clear configuration error instead of sending requests to a fake project.
  * Production deployments must provide both public Supabase values.
  */
-export const isSupabaseConfigured = Boolean(supabaseUrl && supabasePublishableKey);
+export const isSupabaseConfigured = Boolean(supabaseUrl && supabasePublishableKey && isSupabaseUrlValid);
 
-const CONFIGURATION_ERROR =
-  'Supabase is not configured. Set VITE_SUPABASE_PUBLISHABLE_KEY before using database-backed features. The project URL is pinned to the dedicated Topline Supabase project.';
+const CONFIGURATION_ERROR = !isSupabaseUrlValid
+  ? 'Supabase target mismatch. VITE_SUPABASE_URL must point to the dedicated Topline Supabase project.'
+  : 'Supabase is not configured. Set VITE_SUPABASE_PUBLISHABLE_KEY before using database-backed features. The project URL is pinned to the dedicated Topline Supabase project.';
 
 const noOpFetch: typeof fetch = async () => {
   throw new Error(CONFIGURATION_ERROR);
