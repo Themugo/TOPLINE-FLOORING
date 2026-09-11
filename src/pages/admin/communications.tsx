@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Mail, MessageCircle, Send, Smartphone } from 'lucide-react';
 import { AdminLayout } from './dashboard';
 import { supabase } from '@/lib/supabase';
-import { queueCustomerMessage } from '@/lib/communications';
+import { queueCustomerMessage, retryCustomerMessage, cancelCustomerMessage } from '@/lib/communications';
 import { useToast } from '@/hooks/use-toast';
 
 interface Customer { id: string; name: string; email: string; phone: string; }
@@ -48,7 +48,7 @@ export default function AdminCommunications() {
           <button disabled={saving || !customerId} className="w-full h-10 rounded-lg bg-primary-600 text-white font-semibold flex items-center justify-center gap-2 disabled:opacity-50"><Send className="w-4 h-4"/>{saving?'Queuing…':'Queue Message'}</button>
           <p className="text-xs text-gray-500">Provider delivery is intentionally decoupled. Queued messages are not falsely reported as sent.</p>
         </form>
-        <div className="bg-white border rounded-xl overflow-hidden"><div className="p-5 border-b"><h2 className="font-semibold">Recent outbox</h2></div><div className="divide-y">{outbox.length?outbox.map(x=><div key={x.id} className="p-4"><div className="flex justify-between gap-3"><span className="text-xs uppercase tracking-wide font-semibold">{x.channel}</span><span className="text-xs capitalize text-gray-500">{x.status}</span></div><p className="text-sm font-medium mt-1">{x.recipient}</p>{x.subject&&<p className="text-sm text-gray-700">{x.subject}</p>}<p className="text-xs text-gray-500 mt-1 line-clamp-2">{x.message}</p></div>):<p className="p-6 text-sm text-gray-500">No outbound messages queued yet.</p>}</div></div>
+        <div className="bg-white border rounded-xl overflow-hidden"><div className="p-5 border-b"><h2 className="font-semibold">Recent outbox</h2></div><div className="divide-y">{outbox.length?outbox.map(x=><div key={x.id} className="p-4"><div className="flex justify-between gap-3"><span className="text-xs uppercase tracking-wide font-semibold">{x.channel}</span><span className="text-xs capitalize text-gray-500">{x.status}</span></div><p className="text-sm font-medium mt-1">{x.recipient}</p>{x.subject&&<p className="text-sm text-gray-700">{x.subject}</p>}<p className="text-xs text-gray-500 mt-1 line-clamp-2">{x.message}</p>{(x.status==='queued'||x.status==='failed')&&<div className="mt-3 flex gap-2">{x.status==='failed'&&<button type="button" className="text-xs font-medium text-primary hover:underline" onClick={async()=>{try{await retryCustomerMessage(x.id);await load();}catch(e){toast({title:'Retry failed',description:e instanceof Error?e.message:'Unable to retry.',variant:'destructive'});}}}>Retry</button>}{x.status==='queued'&&<button type="button" className="text-xs font-medium text-destructive hover:underline" onClick={async()=>{try{await cancelCustomerMessage(x.id);await load();}catch(e){toast({title:'Cancel failed',description:e instanceof Error?e.message:'Unable to cancel.',variant:'destructive'});}}}>Cancel</button>}</div>}</div>):<p className="p-6 text-sm text-gray-500">No outbound messages queued yet.</p>}</div></div>
       </div>
     </div>
   </AdminLayout>;

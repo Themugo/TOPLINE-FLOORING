@@ -127,6 +127,7 @@ const NAV_GROUPS: NavGroup[] = [
       { href: '/admin/backups', label: 'Backups', icon: Database },
       { href: '/admin/audit-logs', label: 'Audit Logs', icon: Shield },
       { href: '/admin/settings', label: 'Admin Settings', icon: Settings },
+      { href: '/admin/system-health', label: 'System Health', icon: CheckCircle2 },
     ],
   },
 ];

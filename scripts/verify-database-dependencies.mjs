@@ -30,7 +30,7 @@ const requiredRpcs = [
   'submit_quotation_request','validate_coupon','create_customer_order','create_purchase_order',
   'add_purchase_order_item','receive_purchase_order_item','transfer_stock','convert_lead_to_customer',
   'convert_quotation_to_order','create_site_visit','create_invoice_transaction',
-  'record_invoice_payment_transaction','queue_customer_message','get_customer_journey','get_customer_portal_data'
+  'record_invoice_payment_transaction','queue_customer_message','get_customer_journey','get_customer_portal_data','create_product_admin','update_product_admin','delete_product_admin','resolve_inventory_alert','set_primary_product_image','claim_communication_outbox','complete_communication_delivery','fail_communication_delivery','retry_communication_outbox','cancel_communication_outbox','get_system_health_snapshot'
 ];
 const missing = requiredRpcs.filter(name => !functions.has(name));
 if (missing.length) errors.push(`Missing canonical RPC definitions: ${missing.join(', ')}`);

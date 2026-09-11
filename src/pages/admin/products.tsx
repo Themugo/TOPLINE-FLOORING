@@ -8,6 +8,7 @@ import { usePagination } from '@/hooks/use-pagination';
 import { Pagination } from '@/components/admin/Pagination';
 import { ImageUpload } from '@/components/ui/image-upload';
 import { getProductPlaceholder, withFallback } from '@/lib/placeholders';
+import { createProductAdmin, updateProductAdmin, archiveProductAdmin, setPrimaryProductImage } from '@/lib/admin-operations';
 import { useCategories } from '@/hooks/use-data';
 import type { Product, ProductImage } from '@/lib/types';
 
@@ -82,29 +83,23 @@ export default function AdminProducts() {
     const data = {
       name: form.name,
       slug,
-      category_id: form.category_id || null,
+      categoryId: form.category_id || null,
       description: form.description,
-      short_description: form.short_description || null,
+      shortDescription: form.short_description || null,
       sku: form.sku || null,
       price,
       unit: form.unit,
-      image_url: form.image_url || null,
+      imageUrl: form.image_url || null,
       featured: form.featured,
-      in_stock: form.in_stock,
-      is_active: true,
+      inStock: form.in_stock,
     };
 
     try {
       if (editing) {
-        const { error } = await supabase
-          .from('products')
-          .update({ ...data, updated_at: new Date().toISOString() })
-          .eq('id', editing.id);
-        if (error) throw error;
+        await updateProductAdmin(editing.id, data);
         toast({ title: 'Product updated' });
       } else {
-        const { error } = await supabase.from('products').insert(data);
-        if (error) throw error;
+        await createProductAdmin(data);
         toast({ title: 'Product created' });
       }
       await fetchProducts();
@@ -119,8 +114,7 @@ export default function AdminProducts() {
   const handleDelete = async (id: string) => {
     if (!confirm('Delete this product? This cannot be undone.')) return;
     try {
-      const { error } = await supabase.from('products').delete().eq('id', id);
-      if (error) throw error;
+      await archiveProductAdmin(id);
       await fetchProducts();
       toast({ title: 'Product deleted' });
     } catch {
@@ -378,10 +372,7 @@ function ProductGalleryModal({ product, onClose, onChanged }: { product: Product
   };
 
   const handleSetPrimary = async (imageId: string, imageUrl: string) => {
-    await supabase.from('product_images').update({ is_primary: false }).eq('product_id', product.id);
-    await supabase.from('product_images').update({ is_primary: true }).eq('id', imageId);
-    // Keep the product's main listing photo in sync with the chosen primary gallery photo.
-    await supabase.from('products').update({ image_url: imageUrl }).eq('id', product.id);
+    await setPrimaryProductImage(product.id, imageId);
     await fetchImages();
     onChanged();
     toast({ title: 'Primary photo updated' });

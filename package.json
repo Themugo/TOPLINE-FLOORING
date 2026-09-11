@@ -27,7 +27,8 @@
     "verify:generated-types": "node scripts/verify-generated-types.mjs",
     "verify:remote-deploy-gate": "node scripts/verify-remote-deploy-gate.mjs",
     "verify:phases-36-38": "node scripts/verify-phases-36-38.mjs",
-    "db:types": "npx supabase gen types typescript --local > src/types/database.ts"
+    "db:types": "npx supabase gen types typescript --local > src/types/database.ts",
+    "verify:phases-39-41": "node scripts/verify-phases-39-41.mjs"
   },
   "dependencies": {
     "@radix-ui/react-accordion": "^1.2.16",

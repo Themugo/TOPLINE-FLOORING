@@ -19,3 +19,15 @@ export async function queueCustomerMessage(input: QueueMessageInput): Promise<st
   if (error) throw error;
   return String(data);
 }
+
+export async function retryCustomerMessage(id: string): Promise<boolean> {
+  const { data, error } = await supabase.rpc('retry_communication_outbox', { p_outbox_id: id });
+  if (error) throw error;
+  return Boolean(data);
+}
+
+export async function cancelCustomerMessage(id: string): Promise<boolean> {
+  const { data, error } = await supabase.rpc('cancel_communication_outbox', { p_outbox_id: id });
+  if (error) throw error;
+  return Boolean(data);
+}

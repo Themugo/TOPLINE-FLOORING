@@ -5,6 +5,7 @@ import { supabase } from '@/lib/supabase';
 import { useToast } from '@/hooks/use-toast';
 import { formatDateTime } from '@/lib/utils';
 import type { InventoryAlert, InventoryMovement } from '@/lib/types';
+import { resolveInventoryAlert } from '@/lib/admin-operations';
 
 interface InventoryProduct {
   id: string;
@@ -69,8 +70,7 @@ export default function AdminInventory() {
 
   const resolveAlert = async (id: string) => {
     try {
-      const { error } = await supabase.from('inventory_alerts').update({ is_resolved: true, resolved_at: new Date().toISOString() }).eq('id', id);
-      if (error) throw error;
+      await resolveInventoryAlert(id);
       await fetchData();
     } catch {
       toast({ title: 'Failed to resolve alert', variant: 'destructive' });

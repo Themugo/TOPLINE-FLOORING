@@ -13,7 +13,10 @@ const required = [
   '20260910140000_sales_project_lifecycle.sql',
   '20260910150000_project_delivery_field_operations.sql',
   '20260910160000_finance_communications_analytics.sql',
-  '20260910170000_customer_journey_notifications.sql'
+  '20260910170000_customer_journey_notifications.sql',
+  '20260911080000_039_admin_mutation_security.sql',
+  '20260911090000_040_communication_outbox_delivery.sql',
+  '20260911100000_041_system_health_observability.sql'
 ];
 const missing = required.filter(f => !files.includes(f));
 if (missing.length) throw new Error(`Missing canonical migrations: ${missing.join(', ')}`);
