@@ -11,6 +11,7 @@ import { getCustomerJourney, type CustomerJourneyEvent } from '@/lib/customer-jo
 import { useSeoMeta } from '@/hooks/use-seo';
 import { telHref } from '@/lib/utils';
 import { useSiteSettings } from '@/hooks/use-data';
+import { createServiceCase } from '@/lib/service-cases';
 
 const orderIcon = (status: string) => {
   if (['completed', 'delivered'].includes(status)) return <CheckCircle2 className="h-5 w-5" />;
@@ -23,7 +24,6 @@ function SignIn() {
   const [sent, setSent] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [journey, setJourney] = useState<CustomerJourneyEvent[]>([]);
   const submit = async (e: React.FormEvent) => {
     e.preventDefault(); setLoading(true); setError(null);
     try { await requestCustomerMagicLink(email); setSent(true); }
@@ -63,6 +63,24 @@ export default function Portal() {
   const [signedIn, setSignedIn] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [journey, setJourney] = useState<CustomerJourneyEvent[]>([]);
+  const [serviceTitle, setServiceTitle] = useState('');
+  const [serviceDescription, setServiceDescription] = useState('');
+  const [serviceType, setServiceType] = useState('warranty');
+  const [serviceSending, setServiceSending] = useState(false);
+  const [serviceMessage, setServiceMessage] = useState<string | null>(null);
+
+  const submitServiceCase = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!data?.customer.id || !serviceTitle.trim() || !serviceDescription.trim()) return;
+    setServiceSending(true); setServiceMessage(null);
+    try {
+      const result = await createServiceCase({ customerId: data.customer.id, issueTitle: serviceTitle, description: serviceDescription, type: serviceType });
+      setServiceTitle(''); setServiceDescription('');
+      setServiceMessage(`Request ${result.case_number || 'submitted'} has been received.`);
+    } catch (err) {
+      setServiceMessage(err instanceof Error ? err.message : 'Unable to submit your service request.');
+    } finally { setServiceSending(false); }
+  };
 
   useEffect(() => {
     if (!isSupabaseConfigured) { setLoading(false); return; }
@@ -90,7 +108,8 @@ export default function Portal() {
         <Card><CardHeader><CardTitle className="flex items-center gap-2"><FileText className="h-5 w-5" /> Quotations</CardTitle></CardHeader><CardContent className="space-y-3">{data.quotations.length ? data.quotations.map(q => <div key={q.id} className="border rounded-md p-4 flex justify-between gap-4"><div><p className="font-medium">{q.quotation_number || q.id.slice(0,8)}</p><p className="text-xs text-muted-foreground">{q.project_type || q.service || 'Project enquiry'} · {new Date(q.created_at).toLocaleDateString('en-KE')}</p></div><div className="text-right"><p className="text-sm font-medium capitalize">{q.status}</p><p className="text-xs text-muted-foreground">KES {Number(q.total_amount || 0).toLocaleString()}</p></div></div>) : <p className="text-sm text-muted-foreground">No quotations are linked to this account yet.</p>}</CardContent></Card>
         <Card><CardHeader><CardTitle className="flex items-center gap-2"><Package className="h-5 w-5" /> Orders</CardTitle></CardHeader><CardContent className="space-y-3">{data.orders.length ? data.orders.map(o => <div key={o.id} className="border rounded-md p-4"><div className="flex justify-between gap-4"><div className="flex gap-3">{orderIcon(o.status)}<div><p className="font-medium">{o.order_number || o.id.slice(0,8)}</p><p className="text-xs text-muted-foreground">{new Date(o.created_at).toLocaleDateString('en-KE')}</p></div></div><div className="text-right"><p className="text-sm font-medium capitalize">{o.status}</p><p className="text-xs">KES {Number(o.total_amount).toLocaleString()}</p></div></div>{o.items?.length ? <div className="mt-3 border-t pt-3 space-y-1">{o.items.map((i, idx) => <div key={idx} className="flex justify-between text-sm"><span>{i.product_name} × {i.quantity} {i.unit}</span><span>KES {(Number(i.unit_price) * Number(i.quantity)).toLocaleString()}</span></div>)}</div> : null}</div>) : <p className="text-sm text-muted-foreground">No orders are linked to this account yet.</p>}</CardContent></Card>
       </div>
-      <Card><CardHeader><CardTitle>Activity Timeline</CardTitle></CardHeader><CardContent>{journey.length ? <div className="space-y-4">{journey.map(event => <div key={event.id} className="flex gap-3"><div className="mt-1 h-2.5 w-2.5 rounded-full bg-primary shrink-0"/><div><p className="text-sm font-medium">{event.title}</p><p className="text-sm text-muted-foreground">{event.message}</p><p className="text-xs text-muted-foreground mt-1">{new Date(event.created_at).toLocaleString('en-KE')}</p></div></div>)}</div> : <p className="text-sm text-muted-foreground">Your account activity will appear here as your quotation, order, project and invoice progress changes.</p>}</CardContent></Card>
+      <Card><CardHeader><CardTitle>After-sales support</CardTitle></CardHeader><CardContent><form onSubmit={submitServiceCase} className="grid md:grid-cols-[180px_1fr_auto] gap-3"><select className="input" value={serviceType} onChange={e=>setServiceType(e.target.value)}><option value="warranty">Warranty</option><option value="service">Service</option><option value="maintenance">Maintenance</option></select><div className="grid gap-2"><Input required placeholder="Issue or request title" value={serviceTitle} onChange={e=>setServiceTitle(e.target.value)}/><textarea required className="input min-h-20" placeholder="Tell us what you need help with…" value={serviceDescription} onChange={e=>setServiceDescription(e.target.value)}/></div><Button type="submit" disabled={serviceSending}>{serviceSending?'Submitting…':'Submit request'}</Button></form>{serviceMessage&&<p className="mt-3 text-sm text-muted-foreground">{serviceMessage}</p>}</CardContent></Card>
+            <Card><CardHeader><CardTitle>Activity Timeline</CardTitle></CardHeader><CardContent>{journey.length ? <div className="space-y-4">{journey.map(event => <div key={event.id} className="flex gap-3"><div className="mt-1 h-2.5 w-2.5 rounded-full bg-primary shrink-0"/><div><p className="text-sm font-medium">{event.title}</p><p className="text-sm text-muted-foreground">{event.message}</p><p className="text-xs text-muted-foreground mt-1">{new Date(event.created_at).toLocaleString('en-KE')}</p></div></div>)}</div> : <p className="text-sm text-muted-foreground">Your account activity will appear here as your quotation, order, project and invoice progress changes.</p>}</CardContent></Card>
             <Card><CardContent className="p-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4"><div><p className="font-semibold">Need help with an order?</p><p className="text-sm text-muted-foreground">Call {settings?.phone || 'our team'} or request a new quotation.</p></div><div className="flex gap-3"><a href={telHref(settings?.phone || '')}><Button variant="outline">Call us</Button></a><a href="/quotation"><Button>Request quotation</Button></a></div></CardContent></Card>
     </div></section>
   </CustomerLayout>;

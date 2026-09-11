@@ -98,3 +98,6 @@ Production deployment requires the Topline Supabase project and verified databas
 ## License
 
 All rights reserved. Topline Flooring & Waterproofing.
+
+### Engineering track
+The current application also includes the Phase 45–47 field workforce, project cost ledger, and warranty/after-sales service foundation documented in `docs/PHASES_45_47_FIELD_COSTS_AFTER_SALES.md`.
