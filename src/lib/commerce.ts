@@ -61,6 +61,7 @@ export interface CustomerOrderItem {
   product_id: string;
   product_name: string;
   quantity: number;
+  variant_id?: string | null;
 }
 
 export interface CreateCustomerOrderInput {

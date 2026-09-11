@@ -1,25 +1,25 @@
 import { createContext, useContext, useReducer, useEffect, ReactNode } from 'react';
-import { Product, CartItem } from '@/lib/types';
+import { Product, CartItem, ProductVariant } from '@/lib/types';
 
 interface CartState {
   items: CartItem[];
 }
 
 type CartAction =
-  | { type: 'ADD_ITEM'; product: Product; quantity?: number }
-  | { type: 'REMOVE_ITEM'; productId: string }
-  | { type: 'UPDATE_QUANTITY'; productId: string; quantity: number }
+  | { type: 'ADD_ITEM'; product: Product; quantity?: number; variant?: ProductVariant }
+  | { type: 'REMOVE_ITEM'; productId: string; variantId?: string }
+  | { type: 'UPDATE_QUANTITY'; productId: string; quantity: number; variantId?: string }
   | { type: 'CLEAR_CART' }
   | { type: 'LOAD_CART'; items: CartItem[] };
 
 interface CartContextValue {
   items: CartItem[];
   state: CartState;
-  addItem: (product: Product) => void;
-  addToCart: (product: Product, quantity?: number) => void;
-  removeItem: (productId: string) => void;
-  removeFromCart: (productId: string) => void;
-  updateQuantity: (productId: string, quantity: number) => void;
+  addItem: (product: Product, variant?: ProductVariant) => void;
+  addToCart: (product: Product, quantity?: number, variant?: ProductVariant) => void;
+  removeItem: (productId: string, variant?: ProductVariant) => void;
+  removeFromCart: (productId: string, variant?: ProductVariant) => void;
+  updateQuantity: (productId: string, quantity: number, variant?: ProductVariant) => void;
   clearCart: () => void;
   totalPrice: number;
   totalItems: number;
@@ -32,13 +32,13 @@ function cartReducer(state: CartState, action: CartAction): CartState {
     case 'ADD_ITEM': {
       const qty = action.quantity ?? 1;
       const existingItem = state.items.find(
-        (item) => item.product.id === action.product.id
+        (item) => item.product.id === action.product.id && item.variant?.id === action.variant?.id
       );
       if (existingItem) {
         return {
           ...state,
           items: state.items.map((item) =>
-            item.product.id === action.product.id
+            item.product.id === action.product.id && item.variant?.id === action.variant?.id
               ? { ...item, quantity: item.quantity + qty }
               : item
           ),
@@ -46,27 +46,27 @@ function cartReducer(state: CartState, action: CartAction): CartState {
       }
       return {
         ...state,
-        items: [...state.items, { product: action.product, quantity: qty }],
+        items: [...state.items, { product: action.product, quantity: qty, variant: action.variant }],
       };
     }
     case 'REMOVE_ITEM':
       return {
         ...state,
-        items: state.items.filter((item) => item.product.id !== action.productId),
+        items: state.items.filter((item) => !(item.product.id === action.productId && item.variant?.id === action.variantId)),
       };
     case 'UPDATE_QUANTITY':
       if (action.quantity <= 0) {
         return {
           ...state,
           items: state.items.filter(
-            (item) => item.product.id !== action.productId
+            (item) => !(item.product.id === action.productId && item.variant?.id === action.variantId)
           ),
         };
       }
       return {
         ...state,
         items: state.items.map((item) =>
-          item.product.id === action.productId
+          item.product.id === action.productId && item.variant?.id === action.variantId
             ? { ...item, quantity: action.quantity }
             : item
         ),
@@ -113,30 +113,32 @@ export function CartProvider({ children }: { children: ReactNode }) {
     }
   }, [state.items]);
 
-  const addItem = (product: Product) => {
-    dispatch({ type: 'ADD_ITEM', product });
+  const addItem = (product: Product, variant?: ProductVariant) => {
+    dispatch({ type: 'ADD_ITEM', product, variant });
   };
 
-  const addToCart = (product: Product, quantity: number = 1) => {
-    dispatch({ type: 'ADD_ITEM', product, quantity });
+  const addToCart = (product: Product, quantity: number = 1, variant?: ProductVariant) => {
+    dispatch({ type: 'ADD_ITEM', product, quantity, variant });
   };
 
-  const removeItem = (productId: string) => {
-    dispatch({ type: 'REMOVE_ITEM', productId });
+  const removeItem = (productId: string, variant?: ProductVariant) => {
+    dispatch({ type: 'REMOVE_ITEM', productId, variantId: variant?.id });
   };
 
-  const updateQuantity = (productId: string, quantity: number) => {
-    dispatch({ type: 'UPDATE_QUANTITY', productId, quantity });
+  const updateQuantity = (productId: string, quantity: number, variant?: ProductVariant) => {
+    dispatch({ type: 'UPDATE_QUANTITY', productId, quantity, variantId: variant?.id });
   };
 
   const clearCart = () => {
     dispatch({ type: 'CLEAR_CART' });
   };
 
-  const totalPrice = state.items.reduce(
-    (total, item) => total + item.product.price * item.quantity,
-    0
-  );
+  const totalPrice = state.items.reduce((total, item) => {
+    const unitPrice = item.variant
+      ? (item.variant.sale_price ?? item.product.price + (item.variant.price_adjustment || 0))
+      : (item.product.sale_price ?? item.product.price);
+    return total + unitPrice * item.quantity;
+  }, 0);
 
   const totalItems = state.items.reduce(
     (total, item) => total + item.quantity,

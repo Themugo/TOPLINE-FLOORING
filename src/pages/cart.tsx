@@ -131,6 +131,7 @@ export default function Cart() {
           product_id: item.product.id,
           product_name: item.product.name,
           quantity: item.quantity,
+          variant_id: item.variant?.id || null,
         })),
         couponId: appliedCoupon?.id || null,
         deliveryZoneId: selectedZoneId || null,
@@ -151,7 +152,13 @@ export default function Cart() {
         sessionStorage.setItem(
           `order_summary_${orderId}`,
           JSON.stringify({
-            items: items.map((item) => ({ name: item.product.name, quantity: item.quantity, price: item.product.price })),
+            items: items.map((item) => ({
+              name: item.variant ? `${item.product.name} — ${item.variant.variant_name}` : item.product.name,
+              quantity: item.quantity,
+              price: item.variant
+                ? (item.variant.sale_price ?? item.product.price + (item.variant.price_adjustment || 0))
+                : (item.product.sale_price ?? item.product.price),
+            })),
             subtotal: result.subtotal ?? totalPrice,
             deliveryCharge: result.delivery_charge ?? deliveryCharge,
             discountAmount: result.discount_amount ?? discountAmount,
@@ -226,14 +233,14 @@ export default function Cart() {
               </h1>
 
               <div className="space-y-4">
-                {items.map(({ product, quantity }) => (
-                  <div key={product.id} className="bg-white rounded-xl p-4 sm:p-6 border border-gray-200">
+                {items.map((item) => (
+                  <div key={`${item.product.id}:${item.variant?.id || 'base'}`} className="bg-white rounded-xl p-4 sm:p-6 border border-gray-200">
                     <div className="flex gap-4">
-                      <Link href={`/product/${product.slug}`} className="flex-shrink-0">
+                      <Link href={`/product/${item.product.slug}`} className="flex-shrink-0">
                         <div className="w-24 h-24 sm:w-32 sm:h-32 rounded-lg overflow-hidden bg-gray-100">
                           <img
-                            src={withFallback(product.image_url, getProductPlaceholder(product.category?.slug || product.category?.name))}
-                            alt={product.name}
+                            src={withFallback(item.product.image_url, getProductPlaceholder(item.product.category?.slug || item.product.category?.name))}
+                            alt={item.product.name}
                             loading="lazy"
                             className="w-full h-full object-cover"
                           />
@@ -241,37 +248,38 @@ export default function Cart() {
                       </Link>
                       <div className="flex-1 min-w-0">
                         <Link
-                          href={`/product/${product.slug}`}
+                          href={`/product/${item.product.slug}`}
                           className="font-semibold text-gray-900 hover:text-primary-600 line-clamp-2"
                         >
-                          {product.name}
+                          {item.product.name}
                         </Link>
                         <p className="text-sm text-gray-500 mt-1">
-                          {formatKES(product.price)} / {product.unit}
+                          {formatKES(item.variant ? (item.variant.sale_price ?? item.product.price + (item.variant.price_adjustment || 0)) : (item.product.sale_price ?? item.product.price))} / {item.product.unit}
                         </p>
+                        {item.variant && <p className="text-xs text-gray-500 mt-1">Option: {item.variant.variant_name}</p>}
                         <div className="flex items-center gap-4 mt-4">
                           <div className="flex items-center border border-gray-300 rounded-lg">
                             <button
-                              onClick={() => updateQuantity(product.id, quantity - 1)}
+                              onClick={() => updateQuantity(item.product.id, item.quantity - 1, item.variant)}
                               className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-50"
                             >
                               <Minus className="w-4 h-4" />
                             </button>
                             <span className="w-10 text-center text-sm font-medium">
-                              {quantity}
+                              {item.quantity}
                             </span>
                             <button
-                              onClick={() => updateQuantity(product.id, quantity + 1)}
+                              onClick={() => updateQuantity(item.product.id, item.quantity + 1, item.variant)}
                               className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-50"
                             >
                               <Plus className="w-4 h-4" />
                             </button>
                           </div>
                           <p className="font-semibold text-gray-900">
-                            {formatKES(product.price * quantity)}
+                            {formatKES((item.variant ? (item.variant.sale_price ?? item.product.price + (item.variant.price_adjustment || 0)) : (item.product.sale_price ?? item.product.price)) * item.quantity)}
                           </p>
                           <button
-                            onClick={() => removeFromCart(product.id)}
+                            onClick={() => removeFromCart(item.product.id, item.variant)}
                             className="p-2 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg ml-auto"
                           >
                             <Trash2 className="w-4 h-4" />
@@ -292,14 +300,19 @@ export default function Cart() {
                 </h2>
 
                 <div className="space-y-3 pb-4 border-b border-gray-200">
-                  {items.map(({ product, quantity }) => (
-                    <div key={product.id} className="flex justify-between text-sm">
-                      <span className="text-gray-600">
-                        {product.name} x {quantity}
-                      </span>
-                      <span className="font-medium">{formatKES(product.price * quantity)}</span>
-                    </div>
-                  ))}
+                  {items.map((item) => {
+                    const unitPrice = item.variant
+                      ? (item.variant.sale_price ?? item.product.price + (item.variant.price_adjustment || 0))
+                      : (item.product.sale_price ?? item.product.price);
+                    return (
+                      <div key={`${item.product.id}:${item.variant?.id || 'base'}`} className="flex justify-between text-sm">
+                        <span className="text-gray-600">
+                          {item.product.name}{item.variant ? ` — ${item.variant.variant_name}` : ''} x {item.quantity}
+                        </span>
+                        <span className="font-medium">{formatKES(unitPrice * item.quantity)}</span>
+                      </div>
+                    );
+                  })}
                 </div>
 
                 {/* Delivery Zone */}

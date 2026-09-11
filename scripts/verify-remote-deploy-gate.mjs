@@ -9,7 +9,7 @@ const failures = [];
 
 if (!config.includes('project_id = "jypkhvknfgoqrhwzbdwi"')) failures.push('supabase/config.toml is not pinned to the Topline project.');
 if (!envExample.includes('jypkhvknfgoqrhwzbdwi.supabase.co')) failures.push('.env.example is not pinned to the Topline Supabase URL.');
-if (migrations.length !== 23) failures.push(`Expected 23 active canonical migrations, found ${migrations.length}.`);
+if (migrations.length !== 24) failures.push(`Expected 23 active canonical migrations, found ${migrations.length}.`);
 if (!migrations.every(f => /^2026\d{10}_.+\.sql$/.test(f))) failures.push('One or more active migration filenames do not use the canonical timestamp/name format.');
 
 for (const file of migrations) {

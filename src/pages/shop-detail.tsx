@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Link, useLocation } from 'wouter';
 import { Plus, Minus, ShoppingCart, Check, ShieldCheck, Truck, FileText, Sparkles, ChevronRight } from 'lucide-react';
+import type { ProductVariant } from '@/lib/types';
 import { CustomerLayout } from '@/components/layout/CustomerLayout';
 import { Breadcrumbs } from '@/components/Breadcrumbs';
 import { useProduct, useProducts } from '@/hooks/use-data';
@@ -31,6 +32,7 @@ export default function ShopDetail() {
   const [qty, setQty] = useState(1);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [added, setAdded] = useState(false);
+  const [selectedVariant, setSelectedVariant] = useState<ProductVariant | undefined>(undefined);
 
   const { product, loading } = useProduct(slug);
 
@@ -63,6 +65,7 @@ export default function ShopDetail() {
     trackRecentlyViewed(product.slug);
     setSelectedImageIndex(0);
     setQty(1);
+    setSelectedVariant(product.variants?.find((v) => v.is_default && v.is_active) || product.variants?.find((v) => v.is_active));
   }, [product?.slug]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const { products: relatedProductsRaw } = useProducts(
@@ -112,8 +115,9 @@ export default function ShopDetail() {
 
   const handleAddToCart = () => {
     if (!product) return;
-    for (let i = 0; i < qty; i++) {
-      addItem(product);
+    addItem(product, selectedVariant);
+    if (qty > 1) {
+      for (let i = 1; i < qty; i++) addItem(product, selectedVariant);
     }
     setAdded(true);
     setTimeout(() => setAdded(false), 2000);
@@ -234,34 +238,43 @@ export default function ShopDetail() {
               </div>
 
               {/* Pricing & Stock Status */}
+              {product.variants && product.variants.length > 0 && (
+                <div className="p-4 rounded-xl bg-white border border-gray-200 space-y-3">
+                  <p className="text-xs font-bold uppercase tracking-wider text-gray-500">Select option</p>
+                  <div className="flex flex-wrap gap-2">
+                    {product.variants.filter((variant) => variant.is_active).map((variant) => (
+                      <button
+                        key={variant.id}
+                        type="button"
+                        disabled={variant.stock_quantity <= 0}
+                        onClick={() => setSelectedVariant(variant)}
+                        className={`px-3 py-2 rounded-lg border text-sm font-medium ${selectedVariant?.id === variant.id ? 'border-primary-500 bg-primary-50 text-primary-700' : 'border-gray-200 text-gray-700'} ${variant.stock_quantity <= 0 ? 'opacity-50 cursor-not-allowed' : ''}`}
+                      >
+                        {variant.variant_name}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
               <div className="p-4 rounded-xl bg-gray-50 border border-gray-100 flex items-baseline justify-between gap-4">
                 <div>
                   <span className="font-display text-3xl font-bold text-navy-950">
-                    {formatKES(product.price)}
+                    {formatKES(selectedVariant ? (selectedVariant.sale_price ?? product.price + (selectedVariant.price_adjustment || 0)) : (product.sale_price ?? product.price))}
                   </span>
-                  {product.unit && (
-                    <span className="text-gray-500 text-xs font-semibold ml-1.5">
-                      per {product.unit}
-                    </span>
-                  )}
+                  {product.unit && <span className="text-gray-500 text-xs font-semibold ml-1.5">per {product.unit}</span>}
                 </div>
-
                 <div>
-                  {product.in_stock ? (
+                  {(selectedVariant ? selectedVariant.stock_quantity > 0 : product.stock_quantity > 0) ? (
                     <span className="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-700 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200">
                       <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                      In Stock ({product.stock_quantity ?? 50}+ available)
+                      In Stock
                     </span>
-                  ) : (
-                    <span className="text-xs font-bold text-gray-500 bg-gray-100 px-3 py-1 rounded-full border border-gray-200">
-                      Out of Stock
-                    </span>
-                  )}
+                  ) : <span className="text-xs font-bold text-gray-500 bg-gray-100 px-3 py-1 rounded-full border border-gray-200">Out of Stock</span>}
                 </div>
               </div>
 
               {/* Purchase Actions */}
-              {product.in_stock && (
+              {(selectedVariant ? selectedVariant.stock_quantity > 0 : product.stock_quantity > 0) && (
                 <div className="space-y-4 pt-2">
                   <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
                     <div className="flex items-center justify-between sm:justify-start border border-gray-200 rounded-xl bg-gray-50 p-1">

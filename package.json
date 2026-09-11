@@ -41,7 +41,8 @@
     "verify:vercel": "node scripts/verify-vercel-deployment.mjs",
     "verify:invoice-hook-contract": "node scripts/verify-invoice-hook-contract.mjs",
     "verify:public-tracking-contract": "node scripts/verify-public-tracking-contract.mjs",
-    "verify:public-order-tracking-privacy": "node scripts/verify-public-order-tracking-privacy.mjs"
+    "verify:public-order-tracking-privacy": "node scripts/verify-public-order-tracking-privacy.mjs",
+    "verify:commerce-fulfillment-360": "node scripts/verify-commerce-fulfillment-360.mjs"
   },
   "dependencies": {
     "@radix-ui/react-accordion": "^1.2.16",

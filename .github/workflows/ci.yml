@@ -25,6 +25,8 @@ jobs:
         run: npm run verify:vercel
       - name: Local Supabase replay
         run: npm run validate:local-db
+      - name: Commerce Fulfillment 360 contract
+        run: npm run verify:commerce-fulfillment-360
       - name: Generated database type contract
         env:
           REQUIRE_GENERATED_TYPES: true

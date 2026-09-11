@@ -181,6 +181,7 @@ export interface OrderItem {
   id: string;
   order_id: string;
   product_id: string | null;
+  variant_id: string | null;
   product_name: string;
   quantity: number;
   unit_price: number;
@@ -255,6 +256,7 @@ export interface Quotation {
 export interface CartItem {
   product: Product;
   quantity: number;
+  variant?: ProductVariant;
 }
 
 export interface AdminSettings {

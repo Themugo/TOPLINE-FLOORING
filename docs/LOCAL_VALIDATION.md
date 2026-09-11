@@ -19,7 +19,7 @@ npm run build
 npm run validate:local-db
 ```
 
-`validate:local-db` starts the local Supabase stack, resets it from the 22 canonical migrations, lints the database, runs database tests, and writes generated TypeScript types to `src/types/database.ts`.
+`validate:local-db` starts the local Supabase stack, resets it from the 24 canonical migrations, lints the database, runs database tests, and writes generated TypeScript types to `src/types/database.ts`.
 
 ## Production safety
 

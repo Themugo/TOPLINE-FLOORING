@@ -5,7 +5,7 @@ const root = process.cwd();
 const migrationDir = path.join(root, 'supabase', 'migrations');
 const files = fs.readdirSync(migrationDir).filter((f) => f.endsWith('.sql')).sort();
 
-if (files.length !== 23) throw new Error(`Expected 23 active migrations, found ${files.length}`);
+if (files.length !== 24) throw new Error(`Expected 23 active migrations, found ${files.length}`);
 if (files.some((f) => !/^2026\d{10}_.+\.sql$/.test(f))) throw new Error('Invalid active migration filename');
 
 const sql = fs.readFileSync(path.join(migrationDir, '20260911160000_048_ecommerce_stability_foundation.sql'), 'utf8');
