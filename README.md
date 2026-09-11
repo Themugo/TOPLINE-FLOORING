@@ -27,14 +27,25 @@ This is a **single-client business system**, not a SaaS/multi-tenant product. It
 
 ### Requirements
 
-- Node.js 18+
-- npm
+- Node.js 20 LTS (Node 20–26 is supported by the repository; Node 20 LTS is the CI baseline)
+- npm 10+
 
 ### Install
 
 ```bash
-npm install
+npm ci
 ```
+
+
+### Windows path requirement
+
+On Windows, keep the project in a path that does not contain an ampersand (`&`) or other shell metacharacters. For example:
+
+```text
+C:\Users\<user>\Desktop\TOPLINE-FLOORING-ROOFING
+```
+
+A path such as `TOPLINE FLOORING & ROOFING` can break npm's Windows `.bin` command resolution. Run `npm run verify:doctor` after cloning.
 
 ### Run
 

@@ -4,13 +4,13 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
+    "dev": "node ./node_modules/vite/bin/vite.js",
+    "build": "node ./node_modules/vite/bin/vite.js build",
     "build:sitemap": "node scripts/generate-sitemap.mjs",
-    "build:all": "node scripts/generate-sitemap.mjs && vite build",
-    "lint": "eslint .",
-    "preview": "vite preview",
-    "typecheck": "tsc --noEmit -p tsconfig.app.json",
+    "build:all": "node scripts/generate-sitemap.mjs && node ./node_modules/vite/bin/vite.js build",
+    "lint": "node ./node_modules/eslint/bin/eslint.js .",
+    "preview": "node ./node_modules/vite/bin/vite.js preview",
+    "typecheck": "node ./node_modules/typescript/bin/tsc -p tsconfig.app.json --noEmit",
     "verify:supabase": "node scripts/verify-supabase-target.mjs",
     "verify:phases-6-8": "node scripts/verify-phase-6-8.mjs",
     "verify:phases-9-11": "node scripts/verify-phase-9-11.mjs",
@@ -27,7 +27,7 @@
     "verify:generated-types": "node scripts/verify-generated-types.mjs",
     "verify:remote-deploy-gate": "node scripts/verify-remote-deploy-gate.mjs",
     "verify:phases-36-38": "node scripts/verify-phases-36-38.mjs",
-    "db:types": "npx supabase gen types typescript --local > src/types/database.ts",
+    "db:types": "node scripts/generate-db-types.mjs",
     "verify:phases-39-41": "node scripts/verify-phases-39-41.mjs",
     "verify:phases-42-44": "node scripts/verify-phases-42-44.mjs",
     "verify:phases-45-47": "node scripts/verify-phases-45-47.mjs",
@@ -36,7 +36,8 @@
     "verify:payment-inventory-lifecycle": "node scripts/verify-payment-inventory-lifecycle.mjs",
     "verify:payment-refund-expiry": "node scripts/verify-payment-refund-expiry.mjs",
     "verify:payment-provider-boundary": "node scripts/verify-payment-provider-boundary.mjs",
-    "verify:release-candidate": "node scripts/verify-release-candidate.mjs"
+    "verify:release-candidate": "node scripts/verify-release-candidate.mjs",
+    "verify:doctor": "node scripts/verify-toolchain.mjs"
   },
   "dependencies": {
     "@radix-ui/react-accordion": "^1.2.16",
@@ -93,5 +94,9 @@
     "typescript-eslint": "^8.3.0",
     "vite": "^5.4.2"
   },
-  "description": "Topline Flooring & Waterproofing business website and operations portal"
+  "description": "Topline Flooring & Waterproofing business website and operations portal",
+  "engines": {
+    "node": ">=20 <27",
+    "npm": ">=10"
+  }
 }

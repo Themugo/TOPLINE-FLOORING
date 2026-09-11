@@ -6,6 +6,10 @@ const target = path.join(root, 'src', 'types', 'database.ts');
 const env = process.env.VITE_SUPABASE_URL || '';
 
 if (!fs.existsSync(target)) {
+  if (process.env.REQUIRE_GENERATED_TYPES === 'true') {
+    console.error('Generated database types are required but src/types/database.ts is missing.');
+    process.exit(1);
+  }
   console.log('Generated database types: not present yet. Run npm run db:types after a successful local/linked Supabase connection.');
   process.exit(0);
 }

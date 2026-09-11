@@ -19,6 +19,14 @@ jobs:
           node-version: 20
           cache: npm
       - run: npm ci
+      - name: Repository toolchain gate
+        run: npm run verify:doctor
+      - name: Local Supabase replay
+        run: npm run validate:local-db
+      - name: Generated database type contract
+        env:
+          REQUIRE_GENERATED_TYPES: true
+        run: npm run verify:generated-types
       - name: Static architecture and migration verification
         run: |
           npm run verify:phases-30-32
