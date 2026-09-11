@@ -21,6 +21,7 @@ jobs:
       - run: npm ci
       - run: npm run verify:phases-30-32
       - run: npm run verify:phases-33-35
+      - run: npm run verify:phases-36-38
       - run: npm run lint
       - run: npm run typecheck
       - run: npm run build

@@ -22,7 +22,12 @@
     "validate:local-db": "node scripts/validate-local-supabase.mjs",
     "verify:schema-contract": "node scripts/verify-schema-contract.mjs",
     "verify:production-readiness": "node scripts/production-readiness-gate.mjs",
-    "verify:phases-33-35": "node scripts/verify-phase-33-35.mjs"
+    "verify:phases-33-35": "node scripts/verify-phase-33-35.mjs",
+    "verify:database-dependencies": "node scripts/verify-database-dependencies.mjs",
+    "verify:generated-types": "node scripts/verify-generated-types.mjs",
+    "verify:remote-deploy-gate": "node scripts/verify-remote-deploy-gate.mjs",
+    "verify:phases-36-38": "node scripts/verify-phases-36-38.mjs",
+    "db:types": "npx supabase gen types typescript --local > src/types/database.ts"
   },
   "dependencies": {
     "@radix-ui/react-accordion": "^1.2.16",

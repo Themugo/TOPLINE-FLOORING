@@ -197,9 +197,9 @@ function AdminLayout({ children, title, subtitle, actions }: AdminLayoutProps) {
   }, [cmdQuery, allNavItems]);
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col font-sans">
+    <div className="min-h-screen bg-[#f5f6f8] flex flex-col font-sans">
       {/* Top Fixed Header for Desktop & Mobile */}
-      <header className="sticky top-0 z-40 bg-white border-b border-gray-200 px-4 lg:px-8 py-3 flex items-center justify-between shadow-xs">
+      <header className="sticky top-0 z-40 bg-white/90 backdrop-blur-xl border-b border-navy-100/70 px-4 lg:px-8 py-3.5 flex items-center justify-between shadow-[0_8px_30px_rgba(15,23,42,.06)]">
         <div className="flex items-center gap-3">
           <button
             onClick={() => setSidebarOpen(!sidebarOpen)}
@@ -210,7 +210,7 @@ function AdminLayout({ children, title, subtitle, actions }: AdminLayoutProps) {
           </button>
 
           <Link href="/admin" className="flex items-center gap-2 lg:hidden">
-            <span className="font-display font-bold text-lg text-primary-600">Admin Portal</span>
+            <span className="font-display font-bold text-lg text-navy-950">Admin Portal</span>
           </Link>
 
           {/* Quick Jumper Button on Desktop */}

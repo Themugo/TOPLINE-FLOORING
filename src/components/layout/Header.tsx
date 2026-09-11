@@ -44,7 +44,7 @@ export function Header() {
   };
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 shadow-sm">
+    <header className="fixed top-0 left-0 right-0 z-50 shadow-[0_10px_35px_rgba(15,23,42,.08)]">
       {/* Top utility bar - contact info + social, desktop only */}
       <div className="hidden lg:block bg-navy-950 text-white">
         <div className="max-w-7xl mx-auto px-6 xl:px-8">
@@ -84,18 +84,18 @@ export function Header() {
       </div>
 
       {/* Main nav */}
-      <div className="bg-white/95 backdrop-blur-sm border-b border-gray-200">
+      <div className="bg-white/90 backdrop-blur-xl border-b border-navy-100/70">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16 lg:h-20">
             <Link href="/" className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full border-2 border-navy-600 flex items-center justify-center flex-shrink-0">
-                <span className="text-primary-600 font-display font-bold text-lg">{firstWord.charAt(0)}</span>
+              <div className="w-11 h-11 rounded-2xl bg-navy-950 border border-primary-400/40 flex items-center justify-center flex-shrink-0 shadow-lg">
+                <span className="text-primary-300 font-display font-bold text-lg">{firstWord.charAt(0)}</span>
               </div>
               <div className="hidden sm:block">
-                <h1 className="font-display font-bold text-lg text-primary-600 leading-tight">
+                <h1 className="font-display font-bold text-[17px] text-navy-950 leading-tight">
                   {firstWord}{restWords.length > 0 ? ` ${restWords.join(' ')}` : ''}
                 </h1>
-                <p className="text-[11px] text-navy-500 tracking-[0.15em]">{tagline}</p>
+                <p className="text-[10px] font-semibold text-navy-500 tracking-[0.18em]">{tagline}</p>
               </div>
             </Link>
 
@@ -104,7 +104,7 @@ export function Header() {
                 <Link
                   key={link.href}
                   href={link.href}
-                  className={`relative px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
+                  className={`relative px-4 py-2.5 text-[13px] font-semibold rounded-xl transition-colors ${
                     isActive(link.href)
                       ? 'text-primary-600'
                       : 'text-navy-700 hover:text-primary-600 hover:bg-gray-50'
@@ -134,7 +134,7 @@ export function Header() {
 
               <Link
                 href="/quotation"
-                className="hidden sm:flex items-center gap-2 px-5 py-2.5 text-sm font-semibold rounded-lg bg-primary-500 text-white hover:bg-primary-600 transition-all shadow-sm hover:shadow-premium active:scale-[0.97]"
+                className="hidden sm:flex items-center gap-2 px-5 py-2.5 text-sm font-semibold rounded-xl bg-navy-950 text-white hover:bg-navy-800 transition-all shadow-lg hover:shadow-premium active:scale-[0.97]"
               >
                 Request Quotation
               </Link>

@@ -4,6 +4,11 @@
 
 :root {
   --theme-btn-radius: 0.5rem;
+  --topline-ink: #0b1220;
+  --topline-muted: #667085;
+  --topline-line: rgba(15, 23, 42, .09);
+  --topline-surface: rgba(255,255,255,.86);
+  --topline-shadow: 0 18px 50px rgba(15,23,42,.08);
 }
 
 @layer base {
@@ -29,6 +34,7 @@
   body {
     @apply antialiased text-navy-900 bg-cream;
     font-feature-settings: 'cv11', 'ss01';
+    background-image: radial-gradient(circle at 10% 0%, rgba(196,150,54,.07), transparent 28rem), radial-gradient(circle at 90% 20%, rgba(30,64,175,.045), transparent 32rem);
   }
 
   h1, h2, h3, h4, h5, h6 {
@@ -182,4 +188,56 @@
     opacity: 1;
     transform: scale(1);
   }
+}
+
+
+/* --------------------------------------------------------------------------
+   TOPLINE PREMIUM UI SYSTEM
+   Shared by every public, customer-portal and admin page.
+   -------------------------------------------------------------------------- */
+@layer components {
+  .page-shell { @apply w-full; }
+  .page-container { @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8; }
+  .page-section { @apply py-16 sm:py-20 lg:py-24; }
+  .page-hero { @apply relative overflow-hidden border-b border-navy-100/60; background: linear-gradient(135deg,#0b1220 0%,#14213d 58%,#1c2b4a 100%); }
+  .page-hero::after { content:""; position:absolute; inset:auto -10% -55% 35%; height:24rem; background: radial-gradient(circle,rgba(202,163,74,.20),transparent 65%); pointer-events:none; }
+  .page-hero-inner { @apply relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14 sm:py-18 lg:py-20; }
+  .eyebrow { @apply inline-flex items-center gap-2 text-[11px] font-bold uppercase tracking-[.22em] text-primary-600; }
+  .eyebrow-light { @apply text-primary-300; }
+  .display-title { @apply font-display text-4xl sm:text-5xl lg:text-6xl font-bold tracking-[-.035em] text-navy-950; }
+  .display-title-light { @apply text-white; }
+  .lead-copy { @apply text-base sm:text-lg text-navy-500 leading-8 max-w-2xl; }
+  .lead-copy-light { @apply text-navy-200; }
+  .surface { @apply bg-white/90 backdrop-blur border border-navy-100/70 rounded-2xl; box-shadow: var(--topline-shadow); }
+  .surface-soft { @apply bg-white/65 backdrop-blur border border-white/70 rounded-2xl; }
+  .stat-card { @apply surface p-5 sm:p-6; }
+  .premium-divider { @apply border-t border-navy-100/70; }
+  .chip { @apply inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold border border-navy-100 bg-white text-navy-600; }
+  .empty-state { @apply surface p-10 text-center; }
+  .table-shell { @apply overflow-hidden rounded-2xl border border-navy-100 bg-white shadow-sm; }
+  .table-shell table { @apply w-full; }
+  .table-shell thead { @apply bg-navy-950 text-white; }
+  .table-shell th { @apply px-5 py-3.5 text-left text-[11px] font-bold uppercase tracking-[.14em] text-navy-200; }
+  .table-shell td { @apply px-5 py-4 border-t border-navy-100/70 text-sm text-navy-700; }
+  .table-shell tbody tr { @apply transition-colors hover:bg-cream-50; }
+  .form-section { @apply surface p-5 sm:p-7 lg:p-8; }
+  .form-section h2 { @apply text-lg font-bold text-navy-950; }
+  .form-section label { @apply text-xs font-semibold uppercase tracking-[.08em] text-navy-600; }
+  .prose-copy { @apply text-navy-600 leading-8; }
+}
+
+@layer utilities {
+  .text-balance { text-wrap: balance; }
+  .shadow-premium-xl { box-shadow: 0 30px 80px rgba(15,23,42,.13); }
+  .ring-premium { box-shadow: 0 0 0 1px rgba(202,163,74,.18), 0 18px 50px rgba(15,23,42,.08); }
+}
+
+/* Make existing pages feel coherent without requiring each route to reinvent
+   cards, forms, tables and loading states. */
+[data-radix-popper-content-wrapper] { z-index: 80 !important; }
+button:disabled, input:disabled, textarea:disabled, select:disabled { cursor: not-allowed; }
+
+@media (max-width: 640px) {
+  .btn { @apply px-5 py-3; }
+  .card:hover { transform: none; }
 }
