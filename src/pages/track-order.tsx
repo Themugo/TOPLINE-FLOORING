@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { CustomerLayout } from "@/components/layout/CustomerLayout";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { Button } from "@/components/ui/button";
@@ -13,8 +13,11 @@ import { telHref } from "@/lib/utils";
 
 const statusIcons: Record<string, React.ReactNode> = {
   pending: <Clock className="h-5 w-5 text-yellow-500" />,
+  confirmed: <CheckCircle2 className="h-5 w-5 text-blue-500" />,
   processing: <Package className="h-5 w-5 text-blue-500" />,
+  dispatched: <Truck className="h-5 w-5 text-purple-500" />,
   shipped: <Truck className="h-5 w-5 text-purple-500" />,
+  in_transit: <Truck className="h-5 w-5 text-purple-500" />,
   delivered: <CheckCircle2 className="h-5 w-5 text-green-500" />,
   completed: <CheckCircle2 className="h-5 w-5 text-green-500" />,
   cancelled: <XCircle className="h-5 w-5 text-red-500" />,
@@ -40,10 +43,16 @@ export default function TrackOrder() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<OrderResult | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const order = params.get("order");
+    if (order) setOrderId(order);
+  }, []);
   const handleTrack = async (e: React.FormEvent) => {
     e.preventDefault(); setLoading(true); setError(null); setResult(null);
     try {
-      if (!orderId.trim() && !phone.trim()) { setError("Please enter an order number or phone number."); return; }
+      if (!orderId.trim() || !phone.trim()) { setError("Please enter both your order number and the phone number used at checkout."); return; }
       const tracked = await trackOrder(orderId.trim(), phone.trim());
       if (!tracked?.found) { setError("No orders found matching your details. Please check and try again."); return; }
       if (!tracked.order) { setError("No order details were returned. Please try again."); return; }
@@ -76,7 +85,7 @@ export default function TrackOrder() {
                     id="orderId"
                     value={orderId}
                     onChange={(e) => setOrderId(e.target.value)}
-                    placeholder="e.g. ORD-001"
+                    placeholder="e.g. TOP-20260912-AB12CD34"
                     className="mt-1.5 rounded-sm h-10"
                   />
                 </div>
@@ -86,11 +95,11 @@ export default function TrackOrder() {
                     id="phone"
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
-                    placeholder="+1 (555) 000-0000"
+                    placeholder="e.g. 0720 123 456"
                     className="mt-1.5 rounded-sm h-10"
                   />
                 </div>
-                <p className="text-xs text-muted-foreground">Enter either your order number or phone number used at checkout.</p>
+                <p className="text-xs text-muted-foreground">For your privacy, enter both the order number and the phone number used at checkout.</p>
                 {error && (
                   <p className="text-sm text-destructive">{error}</p>
                 )}
@@ -160,15 +169,21 @@ export default function TrackOrder() {
 
               <div className="flex flex-col gap-3 items-center border-t pt-6">
                 <p className="text-xs text-muted-foreground">Need help? Contact us:</p>
-                <a href={telHref(settings?.phone || '+1 (555) 000-0000')} className="flex items-center gap-2 text-sm text-primary hover:underline">
-                  <Phone className="h-4 w-4" /> {settings?.phone || '+1 (555) 000-0000'}
-                </a>
-                <a href={`mailto:${settings?.email || 'contact@example.com'}`} className="flex items-center gap-2 text-sm text-primary hover:underline">
-                  <Mail className="h-4 w-4" /> Send Email
-                </a>
-                <a href={settings?.social_links?.whatsapp || 'https://wa.me/15550000000'} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-sm text-primary hover:underline">
-                  <MessageCircle className="h-4 w-4" /> WhatsApp
-                </a>
+                {settings?.phone && (
+                  <a href={telHref(settings.phone)} className="flex items-center gap-2 text-sm text-primary hover:underline">
+                    <Phone className="h-4 w-4" /> {settings.phone}
+                  </a>
+                )}
+                {settings?.email && (
+                  <a href={`mailto:${settings.email}`} className="flex items-center gap-2 text-sm text-primary hover:underline">
+                    <Mail className="h-4 w-4" /> Send Email
+                  </a>
+                )}
+                {settings?.social_links?.whatsapp && (
+                  <a href={settings.social_links.whatsapp} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-sm text-primary hover:underline">
+                    <MessageCircle className="h-4 w-4" /> WhatsApp
+                  </a>
+                )}
                 <Button variant="outline" className="mt-3 rounded-sm" onClick={() => { setResult(null); setError(null); }}>
                   Track Another Order
                 </Button>

@@ -26,6 +26,7 @@ const required = [
   '20260911170000_049_payment_inventory_lifecycle_hardening.sql',
   '20260911180000_054_refunds_and_payment_reconciliation.sql',
   '20260911190000_055_reservation_expiry_and_operations.sql',
+  '20260912000000_056_public_tracking_privacy.sql',
 ];
 
 const files = fs.readdirSync(migrationDir).filter((f) => f.endsWith('.sql')).sort();

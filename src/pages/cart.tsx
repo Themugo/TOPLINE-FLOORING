@@ -158,6 +158,8 @@ export default function Cart() {
             total: result.total ?? finalTotal,
             deliveryZoneName: selectedZone?.zone_name || null,
             deliveryAddress: form.deliveryAddress || null,
+            orderNumber: result.order_number ?? null,
+            savedAt: Date.now(),
           })
         );
       } catch {

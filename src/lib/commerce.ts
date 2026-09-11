@@ -79,6 +79,7 @@ export interface CreateCustomerOrderInput {
 export interface CreateCustomerOrderResult {
   success: boolean;
   order_id?: string;
+  order_number?: string;
   subtotal?: number;
   delivery_charge?: number;
   discount_amount?: number;

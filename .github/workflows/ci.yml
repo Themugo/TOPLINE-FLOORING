@@ -43,6 +43,7 @@ jobs:
           npm run verify:payment-refund-expiry
           npm run verify:payment-provider-boundary
           npm run verify:release-candidate
+          npm run verify:public-order-tracking-privacy
       - name: Frontend quality
         run: |
           npm run lint

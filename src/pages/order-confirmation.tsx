@@ -15,6 +15,8 @@ interface OrderSummary {
   total: number;
   deliveryZoneName: string | null;
   deliveryAddress: string | null;
+  orderNumber: string | null;
+  savedAt: number;
 }
 
 export default function OrderConfirmation() {
@@ -28,8 +30,13 @@ export default function OrderConfirmation() {
     try {
       const raw = sessionStorage.getItem(`order_summary_${orderId}`);
       if (raw) {
-        setSummary(JSON.parse(raw));
-        sessionStorage.removeItem(`order_summary_${orderId}`);
+        const parsed = JSON.parse(raw) as OrderSummary;
+        const maxAgeMs = 24 * 60 * 60 * 1000;
+        if (typeof parsed.savedAt === 'number' && Date.now() - parsed.savedAt <= maxAgeMs) {
+          setSummary(parsed);
+        } else {
+          sessionStorage.removeItem(`order_summary_${orderId}`);
+        }
       }
     } catch {
       // ignore - falls back to the generic confirmation
@@ -55,7 +62,7 @@ export default function OrderConfirmation() {
           </p>
 
           <p className="text-sm text-gray-500 mb-8">
-            Order Reference: <span className="font-mono font-medium">{orderId.slice(0, 8).toUpperCase()}</span>
+            Order Number: <span className="font-mono font-medium">{summary?.orderNumber || orderId.slice(0, 8).toUpperCase()}</span>
           </p>
 
           {summary && (
@@ -128,6 +135,9 @@ export default function OrderConfirmation() {
           </div>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Link href={summary?.orderNumber ? `/track-order?order=${encodeURIComponent(summary.orderNumber)}` : '/track-order'} className="btn-secondary">
+              Track This Order
+            </Link>
             <Link href="/shop" className="btn-secondary">
               Continue Shopping
             </Link>
