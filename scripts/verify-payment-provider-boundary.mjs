@@ -1,0 +1,10 @@
+import fs from 'node:fs';
+import path from 'node:path';
+const root=process.cwd();
+const files=['src/lib/payment-provider.ts','supabase/functions/payment-webhook/index.ts'];
+for(const f of files) if(!fs.existsSync(path.join(root,f))) throw new Error(`Missing ${f}`);
+const adapter=fs.readFileSync(path.join(root,files[0]),'utf8');
+const webhook=fs.readFileSync(path.join(root,files[1]),'utf8');
+for(const token of ['PaymentProviderAdapter','ProviderWebhookEvent','initiate']) if(!adapter.includes(token)) throw new Error(`Provider contract missing ${token}`);
+for(const token of ['x-payment-signature','Provider adapter not configured','payment state was not changed']) if(!webhook.includes(token)) throw new Error(`Webhook boundary missing ${token}`);
+console.log('Payment provider boundary verification passed.');

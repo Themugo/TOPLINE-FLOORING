@@ -30,3 +30,6 @@ Historical/overlapping migrations are retained in `supabase/migrations_legacy/` 
 ## Production rule
 
 Do not reset or destroy a live Topline production database. Establish the clean baseline in a disposable/local environment first, lint/test it, then reconcile it against the dedicated Topline Supabase project before deployment.
+
+21. `20260911180000_054_refunds_and_payment_reconciliation.sql` — refund requests and payment reconciliation.
+22. `20260911190000_055_reservation_expiry_and_operations.sql` — reservation expiry and operational reconciliation.

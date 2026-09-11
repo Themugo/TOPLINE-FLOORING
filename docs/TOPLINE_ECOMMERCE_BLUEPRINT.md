@@ -64,3 +64,13 @@ A checkout reservation is held for 24 hours. Stock consumption occurs once the o
 - warehouse allocation
 - automated transactional email/SMS/WhatsApp
 - delivery integrations
+
+## Refund and provider boundary
+
+Refunds are represented separately from successful payment transactions. Staff create a refund request through `create_order_refund_request`; a server-side provider adapter later completes it through `complete_order_refund`. Refunds are idempotent and cannot exceed the refundable successful-payment balance.
+
+The public `payment-webhook` Edge Function is intentionally a guarded boundary. Until a concrete provider verifier is configured, it returns `501` and changes no payment state. This is deliberate: an unsigned or browser-supplied success event must never mark an order paid.
+
+## Reservation operations
+
+`expire_inventory_reservations()` expires reservations whose hold time has elapsed. It does not subtract stock because stock is consumed only when payment is successfully completed. The `expire-reservations` Edge Function provides the server-side execution boundary for a future scheduled invocation.
