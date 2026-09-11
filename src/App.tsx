@@ -74,6 +74,7 @@ const AdminCommunications = lazy(() => import('@/pages/admin/communications'));
 const AdminSalesCommandCenter = lazy(() => import('@/pages/admin/sales-command-center'));
 const AdminOperationsCommandCenter = lazy(() => import('@/pages/admin/operations-command-center'));
 const AdminSystemHealth = lazy(() => import('@/pages/admin/system-health'));
+const AdminDeliveries = lazy(() => import('@/pages/admin/deliveries'));
 
 function AdminLoading() {
   return (
@@ -170,6 +171,7 @@ function Router() {
     '/admin/leads': AdminLeads,
     '/admin/communications': AdminCommunications,
     '/admin/system-health': AdminSystemHealth,
+    '/admin/deliveries': AdminDeliveries,
   };
 
   const AdminComponent = adminRoutes[location as keyof typeof adminRoutes];

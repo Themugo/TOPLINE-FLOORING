@@ -8,7 +8,7 @@ import { Search, Package, Phone, Mail, MessageCircle, CheckCircle2, Clock, Truck
 import { Link } from "wouter";
 import { useSiteSettings } from "@/hooks/use-data";
 import { useSeoMeta } from "@/hooks/use-seo";
-import { supabase } from "@/lib/supabase";
+import { trackOrder } from '@/lib/delivery';
 import { telHref } from "@/lib/utils";
 
 const statusIcons: Record<string, React.ReactNode> = {
@@ -29,6 +29,7 @@ interface OrderResult {
   delivery_address: string | null;
   created_at: string;
   items?: { product_name: string; quantity: number; unit_price: number }[];
+  delivery?: { tracking_number: string; status: string; scheduled_date: string | null; dispatched_at: string | null; delivered_at: string | null; driver_name: string | null; delivery_address: string | null; proof_of_delivery_note: string | null } | null;
 }
 
 export default function TrackOrder() {
@@ -40,46 +41,13 @@ export default function TrackOrder() {
   const [result, setResult] = useState<OrderResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const handleTrack = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setError(null);
-    setResult(null);
-
+    e.preventDefault(); setLoading(true); setError(null); setResult(null);
     try {
-      let query = supabase
-        .from("orders")
-        .select("id, order_number, status, payment_status, total_amount, delivery_address, created_at");
-
-      if (orderId.trim()) {
-        query = query.ilike("order_number", orderId.trim());
-      } else if (phone.trim()) {
-        query = query.eq("customer_phone", phone.trim());
-      } else {
-        setError("Please enter an order number or phone number.");
-        setLoading(false);
-        return;
-      }
-
-      const { data, error: err } = await query.limit(5);
-      if (err) throw err;
-
-      if (!data || data.length === 0) {
-        setError("No orders found matching your details. Please check and try again.");
-      } else if (data.length === 1) {
-        const order = data[0];
-        const { data: items } = await supabase
-          .from("order_items")
-          .select("product_name, quantity, unit_price")
-          .eq("order_id", order.id);
-        setResult({ ...order, items: items || [] });
-      } else {
-        setResult(data[0]);
-      }
-    } catch {
-      setError("Something went wrong. Please try again later.");
-    } finally {
-      setLoading(false);
-    }
+      if (!orderId.trim() && !phone.trim()) { setError("Please enter an order number or phone number."); return; }
+      const tracked = await trackOrder(orderId.trim(), phone.trim());
+      if (!tracked?.found) { setError("No orders found matching your details. Please check and try again."); return; }
+      setResult({ ...tracked.order, items: tracked.items || [], delivery: tracked.delivery });
+    } catch { setError("Something went wrong. Please try again later."); } finally { setLoading(false); }
   };
 
   return (
@@ -164,6 +132,18 @@ export default function TrackOrder() {
                   </div>
                 )}
               </div>
+
+              {result.delivery && (
+                <div className="border-t pt-5 mb-6">
+                  <p className="text-xs uppercase tracking-widest text-muted-foreground mb-3">Delivery tracking</p>
+                  <div className="grid grid-cols-2 gap-3 text-sm">
+                    <div><span className="text-muted-foreground">Tracking</span><p className="font-mono font-semibold">{result.delivery.tracking_number}</p></div>
+                    <div><span className="text-muted-foreground">Status</span><p className="font-medium capitalize">{result.delivery.status.replace(/_/g,' ')}</p></div>
+                    <div><span className="text-muted-foreground">Scheduled</span><p>{result.delivery.scheduled_date || 'To be scheduled'}</p></div>
+                    <div><span className="text-muted-foreground">Driver</span><p>{result.delivery.driver_name || 'Assigned by operations'}</p></div>
+                  </div>
+                </div>
+              )}
 
               {result.items && result.items.length > 0 && (
                 <div className="border-t pt-4 mb-6">

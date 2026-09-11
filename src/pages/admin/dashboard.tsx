@@ -104,6 +104,7 @@ const NAV_GROUPS: NavGroup[] = [
       { href: '/admin/promotions', label: 'Promotions', icon: Megaphone },
       { href: '/admin/coupons', label: 'Coupons', icon: Tag },
       { href: '/admin/delivery-zones', label: 'Delivery Zones', icon: Truck },
+      { href: '/admin/deliveries', label: 'Delivery Operations', icon: Truck },
     ],
   },
   {
