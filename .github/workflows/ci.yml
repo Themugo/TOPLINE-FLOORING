@@ -19,9 +19,19 @@ jobs:
           node-version: 20
           cache: npm
       - run: npm ci
-      - run: npm run verify:phases-30-32
-      - run: npm run verify:phases-33-35
-      - run: npm run verify:phases-36-38
-      - run: npm run lint
-      - run: npm run typecheck
-      - run: npm run build
+      - name: Static architecture and migration verification
+        run: |
+          npm run verify:phases-30-32
+          npm run verify:phases-33-35
+          npm run verify:phases-36-38
+          npm run verify:phases-39-41
+          npm run verify:phases-42-44
+          npm run verify:phases-45-47
+          npm run verify:ecommerce-stability
+          npm run verify:migration-integrity
+          npm run verify:payment-inventory-lifecycle
+      - name: Frontend quality
+        run: |
+          npm run lint
+          npm run typecheck
+          npm run build

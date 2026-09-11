@@ -32,7 +32,8 @@ The active migration chain is intentionally canonical and ordered:
 16. `20260911130000_045_installation_workforce.sql` — installation workforce controls.
 17. `20260911140000_046_project_cost_ledger.sql` — project cost/profitability ledger.
 18. `20260911150000_047_warranty_after_sales.sql` — warranty and after-sales service cases.
-19. `20260911160000_048_ecommerce_stability_foundation.sql` — idempotent checkout, stock reservations and provider-neutral payments.
+19. `20260911160000_048_ecommerce_stability_foundation.sql`
+20. `20260911170000_049_payment_inventory_lifecycle_hardening.sql` — idempotent checkout, stock reservations and provider-neutral payments.
 
 `migrations_legacy/` is forensic reference material and must not be deployed.
 

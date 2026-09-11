@@ -63,3 +63,7 @@ Do not reset the linked production database.
 ## Legacy operations
 
 The existing WordPress/cPanel/email/DNS stack remains untouched until UAT and cutover approval. See `docs/TOPLINE_MASTER_ARCHITECTURE.md`.
+
+## Phase 49–50 correction and CI convergence
+
+Phase 49 corrected two compile-time defects in the not-yet-deployed Phase 48 ecommerce migration. Phase 50 expanded GitHub CI to verify phases 39–48 plus migration integrity before frontend quality checks. See `docs/TOPLINE_PHASE_49_50_REVIEW.md`.

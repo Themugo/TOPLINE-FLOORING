@@ -23,6 +23,7 @@ The active `supabase/migrations/` directory is now the clean production sequence
 17. `20260911140000_046_project_cost_ledger.sql`
 18. `20260911150000_047_warranty_after_sales.sql`
 19. `20260911160000_048_ecommerce_stability_foundation.sql`
+20. `20260911170000_049_payment_inventory_lifecycle_hardening.sql`
 
 Historical/overlapping migrations are retained in `supabase/migrations_legacy/` for audit/reference and are **not** part of a fresh production deployment.
 

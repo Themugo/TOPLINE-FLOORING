@@ -23,6 +23,7 @@ const required = [
   '20260911140000_046_project_cost_ledger.sql',
   '20260911150000_047_warranty_after_sales.sql',
   '20260911160000_048_ecommerce_stability_foundation.sql',
+  '20260911170000_049_payment_inventory_lifecycle_hardening.sql',
 ];
 
 const files = fs.readdirSync(migrationDir).filter((f) => f.endsWith('.sql')).sort();
@@ -47,5 +48,13 @@ for (const token of ['create_secure_customer_order', 'idempotencyKey']) {
 if (!cart.includes('paymentMethod')) throw new Error('cart.tsx missing payment method');
 if (!cart.includes('checkoutIdempotencyKey')) throw new Error('cart.tsx missing checkout idempotency');
 if (!orders.includes('update_order_status_transaction')) throw new Error('admin order mutation is not using secure RPC');
+
+const migration48 = fs.readFileSync(path.join(migrationDir, '20260911160000_048_ecommerce_stability_foundation.sql'), 'utf8');
+for (const token of ['notes text', 'v_item jsonb', 'record_order_payment_transaction', 'release_expired_inventory_reservations']) {
+  if (!migration48.includes(token)) throw new Error(`Phase 48 migration missing ${token}`);
+}
+if (!migration48.includes('payment_transactions_idempotency_idx') && !migration48.includes('payment_transactions_idempotency')) {
+  throw new Error('Phase 48 migration is missing payment idempotency index');
+}
 
 console.log(`Topline ecommerce stability verification passed. Active migrations: ${files.length}`);

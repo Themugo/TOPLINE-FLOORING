@@ -31,7 +31,9 @@
     "verify:phases-39-41": "node scripts/verify-phases-39-41.mjs",
     "verify:phases-42-44": "node scripts/verify-phases-42-44.mjs",
     "verify:phases-45-47": "node scripts/verify-phases-45-47.mjs",
-    "verify:ecommerce-stability": "node scripts/verify-ecommerce-stability.mjs"
+    "verify:ecommerce-stability": "node scripts/verify-ecommerce-stability.mjs",
+    "verify:migration-integrity": "node scripts/verify-migration-integrity.mjs",
+    "verify:payment-inventory-lifecycle": "node scripts/verify-payment-inventory-lifecycle.mjs"
   },
   "dependencies": {
     "@radix-ui/react-accordion": "^1.2.16",

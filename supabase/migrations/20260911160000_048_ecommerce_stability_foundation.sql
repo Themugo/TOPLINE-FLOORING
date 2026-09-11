@@ -45,6 +45,7 @@ CREATE TABLE IF NOT EXISTS public.payment_transactions (
   idempotency_key text,
   failure_reason text,
   metadata jsonb NOT NULL DEFAULT '{}',
+  notes text,
   paid_at timestamptz,
   created_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
   created_at timestamptz NOT NULL DEFAULT now(),
@@ -384,6 +385,7 @@ SET search_path=public,private
 AS $$
 DECLARE
   v_user uuid; v_order public.orders%ROWTYPE; v_paid numeric(12,2);
+  v_item jsonb;
   v_tx public.payment_transactions%ROWTYPE; v_status text;
 BEGIN
   v_user := private.require_staff_permission('finance','update');
