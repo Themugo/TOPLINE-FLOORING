@@ -1,12 +1,12 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
-import path from 'path';
+import { resolve } from 'node:path';
 
 export default defineConfig({
   plugins: [react()],
   resolve: {
     alias: {
-      '@': path.resolve(__dirname, './src'),
+      '@': resolve(process.cwd(), './src'),
     },
   },
   server: {
@@ -22,5 +22,3 @@ export default defineConfig({
     chunkSizeWarningLimit: 1000,
   },
 });
-
-

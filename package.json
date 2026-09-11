@@ -4,12 +4,12 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "dev": "node ./node_modules/vite/bin/vite.js",
-    "build": "node ./node_modules/vite/bin/vite.js build",
+    "dev": "vite",
+    "build": "vite build",
     "build:sitemap": "node scripts/generate-sitemap.mjs",
-    "build:all": "node scripts/generate-sitemap.mjs && node ./node_modules/vite/bin/vite.js build",
+    "build:all": "npm run build:sitemap && npm run build",
     "lint": "node ./node_modules/eslint/bin/eslint.js .",
-    "preview": "node ./node_modules/vite/bin/vite.js preview",
+    "preview": "vite preview",
     "typecheck": "node ./node_modules/typescript/bin/tsc -p tsconfig.app.json --noEmit",
     "verify:supabase": "node scripts/verify-supabase-target.mjs",
     "verify:phases-6-8": "node scripts/verify-phase-6-8.mjs",
@@ -37,7 +37,8 @@
     "verify:payment-refund-expiry": "node scripts/verify-payment-refund-expiry.mjs",
     "verify:payment-provider-boundary": "node scripts/verify-payment-provider-boundary.mjs",
     "verify:release-candidate": "node scripts/verify-release-candidate.mjs",
-    "verify:doctor": "node scripts/verify-toolchain.mjs"
+    "verify:doctor": "node scripts/verify-toolchain.mjs",
+    "verify:vercel": "node scripts/verify-vercel-deployment.mjs"
   },
   "dependencies": {
     "@radix-ui/react-accordion": "^1.2.16",
@@ -96,7 +97,7 @@
   },
   "description": "Topline Flooring & Waterproofing business website and operations portal",
   "engines": {
-    "node": ">=20 <27",
+    "node": "22.x",
     "npm": ">=10"
   }
 }

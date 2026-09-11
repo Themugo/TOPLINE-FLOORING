@@ -16,11 +16,13 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: npm
       - run: npm ci
       - name: Repository toolchain gate
         run: npm run verify:doctor
+      - name: Vercel deployment contract
+        run: npm run verify:vercel
       - name: Local Supabase replay
         run: npm run validate:local-db
       - name: Generated database type contract
