@@ -40,3 +40,6 @@ The remaining migrations continue chronologically through the current `066`–`0
 This baseline is intended for a new, dedicated Topline Supabase project. Do not apply the legacy directory to that project.
 
 - `20260912220000_071_service_quality_warranty_feedback_360.sql` — Phases 83–85 Service Quality, Warranty Entitlement & Customer Feedback 360.
+
+- `20260913000000_073_customer_renewal_orchestration_360.sql` — Phases 89–91 Customer Renewal Orchestration 360.
+- `20260913010000_074_commercial_lifecycle_360.sql` — Operation 1 Commercial Lifecycle 360: lead → customer → quotation → order → project handoff.

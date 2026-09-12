@@ -3,7 +3,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { isSupabaseConfigured, supabase } from '@/lib/supabase';
 import { useCMS } from '@/context/CMSContext';
 import { getCurrentStaffProfile, type StaffProfile } from '@/lib/staff-rbac';
-import { convertLeadToCustomer } from '@/lib/lifecycle';
+import { convertLeadToCustomer, createLeadTransaction, updateLeadTransaction, deleteLeadTransaction } from '@/lib/lifecycle';
 import { createInvoiceTransaction, addInvoiceItemTransaction, recordInvoicePaymentTransaction, updateInvoiceStatusTransaction, removeInvoiceItemTransaction, deleteDraftInvoiceTransaction, type InvoiceInput } from '@/lib/finance';
 import type {
   Product,
@@ -943,24 +943,28 @@ export function useLeads(options?: { status?: string }) {
   useEffect(() => { refetch(); }, [refetch]);
 
   const createLead = async (lead: Partial<Lead>) => {
-    const { data, error: err } = await supabase.from('leads').insert(lead).select().single();
-    if (err) throw err;
+    const result = await createLeadTransaction({
+      name: String(lead.name || ''), email: lead.email, phone: lead.phone, company: lead.company,
+      source: lead.source, status: lead.status, estimatedValue: lead.estimated_value,
+      projectLocation: lead.project_location, projectAddress: lead.project_address, notes: lead.notes,
+      assignedTo: lead.assigned_to, followUpDate: lead.follow_up_date, followUpNotes: lead.follow_up_notes,
+    });
+    if (!result.success || !result.lead_id) throw new Error(result.error || 'Lead creation failed');
     await refetch();
+    const { data, error: err } = await supabase.from('leads').select('*').eq('id', result.lead_id).single();
+    if (err) throw err;
     return data;
   };
 
   const updateLead = async (id: string, updates: Partial<Lead>) => {
-    const { error: err } = await supabase
-      .from('leads')
-      .update({ ...updates, updated_at: new Date().toISOString() })
-      .eq('id', id);
-    if (err) throw err;
+    const result = await updateLeadTransaction(id, updates as Record<string, unknown>);
+    if (!result.success) throw new Error(result.error || 'Lead update failed');
     await refetch();
   };
 
   const deleteLead = async (id: string) => {
-    const { error: err } = await supabase.from('leads').delete().eq('id', id);
-    if (err) throw err;
+    const result = await deleteLeadTransaction(id);
+    if (!result.success) throw new Error(result.error || 'Lead deletion failed');
     await refetch();
   };
 

@@ -104,3 +104,12 @@ jobs:
 
       - name: Phase 83–85 verification
         run: npm run verify:phases-83-85
+
+      - name: Phase 86–88 verification
+        run: npm run verify:phases-86-88
+
+      - name: Phase 89–91 verification
+        run: npm run verify:phases-89-91
+
+      - name: Operation 1 commercial lifecycle verification
+        run: npm run verify:operation-1-commercial-lifecycle

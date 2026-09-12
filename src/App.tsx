@@ -75,6 +75,7 @@ const AdminAuditLogs = lazy(() => import('@/pages/admin/audit-logs'));
 const AdminLeads = lazy(() => import('@/pages/admin/leads'));
 const AdminCommunications = lazy(() => import('@/pages/admin/communications'));
 const AdminSalesCommandCenter = lazy(() => import('@/pages/admin/sales-command-center'));
+const AdminCommercialLifecycle = lazy(() => import('@/pages/admin/commercial-lifecycle'));
 const AdminOperationsCommandCenter = lazy(() => import('@/pages/admin/operations-command-center'));
 const AdminSystemHealth = lazy(() => import('@/pages/admin/system-health'));
 const AdminDeliveries = lazy(() => import('@/pages/admin/deliveries'));
@@ -141,6 +142,7 @@ function Router() {
   const adminRoutes: Record<string, React.LazyExoticComponent<React.ComponentType<any>>> = {
     '/admin/orders': AdminOrders,
     '/admin/sales': AdminSalesCommandCenter,
+    '/admin/commercial-lifecycle': AdminCommercialLifecycle,
     '/admin/operations': AdminOperationsCommandCenter,
     '/admin/crm': AdminCRM,
     '/admin/services': AdminServices,

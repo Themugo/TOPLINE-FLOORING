@@ -7,7 +7,7 @@ import { supabase } from '@/lib/supabase';
 import { generateQuotationPdf } from '@/lib/pdf';
 import { useToast } from '@/hooks/use-toast';
 import type { Quotation, QuotationItem, QuotationStatus } from '@/lib/types';
-import { convertQuotationToOrder } from '@/lib/lifecycle';
+import { convertQuotationToOrder, createLeadFromQuotation, upsertQuotationItem, removeQuotationItem } from '@/lib/lifecycle';
 
 const STATUS_FLOW: { value: QuotationStatus; label: string; color: string }[] = [
   { value: 'draft', label: 'Draft', color: 'bg-gray-100 text-gray-700' },
@@ -82,23 +82,8 @@ export default function AdminQuotations() {
 
   const handleCreateLead = async (q: Quotation) => {
     try {
-      const { data: lead, error } = await supabase
-        .from('leads')
-        .insert({
-          name: q.name,
-          email: q.email,
-          phone: q.phone,
-          company: q.company,
-          source: 'website',
-          status: 'new',
-          estimated_value: q.total_amount || null,
-          notes: q.message ? `From quotation request: ${q.message}` : `From quotation request${q.project_type ? ` (${q.project_type})` : ''}`,
-        })
-        .select()
-        .single();
-      if (error) throw error;
-
-      await supabase.from('quotations').update({ lead_id: lead.id }).eq('id', q.id);
+      const result = await createLeadFromQuotation(q.id);
+      if (!result.success) throw new Error(result.error || 'Could not create lead');
       toast({ title: 'Lead created', description: 'Now tracked in CRM / Leads' });
       refetch();
     } catch {
@@ -214,14 +199,7 @@ function QuotationDetail({
     return { subtotal, taxAmount, total: subtotal + taxAmount };
   };
 
-  const persistTotals = async (list: QuotationItem[]) => {
-    const { subtotal, taxAmount, total } = recalcTotals(list);
-    await supabase.from('quotations').update({
-      subtotal,
-      tax_amount: taxAmount,
-      total_amount: total,
-      updated_at: new Date().toISOString(),
-    }).eq('id', quotation.id);
+  const persistTotals = async (_list: QuotationItem[]) => {
     onUpdated();
   };
 
@@ -231,21 +209,13 @@ function QuotationDetail({
     try {
       const quantity = Number(newItem.quantity) || 0;
       const unit_price = Number(newItem.unit_price) || 0;
-      const { data, error } = await supabase
-        .from('quotation_items')
-        .insert({
-          quotation_id: quotation.id,
-          description: newItem.description,
-          quantity,
-          unit: newItem.unit,
-          unit_price,
-          line_total: quantity * unit_price,
-        })
-        .select()
-        .single();
+      const result = await upsertQuotationItem({
+        quotationId: quotation.id, description: newItem.description, quantity, unit: newItem.unit, unitPrice: unit_price,
+      });
+      if (!result.success || !result.item_id) throw new Error(result.error || 'Could not add item');
+      const { data, error } = await supabase.from('quotation_items').select('*').eq('id', result.item_id).single();
       if (error) throw error;
-
-      const updated = [...items, data];
+      const updated = [...items, data as QuotationItem];
       setItems(updated);
       await persistTotals(updated);
       setNewItem({ description: '', quantity: '1', unit: 'sqm', unit_price: '0' });
@@ -257,9 +227,9 @@ function QuotationDetail({
   };
 
   const handleRemoveItem = async (id: string) => {
-    const { error } = await supabase.from('quotation_items').delete().eq('id', id);
-    if (error) {
-      toast({ title: 'Failed to remove item', variant: 'destructive' });
+    const result = await removeQuotationItem(id);
+    if (!result.success) {
+      toast({ title: 'Failed to remove item', description: result.error, variant: 'destructive' });
       return;
     }
     const updated = items.filter((i) => i.id !== id);

@@ -1,99 +1,32 @@
 import { Link } from 'wouter';
-import { ArrowRight, Briefcase, FileText, ShoppingCart, Users, TrendingUp } from 'lucide-react';
+import { ArrowRight, Briefcase, CalendarDays, FileText, ShoppingCart, Users, TrendingUp } from 'lucide-react';
 import { AdminLayout } from './dashboard';
-import { supabase } from '@/lib/supabase';
 import { formatKES } from '@/lib/utils';
+import { getCommercialLifecycle360 } from '@/lib/lifecycle';
 import { useEffect, useState } from 'react';
 
-interface SalesSnapshot {
-  openLeads: number;
-  qualifiedLeads: number;
-  openQuotes: number;
-  pendingOrders: number;
-  orderValue: number;
-  outstanding: number;
-}
-
-const emptySnapshot: SalesSnapshot = { openLeads: 0, qualifiedLeads: 0, openQuotes: 0, pendingOrders: 0, orderValue: 0, outstanding: 0 };
+type Snapshot = Record<string, unknown>;
+const n = (v: unknown) => Number(v || 0);
 
 export default function SalesCommandCenter() {
-  const [snapshot, setSnapshot] = useState<SalesSnapshot>(emptySnapshot);
+  const [snapshot, setSnapshot] = useState<Snapshot>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    let mounted = true;
-    const load = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const [leads, qualified, quotes, pendingOrders, orders, invoices] = await Promise.all([
-          supabase.from('leads').select('id', { count: 'exact', head: true }).not('status', 'in', '(won,lost)'),
-          supabase.from('leads').select('id', { count: 'exact', head: true }).eq('status', 'qualified'),
-          supabase.from('quotations').select('id', { count: 'exact', head: true }).not('status', 'in', '(accepted,rejected,expired)'),
-          supabase.from('orders').select('id', { count: 'exact', head: true }).eq('status', 'pending'),
-          supabase.from('orders').select('total_amount').not('status', 'eq', 'cancelled'),
-          supabase.from('invoices').select('total_amount, amount_paid').not('status', 'in', '(paid,cancelled)'),
-        ]);
-        const firstError = [leads, qualified, quotes, pendingOrders, orders, invoices].find((r) => r.error)?.error;
-        if (firstError) throw firstError;
-        const orderValue = (orders.data || []).reduce((sum, row) => sum + Number(row.total_amount || 0), 0);
-        const outstanding = (invoices.data || []).reduce((sum, row) => sum + Math.max(0, Number(row.total_amount || 0) - Number(row.amount_paid || 0)), 0);
-        if (!mounted) return;
-        setSnapshot({
-          openLeads: leads.count || 0,
-          qualifiedLeads: qualified.count || 0,
-          openQuotes: quotes.count || 0,
-          pendingOrders: pendingOrders.count || 0,
-          orderValue,
-          outstanding,
-        });
-      } catch (err) {
-        if (!mounted) return;
-        setError(err instanceof Error ? err.message : 'Unable to load sales data');
-      } finally {
-        if (mounted) setLoading(false);
-      }
-    };
-    void load();
-    return () => { mounted = false; };
-  }, []);
-
+  useEffect(() => { let mounted = true; (async () => { try { setSnapshot(await getCommercialLifecycle360()); } catch (e) { if (mounted) setError(e instanceof Error ? e.message : 'Unable to load sales data'); } finally { if (mounted) setLoading(false); } })(); return () => { mounted = false; }; }, []);
   const cards = [
-    { label: 'Open leads', value: snapshot.openLeads, icon: Users, href: '/admin/leads' },
-    { label: 'Qualified leads', value: snapshot.qualifiedLeads, icon: TrendingUp, href: '/admin/crm' },
-    { label: 'Open quotations', value: snapshot.openQuotes, icon: FileText, href: '/admin/quotations' },
-    { label: 'Pending orders', value: snapshot.pendingOrders, icon: ShoppingCart, href: '/admin/orders' },
-  ];
-
-  return (
-    <AdminLayout title="Sales Command Center" subtitle="One operational view from lead capture through order fulfilment">
-      {error && <div className="mb-6 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">Sales data could not be loaded: {error}</div>}
-      <div className="grid sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-6">
-        {cards.map((card) => (
-          <Link key={card.label} href={card.href} className="bg-white border border-gray-200 rounded-xl p-5 hover:border-primary-300 hover:shadow-sm transition-all">
-            <div className="flex items-center justify-between mb-4"><card.icon className="w-5 h-5 text-primary-600" /><ArrowRight className="w-4 h-4 text-gray-300" /></div>
-            <p className="text-sm text-gray-500">{card.label}</p>
-            <p className="text-3xl font-bold text-navy-900 mt-1">{loading ? '—' : card.value}</p>
-          </Link>
-        ))}
-      </div>
-      <div className="grid lg:grid-cols-2 gap-6">
-        <div className="bg-white border border-gray-200 rounded-xl p-6">
-          <div className="flex items-center gap-3 mb-5"><Briefcase className="w-5 h-5 text-primary-600" /><h2 className="font-semibold text-navy-900">Commercial position</h2></div>
-          <div className="space-y-4">
-            <div className="flex justify-between"><span className="text-sm text-gray-500">Order value in system</span><strong>{loading ? '—' : formatKES(snapshot.orderValue)}</strong></div>
-            <div className="flex justify-between"><span className="text-sm text-gray-500">Outstanding invoices</span><strong className="text-red-600">{loading ? '—' : formatKES(snapshot.outstanding)}</strong></div>
-          </div>
-        </div>
-        <div className="bg-navy-900 text-white rounded-xl p-6">
-          <h2 className="font-semibold mb-2">Recommended workflow</h2>
-          <p className="text-sm text-white/70 mb-5">Capture → qualify → quote → negotiate → win → order → invoice → collect.</p>
-          <div className="flex flex-wrap gap-2">
-            {['CRM', 'Quotations', 'Orders', 'Invoices'].map((label, i) => <span key={label} className="px-3 py-1.5 rounded-full bg-white/10 text-xs">{i + 1}. {label}</span>)}
-          </div>
-        </div>
-      </div>
-    </AdminLayout>
-  );
+    ['Open leads', n(snapshot.leads_open), Users, '/admin/leads'],
+    ['Qualified leads', n(snapshot.leads_qualified), TrendingUp, '/admin/crm'],
+    ['Open quotations', n(snapshot.quotations_open), FileText, '/admin/quotations'],
+    ['Upcoming site visits', n(snapshot.site_visits_upcoming), CalendarDays, '/admin/site-visits'],
+  ] as const;
+  return <AdminLayout title="Sales Command Center" subtitle="One operational view from lead capture through customer, quotation and project handoff">
+    {error && <div className="mb-6 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">Sales data could not be loaded: {error}</div>}
+    <div className="grid sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-6">{cards.map(([label,value,Icon,href]) => <Link key={label} href={href} className="bg-white border border-gray-200 rounded-xl p-5 hover:border-primary-300 hover:shadow-sm transition-all"><div className="flex justify-between mb-4"><Icon className="w-5 h-5 text-primary-600"/><ArrowRight className="w-4 h-4 text-gray-300"/></div><p className="text-sm text-gray-500">{label}</p><p className="text-3xl font-bold text-navy-900 mt-1">{loading ? '—' : value}</p></Link>)}</div>
+    <div className="grid lg:grid-cols-3 gap-6">
+      <div className="bg-white border border-gray-200 rounded-xl p-6"><h2 className="font-semibold text-navy-900 mb-5">Commercial pipeline</h2><div className="space-y-4 text-sm"><div className="flex justify-between"><span className="text-gray-500">Lead pipeline</span><strong>{loading?'—':formatKES(n(snapshot.pipeline_value))}</strong></div><div className="flex justify-between"><span className="text-gray-500">Quotation pipeline</span><strong>{loading?'—':formatKES(n(snapshot.quotation_pipeline_value))}</strong></div><div className="flex justify-between"><span className="text-gray-500">Accepted quotes</span><strong>{loading?'—':n(snapshot.quotations_accepted)}</strong></div></div></div>
+      <div className="bg-white border border-gray-200 rounded-xl p-6"><h2 className="font-semibold text-navy-900 mb-5">Attention required</h2><div className="space-y-4 text-sm"><div className="flex justify-between"><span className="text-gray-500">Overdue follow-ups</span><strong className="text-red-600">{loading?'—':n(snapshot.leads_overdue_follow_up)}</strong></div><div className="flex justify-between"><span className="text-gray-500">Won leads</span><strong>{loading?'—':n(snapshot.won_leads)}</strong></div><div className="flex justify-between"><span className="text-gray-500">Lost leads</span><strong>{loading?'—':n(snapshot.lost_leads)}</strong></div></div></div>
+      <div className="bg-navy-900 text-white rounded-xl p-6"><Briefcase className="w-5 h-5 mb-4"/><h2 className="font-semibold mb-2">30-day outcome</h2><div className="space-y-4 text-sm text-white/75"><div className="flex justify-between"><span>Customers</span><strong className="text-white">{loading?'—':n(snapshot.customers_created_30d)}</strong></div><div className="flex justify-between"><span>Orders</span><strong className="text-white">{loading?'—':n(snapshot.orders_created_30d)}</strong></div><div className="flex justify-between"><span>Order value</span><strong className="text-white">{loading?'—':formatKES(n(snapshot.order_value_30d))}</strong></div></div></div>
+    </div>
+    <div className="mt-6 bg-white border border-gray-200 rounded-xl p-6"><h2 className="font-semibold text-navy-900 mb-2">Canonical commercial flow</h2><p className="text-sm text-gray-500 mb-5">Enquiry → qualification → site assessment → quotation → acceptance → order → project.</p><div className="flex flex-wrap gap-2">{[['Leads','/admin/leads',Users],['Quotations','/admin/quotations',FileText],['Site Visits','/admin/site-visits',CalendarDays],['Projects','/admin/projects',Briefcase],['Full Lifecycle','/admin/commercial-lifecycle',ShoppingCart]].map(([label,href,Icon]) => <Link key={String(label)} href={String(href)} className="px-3 py-2 rounded-lg border border-gray-200 text-sm hover:border-primary-300 flex items-center gap-2"><Icon className="w-4 h-4"/>{label}</Link>)}</div></div>
+  </AdminLayout>;
 }
