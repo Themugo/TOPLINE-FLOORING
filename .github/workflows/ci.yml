@@ -142,3 +142,6 @@ jobs:
 
       - name: Operation 11 business continuity and disaster recovery
         run: npm run verify:operation-11-business-continuity
+
+      - name: Operation 12 data governance and privacy
+        run: npm run verify:operation-12-data-governance

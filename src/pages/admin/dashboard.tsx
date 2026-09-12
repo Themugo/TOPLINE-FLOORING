@@ -135,6 +135,7 @@ const NAV_GROUPS: NavGroup[] = [
       { href: '/admin/system-health', label: 'System Health', icon: CheckCircle2 },
       { href: '/admin/reliability-operations-360', label: 'Reliability & Incidents', icon: ShieldAlert },
       { href: '/admin/business-continuity-360', label: 'Business Continuity', icon: ShieldAlert },
+      { href: '/admin/data-governance-360', label: 'Data Governance & Privacy', icon: ShieldAlert },
     ],
   },
 ];

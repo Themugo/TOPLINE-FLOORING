@@ -3,7 +3,7 @@ const root=process.cwd(), fail=[]; const read=f=>fs.readFileSync(path.join(root,
 const migration='20260913100000_083_business_continuity_disaster_recovery_360.sql';
 if(!exists(`supabase/migrations/${migration}`)) fail.push('Operation 11 migration is missing.');
 const migrations=fs.readdirSync(path.join(root,'supabase/migrations')).filter(f=>f.endsWith('.sql')).sort();
-if(migrations.at(-1)!==migration) fail.push(`Expected Operation 11 migration to be latest active migration: ${migrations.at(-1)}`);
+if(!migrations.includes(migration)) fail.push(`Operation 11 migration is missing from active migration chain: ${migration}`);
 const versions=migrations.map(f=>f.match(/^(\d{14})_/)?.[1]); if(versions.some(v=>!v)) fail.push('Every active migration must have a 14-digit timestamp.'); if(new Set(versions).size!==versions.length) fail.push('Duplicate active migration timestamps detected.'); for(let i=1;i<versions.length;i++) if(versions[i-1]>=versions[i]) fail.push('Migration ordering is not strictly increasing.');
 const sql=read(`supabase/migrations/${migration}`); for(const t of ['business_continuity_plans','recovery_drills','recovery_checkpoints','create_business_continuity_plan','record_recovery_drill','record_recovery_checkpoint','get_business_continuity_360','REVOKE ALL ON public.business_continuity_plans FROM PUBLIC, anon, authenticated','private.require_staff_permission']) if(!sql.includes(t)) fail.push(`Operation 11 SQL missing required control: ${t}`);
 const app=read('src/App.tsx'); for(const t of ["@/pages/admin/business-continuity-360","'/admin/business-continuity-360': AdminBusinessContinuity360"]) if(!app.includes(t)) fail.push(`Business continuity route contract missing: ${t}`);

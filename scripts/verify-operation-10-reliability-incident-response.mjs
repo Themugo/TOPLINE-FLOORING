@@ -5,7 +5,7 @@ const fail=m=>failures.push(m);
 const migration='20260913090000_082_reliability_observability_incident_response_360.sql';
 if(!exists(`supabase/migrations/${migration}`)) fail('Operation 10 migration is missing.');
 const migrations=fs.readdirSync(path.join(root,'supabase/migrations')).filter(f=>f.endsWith('.sql')).sort();
-if(migrations.at(-1)!==migration) fail(`Expected Operation 10 migration to be latest active migration: ${migrations.at(-1)}`);
+if(!migrations.includes(migration)) fail(`Operation migration is missing from active migration chain: ${migration}`);
 const versions=migrations.map(f=>f.match(/^(\d{14})_/)?.[1]); if(versions.some(v=>!v)) fail('Every active migration must have a 14-digit timestamp.'); if(new Set(versions).size!==versions.length) fail('Duplicate active migration timestamps detected.');
 for(let i=1;i<versions.length;i++) if(versions[i-1]>=versions[i]) fail('Migration ordering is not strictly increasing.');
 const sql=read(`supabase/migrations/${migration}`);
