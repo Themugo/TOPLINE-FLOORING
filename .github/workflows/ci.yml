@@ -116,3 +116,9 @@ jobs:
 
       - name: Operation 2 project delivery verification
         run: npm run verify:operation-2-project-delivery
+
+      - name: Operation 3 supply chain verification
+        run: npm run verify:operation-3-supply-chain
+
+      - name: Operation 4 finance verification
+        run: npm run verify:operation-4-finance

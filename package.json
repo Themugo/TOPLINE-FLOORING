@@ -73,7 +73,8 @@
     "verify:phases-89-91": "node scripts/verify-phases-89-91.mjs",
     "verify:operation-1-commercial-lifecycle": "node scripts/verify-operation-1-commercial-lifecycle.mjs",
     "verify:operation-2-project-delivery": "node scripts/verify-operation-2-project-delivery.mjs",
-    "verify:operation-3-supply-chain": "node scripts/verify-operation-3-supply-chain.mjs"
+    "verify:operation-3-supply-chain": "node scripts/verify-operation-3-supply-chain.mjs",
+    "verify:operation-4-finance": "node scripts/verify-operation-4-finance.mjs"
   },
   "dependencies": {
     "@radix-ui/react-accordion": "^1.2.16",
