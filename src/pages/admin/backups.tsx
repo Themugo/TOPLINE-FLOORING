@@ -11,12 +11,12 @@ export default function AdminBackups() {
   const exportData = async () => {
     setExporting(true);
     try {
-      const { data, error } = await supabase.functions.invoke('customer-data-export');
+      const { data, error } = await supabase.functions.invoke('customer-data-export', { method: 'POST' });
       if (error) throw error;
-      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const exportPayload = data?.payload ?? data; const blob = new Blob([JSON.stringify(exportPayload, null, 2)], { type: 'application/json' });
       const url = URL.createObjectURL(blob); const a = document.createElement('a');
       a.href = url; a.download = `topline-data-export-${new Date().toISOString().slice(0,10)}.json`; a.click(); URL.revokeObjectURL(url);
-      toast({ title: 'Data export ready', description: 'The operational export has been downloaded.' });
+      toast({ title: 'Data export ready', description: data?.event?.payload_hash ? `Export ${data.event.id.slice(0, 8)}… verified with hash ${data.event.payload_hash}.` : 'The operational export has been downloaded.' });
     } catch (err) { toast({ title: 'Export failed', description: err instanceof Error ? err.message : 'Unable to create the export.', variant: 'destructive' }); }
     finally { setExporting(false); }
   };
