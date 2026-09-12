@@ -29,6 +29,9 @@ const required = [
   '20260912000000_056_public_tracking_privacy.sql',
   '20260912010000_057_commerce_fulfillment_integrity.sql',
   '20260912020000_058_authorization_order_operations_360.sql',
+  '20260912030000_production_infrastructure_rls_storage.sql',
+  '20260912100000_059_production_communications_worker.sql',
+  '20260912110000_060_sms_customer_notification_operations.sql',
 ];
 
 const files = fs.readdirSync(migrationDir).filter((f) => f.endsWith('.sql')).sort();

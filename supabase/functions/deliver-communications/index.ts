@@ -76,12 +76,19 @@ async function sendSms(item: OutboxMessage) {
   });
   const body = await response.text();
   if (!response.ok) throw new Error(`Africa's Talking ${response.status}: ${body.slice(0, 500)}`);
-  return { provider: "africastalking", reference: body.slice(0, 500) };
+  let parsed: any = null;
+  try { parsed = JSON.parse(body); } catch { parsed = null; }
+  const recipient = parsed?.SMSMessageData?.Recipients?.[0];
+  const status = String(recipient?.status ?? '').toLowerCase();
+  const messageId = recipient?.messageId ? String(recipient.messageId) : null;
+  const cost = recipient?.cost ? String(recipient.cost) : null;
+  if (!messageId) throw new Error(`Africa's Talking accepted SMS without a messageId: ${body.slice(0, 500)}`);
+  return { provider: "africastalking", reference: messageId, status, cost, raw: parsed ?? body };
 }
 
 async function processItem(item: OutboxMessage) {
   try {
-    let result: { provider: string; reference: string | null };
+    let result: { provider: string; reference: string | null; status?: string; cost?: string | null; raw?: unknown };
     if (item.channel === "email") result = await sendEmail(item);
     else if (item.channel === "sms") result = await sendSms(item);
     else throw new Error("WhatsApp delivery is not configured for this deployment");
@@ -91,6 +98,15 @@ async function processItem(item: OutboxMessage) {
       p_provider: result.provider,
       p_provider_reference: result.reference,
     });
+    if (item.channel === "sms" && result.reference) {
+      await admin.rpc("record_sms_delivery_report", {
+        p_provider_reference: result.reference,
+        p_status: result.status === "success" ? "submitted" : (result.status || "submitted"),
+        p_phone: item.recipient,
+        p_payload: result.raw ?? {},
+        p_cost: result.cost ? Number(result.cost.replace(/[^0-9.]/g, "")) || null : null,
+      });
+    }
     if (error) throw error;
     return { id: item.id, status: "sent", provider: result.provider };
   } catch (error) {

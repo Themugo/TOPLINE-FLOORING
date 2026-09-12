@@ -10,7 +10,7 @@ const read = (file) => fs.readFileSync(path.join(root, file), 'utf8');
 const migrationsDir = path.join(root, 'supabase', 'migrations');
 const migrations = fs.readdirSync(migrationsDir).filter((f) => f.endsWith('.sql')).sort();
 
-if (migrations.length !== 27) failures.push(`Expected 27 active canonical migrations, found ${migrations.length}.`);
+if (migrations.length !== 28) failures.push(`Expected 28 active canonical migrations, found ${migrations.length}.`);
 if (!read('supabase/config.toml').includes(`project_id = "${expectedProjectRef}"`)) {
   failures.push('Supabase config is not pinned to the dedicated Topline project.');
 }
