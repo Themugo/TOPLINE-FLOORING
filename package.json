@@ -48,7 +48,9 @@
     "verify:phase-2-supabase": "node scripts/verify-phase-2-supabase.mjs",
     "verify:phase-3-email": "node scripts/verify-phase-3-email.mjs",
     "verify:phase-4-sms": "node scripts/verify-phase-4-sms.mjs",
-    "verify:phase-5-hosting": "node scripts/verify-phase-5-hosting.mjs"
+    "verify:phase-5-hosting": "node scripts/verify-phase-5-hosting.mjs",
+    "verify:phase-6-launch": "node scripts/verify-phase-6-launch-readiness.mjs",
+    "launch:check": "node scripts/production-launch-check.mjs"
   },
   "dependencies": {
     "@radix-ui/react-accordion": "^1.2.16",
