@@ -13,6 +13,7 @@ import { useSeoMeta } from '@/hooks/use-seo';
 import { telHref } from '@/lib/utils';
 import { useSiteSettings } from '@/hooks/use-data';
 import { createServiceCase } from '@/lib/service-cases';
+import { submitServiceCaseFeedback } from '@/lib/service-quality-360';
 
 const orderIcon = (status: string) => {
   if (['completed', 'delivered'].includes(status)) return <CheckCircle2 className="h-5 w-5" />;
@@ -69,6 +70,10 @@ export default function Portal() {
   const [serviceType, setServiceType] = useState('warranty');
   const [serviceSending, setServiceSending] = useState(false);
   const [serviceMessage, setServiceMessage] = useState<string | null>(null);
+  const [feedbackRating, setFeedbackRating] = useState<Record<string, number>>({});
+  const [feedbackComment, setFeedbackComment] = useState<Record<string, string>>({});
+  const [feedbackMessage, setFeedbackMessage] = useState<Record<string, string>>({});
+  const [feedbackSending, setFeedbackSending] = useState<string | null>(null);
 
   const submitServiceCase = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -81,6 +86,15 @@ export default function Portal() {
     } catch (err) {
       setServiceMessage(err instanceof Error ? err.message : 'Unable to submit your service request.');
     } finally { setServiceSending(false); }
+  };
+
+  const submitFeedback = async (caseId: string) => {
+    const rating = feedbackRating[caseId];
+    if (!rating) return;
+    setFeedbackSending(caseId);
+    try { await submitServiceCaseFeedback(caseId, rating, feedbackComment[caseId]); setFeedbackMessage(prev => ({ ...prev, [caseId]: 'Thank you for your feedback.' })); }
+    catch (err) { setFeedbackMessage(prev => ({ ...prev, [caseId]: err instanceof Error ? err.message : 'Unable to submit feedback.' })); }
+    finally { setFeedbackSending(null); }
   };
 
   useEffect(() => {
@@ -117,7 +131,7 @@ export default function Portal() {
       </div>
       <Card><CardHeader><CardTitle>Projects & installations</CardTitle></CardHeader><CardContent className="space-y-3">{data.projects.length ? data.projects.map(p => <div key={p.id} className="border rounded-md p-4"><div className="flex justify-between gap-4"><div><p className="font-medium">{p.title}</p><p className="text-xs text-muted-foreground">{p.project_number || p.project_type || 'Project'} · {p.location || 'Location pending'}</p></div><span className="chip">{p.status.replace('_',' ')}</span></div><div className="mt-3 h-2 rounded-full bg-muted overflow-hidden"><div className="h-full bg-primary" style={{width:`${p.progress_percentage}%`}} /></div><p className="text-xs text-muted-foreground mt-1">{p.progress_percentage}% complete{p.progress_notes ? ` · ${p.progress_notes}` : ''}</p></div>) : <p className="text-sm text-muted-foreground">No projects linked to this account yet.</p>}{data.installations.length ? <div className="border-t pt-3 space-y-2">{data.installations.map(i => <div key={i.id} className="flex justify-between text-sm"><span>{i.installation_number || 'Installation'} · {i.scheduled_date || 'Date pending'}</span><span className="chip">{i.status.replace('_',' ')}</span></div>)}</div> : null}</CardContent></Card>
       <Card><CardHeader><CardTitle>Invoices</CardTitle></CardHeader><CardContent className="space-y-3">{data.invoices.length ? data.invoices.map(i => <div key={i.id} className="border rounded-md p-4 flex justify-between gap-4"><div><p className="font-medium">{i.invoice_number || i.id.slice(0,8)}</p><p className="text-xs text-muted-foreground">Due {i.due_date || '—'} · Paid KES {Number(i.amount_paid).toLocaleString()}</p></div><div className="text-right"><p className="text-sm font-medium capitalize">{i.status}</p><p className="text-sm">KES {Number(i.total_amount).toLocaleString()}</p>{i.pdf_url ? <a className="text-xs text-primary underline" href={i.pdf_url} target="_blank" rel="noreferrer">View invoice</a> : null}</div></div>) : <p className="text-sm text-muted-foreground">No invoices are linked to this account yet.</p>}</CardContent></Card>
-      <      <Card><CardHeader><CardTitle>After-sales support</CardTitle></CardHeader><CardContent><form onSubmit={submitServiceCase} className="grid md:grid-cols-[180px_1fr_auto] gap-3"><select className="input" value={serviceType} onChange={e=>setServiceType(e.target.value)}><option value="warranty">Warranty</option><option value="service">Service</option><option value="maintenance">Maintenance</option></select><div className="grid gap-2"><Input required placeholder="Issue or request title" value={serviceTitle} onChange={e=>setServiceTitle(e.target.value)}/><textarea required className="input min-h-20" placeholder="Tell us what you need help with…" value={serviceDescription} onChange={e=>setServiceDescription(e.target.value)}/></div><Button type="submit" disabled={serviceSending}>{serviceSending?'Submitting…':'Submit request'}</Button></form>{serviceMessage&&<p className="mt-3 text-sm text-muted-foreground">{serviceMessage}</p>}</CardContent></Card>
+      <Card><CardHeader><CardTitle>After-sales support</CardTitle></CardHeader><CardContent className="space-y-5"><form onSubmit={submitServiceCase} className="grid md:grid-cols-[180px_1fr_auto] gap-3"><select className="input" value={serviceType} onChange={e=>setServiceType(e.target.value)}><option value="warranty">Warranty</option><option value="service">Service</option><option value="maintenance">Maintenance</option></select><div className="grid gap-2"><Input required placeholder="Issue or request title" value={serviceTitle} onChange={e=>setServiceTitle(e.target.value)}/><textarea required className="input min-h-20" placeholder="Tell us what you need help with…" value={serviceDescription} onChange={e=>setServiceDescription(e.target.value)}/></div><Button type="submit" disabled={serviceSending}>{serviceSending?'Submitting…':'Submit request'}</Button></form>{serviceMessage&&<p className="text-sm text-muted-foreground">{serviceMessage}</p>}{data.service_cases.length ? <div className="border-t pt-5 space-y-4"><div><p className="font-semibold">Your service cases</p><p className="text-sm text-muted-foreground">Resolved cases can be rated once.</p></div>{data.service_cases.map(c => <div key={c.id} className="border rounded-md p-4"><div className="flex justify-between gap-4"><div><p className="font-medium">{c.case_number} · {c.issue_title}</p><p className="text-xs text-muted-foreground capitalize">{c.type} · {c.status.replace('_',' ')}</p></div><span className="chip">{c.priority}</span></div>{['resolved','closed'].includes(c.status) && !feedbackMessage[c.id]?.startsWith('Thank you') ? <div className="mt-4 grid gap-2 md:grid-cols-[140px_1fr_auto]"><select className="input" value={feedbackRating[c.id]||''} onChange={e=>setFeedbackRating(prev=>({...prev,[c.id]:Number(e.target.value)}))}><option value="">Rate service…</option><option value="5">5 — Excellent</option><option value="4">4 — Good</option><option value="3">3 — Okay</option><option value="2">2 — Poor</option><option value="1">1 — Very poor</option></select><Input placeholder="Optional comment" value={feedbackComment[c.id]||''} onChange={e=>setFeedbackComment(prev=>({...prev,[c.id]:e.target.value}))}/><Button onClick={()=>void submitFeedback(c.id)} disabled={feedbackSending===c.id || !feedbackRating[c.id]}>{feedbackSending===c.id?'Sending…':'Rate service'}</Button></div> : null}{feedbackMessage[c.id]&&<p className="text-sm text-muted-foreground mt-2">{feedbackMessage[c.id]}</p>}</div>)}</div> : null}</CardContent></Card>
             <Card><CardHeader><CardTitle>Activity Timeline</CardTitle></CardHeader><CardContent>{journey.length ? <div className="space-y-4">{journey.map(event => <div key={event.id} className="flex gap-3"><div className="mt-1 h-2.5 w-2.5 rounded-full bg-primary shrink-0"/><div><p className="text-sm font-medium">{event.title}</p><p className="text-sm text-muted-foreground">{event.message}</p><p className="text-xs text-muted-foreground mt-1">{new Date(event.created_at).toLocaleString('en-KE')}</p></div></div>)}</div> : <p className="text-sm text-muted-foreground">Your account activity will appear here as your quotation, order, project and invoice progress changes.</p>}</CardContent></Card>
             <Card><CardContent className="p-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4"><div><p className="font-semibold">Need help with an order?</p><p className="text-sm text-muted-foreground">Call {settings?.phone || 'our team'} or request a new quotation.</p></div><div className="flex gap-3"><a href={telHref(settings?.phone || '')}><Button variant="outline">Call us</Button></a><a href="/quotation"><Button>Request quotation</Button></a></div></CardContent></Card>
     </div></section>

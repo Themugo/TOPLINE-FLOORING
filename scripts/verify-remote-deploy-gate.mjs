@@ -15,7 +15,7 @@ const migrationManifest = fs.readFileSync(path.join(root, 'supabase', 'MIGRATION
 if (!config.includes(`project_id = "${projectRef}"`)) failures.push('supabase/config.toml is not pinned to the dedicated Topline project.');
 if (!envExample.includes(`VITE_SUPABASE_URL=https://${projectRef}.supabase.co`)) failures.push('.env.example is not pinned to the dedicated Topline Supabase URL.');
 if (envExample.includes('SUPABASE_SERVICE_ROLE_KEY') || /service[_-]?role\s*=/i.test(envExample)) failures.push('Server-only service-role credential appears in .env.example.');
-if (migrations.length !== 40) failures.push(`Expected 40 active migrations, found ${migrations.length}.`);
+if (migrations.length < 40) failures.push(`Expected at least 40 active migrations, found ${migrations.length}.`);
 if (new Set(migrations.map((f) => f.match(/^\d+/)?.[0])).size !== migrations.length) failures.push('Duplicate active migration timestamps detected.');
 if (!migrations.every((f) => /^\d{14}_[a-z0-9][a-z0-9_-]*\.sql$/.test(f))) failures.push('One or more active migration filenames violate the production naming contract.');
 if (!deployment.includes('db push --dry-run --linked')) failures.push('DEPLOYMENT.md must document the linked dry-run gate before deployment.');

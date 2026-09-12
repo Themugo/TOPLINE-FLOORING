@@ -1,0 +1,20 @@
+import fs from 'node:fs';
+import path from 'node:path';
+const root=process.cwd(); const errors=[];
+const migration='20260912220000_071_service_quality_warranty_feedback_360.sql';
+const mp=path.join(root,'supabase/migrations',migration);
+if(!fs.existsSync(mp)) errors.push(`Missing ${migration}`);
+const sql=fs.existsSync(mp)?fs.readFileSync(mp,'utf8'):'';
+for(const x of ['service_case_feedback','submit_service_case_feedback','reconcile_service_case_slas_360','refresh_service_case_warranty_360','get_service_case_quality_360','feedback_received','warranty_validated']) if(!sql.includes(x)) errors.push(`Missing service quality contract: ${x}`);
+const lib='src/lib/service-quality-360.ts'; if(!fs.existsSync(path.join(root,lib))) errors.push(`Missing ${lib}`);
+const page=fs.readFileSync(path.join(root,'src/pages/admin/service-cases.tsx'),'utf8');
+for(const x of ['getServiceCaseQuality360','reconcileServiceCaseSlas360','refreshServiceCaseWarranty360','Reconcile SLAs','Warranty','warranty_valid']) if(!page.includes(x)) errors.push(`Admin service UI missing: ${x}`);
+const portal=fs.readFileSync(path.join(root,'src/pages/portal.tsx'),'utf8');
+for(const x of ['submitServiceCaseFeedback','Rate service','Your service cases']) if(!portal.includes(x)) errors.push(`Customer feedback UI missing: ${x}`);
+const pkg=JSON.parse(fs.readFileSync(path.join(root,'package.json'),'utf8')); if(!pkg.scripts['verify:phases-83-85']) errors.push('Missing package verifier script');
+const migrations=fs.readdirSync(path.join(root,'supabase/migrations')).filter(f=>f.endsWith('.sql')).sort();
+if(migrations.indexOf(migration)<0) errors.push('Phase 83-85 migration is not in the chain');
+if(migrations.length<42) errors.push(`Expected at least 42 active migrations, found ${migrations.length}`);
+const ci=fs.readFileSync(path.join(root,'.github/workflows/ci.yml'),'utf8'); if(!ci.includes('verify:phases-83-85')) errors.push('CI missing Phase 83-85 gate');
+if(errors.length){console.error('Phase 83–85 verification failed.'); errors.forEach(e=>console.error('- '+e)); process.exit(1)}
+console.log('Phase 83–85 source verification passed.'); console.log(`Active migrations: ${migrations.length}`);

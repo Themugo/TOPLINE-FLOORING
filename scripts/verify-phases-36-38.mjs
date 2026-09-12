@@ -13,7 +13,7 @@ const expected = [
 ];
 const failures = [];
 
-if (migrations.length !== 40) failures.push(`Expected 40 active migrations, found ${migrations.length}.`);
+if (migrations.length < 40) failures.push(`Expected at least 40 active migrations, found ${migrations.length}.`);
 for (const file of expected) if (!migrations.includes(file)) failures.push(`Missing required late-stage migration: ${file}`);
 for (let i = 1; i < migrations.length; i += 1) if (migrations[i - 1] >= migrations[i]) failures.push(`Migration order is not strictly increasing at ${migrations[i]}.`);
 

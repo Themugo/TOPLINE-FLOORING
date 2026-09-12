@@ -38,3 +38,5 @@ The canonical deployment chain currently contains 40 active migrations. The firs
 The remaining migrations continue chronologically through the current `066`–`069` hardening/operations layer. See `supabase/MIGRATION_MANIFEST.md` for the complete active chain.
 
 This baseline is intended for a new, dedicated Topline Supabase project. Do not apply the legacy directory to that project.
+
+- `20260912220000_071_service_quality_warranty_feedback_360.sql` — Phases 83–85 Service Quality, Warranty Entitlement & Customer Feedback 360.

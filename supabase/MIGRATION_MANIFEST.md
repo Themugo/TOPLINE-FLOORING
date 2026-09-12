@@ -76,6 +76,8 @@ Never put a service-role or worker secret in a `VITE_*` variable.
 
 ## Current active chain (Phases 30–32 verification baseline)
 
-The current production candidate contains 40 uniquely timestamped active migrations, ending with `20260912200000_069_reporting_operational_intelligence_360.sql`. Run `npm run verify:phases-30-32` before any linked database deployment.
+The current production candidate contains 42 uniquely timestamped active migrations, ending with `20260912220000_071_service_quality_warranty_feedback_360.sql`. Run `npm run verify:phases-30-32` before any linked database deployment.
 
 - `20260912210000_070_customer_service_sla_operations_360.sql` — Phases 80–82 Customer Service SLA & After-Sales Operations 360.
+
+- `20260912230000_072_maintenance_retention_360.sql` — Phases 86–88 maintenance, renewal and retention operations 360.

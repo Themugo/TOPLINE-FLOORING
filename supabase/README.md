@@ -105,3 +105,7 @@ Do not hand-author a production database type file when the remote schema is ava
 Phase 3 adds `deliver-communications` plus service-role-only worker RPCs for real email/SMS delivery.
 
 - `20260912210000_070_customer_service_sla_operations_360.sql` — Phases 80–82 Customer Service SLA & After-Sales Operations 360.
+
+- `20260912220000_071_service_quality_warranty_feedback_360.sql` — Phases 83–85 Service Quality, Warranty Entitlement & Customer Feedback 360.
+
+- `20260912230000_072_maintenance_retention_360.sql` — Phases 86–88 maintenance, renewal and retention operations 360.

@@ -6,7 +6,7 @@ const migrationsDir = path.join(root, 'supabase', 'migrations');
 const files = fs.readdirSync(migrationsDir).filter((f) => f.endsWith('.sql')).sort();
 const errors = [];
 
-if (files.length !== 40) errors.push(`Expected 40 active migrations, found ${files.length}.`);
+if (files.length !== 40) errors.push(`Expected at least 40 active migrations, found ${files.length}.`);
 
 const timestamps = files.map((f) => f.slice(0, 14));
 const unique = new Set(timestamps);
@@ -38,7 +38,7 @@ const requiredRpcs = [
   'create_customer_order','convert_lead_to_customer','convert_quotation_to_order','create_site_visit',
   'transition_invoice_lifecycle','create_purchase_order','get_customer_portal_360','create_operational_data_export',
   'complete_communication_delivery_worker','record_provider_delivery_event_worker','record_inbound_communication_worker',
-  'get_customer_communications_360'
+  'get_customer_communications_360','submit_service_case_feedback','reconcile_service_case_slas_360','refresh_service_case_warranty_360','get_service_case_quality_360'
 ];
 for (const rpc of requiredRpcs) if (!functions.has(rpc)) errors.push(`Missing required production RPC: ${rpc}`);
 

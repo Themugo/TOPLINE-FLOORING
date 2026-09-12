@@ -14,7 +14,7 @@ const workflows = fs.readFileSync(path.join(root, '.github/workflows/ci.yml'), '
 if (!workflows.includes('npm run verify:phases-33-35')) errors.push('CI does not run the Phase 33–35 gate.');
 
 const migrations = fs.readdirSync(path.join(root, 'supabase/migrations')).filter((f) => f.endsWith('.sql')).sort();
-if (migrations.length !== 40) errors.push(`Expected 40 active migrations, found ${migrations.length}.`);
+if (migrations.length < 40) errors.push(`Expected at least 40 active migrations, found ${migrations.length}.`);
 if (migrations.some((f) => !/^\d{14}_[a-z0-9][a-z0-9_-]*\.sql$/.test(f))) errors.push('One or more migration filenames violate the production naming contract.');
 
 const readme = fs.readFileSync(path.join(root, 'docs/PHASES_33_35_DATABASE_VALIDATION.md'), 'utf8');

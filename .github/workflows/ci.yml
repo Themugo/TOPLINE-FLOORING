@@ -101,3 +101,6 @@ jobs:
 
       - name: Phase 80–82 verification
         run: npm run verify:phases-80-82
+
+      - name: Phase 83–85 verification
+        run: npm run verify:phases-83-85
