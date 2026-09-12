@@ -11,3 +11,9 @@ Site visits now have authenticated transactional scheduling/status operations an
 
 ## Validation
 Source-level verification covers the migration, lifecycle service, quotation conversion, lead conversion, route and site-visit UI. Live PostgreSQL validation remains intentionally pending until the local Supabase stack is available.
+
+
+## 360 Hardening
+The lifecycle is now hardened as one end-to-end transaction boundary. Customer matching is serialized by normalized email, quotation conversion requires an accepted quotation plus explicit quotation/order/project permissions, and conversion remains idempotent. Site-visit scheduling derives and validates quotation/customer/project relationships, requires active assigned staff, rejects past dates, and records lifecycle events. Site-visit status changes are transactional and completed/cancelled visits cannot be reopened. Quotation status changes use the existing transactional `transition_quotation_status` RPC rather than direct browser-side DML.
+
+A dedicated `sales_project_lifecycle_events` audit table records lead conversion, quotation conversion, site-visit scheduling, and site-visit status changes. The audit surface is staff-readable only.

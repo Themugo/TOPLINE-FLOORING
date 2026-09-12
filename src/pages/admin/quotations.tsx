@@ -34,16 +34,18 @@ export default function AdminQuotations() {
   const [selected, setSelected] = useState<Quotation | null>(null);
 
   const updateStatus = async (id: string, status: string) => {
-    const updates: Record<string, unknown> = { status, updated_at: new Date().toISOString() };
-    if (status === 'sent') updates.sent_at = new Date().toISOString();
-    if (['accepted', 'rejected'].includes(status)) updates.responded_at = new Date().toISOString();
-
-    const { error } = await supabase.from('quotations').update(updates).eq('id', id);
-    if (!error) {
-      refetch();
+    try {
+      const { data, error } = await supabase.rpc('transition_quotation_status', {
+        p_quotation_id: id,
+        p_status: status,
+        p_reason: null,
+      });
+      if (error) throw error;
+      if (!data?.success) throw new Error(data?.error || 'Quotation status update failed');
+      await refetch();
       if (selected?.id === id) setSelected({ ...selected, status: status as QuotationStatus });
-    } else {
-      toast({ title: 'Failed to update status', variant: 'destructive' });
+    } catch (error) {
+      toast({ title: 'Failed to update status', description: error instanceof Error ? error.message : undefined, variant: 'destructive' });
     }
   };
 

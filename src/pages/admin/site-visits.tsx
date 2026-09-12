@@ -14,6 +14,7 @@ export default function AdminSiteVisits() {
   const [visits, setVisits] = useState<Visit[]>([]);
   const [loading, setLoading] = useState(true);
   const [date, setDate] = useState('');
+  const [time, setTime] = useState('');
   const [quotationId, setQuotationId] = useState('');
   const [notes, setNotes] = useState('');
   const [saving, setSaving] = useState(false);
@@ -32,9 +33,9 @@ export default function AdminSiteVisits() {
     if (!date) return;
     setSaving(true);
     try {
-      const result = await createSiteVisit({ quotationId: quotationId || null, scheduledDate: date, notes });
+      const result = await createSiteVisit({ quotationId: quotationId || null, scheduledDate: date, scheduledTime: time || null, notes });
       if (!result.success) throw new Error(result.error || 'Could not schedule visit');
-      setDate(''); setQuotationId(''); setNotes('');
+      setDate(''); setTime(''); setQuotationId(''); setNotes('');
       toast({ title: 'Site visit scheduled' });
       await load();
     } catch (error) {
@@ -57,7 +58,7 @@ export default function AdminSiteVisits() {
       <div className="grid lg:grid-cols-[360px_1fr] gap-6">
         <form onSubmit={schedule} className="bg-white border border-gray-200 rounded-xl p-5 space-y-4 h-fit">
           <div><h2 className="font-display font-bold text-lg text-navy-900">Schedule Site Survey</h2><p className="text-sm text-gray-500 mt-1">Create the field-work appointment that follows a qualified enquiry.</p></div>
-          <input required type="date" className="input" value={date} onChange={e => setDate(e.target.value)} />
+          <div className="grid grid-cols-2 gap-3"><input required type="date" className="input" value={date} onChange={e => setDate(e.target.value)} /><input type="time" className="input" value={time} onChange={e => setTime(e.target.value)} /></div>
           <input className="input" placeholder="Quotation ID (optional)" value={quotationId} onChange={e => setQuotationId(e.target.value)} />
           <textarea className="input min-h-24" placeholder="Visit notes / scope" value={notes} onChange={e => setNotes(e.target.value)} />
           <button disabled={saving} className="btn-primary w-full">{saving ? 'Scheduling...' : 'Schedule Visit'}</button>
