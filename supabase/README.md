@@ -79,3 +79,5 @@ Do not hand-author a production database type file when the remote schema is ava
 
 21. `20260911180000_054_refunds_and_payment_reconciliation.sql` — refund requests and payment reconciliation.
 22. `20260911190000_055_reservation_expiry_and_operations.sql` — reservation expiry and operational reconciliation.
+
+Phase 3 adds `deliver-communications` plus service-role-only worker RPCs for real email/SMS delivery.

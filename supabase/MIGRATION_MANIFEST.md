@@ -38,3 +38,5 @@ Do not reset or destroy a live Topline production database. Establish the clean 
 24. `20260912010000_057_commerce_fulfillment_integrity.sql` — commerce fulfillment integrity.
 25. `20260912020000_058_authorization_order_operations_360.sql` — authorization/order operations 360.
 26. `20260912030000_production_infrastructure_rls_storage.sql` — production RLS, public intake boundaries and storage access controls.
+
+27. `20260912100000_059_production_communications_worker.sql` — service-role-only production email/SMS delivery worker boundary.
