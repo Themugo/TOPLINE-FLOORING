@@ -130,4 +130,9 @@ jobs:
         run: npm run verify:operation-6-customer-lifecycle
       - name: Operation 7 communications customer journey verification
         run: npm run verify:operation-7-communications-journey
-      npm run verify:operation-8-executive-operations
+
+      - name: Operation 8 executive operations verification
+        run: npm run verify:operation-8-executive-operations
+
+      - name: Operation 9 production certification
+        run: npm run verify:operation-9-production-certification
