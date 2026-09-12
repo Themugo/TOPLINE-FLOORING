@@ -116,3 +116,5 @@ Phase 3 adds `deliver-communications` plus service-role-only worker RPCs for rea
 - `20260913020000_075_project_delivery_360.sql` — Operation 2 Project Delivery 360: planning → workforce → materials → installation → progress → issues → cost → quality → customer sign-off.
 
 - `20260913070000_080_communications_customer_journey_360.sql` — Operation 7 Communications & Customer Journey 360.
+
+- `20260913080000_081_executive_operations_control_360.sql` — Operation 8 Executive Operations & Control Centre 360
