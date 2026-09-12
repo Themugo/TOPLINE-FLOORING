@@ -1,0 +1,11 @@
+import fs from 'node:fs';
+import path from 'node:path';
+const root = process.cwd();
+const migration = path.join(root,'supabase/migrations/20260912130000_062_sales_crm_360.sql');
+if (!fs.existsSync(migration)) throw new Error('Missing Phase 9 migration');
+const sql = fs.readFileSync(migration,'utf8');
+for (const name of ['lead_activities','sales_tasks','add_lead_activity','transition_lead_status','create_sales_task','complete_sales_task','transition_quotation_status','get_sales_crm_360']) if (!sql.includes(name)) throw new Error(`Missing ${name}`);
+for (const file of ['src/lib/sales-crm.ts','src/pages/admin/sales-command-center.tsx','src/pages/admin/crm.tsx']) if (!fs.existsSync(path.join(root,file))) throw new Error(`Missing ${file}`);
+const lib = fs.readFileSync(path.join(root,'src/lib/sales-crm.ts'),'utf8');
+for (const fn of ['transition_lead_status','add_lead_activity','create_sales_task','complete_sales_task','transition_quotation_status','get_sales_crm_360']) if (!lib.includes(`'${fn}'`)) throw new Error(`Missing client wiring ${fn}`);
+console.log('Phase 9 Sales & CRM 360 source verification passed.');

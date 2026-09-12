@@ -13,7 +13,7 @@ const expectedUrl = `https://${expectedProjectRef}.supabase.co`;
 const migrationsDir = path.join(root, 'supabase', 'migrations');
 const migrations = fs.readdirSync(migrationsDir).filter((f) => f.endsWith('.sql')).sort();
 
-check(migrations.length === 28, `Canonical migration count is 28 (found ${migrations.length}).`);
+check(new Set(migrations.map((f) => f.match(/^\d+/)[0])).size === migrations.length, 'Active migration timestamps are unique.');
 check(read('supabase/config.toml').includes(`project_id = "${expectedProjectRef}"`), 'Supabase config remains pinned to the dedicated Topline project.');
 check(read('.env.example').includes(expectedUrl), 'Environment contract points at the dedicated Topline Supabase project.');
 check(read('src/lib/supabase.ts').includes(expectedUrl), 'Frontend Supabase client retains the dedicated project guard.');

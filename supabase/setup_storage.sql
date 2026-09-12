@@ -6,7 +6,7 @@
 -- media/catalogue permissions may INSERT/UPDATE/DELETE.
 --
 -- Prefer applying the canonical migration:
---   20260912030000_production_infrastructure_rls_storage.sql
+--   20260912050000_production_infrastructure_rls_storage.sql
 -- This file is retained as an idempotent operator fallback.
 -- =============================================================
 

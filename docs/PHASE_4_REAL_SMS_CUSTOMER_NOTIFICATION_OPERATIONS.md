@@ -72,3 +72,7 @@ Before real customer SMS can be sent:
 7. Confirm API acceptance and final delivery report separately.
 
 Africa's Talking documents sender ID requirements, callback URLs, and the distinction between initial send status and final delivery status.
+
+
+## Worker endpoint secret
+The communications Edge Function requires the `TOPLINE_WORKER_SECRET` server secret and matching `x-topline-worker-secret` request header. Never expose this value through `VITE_*` variables or browser code.

@@ -177,10 +177,11 @@ export default function Cart() {
 
       clearCart();
       setLocation(`/order-confirmation/${orderId}`);
-    } catch {
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Something went wrong. Please try again.';
       toast({
         title: 'Order Failed',
-        description: 'Something went wrong. Please try again.',
+        description: message,
         variant: 'destructive',
       });
     } finally {

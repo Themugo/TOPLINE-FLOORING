@@ -1,6 +1,6 @@
 # Topline Supabase Migration Set
 
-The active `supabase/migrations/` directory is now the clean production sequence.
+The active `supabase/migrations/` directory is the deployable production sequence. Every active migration has a unique timestamp/version.
 
 ## Active order
 
@@ -24,19 +24,47 @@ The active `supabase/migrations/` directory is now the clean production sequence
 18. `20260911150000_047_warranty_after_sales.sql`
 19. `20260911160000_048_ecommerce_stability_foundation.sql`
 20. `20260911170000_049_payment_inventory_lifecycle_hardening.sql`
+21. `20260911180000_054_refunds_and_payment_reconciliation.sql`
+22. `20260911190000_055_reservation_expiry_and_operations.sql`
+23. `20260912000000_056_public_tracking_privacy.sql`
+24. `20260912010000_057_commerce_fulfillment_integrity.sql`
+25. `20260912020000_058_authorization_order_operations_360.sql`
+26. `20260912030000_059_fulfillment_operations_360.sql`
+27. `20260912040000_launch_communications_worker.sql`
+28. `20260912050000_production_infrastructure_rls_storage.sql`
+29. `20260912100000_059_production_communications_worker.sql`
+30. `20260912110000_060_sms_customer_notification_operations.sql`
+31. `20260912120000_061_field_operations_360.sql`
 
-Historical/overlapping migrations are retained in `supabase/migrations_legacy/` for audit/reference and are **not** part of a fresh production deployment.
+`supabase/migrations_legacy/` is forensic reference material and is not part of a fresh production deployment.
 
 ## Production rule
 
 Do not reset or destroy a live Topline production database. Establish the clean baseline in a disposable/local environment first, lint/test it, then reconcile it against the dedicated Topline Supabase project before deployment.
 
-21. `20260911180000_054_refunds_and_payment_reconciliation.sql` — refund requests and payment reconciliation.
-22. `20260911190000_055_reservation_expiry_and_operations.sql` — reservation expiry and operational reconciliation.
+## Safe activation workflow
 
-23. `20260912000000_056_public_tracking_privacy.sql` — public tracking privacy.
-24. `20260912010000_057_commerce_fulfillment_integrity.sql` — commerce fulfillment integrity.
-25. `20260912020000_058_authorization_order_operations_360.sql` — authorization/order operations 360.
-26. `20260912030000_production_infrastructure_rls_storage.sql` — production RLS, public intake boundaries and storage access controls.
+```cmd
+npx supabase login
+npx supabase link --project-ref jypkhvknfgoqrhwzbdwi
+npx supabase migration list --linked
+npx supabase db push --dry-run --linked
+```
 
-27. `20260912100000_059_production_communications_worker.sql` — service-role-only production email/SMS delivery worker boundary.
+Only after reconciliation is approved:
+
+```cmd
+npx supabase db push --linked
+```
+
+Never run `supabase db reset --linked` against a live project.
+
+## Client configuration
+
+The browser application uses:
+- `VITE_SUPABASE_URL`
+- `VITE_SUPABASE_PUBLISHABLE_KEY`
+
+Never put a service-role or worker secret in a `VITE_*` variable.
+
+- 20260912130000_062_finance_billing_operations_360.sql — Phase 10 Finance & Billing Operations 360

@@ -10,6 +10,8 @@ import { formatKES } from '@/lib/utils';
 import { getProductPlaceholder, withFallback } from '@/lib/placeholders';
 import { useSeoMeta } from '@/hooks/use-seo';
 import { useImagePreloader } from '@/hooks/use-image-preloader';
+import { ProductVariantSelector } from '@/components/ProductVariantSelector';
+import { getActiveProductVariants, getDefaultProductVariant, getProductUnitPrice, isProductPurchasable } from '@/lib/product-commerce';
 
 const RECENTLY_VIEWED_KEY = 'recently_viewed_products';
 const MAX_RECENTLY_VIEWED = 6;
@@ -33,6 +35,7 @@ export default function ShopDetail() {
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [added, setAdded] = useState(false);
   const [selectedVariant, setSelectedVariant] = useState<ProductVariant | undefined>(undefined);
+  const [selectedRelatedVariantIds, setSelectedRelatedVariantIds] = useState<Record<string, string>>({});
 
   const { product, loading } = useProduct(slug);
 
@@ -389,6 +392,7 @@ export default function ShopDetail() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                 {relatedProducts.map((rp) => {
+                  const selectedRpVariant = selectedRpVariant;
                   const rpPlaceholder = getProductPlaceholder(rp.category?.slug || rp.category?.name);
                   const rpImage = withFallback(rp.image_url, rpPlaceholder);
 
@@ -398,6 +402,7 @@ export default function ShopDetail() {
                       className="group bg-white rounded-2xl border border-gray-200/80 hover:border-primary-300 shadow-2xs hover:shadow-lg transition-all duration-300 overflow-hidden flex flex-col justify-between"
                     >
                       <div>
+                        {getActiveProductVariants(rp).length > 0 && <ProductVariantSelector variants={getActiveProductVariants(rp)} value={(selectedRelatedVariantIds[rp.id] || getDefaultProductVariant(rp)?.id)} onChange={(id) => setSelectedRelatedVariantIds((prev) => ({ ...prev, [rp.id]: id }))} compact />}
                         <Link href={`/product/${rp.slug}`}>
                           <div className="relative aspect-[4/3] bg-navy-950 overflow-hidden cursor-pointer">
                             <img
@@ -427,15 +432,15 @@ export default function ShopDetail() {
 
                       <div className="px-4 pb-4 pt-2 border-t border-gray-100 flex items-center justify-between bg-gray-50/50">
                         <div>
-                          <p className="font-bold text-navy-950 text-sm">{formatKES(rp.price)}</p>
+                          <p className="font-bold text-navy-950 text-sm">{formatKES(getProductUnitPrice(rp, selectedRpVariant))}</p>
                           {rp.unit && <p className="text-[10px] text-gray-500">per {rp.unit}</p>}
                         </div>
                         <button
                           className="px-3 py-1.5 bg-primary-500 hover:bg-primary-600 text-white rounded-lg text-xs font-bold transition-colors"
-                          disabled={!rp.in_stock}
+                          disabled={!isProductPurchasable(rp, selectedRpVariant)}
                           onClick={(e) => {
                             e.preventDefault();
-                            addItem(rp);
+                            if (isProductPurchasable(rp, selectedRpVariant)) addItem(rp, selectedRpVariant);
                           }}
                         >
                           {rp.in_stock ? 'Add' : 'Unavailable'}

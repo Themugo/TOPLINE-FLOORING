@@ -10,6 +10,8 @@ import { getServicePlaceholder, getProductPlaceholder, withFallback, ensureRealI
 import { useCart } from '@/hooks/use-cart';
 import { useImagePreloader } from '@/hooks/use-image-preloader';
 import type { Product } from '@/lib/types';
+import { ProductVariantSelector } from '@/components/ProductVariantSelector';
+import { getActiveProductVariants, getDefaultProductVariant, getProductUnitPrice, isProductPurchasable } from '@/lib/product-commerce';
 
 // Tailwind's JIT compiler only picks up class names it can see literally in
 // source, so the trust bar's column count is looked up from this static map
@@ -55,6 +57,7 @@ export default function Home() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isSliderPaused, setIsSliderPaused] = useState(false);
   const [touchStartX, setTouchStartX] = useState<number | null>(null);
+  const [selectedFeaturedVariants, setSelectedFeaturedVariants] = useState<Record<string, string>>({});
 
   // Get hero section config
   const heroSection = sections.find(s => s.section_type === 'hero');
@@ -219,8 +222,11 @@ export default function Home() {
     setTouchStartX(null);
   };
 
-  const handleAddToCart = (product: Product) => {
-    addItem(product);
+  const handleAddToCart = (product: Product, variantId?: string) => {
+    const variants = getActiveProductVariants(product);
+    const variant = variants.length ? variants.find((v) => v.id === variantId) || getDefaultProductVariant(product) : undefined;
+    if (!isProductPurchasable(product, variant)) return;
+    addItem(product, variant);
   };
 
   return (
@@ -526,7 +532,10 @@ export default function Home() {
 
           {products.length > 0 ? (
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
-              {products.slice(0, 8).map((product) => (
+              {products.slice(0, 8).map((product) => {
+                const variants = getActiveProductVariants(product);
+                const selectedVariant = variants.find((v) => v.id === selectedFeaturedVariants[product.id]) || getDefaultProductVariant(product);
+                return (
                 <div key={product.id} className="group bg-white rounded-2xl border border-gray-200/80 hover:border-primary-300 shadow-2xs hover:shadow-xl transition-all duration-300 overflow-hidden flex flex-col justify-between">
                   <div>
                     <Link href={`/product/${product.slug}`} className="block relative aspect-square overflow-hidden bg-gray-50">
@@ -551,6 +560,7 @@ export default function Home() {
                           {product.category.name}
                         </p>
                       )}
+                      {variants.length > 0 && <ProductVariantSelector variants={variants} value={selectedVariant?.id} onChange={(id) => setSelectedFeaturedVariants((prev) => ({ ...prev, [product.id]: id }))} compact />}
                       <Link href={`/product/${product.slug}`}>
                         <h3 className="font-display font-bold text-navy-950 text-sm lg:text-base hover:text-primary-600 transition-colors line-clamp-2 leading-snug">
                           {product.name}
@@ -559,16 +569,18 @@ export default function Home() {
                     </div>
                   </div>
                   <div className="p-4 pt-0 border-t border-gray-100/80 mt-2 flex items-center justify-between">
-                    <p className="font-bold text-navy-950 text-base">{formatKES(product.price)}</p>
+                    <p className="font-bold text-navy-950 text-base">{formatKES(getProductUnitPrice(product, selectedVariant))}</p>
                     <button
-                      onClick={() => handleAddToCart(product)}
+                      disabled={!isProductPurchasable(product, selectedVariant)}
+                      onClick={() => handleAddToCart(product, selectedVariant?.id)}
                       className="text-xs bg-primary-500 hover:bg-primary-600 text-white px-3 py-1.5 rounded-lg font-semibold transition-all shadow-2xs hover:shadow-sm"
                     >
                       {addToCartText}
                     </button>
                   </div>
                 </div>
-              ))}
+                );
+              })}
             </div>
           ) : (
             <div className="text-center py-10 bg-gray-50 rounded-2xl border border-dashed border-gray-200">

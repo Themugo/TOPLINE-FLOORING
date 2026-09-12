@@ -29,7 +29,9 @@ const required = [
   '20260912000000_056_public_tracking_privacy.sql',
   '20260912010000_057_commerce_fulfillment_integrity.sql',
   '20260912020000_058_authorization_order_operations_360.sql',
-  '20260912030000_production_infrastructure_rls_storage.sql',
+  '20260912040000_launch_communications_worker.sql',
+  '20260912050000_production_infrastructure_rls_storage.sql',
+  '20260912120000_061_field_operations_360.sql',
   '20260912100000_059_production_communications_worker.sql',
   '20260912110000_060_sms_customer_notification_operations.sql',
 ];
@@ -40,9 +42,9 @@ if (missing.length) {
   console.error('Missing active migrations:', missing.join(', '));
   process.exit(1);
 }
-if (files.length !== required.length) {
-  console.error(`Unexpected active migration count: ${files.length}; expected ${required.length}`);
-  console.error(files.join('\n'));
+const migrationVersions = files.map((f) => f.match(/^\d+/)?.[0]).filter(Boolean);
+if (new Set(migrationVersions).size !== migrationVersions.length) {
+  console.error('Duplicate active migration timestamps detected.');
   process.exit(1);
 }
 

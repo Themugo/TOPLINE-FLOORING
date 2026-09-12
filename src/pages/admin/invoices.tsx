@@ -5,6 +5,7 @@ import { useInvoices, useCustomers, useSiteSettings } from '@/hooks/use-data';
 import { useToast } from '@/hooks/use-toast';
 import { formatDateTime, formatKES } from '@/lib/utils';
 import { generateInvoicePdf } from '@/lib/pdf';
+import { transitionInvoiceLifecycle } from '@/lib/finance-operations';
 import type { Invoice, InvoiceStatus, PaymentMethod } from '@/lib/types';
 
 const STATUS_STYLES: Record<InvoiceStatus, string> = {
@@ -19,7 +20,7 @@ const STATUS_STYLES: Record<InvoiceStatus, string> = {
 const STATUS_OPTIONS: InvoiceStatus[] = ['draft', 'sent', 'paid', 'partial', 'overdue', 'cancelled'];
 
 export default function AdminInvoices() {
-  const { invoices, loading, createInvoice, updateInvoiceStatus } = useInvoices();
+  const { invoices, loading, createInvoice, refetch } = useInvoices();
   const { customers } = useCustomers();
   const { settings } = useSiteSettings();
   const { toast } = useToast();
@@ -88,7 +89,7 @@ export default function AdminInvoices() {
 
   const handleDownloadPdf = (inv: Invoice) => {
     generateInvoicePdf(inv, inv.items || [], inv.payments || [], {
-      name: settings.site_info?.name || 'Your Flooring Company',
+      name: settings.site_info?.name || 'Topline Flooring and Waterproofing',
       tagline: settings.site_info?.tagline,
       phone: settings.contact?.phone,
       email: settings.contact?.email,
@@ -154,7 +155,7 @@ export default function AdminInvoices() {
                       <td className="px-6 py-4">
                         <select
                           value={inv.status}
-                          onChange={(e) => updateInvoiceStatus(inv.id, e.target.value)}
+                          onChange={async (e) => { try { await transitionInvoiceLifecycle(inv.id, e.target.value); await refetch(); toast({ title: 'Invoice status updated' }); } catch (err) { toast({ title: 'Status change rejected', description: err instanceof Error ? err.message : 'Invalid invoice transition', variant: 'destructive' }); } }}
                           className={`text-xs font-medium px-2 py-1 rounded-full border-0 ${STATUS_STYLES[inv.status]}`}
                         >
                           {STATUS_OPTIONS.map((s) => <option key={s} value={s}>{s}</option>)}

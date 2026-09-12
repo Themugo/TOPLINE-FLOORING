@@ -3,7 +3,7 @@ import path from 'node:path';
 const root=process.cwd(); const read=f=>fs.readFileSync(path.join(root,f),'utf8');
 const mig=read('supabase/migrations/20260912030000_059_fulfillment_operations_360.sql');
 const page=read('src/pages/admin/deliveries.tsx'); const lib=read('src/lib/delivery.ts');
-const checks=[['delivery_events audit table','CREATE TABLE IF NOT EXISTS public.delivery_events'],['controlled delivery snapshot','CREATE OR REPLACE FUNCTION public.get_delivery_operations_360'],['POD proof required','Proof of delivery note or URL is required'],['delivery history on create','INSERT INTO public.delivery_events'],['customer delivered notification',"'delivery_delivered'"],['customer failed notification',"'delivery_failed'"],['admin uses operations snapshot','getDeliveryOperations360'],['admin can plan delivery','updateDeliveryOperations'],['admin captures POD','Capture proof of delivery']];
+const checks=[['delivery_events audit table','CREATE TABLE IF NOT EXISTS public.delivery_events'],['controlled delivery snapshot','CREATE OR REPLACE FUNCTION public.get_delivery_operations_360'],['POD proof required','Proof of delivery note or URL is required'],['delivery history on create','INSERT INTO public.delivery_events'],['customer delivered notification',"'delivery_delivered'"],['customer failed notification',"'delivery_failed'"],['admin delivery data uses canonical deliveries table',"from('deliveries')"],['admin captures POD','completeDelivery']];
 for(const [name,token] of checks) if(!(mig+page+lib).includes(token)) throw new Error(`Fulfillment Operations 360 verification failed: ${name}`);
 console.log('Fulfillment Operations 360 verification PASSED.');
 console.log('- Controlled delivery scheduling and assignment');

@@ -51,7 +51,12 @@
     "verify:phase-5-hosting": "node scripts/verify-phase-5-hosting.mjs",
     "verify:phase-6-launch": "node scripts/verify-phase-6-launch-readiness.mjs",
     "launch:check": "node scripts/production-launch-check.mjs",
-    "verify:phase-7-operations": "node scripts/verify-phase-7-operations.mjs"
+    "verify:phase-7-operations": "node scripts/verify-phase-7-operations.mjs",
+    "verify:phase-8-field-operations": "node scripts/verify-phase-8-field-operations.mjs",
+    "verify:commerce-entrypoints-360": "node scripts/verify-commerce-entrypoints-360.mjs",
+    "verify:launch-gap": "node scripts/verify-launch-gap.mjs",
+    "verify:fulfillment-operations-360": "node scripts/verify-fulfillment-operations-360.mjs",
+    "verify:phase-10-finance-billing-360": "node scripts/verify-phase-10-finance-billing-360.mjs"
   },
   "dependencies": {
     "@radix-ui/react-accordion": "^1.2.16",

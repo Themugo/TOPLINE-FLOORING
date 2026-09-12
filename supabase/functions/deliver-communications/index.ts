@@ -17,6 +17,7 @@ const brevoSenderName = Deno.env.get("BREVO_SENDER_NAME") ?? "Topline Flooring &
 const atUsername = Deno.env.get("AT_USERNAME");
 const atApiKey = Deno.env.get("AT_API_KEY");
 const atSenderId = Deno.env.get("AT_SENDER_ID");
+const workerSecret = Deno.env.get("TOPLINE_WORKER_SECRET");
 
 if (!supabaseUrl || !serviceRoleKey) {
   throw new Error("Missing Supabase service configuration");
@@ -123,6 +124,9 @@ async function processItem(item: OutboxMessage) {
 
 Deno.serve(async (req) => {
   if (req.method !== "POST") return new Response("Method Not Allowed", { status: 405 });
+  if (!workerSecret) return new Response("Worker not configured", { status: 503 });
+  const suppliedSecret = req.headers.get("x-topline-worker-secret");
+  if (!suppliedSecret || suppliedSecret !== workerSecret) return new Response("Unauthorized", { status: 401 });
 
   try {
     const body = await req.json().catch(() => ({}));

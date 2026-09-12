@@ -10,7 +10,7 @@ const read = (file) => fs.readFileSync(path.join(root, file), 'utf8');
 const migrationsDir = path.join(root, 'supabase', 'migrations');
 const migrations = fs.readdirSync(migrationsDir).filter((f) => f.endsWith('.sql')).sort();
 
-if (migrations.length !== 28) failures.push(`Expected 28 active canonical migrations, found ${migrations.length}.`);
+if (new Set(migrations.map((f) => f.match(/^\d+/)[0])).size !== migrations.length) failures.push('Duplicate active migration timestamps detected.');
 if (!read('supabase/config.toml').includes(`project_id = "${expectedProjectRef}"`)) {
   failures.push('Supabase config is not pinned to the dedicated Topline project.');
 }

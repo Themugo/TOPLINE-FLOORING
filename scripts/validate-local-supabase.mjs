@@ -6,7 +6,7 @@ const root = process.cwd();
 const migrationsDir = path.join(root, 'supabase', 'migrations');
 const typesTarget = path.join(root, 'src', 'types', 'database.ts');
 const migrations = fs.readdirSync(migrationsDir).filter((f) => f.endsWith('.sql')).sort();
-if (migrations.length !== 28) throw new Error(`Expected 28 active migrations, found ${migrations.length}.`);
+if (new Set(migrations.map((f) => f.match(/^\d+/)[0])).size !== migrations.length) throw new Error('Duplicate migration timestamps detected.');
 
 const npxCommand = process.platform === 'win32' ? 'npx.cmd' : 'npx';
 

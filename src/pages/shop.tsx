@@ -10,6 +10,8 @@ import { getProductPlaceholder, withFallback } from '@/lib/placeholders';
 import { useCart } from '@/hooks/use-cart';
 import { useImagePreloader } from '@/hooks/use-image-preloader';
 import type { Product } from '@/lib/types';
+import { ProductVariantSelector } from '@/components/ProductVariantSelector';
+import { getActiveProductVariants, getDefaultProductVariant, getProductUnitPrice, isProductPurchasable } from '@/lib/product-commerce';
 
 export default function Shop() {
   useSeoMeta('shop', null, { breadcrumbs: [{ label: 'Shop' }] });
@@ -18,6 +20,7 @@ export default function Shop() {
   const [inStockOnly, setInStockOnly] = useState(false);
   const [sortBy, setSortBy] = useState<'featured' | 'price-asc' | 'price-desc' | 'name'>('featured');
   const [addedItemIds, setAddedItemIds] = useState<Record<string, boolean>>({});
+  const [selectedVariants, setSelectedVariants] = useState<Record<string, string>>({});
 
   const { categories } = useCategories();
   const { products, loading } = useProducts(
@@ -77,7 +80,10 @@ export default function Shop() {
   const handleAddToCart = (product: Product, e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    addItem(product);
+    const variants = getActiveProductVariants(product);
+    const variant = variants.length ? variants.find((v) => v.id === selectedVariants[product.id]) || getDefaultProductVariant(product) : undefined;
+    if (!isProductPurchasable(product, variant)) return;
+    addItem(product, variant);
     setAddedItemIds((prev) => ({ ...prev, [product.id]: true }));
     setTimeout(() => {
       setAddedItemIds((prev) => ({ ...prev, [product.id]: false }));
@@ -305,6 +311,8 @@ export default function Shop() {
                     );
                     const imageSrc = withFallback(product.image_url, placeholder);
                     const isAdded = addedItemIds[product.id];
+                    const variants = getActiveProductVariants(product);
+                    const selectedVariant = variants.find((v) => v.id === selectedVariants[product.id]) || getDefaultProductVariant(product);
 
                     return (
                       <div
@@ -371,6 +379,12 @@ export default function Shop() {
                               </h3>
                             </Link>
 
+                            {variants.length > 0 && (
+                              <div className="mb-4" onClick={(e) => e.preventDefault()}>
+                                <ProductVariantSelector variants={variants} value={selectedVariant?.id} onChange={(id) => setSelectedVariants((prev) => ({ ...prev, [product.id]: id }))} compact />
+                              </div>
+                            )}
+
                             <p className="text-xs text-gray-600 line-clamp-2 leading-relaxed mb-4">
                               {product.short_description || product.description}
                             </p>
@@ -381,7 +395,7 @@ export default function Shop() {
                         <div className="px-5 pb-5 pt-3 border-t border-gray-100/80 flex items-center justify-between gap-3 bg-gray-50/40">
                           <div>
                             <p className="font-display font-bold text-navy-950 text-base leading-none mb-0.5">
-                              {formatKES(product.price)}
+                              {formatKES(getProductUnitPrice(product, selectedVariant))}
                             </p>
                             <p className="text-[10px] text-gray-500 font-medium">
                               per {product.unit || 'unit'}
@@ -390,11 +404,11 @@ export default function Shop() {
 
                           <button
                             onClick={(e) => handleAddToCart(product, e)}
-                            disabled={!product.in_stock}
+                            disabled={!isProductPurchasable(product, selectedVariant)}
                             className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
                               isAdded
                                 ? 'bg-emerald-600 text-white shadow-sm scale-105'
-                                : product.in_stock
+                                : isProductPurchasable(product, selectedVariant)
                                 ? 'bg-primary-500 hover:bg-primary-600 text-white shadow-sm shadow-primary-500/20 active:scale-95'
                                 : 'bg-gray-100 text-gray-400 cursor-not-allowed'
                             }`}

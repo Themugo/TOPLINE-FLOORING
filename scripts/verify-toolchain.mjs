@@ -15,7 +15,7 @@ if (!config.includes('project_id = "jypkhvknfgoqrhwzbdwi"')) failures.push('Supa
 if (/\[auth\.email\][\s\S]*?enabled\s*=/.test(config)) failures.push('Supabase config contains obsolete [auth.email].enabled.');
 
 const migrations = fs.readdirSync(path.join(root, 'supabase', 'migrations')).filter((f) => f.endsWith('.sql'));
-if (migrations.length !== 28) failures.push(`Expected 28 active migrations, found ${migrations.length}.`);
+if (new Set(migrations.map((f) => f.match(/^\d+/)[0])).size !== migrations.length) failures.push('Duplicate active migration timestamps detected.');
 
 for (const required of ['.env.example','package-lock.json','supabase/config.toml']) {
   if (!fs.existsSync(path.join(root, required))) failures.push(`Missing required repository file: ${required}`);
