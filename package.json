@@ -23,6 +23,7 @@
     "verify:schema-contract": "node scripts/verify-schema-contract.mjs",
     "verify:production-readiness": "node scripts/production-readiness-gate.mjs",
     "verify:phases-33-35": "node scripts/verify-phase-33-35.mjs",
+    "verify:production-db-preflight": "node scripts/production-db-preflight.mjs",
     "verify:database-dependencies": "node scripts/verify-database-dependencies.mjs",
     "verify:generated-types": "node scripts/verify-generated-types.mjs",
     "verify:remote-deploy-gate": "node scripts/verify-remote-deploy-gate.mjs",

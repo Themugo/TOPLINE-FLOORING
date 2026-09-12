@@ -1,4 +1,4 @@
-# Phases 33–35 — Database Validation & Production Readiness
+# Phases 33–35 — Database Validation & Production Readiness 360
 
 ## Phase 33 — Local PostgreSQL validation
 
@@ -43,3 +43,27 @@ npx supabase db push --dry-run --linked
 ```
 
 Do not run `db reset --linked` against the real Topline project.
+
+
+## Phase 33–35 hardening delivered
+
+The production gate now enforces the current 40-migration chain, unique and strictly increasing migration timestamps, required late-stage canonical migrations, explicit `search_path` on SECURITY DEFINER PL/pgSQL functions, required production RPC presence, the dedicated Topline project reference, and protection against server-only service-role credentials entering the client environment contract.
+
+`npm run verify:production-db-preflight` provides the additional CI preflight for migration naming, project binding, credential exposure, and CI coverage.
+
+This initiative deliberately does **not** claim that the remote database has been migrated. Remote execution remains an explicit operator action after local validation and dry-run review.
+
+## Current repository baseline
+
+The current production migration chain contains **40 active migrations**. The Phase 33–35 static inventory currently resolves **107 tables and 119 functions**. These numbers are repository-derived and are not a claim about the state of the remote Supabase project until migrations are actually applied there.
+
+### CI enforcement
+
+CI now executes both:
+
+```text
+npm run verify:phases-33-35
+npm run verify:production-db-preflight
+```
+
+The preflight is intentionally read-only and does not link, reset, push, or mutate a remote database.

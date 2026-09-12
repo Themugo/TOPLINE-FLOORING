@@ -61,6 +61,7 @@ jobs:
         run: |
           npm run verify:phases-30-32
           npm run verify:phases-33-35
+          npm run verify:production-db-preflight
           npm run verify:phases-36-38
           npm run verify:phases-39-41
           npm run verify:phases-42-44
