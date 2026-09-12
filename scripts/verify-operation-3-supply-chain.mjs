@@ -1,0 +1,12 @@
+import fs from 'node:fs'; import path from 'node:path';
+const root=process.cwd();
+const req=['supabase/migrations/20260913030000_076_supply_chain_360.sql','src/lib/supply-chain-360.ts','src/pages/admin/supply-chain-360.tsx','docs/OPERATION_3_SUPPLY_CHAIN_360.md'];
+for(const f of req) if(!fs.existsSync(path.join(root,f))) throw new Error(`Missing ${f}`);
+const sql=fs.readFileSync(path.join(root,req[0]),'utf8');
+for(const t of ['supply_chain_events','create_warehouse','update_warehouse','delete_warehouse','receive_purchase_order_item','update_installation_material_allocation','reconcile_supply_chain_360','get_supply_chain_360']) if(!sql.includes(t)) throw new Error(`Missing SQL contract: ${t}`);
+if(!/SECURITY DEFINER SET search_path=public,private/.test(sql)) throw new Error('Missing secure search_path');
+if(!/REVOKE INSERT, UPDATE, DELETE ON public\.warehouses FROM authenticated/.test(sql)) throw new Error('Warehouse DML not revoked');
+const app=fs.readFileSync(path.join(root,'src/App.tsx'),'utf8'); if(!app.includes("'/admin/supply-chain-360'")) throw new Error('Route missing');
+const pkg=JSON.parse(fs.readFileSync(path.join(root,'package.json'),'utf8')); if(!pkg.scripts['verify:operation-3-supply-chain']) throw new Error('Verifier script missing');
+const files=fs.readdirSync(path.join(root,'supabase/migrations')).filter(f=>f.endsWith('.sql')).sort(); const ts=files.map(f=>f.slice(0,14)); if(new Set(ts).size!==ts.length) throw new Error('Duplicate migration timestamps'); for(let i=1;i<ts.length;i++) if(ts[i]<=ts[i-1]) throw new Error(`Migration order failure ${files[i-1]} -> ${files[i]}`);
+console.log(`Operation 3 verification passed: ${files.length} migrations; Supply Chain 360 contracts present.`);

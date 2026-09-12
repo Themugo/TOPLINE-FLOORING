@@ -86,6 +86,7 @@ const AdminProjectDelivery360 = lazy(() => import('@/pages/admin/project-deliver
 const AdminServiceCases = lazy(() => import('@/pages/admin/service-cases'));
 const AdminMaintenancePlans = lazy(() => import('@/pages/admin/maintenance-plans'));
 const AdminCustomerRenewals = lazy(() => import('@/pages/admin/customer-renewals'));
+const AdminSupplyChain360 = lazy(() => import('@/pages/admin/supply-chain-360'));
 
 function AdminLoading() {
   return (
@@ -194,6 +195,7 @@ function Router() {
     '/admin/service-cases': AdminServiceCases,
     '/admin/maintenance-plans': AdminMaintenancePlans,
     '/admin/customer-renewals': AdminCustomerRenewals,
+    '/admin/supply-chain-360': AdminSupplyChain360,
   };
 
   const AdminComponent = adminRoutes[location as keyof typeof adminRoutes];
