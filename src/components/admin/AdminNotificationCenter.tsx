@@ -122,7 +122,7 @@ export function AdminNotificationCenter({
   const [isOpen, setIsOpen] = useState(false);
   const [filter, setFilter] = useState<'all' | 'budget' | 'deadline' | 'crm'>('all');
   const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
-  const [teamEmail, setTeamEmail] = useState('project-alerts@example.com');
+  const [teamEmail, setTeamEmail] = useState('');
 
   const [notifications, setNotifications] = useState<AdminAlertNotification[]>(() => {
     const saved = localStorage.getItem('template_admin_notifications');

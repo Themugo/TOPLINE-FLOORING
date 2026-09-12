@@ -6,7 +6,7 @@ const root = process.cwd();
 const migrationsDir = path.join(root, 'supabase', 'migrations');
 const typesTarget = path.join(root, 'src', 'types', 'database.ts');
 const migrations = fs.readdirSync(migrationsDir).filter((f) => f.endsWith('.sql')).sort();
-if (migrations.length !== 25) throw new Error(`Expected 25 active migrations, found ${migrations.length}.`);
+if (migrations.length !== 26) throw new Error(`Expected 26 active migrations, found ${migrations.length}.`);
 
 const npxCommand = process.platform === 'win32' ? 'npx.cmd' : 'npx';
 

@@ -219,7 +219,7 @@ export default function AdminLogin() {
           <h1 className="font-display text-2xl font-bold text-primary-600">
             Admin Portal
           </h1>
-          <p className="text-navy-500 mt-1">Your Flooring Company</p>
+          <p className="text-navy-500 mt-1">Topline Flooring and Waterproofing</p>
         </div>
 
         <div className="bg-white rounded-xl p-8 border border-gray-200 shadow-sm">

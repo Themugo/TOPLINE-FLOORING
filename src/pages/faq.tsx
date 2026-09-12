@@ -1,3 +1,4 @@
+import { TOPLINE_COMPANY } from '@/lib/company-defaults';
 import { useState } from "react";
 import { usePageVisit } from "@/hooks/use-page-visit";
 import { CustomerLayout } from "@/components/layout/CustomerLayout";
@@ -14,8 +15,8 @@ export default function FAQ() {
   usePageVisit("/faq");
   const { items, loading } = useFaqItems();
   const { settings } = useSiteSettings();
-  const companyName = settings.site_info?.name || settings.company?.name || 'Your Flooring Company';
-  const whatsappNumber = (settings.contact?.whatsapp || settings.contact?.phone || '15550000000').replace(/\D/g, '');
+  const companyName = settings.site_info?.name || settings.company?.name || TOPLINE_COMPANY.name;
+  const whatsappNumber = (settings.contact?.whatsapp || settings.contact?.phone || TOPLINE_COMPANY.whatsapp).replace(/\D/g, '');
 
   useSeoMeta('faq', null, {
     title: `FAQs | ${companyName}`,

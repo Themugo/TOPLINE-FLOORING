@@ -1,3 +1,4 @@
+import { TOPLINE_COMPANY } from '@/lib/company-defaults';
 import { usePageVisit } from "@/hooks/use-page-visit";
 import { CustomerLayout } from "@/components/layout/CustomerLayout";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
@@ -24,7 +25,7 @@ const iconMap: Record<string, typeof Shield> = {
 export default function About() {
   usePageVisit("/about");
   const { settings } = useSiteSettings();
-  const companyName = settings.site_info?.name || settings.company?.name || 'Your Flooring Company';
+  const companyName = settings.site_info?.name || settings.company?.name || TOPLINE_COMPANY.name;
 
   useSeoMeta('about', null, {
     title: `About Us | ${companyName}`,

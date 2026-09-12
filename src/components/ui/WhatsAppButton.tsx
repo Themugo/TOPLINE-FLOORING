@@ -1,14 +1,15 @@
 import React, { useState } from 'react';
+import { TOPLINE_COMPANY } from '@/lib/company-defaults';
 import { MessageCircle, X, Send, PhoneCall } from 'lucide-react';
 import { useSiteSettings } from '@/hooks/use-data';
 
-const DEFAULT_WHATSAPP = '15550000000';
+const DEFAULT_WHATSAPP = TOPLINE_COMPANY.whatsapp.replace(/\D/g, '');
 
 export function WhatsAppButton() {
   const { settings } = useSiteSettings();
   const rawNumber = settings.contact?.whatsapp || settings.contact?.phone || DEFAULT_WHATSAPP;
   const phoneNumber = rawNumber.replace(/\D/g, '');
-  const companyName = settings.site_info?.name || settings.company?.name || "Your Flooring Company";
+  const companyName = settings.site_info?.name || settings.company?.name || TOPLINE_COMPANY.name;
   const [isOpen, setIsOpen] = useState(false);
   const [customMsg, setCustomMsg] = useState(
     `Hello ${companyName}! I would like to request an instant sales quote.`

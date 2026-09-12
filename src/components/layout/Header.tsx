@@ -1,3 +1,4 @@
+import { TOPLINE_COMPANY } from '@/lib/company-defaults';
 import { useState } from 'react';
 import { Link, useLocation } from 'wouter';
 import { Menu, X, ShoppingCart, Phone, Mail, MapPin, LogIn, Facebook, Instagram, Linkedin } from 'lucide-react';
@@ -5,9 +6,9 @@ import { useCart } from '@/hooks/use-cart';
 import { useSiteSettings } from '@/hooks/use-data';
 import { telHref } from '@/lib/utils';
 
-const DEFAULT_PHONE = '+1 (555) 000-0000';
-const DEFAULT_EMAIL = 'contact@example.com';
-const DEFAULT_ADDRESS = '123 Industrial Parkway, Commerce City, ST';
+const DEFAULT_PHONE = TOPLINE_COMPANY.phone;
+const DEFAULT_EMAIL = TOPLINE_COMPANY.email;
+const DEFAULT_ADDRESS = 'Nairobi, Kenya';
 
 export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -15,7 +16,7 @@ export function Header() {
   const { totalItems } = useCart();
   const { settings } = useSiteSettings();
 
-  const siteName = settings.site_info?.name || 'Your Flooring Company';
+  const siteName = settings.site_info?.name || TOPLINE_COMPANY.name;
   const [firstWord, ...restWords] = siteName.split(' ');
   const tagline = settings.site_info?.tagline || 'FLOORING & WATERPROOFING';
   const phone = settings.contact?.phone || DEFAULT_PHONE;

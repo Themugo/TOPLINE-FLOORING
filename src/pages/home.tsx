@@ -1,3 +1,4 @@
+import { TOPLINE_COMPANY } from '@/lib/company-defaults';
 import { useState, useEffect, useMemo } from 'react';
 import { Link } from 'wouter';
 import { ChevronLeft, ChevronRight, Star, ArrowRight, Phone, Megaphone } from 'lucide-react';
@@ -48,7 +49,7 @@ export default function Home() {
   const { promotions } = usePromotions('top');
   const { services } = useServices();
   const { settings } = useSiteSettings();
-  const phone = settings.contact?.phone || '+1 (555) 000-0000';
+  const phone = settings.contact?.phone || TOPLINE_COMPANY.phone;
   const { theme } = useThemeSettings();
   const layoutStyle = theme?.layout_style || 'classic';
   const { addItem } = useCart();

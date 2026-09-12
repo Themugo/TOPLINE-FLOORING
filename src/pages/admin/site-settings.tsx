@@ -105,7 +105,7 @@ export default function AdminSiteSettings() {
                   value={settings.site_info.name}
                   onChange={(e) => updateSetting('site_info', { ...settings.site_info, name: e.target.value })}
                   className="input"
-                  placeholder="Your Flooring Company"
+                  placeholder="Topline Flooring and Waterproofing"
                 />
               </div>
               <div>
@@ -155,7 +155,7 @@ export default function AdminSiteSettings() {
                     value={settings.contact.email}
                     onChange={(e) => updateSetting('contact', { ...settings.contact, email: e.target.value })}
                     className="input"
-                    placeholder="contact@example.com"
+                    placeholder="info@yourdomain.co.ke"
                   />
                 </div>
                 <div>
@@ -165,7 +165,7 @@ export default function AdminSiteSettings() {
                     value={settings.contact.phone}
                     onChange={(e) => updateSetting('contact', { ...settings.contact, phone: e.target.value })}
                     className="input"
-                    placeholder="+1 (555) 000-0000"
+                    placeholder="07XX XXX XXX"
                   />
                 </div>
                 <div>
@@ -175,7 +175,7 @@ export default function AdminSiteSettings() {
                     value={settings.contact.phone_alt}
                     onChange={(e) => updateSetting('contact', { ...settings.contact, phone_alt: e.target.value })}
                     className="input"
-                    placeholder="+1 (555) 000-0001"
+                    placeholder="07XX XXX XXX"
                   />
                 </div>
                 <div>
@@ -185,7 +185,7 @@ export default function AdminSiteSettings() {
                     value={settings.contact.whatsapp}
                     onChange={(e) => updateSetting('contact', { ...settings.contact, whatsapp: e.target.value })}
                     className="input"
-                    placeholder="15550000000"
+                    placeholder="2547XXXXXXXX"
                   />
                   <p className="text-xs text-gray-500 mt-1">Format: country code + number (no + sign)</p>
                 </div>
@@ -197,7 +197,7 @@ export default function AdminSiteSettings() {
                   value={settings.contact.address}
                   onChange={(e) => updateSetting('contact', { ...settings.contact, address: e.target.value })}
                   className="input"
-                  placeholder="123 Industrial Parkway, Commerce City, ST 12345"
+                  placeholder="Nairobi, Kenya"
                 />
               </div>
             </div>
@@ -317,7 +317,7 @@ export default function AdminSiteSettings() {
                 value={settings.seo_defaults.meta_title}
                 onChange={(e) => updateSetting('seo_defaults', { ...settings.seo_defaults, meta_title: e.target.value })}
                 className="input"
-                placeholder="Your Flooring Company | Professional Flooring Solutions"
+                placeholder="Topline Flooring and Waterproofing | Flooring Solutions"
               />
               <p className="text-xs text-gray-500 mt-1">{settings.seo_defaults.meta_title?.length || 0}/60 characters</p>
             </div>
@@ -378,7 +378,7 @@ export default function AdminSiteSettings() {
                   value={settings.footer.copyright}
                   onChange={(e) => updateSetting('footer', { ...settings.footer, copyright: e.target.value })}
                   className="input"
-                  placeholder="Your Flooring Company. All rights reserved."
+                  placeholder="Topline Flooring and Waterproofing. All rights reserved."
                 />
               </div>
               <label className="flex items-center gap-2">

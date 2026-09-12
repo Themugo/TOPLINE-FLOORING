@@ -1,3 +1,4 @@
+import { TOPLINE_COMPANY } from '@/lib/company-defaults';
 import { useState, useMemo } from 'react';
 import { FileText, Send, CheckCircle2, ShieldCheck, Calculator, Sparkles, ArrowRight, Phone, Check } from 'lucide-react';
 import { CustomerLayout } from '@/components/layout/CustomerLayout';
@@ -41,8 +42,8 @@ export default function Quotation() {
   useSeoMeta('quotation', null, { breadcrumbs: [{ label: 'Request Quotation' }] });
   const { toast } = useToast();
   const { settings } = useSiteSettings();
-  const phone = settings.contact?.phone || '+1 (555) 000-0000';
-  const companyName = settings.site_info?.name || settings.company?.name || 'Your Flooring Company';
+  const phone = settings.contact?.phone || TOPLINE_COMPANY.phone;
+  const companyName = settings.site_info?.name || settings.company?.name || TOPLINE_COMPANY.name;
 
   useImagePreloader(useMemo(() => [QUOTATION_HERO_IMAGE], []));
 
@@ -398,7 +399,7 @@ export default function Quotation() {
                           value={form.phone}
                           onChange={(e) => setForm({ ...form, phone: e.target.value })}
                           className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:bg-white text-xs font-medium text-navy-950 transition-all placeholder:text-gray-400"
-                          placeholder="+1 (555) 000-0000"
+                          placeholder="07XX XXX XXX"
                         />
                       </div>
                       <div>

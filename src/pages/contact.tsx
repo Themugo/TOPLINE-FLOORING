@@ -1,3 +1,4 @@
+import { TOPLINE_COMPANY } from '@/lib/company-defaults';
 import { useState, useMemo } from 'react';
 import { Phone, Mail, MapPin, Clock, Send, Facebook, Instagram, Linkedin, ShieldCheck, CheckCircle2, MessageSquare, ExternalLink, Headphones, Sparkles, Building2 } from 'lucide-react';
 import { CustomerLayout } from '@/components/layout/CustomerLayout';
@@ -74,9 +75,9 @@ export default function Contact() {
     }
   };
 
-  const phone = settings.contact?.phone || '+1 (555) 000-0000';
-  const email = settings.contact?.email || 'contact@example.com';
-  const address = settings.contact?.address || '123 Industrial Parkway, Commerce City, ST 12345';
+  const phone = settings.contact?.phone || TOPLINE_COMPANY.phone;
+  const email = settings.contact?.email || TOPLINE_COMPANY.email;
+  const address = settings.contact?.address || 'Nairobi, Kenya';
   const weekdays = settings.business_hours?.weekdays;
   const saturday = settings.business_hours?.saturday;
   const hours = weekdays && saturday
@@ -329,7 +330,7 @@ export default function Contact() {
                           value={form.phone}
                           onChange={(e) => setForm({ ...form, phone: e.target.value })}
                           className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:bg-white text-xs font-medium text-navy-950 transition-all placeholder:text-gray-400"
-                          placeholder="+1 (555) 000-0000"
+                          placeholder="07XX XXX XXX"
                         />
                       </div>
                       <div>

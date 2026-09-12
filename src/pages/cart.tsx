@@ -449,7 +449,7 @@ export default function Cart() {
                       value={form.phone}
                       onChange={(e) => setForm({ ...form, phone: e.target.value })}
                       className={`input ${errors.phone ? 'border-red-500' : ''}`}
-                      placeholder="+1 (555) 000-0000"
+                      placeholder="07XX XXX XXX"
                     />
                     {errors.phone && (
                       <p className="text-red-500 text-xs mt-1">{errors.phone}</p>

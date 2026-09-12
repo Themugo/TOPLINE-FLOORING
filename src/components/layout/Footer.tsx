@@ -1,16 +1,17 @@
+import { TOPLINE_COMPANY } from '@/lib/company-defaults';
 import { Link } from 'wouter';
 import { Phone, Mail, MapPin, Facebook, Instagram, Linkedin, Twitter } from 'lucide-react';
 import { useSiteSettings, useServices } from '@/hooks/use-data';
 import { telHref } from '@/lib/utils';
 
 const DEFAULTS = {
-  name: 'Your Flooring Company',
+  name: TOPLINE_COMPANY.name,
   tagline: 'FLOORING & WATERPROOFING',
   description:
     'Professional flooring and waterproofing solutions for commercial, industrial, and residential projects.',
-  phone: '+1 (555) 000-0000',
-  email: 'contact@example.com',
-  address: '123 Industrial Parkway, Commerce City, ST 12345',
+  phone: TOPLINE_COMPANY.phone,
+  email: TOPLINE_COMPANY.email,
+  address: 'Nairobi, Kenya',
 };
 
 export function Footer() {
