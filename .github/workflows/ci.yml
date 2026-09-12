@@ -139,3 +139,6 @@ jobs:
 
       - name: Operation 10 reliability and incident response
         run: npm run verify:operation-10-reliability-incident-response
+
+      - name: Operation 11 business continuity and disaster recovery
+        run: npm run verify:operation-11-business-continuity

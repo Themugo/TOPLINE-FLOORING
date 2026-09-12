@@ -80,7 +80,8 @@
     "verify:operation-7-communications-journey": "node scripts/verify-operation-7-communications-journey.mjs",
     "verify:operation-8-executive-operations": "node scripts/verify-operation-8-executive-operations.mjs",
     "verify:operation-9-production-certification": "node scripts/verify-operation-9-production-certification.mjs",
-    "verify:operation-10-reliability-incident-response": "node scripts/verify-operation-10-reliability-incident-response.mjs"
+    "verify:operation-10-reliability-incident-response": "node scripts/verify-operation-10-reliability-incident-response.mjs",
+    "verify:operation-11-business-continuity": "node scripts/verify-operation-11-business-continuity.mjs"
   },
   "dependencies": {
     "@radix-ui/react-accordion": "^1.2.16",
