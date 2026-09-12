@@ -83,6 +83,7 @@ const AdminFieldOperations = lazy(() => import('@/pages/admin/field-operations')
 const AdminProjectProfitability = lazy(() => import('@/pages/admin/project-profitability'));
 const AdminServiceCases = lazy(() => import('@/pages/admin/service-cases'));
 const AdminMaintenancePlans = lazy(() => import('@/pages/admin/maintenance-plans'));
+const AdminCustomerRenewals = lazy(() => import('@/pages/admin/customer-renewals'));
 
 function AdminLoading() {
   return (
@@ -188,6 +189,7 @@ function Router() {
     '/admin/project-profitability': AdminProjectProfitability,
     '/admin/service-cases': AdminServiceCases,
     '/admin/maintenance-plans': AdminMaintenancePlans,
+    '/admin/customer-renewals': AdminCustomerRenewals,
   };
 
   const AdminComponent = adminRoutes[location as keyof typeof adminRoutes];

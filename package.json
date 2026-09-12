@@ -69,7 +69,8 @@
     "verify:phases-27-29-public-accessibility-seo-360": "node scripts/verify-phases-27-29.mjs",
     "verify:phases-80-82": "node scripts/verify-phases-80-82.mjs",
     "verify:phases-83-85": "node scripts/verify-phases-83-85.mjs",
-    "verify:phases-86-88": "node scripts/verify-phases-86-88.mjs"
+    "verify:phases-86-88": "node scripts/verify-phases-86-88.mjs",
+    "verify:phases-89-91": "node scripts/verify-phases-89-91.mjs"
   },
   "dependencies": {
     "@radix-ui/react-accordion": "^1.2.16",
