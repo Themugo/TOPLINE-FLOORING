@@ -94,3 +94,4 @@ jobs:
           retention-days: 7
 
       - run: npm run verify:phases-21-23-finance-communications-analytics-360
+      - run: npm run verify:phases-24-26-reporting-intelligence-360

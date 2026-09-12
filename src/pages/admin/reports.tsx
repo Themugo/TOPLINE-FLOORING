@@ -79,116 +79,45 @@ function ReportsContent() {
   const fetchStats = useCallback(async () => {
     setLoading(true);
     try {
-      const daysAgo = parseInt(dateRange);
-    const now = new Date();
-    const startDate = new Date(now);
-    startDate.setDate(startDate.getDate() - daysAgo);
-    const prevStartDate = new Date(startDate);
-    prevStartDate.setDate(prevStartDate.getDate() - daysAgo);
+      const { data, error } = await supabase.rpc('get_reporting_operational_intelligence_360', {
+        p_days: parseInt(dateRange, 10),
+      });
+      if (error) throw error;
 
-    const [
-      { data: orders },
-      { data: prevOrders },
-      { data: quotations },
-      { count: newCustomersCount },
-      { data: products },
-      { count: pendingCount },
-      { data: activityLogs },
-      { data: orderItems },
-      { data: invoices },
-    ] = await Promise.all([
-      supabase.from('orders').select('total_amount, status, created_at').gte('created_at', startDate.toISOString()),
-      supabase.from('orders').select('total_amount').gte('created_at', prevStartDate.toISOString()).lt('created_at', startDate.toISOString()),
-      supabase.from('quotations').select('status, created_at').gte('created_at', startDate.toISOString()),
-      supabase.from('customers').select('id', { count: 'exact', head: true }).gte('created_at', startDate.toISOString()),
-      supabase.from('products').select('stock_quantity, low_stock_threshold, price').eq('is_active', true),
-      supabase.from('orders').select('id', { count: 'exact', head: true }).eq('status', 'pending'),
-      supabase.from('activity_logs').select('*').order('created_at', { ascending: false }).limit(10),
-      supabase.from('order_items').select('product_name, quantity, unit_price, order_id, orders!inner(created_at)').gte('orders.created_at', startDate.toISOString()),
-      supabase.from('invoices').select('total_amount, amount_paid, status'),
-    ]);
+      const report = (data ?? {}) as {
+        metrics?: Record<string, number>;
+        orders_by_status?: { status: string; count: number }[];
+        quotes_by_status?: { status: string; count: number }[];
+        top_products?: TopProductRow[];
+        revenue_trend?: { date: string; revenue: number }[];
+        recent_activity?: ActivityLogRow[];
+      };
+      const metrics = report.metrics ?? {};
 
-    const typedOrders = (orders || []) as OrderRow[];
-    const totalRevenue = typedOrders.reduce((sum, o) => sum + (o.total_amount || 0), 0);
-    const previousRevenue = (prevOrders || []).reduce((sum, o) => sum + (o.total_amount || 0), 0);
-
-    const statusCounts = typedOrders.reduce((acc: Record<string, number>, o) => {
-      acc[o.status] = (acc[o.status] || 0) + 1;
-      return acc;
-    }, {});
-    setOrdersByStatus(Object.entries(statusCounts).map(([status, count]) => ({ status, count })));
-
-    const quoteStatusCounts = (quotations || []).reduce((acc: Record<string, number>, q) => {
-      acc[q.status] = (acc[q.status] || 0) + 1;
-      return acc;
-    }, {});
-    setQuotesByStage(
-      QUOTE_STAGES.map((status) => ({ status, count: quoteStatusCounts[status] || 0 })).filter((s) => s.count > 0)
-    );
-
-    const productRows = products || [];
-    const lowStockCount = productRows.filter(
-      (p) => p.low_stock_threshold != null && p.stock_quantity <= p.low_stock_threshold
-    ).length;
-    const inventoryValuation = productRows.reduce((sum, p) => sum + (p.stock_quantity || 0) * (p.price || 0), 0);
-
-    const invoiceRows = invoices || [];
-    const outstandingBalance = invoiceRows
-      .filter((inv) => !['paid', 'cancelled'].includes(inv.status))
-      .reduce((sum, inv) => sum + (inv.total_amount - inv.amount_paid), 0);
-
-    const acceptedOrConverted = (quotations || []).filter((q) => ['accepted', 'converted', 'won'].includes(q.status)).length;
-    const totalQuotationsInRange = (quotations || []).length;
-
-    setStats({
-      totalRevenue,
-      previousRevenue,
-      totalOrders: typedOrders.length,
-      totalQuotations: totalQuotationsInRange,
-      newCustomers: newCustomersCount || 0,
-      pendingOrders: pendingCount || 0,
-      lowStockCount,
-      inventoryValuation,
-      outstandingBalance,
-      conversionRate: totalQuotationsInRange ? Math.round((acceptedOrConverted / totalQuotationsInRange) * 100) : 0,
-      avgOrderValue: typedOrders.length ? Math.round(totalRevenue / typedOrders.length) : 0,
-    });
-
-    setRecentActivity((activityLogs || []) as ActivityLogRow[]);
-
-    // Top products by revenue, within the selected date range
-    interface OrderItemRow { product_name: string; quantity: number; unit_price: number; }
-    const productSales: Record<string, TopProductRow> = {};
-    ((orderItems || []) as unknown as OrderItemRow[]).forEach((item) => {
-      if (!productSales[item.product_name]) {
-        productSales[item.product_name] = { name: item.product_name, quantity: 0, revenue: 0 };
-      }
-      productSales[item.product_name].quantity += item.quantity;
-      productSales[item.product_name].revenue += item.quantity * item.unit_price;
-    });
-    setTopProducts(Object.values(productSales).sort((a, b) => b.revenue - a.revenue).slice(0, 5));
-
-    // Revenue trend: bucket orders by day across the selected range
-    const buckets: Record<string, number> = {};
-    for (let i = 0; i < daysAgo; i++) {
-      const d = new Date(startDate);
-      d.setDate(d.getDate() + i);
-      buckets[d.toISOString().slice(0, 10)] = 0;
-    }
-    typedOrders.forEach((o) => {
-      const day = o.created_at.slice(0, 10);
-      if (day in buckets) buckets[day] += o.total_amount || 0;
-    });
-    setRevenueTrend(
-      Object.entries(buckets).map(([date, revenue]) => ({
-        date: new Date(date).toLocaleDateString('en-KE', { month: 'short', day: 'numeric' }),
-        revenue,
-      }))
-    );
-
-    setLoading(false);
+      setStats({
+        totalRevenue: Number(metrics.total_revenue ?? 0),
+        previousRevenue: Number(metrics.previous_revenue ?? 0),
+        totalOrders: Number(metrics.total_orders ?? 0),
+        totalQuotations: Number(metrics.total_quotations ?? 0),
+        newCustomers: Number(metrics.new_customers ?? 0),
+        pendingOrders: Number(metrics.pending_orders ?? 0),
+        lowStockCount: Number(metrics.low_stock_count ?? 0),
+        inventoryValuation: Number(metrics.inventory_valuation ?? 0),
+        outstandingBalance: Number(metrics.outstanding_balance ?? 0),
+        conversionRate: Number(metrics.conversion_rate ?? 0),
+        avgOrderValue: Number(metrics.avg_order_value ?? 0),
+      });
+      setOrdersByStatus(report.orders_by_status ?? []);
+      setQuotesByStage((report.quotes_by_status ?? []).filter(({ status }) => QUOTE_STAGES.includes(status)));
+      setTopProducts(report.top_products ?? []);
+      setRecentActivity(report.recent_activity ?? []);
+      setRevenueTrend((report.revenue_trend ?? []).map((point) => ({
+        date: new Date(`${point.date}T00:00:00`).toLocaleDateString('en-KE', { month: 'short', day: 'numeric' }),
+        revenue: Number(point.revenue ?? 0),
+      })));
     } catch (err) {
       console.error('Failed to fetch reports:', err);
+    } finally {
       setLoading(false);
     }
   }, [dateRange]);
