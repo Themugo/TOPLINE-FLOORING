@@ -92,3 +92,5 @@ jobs:
           path: dist
           if-no-files-found: error
           retention-days: 7
+
+      - run: npm run verify:phases-21-23-finance-communications-analytics-360

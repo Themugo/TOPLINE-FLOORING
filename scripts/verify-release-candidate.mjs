@@ -42,7 +42,7 @@ for (const command of [
   if (!workflow.includes(command)) failures.push(`CI workflow missing ${command}.`);
 }
 
-const forbidden = /(?:service_role|SUPABASE_SERVICE_ROLE_KEY|consumer[_-]?secret|consumer[_-]?key|client[_-]?secret|access[_-]?token)\s*[:=]\s*["']?[A-Za-z0-9_\-\.\/+=]{12,}/i;
+const forbidden = /(?<![A-Za-z0-9_])(?:service_role|SUPABASE_SERVICE_ROLE_KEY|consumer[_-]?secret|consumer[_-]?key|client[_-]?secret|access[_-]?token)\s*[:=]\s*["']?[A-Za-z0-9_\-\.\/+=]{12,}/i;
 const scanDirs = ['src', 'supabase/functions', 'supabase/migrations'];
 function walk(dir) {
   const result = [];

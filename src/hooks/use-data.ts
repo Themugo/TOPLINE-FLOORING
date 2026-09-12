@@ -4,7 +4,7 @@ import { isSupabaseConfigured, supabase } from '@/lib/supabase';
 import { useCMS } from '@/context/CMSContext';
 import { getCurrentStaffProfile, type StaffProfile } from '@/lib/staff-rbac';
 import { convertLeadToCustomer } from '@/lib/lifecycle';
-import { createInvoiceTransaction, addInvoiceItemTransaction, recordInvoicePaymentTransaction, updateInvoiceStatusTransaction, type InvoiceInput } from '@/lib/finance';
+import { createInvoiceTransaction, addInvoiceItemTransaction, recordInvoicePaymentTransaction, updateInvoiceStatusTransaction, removeInvoiceItemTransaction, deleteDraftInvoiceTransaction, type InvoiceInput } from '@/lib/finance';
 import type {
   Product,
   Category,
@@ -1117,11 +1117,11 @@ export function useInvoices(options?: { status?: string }) {
 
   const addInvoiceItem = async (invoiceId: string, item: { description: string; quantity: number; unit_price: number }) => { await addInvoiceItemTransaction(invoiceId, item); await refetch(); };
 
-  const removeInvoiceItem = async (_invoiceId: string, itemId: string) => { const {error}=await supabase.from('invoice_items').delete().eq('id',itemId); if(error)throw error; await refetch(); };
+  const removeInvoiceItem = async (invoiceId: string, itemId: string) => { await removeInvoiceItemTransaction(invoiceId, itemId); await refetch(); };
 
   const updateInvoiceStatus = async (invoiceId: string, status: string) => { await updateInvoiceStatusTransaction(invoiceId,status); await refetch(); };
 
-  const deleteInvoice = async (invoiceId: string) => { const {error}=await supabase.from('invoices').delete().eq('id',invoiceId); if(error)throw error; await refetch(); };
+  const deleteInvoice = async (invoiceId: string) => { await deleteDraftInvoiceTransaction(invoiceId); await refetch(); };
 
   return {
     invoices,

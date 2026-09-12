@@ -21,3 +21,15 @@ export async function updateInvoiceStatusTransaction(invoiceId:string,status:str
   const {data,error}=await supabase.rpc('update_invoice_status_transaction',{p_invoice_id:invoiceId,p_status:status});
   if(error)throw error; return (data ?? {}) as InvoiceTransactionResult;
 }
+
+export async function removeInvoiceItemTransaction(invoiceId: string, itemId: string): Promise<Record<string, unknown>> {
+  const { data, error } = await supabase.rpc('remove_invoice_item_transaction', { p_invoice_id: invoiceId, p_item_id: itemId });
+  if (error) throw error;
+  return (data ?? {}) as Record<string, unknown>;
+}
+
+export async function deleteDraftInvoiceTransaction(invoiceId: string): Promise<Record<string, unknown>> {
+  const { data, error } = await supabase.rpc('delete_draft_invoice_transaction', { p_invoice_id: invoiceId });
+  if (error) throw error;
+  return (data ?? {}) as Record<string, unknown>;
+}

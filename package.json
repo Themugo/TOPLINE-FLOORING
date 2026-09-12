@@ -62,7 +62,8 @@
     "verify:phase-13-backup-export-360": "node scripts/verify-phase-13-backup-export-360.mjs",
     "verify:phase-14-ci-release-gate": "node scripts/verify-phase-14-ci-release-gate.mjs",
     "verify:phase-15-17-lifecycle-360": "node scripts/verify-phases-15-17.mjs",
-    "verify:phase-18-20-communications-provider-response": "node scripts/verify-phase-18-20-communications-provider-response.mjs"
+    "verify:phase-18-20-communications-provider-response": "node scripts/verify-phase-18-20-communications-provider-response.mjs",
+    "verify:phases-21-23-finance-communications-analytics-360": "node scripts/verify-phases-21-23-finance-communications-analytics-360.mjs"
   },
   "dependencies": {
     "@radix-ui/react-accordion": "^1.2.16",
