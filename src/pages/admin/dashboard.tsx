@@ -33,7 +33,7 @@ import {
   Navigation,
   ChevronRight,
   ExternalLink,
-  CheckCircle2,
+  CheckCircle2, ShieldAlert,
   Building2,
   Briefcase,
 } from 'lucide-react';
@@ -133,6 +133,7 @@ const NAV_GROUPS: NavGroup[] = [
       { href: '/admin/audit-logs', label: 'Audit Logs', icon: Shield },
       { href: '/admin/settings', label: 'Admin Settings', icon: Settings },
       { href: '/admin/system-health', label: 'System Health', icon: CheckCircle2 },
+      { href: '/admin/reliability-operations-360', label: 'Reliability & Incidents', icon: ShieldAlert },
     ],
   },
 ];

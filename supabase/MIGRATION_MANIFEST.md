@@ -76,7 +76,7 @@ Never put a service-role or worker secret in a `VITE_*` variable.
 
 ## Current active chain (Phases 30–32 verification baseline)
 
-The current production candidate contains 52 uniquely timestamped active migrations, ending with `20260913080000_081_executive_operations_control_360.sql`. Run the complete verification suite before any linked database deployment.
+The current production candidate contains 53 uniquely timestamped active migrations, ending with `20260913090000_082_reliability_observability_incident_response_360.sql`. Run the complete verification suite before any linked database deployment.
 
 - `20260912210000_070_customer_service_sla_operations_360.sql` — Phases 80–82 Customer Service SLA & After-Sales Operations 360.
 
@@ -89,3 +89,5 @@ The current production candidate contains 52 uniquely timestamped active migrati
 - `20260913070000_080_communications_customer_journey_360.sql` — Operation 7 Communications & Customer Journey 360.
 
 - `20260913080000_081_executive_operations_control_360.sql` — Operation 8 Executive Operations & Control Centre 360
+
+- `20260913090000_082_reliability_observability_incident_response_360.sql` — Operation 10 Reliability, Observability & Incident Response 360.

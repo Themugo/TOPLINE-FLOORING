@@ -1,0 +1,23 @@
+import fs from 'node:fs';
+import path from 'node:path';
+const root=process.cwd(); const failures=[]; const read=f=>fs.readFileSync(path.join(root,f),'utf8'); const exists=f=>fs.existsSync(path.join(root,f));
+const fail=m=>failures.push(m);
+const migration='20260913090000_082_reliability_observability_incident_response_360.sql';
+if(!exists(`supabase/migrations/${migration}`)) fail('Operation 10 migration is missing.');
+const migrations=fs.readdirSync(path.join(root,'supabase/migrations')).filter(f=>f.endsWith('.sql')).sort();
+if(migrations.at(-1)!==migration) fail(`Expected Operation 10 migration to be latest active migration: ${migrations.at(-1)}`);
+const versions=migrations.map(f=>f.match(/^(\d{14})_/)?.[1]); if(versions.some(v=>!v)) fail('Every active migration must have a 14-digit timestamp.'); if(new Set(versions).size!==versions.length) fail('Duplicate active migration timestamps detected.');
+for(let i=1;i<versions.length;i++) if(versions[i-1]>=versions[i]) fail('Migration ordering is not strictly increasing.');
+const sql=read(`supabase/migrations/${migration}`);
+for(const token of ['operational_incidents','create_operational_incident','update_operational_incident','get_reliability_operations_360','REVOKE ALL ON public.operational_incidents FROM PUBLIC, anon, authenticated','private.require_staff_permission']) if(!sql.includes(token)) fail(`Operation 10 SQL missing required control: ${token}`);
+const pkg=JSON.parse(read('package.json')); if(!pkg.scripts?.['verify:operation-10-reliability-incident-response']) fail('Operation 10 verifier is not registered in package.json.');
+const app=read('src/App.tsx'); if(!app.includes("'/admin/reliability-operations-360': AdminReliabilityOperations360")) fail('Reliability admin route is not registered.');
+if(!app.includes("@/pages/admin/reliability-operations-360")) fail('Reliability page lazy import is missing.');
+if(!exists('src/lib/reliability-operations-360.ts')) fail('Reliability client library is missing.');
+if(!exists('src/pages/admin/reliability-operations-360.tsx')) fail('Reliability admin page is missing.');
+const page=read('src/pages/admin/reliability-operations-360.tsx'); for(const token of ['Record incident','Open incidents','resolved','Resolution summary']) if(!page.includes(token)) fail(`Reliability UI missing workflow: ${token}`);
+const ci=read('.github/workflows/ci.yml'); if(!ci.includes('npm run verify:operation-10-reliability-incident-response')) fail('CI is missing Operation 10 reliability gate.');
+const manifest=read('supabase/MIGRATION_MANIFEST.md'); if(!manifest.includes(migration)) fail('Migration manifest does not contain Operation 10 migration.'); if(!manifest.includes(`contains ${migrations.length} uniquely timestamped active migrations`)) fail(`Migration manifest does not state current active count (${migrations.length}).`);
+const docs=exists('docs/OPERATION_10_RELIABILITY_OBSERVABILITY_INCIDENT_RESPONSE_360.md')?read('docs/OPERATION_10_RELIABILITY_OBSERVABILITY_INCIDENT_RESPONSE_360.md'):''; for(const token of ['incident lifecycle','monitoring boundary','UAT','rollback']) if(!docs.toLowerCase().includes(token.toLowerCase())) fail(`Operation 10 runbook missing: ${token}`);
+if(failures.length){console.error('Operation 10 Reliability & Incident Response FAILED.'); failures.forEach(x=>console.error(`- ${x}`)); process.exit(1)}
+console.log('Operation 10 Reliability & Incident Response 360: STRUCTURAL GATE PASSED'); console.log(`- Active migrations: ${migrations.length}`); console.log(`- Latest migration: ${migrations.at(-1)}`); console.log('- Incident RPC authorization and RLS boundary: passed'); console.log('- Admin route/client workflow: passed'); console.log('- CI + manifest registration: passed');

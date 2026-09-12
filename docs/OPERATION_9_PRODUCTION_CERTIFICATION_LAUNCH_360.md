@@ -34,7 +34,7 @@ The verifier is intentionally structural. It does **not** claim that a remote Su
 ## Current release chain
 
 - Active migrations: 52
-- Latest migration: `20260913080000_081_executive_operations_control_360.sql`
+- Latest migration at Operation 9 certification: `20260913080000_081_executive_operations_control_360.sql` (later cumulative operations may append migrations)
 - Dedicated Supabase project: `jypkhvknfgoqrhwzbdwi`
 - Canonical website: `https://toplineflooringandwaterproofing.co.ke`
 

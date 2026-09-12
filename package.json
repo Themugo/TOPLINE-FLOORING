@@ -79,7 +79,8 @@
     "verify:operation-6-customer-lifecycle": "node scripts/verify-operation-6-customer-lifecycle.mjs",
     "verify:operation-7-communications-journey": "node scripts/verify-operation-7-communications-journey.mjs",
     "verify:operation-8-executive-operations": "node scripts/verify-operation-8-executive-operations.mjs",
-    "verify:operation-9-production-certification": "node scripts/verify-operation-9-production-certification.mjs"
+    "verify:operation-9-production-certification": "node scripts/verify-operation-9-production-certification.mjs",
+    "verify:operation-10-reliability-incident-response": "node scripts/verify-operation-10-reliability-incident-response.mjs"
   },
   "dependencies": {
     "@radix-ui/react-accordion": "^1.2.16",

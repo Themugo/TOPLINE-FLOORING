@@ -51,7 +51,7 @@ if (versions.some((v) => !v)) fail('Every active migration must start with a 14-
 if (new Set(versions).size !== versions.length) fail('Duplicate active migration timestamps detected.');
 for (let i = 1; i < versions.length; i++) if (versions[i - 1] >= versions[i]) fail(`Migration ordering is not strictly increasing: ${migrations[i - 1]} -> ${migrations[i]}`);
 const latest = migrations.at(-1);
-if (latest !== '20260913080000_081_executive_operations_control_360.sql') fail(`Unexpected latest migration: ${latest}`);
+if (!latest || latest < '20260913080000_081_executive_operations_control_360.sql') fail(`Unexpected migration chain position: ${latest}`);
 const manifest = read('supabase/MIGRATION_MANIFEST.md');
 if (!manifest.includes(latest)) fail('Migration manifest does not contain the latest active migration.');
 if (/contains\s+50\s+uniquely timestamped active migrations/i.test(manifest)) fail('Migration manifest contains stale 50-migration release count.');

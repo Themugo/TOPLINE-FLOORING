@@ -136,3 +136,6 @@ jobs:
 
       - name: Operation 9 production certification
         run: npm run verify:operation-9-production-certification
+
+      - name: Operation 10 reliability and incident response
+        run: npm run verify:operation-10-reliability-incident-response
