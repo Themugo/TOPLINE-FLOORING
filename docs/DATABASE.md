@@ -28,11 +28,13 @@ Topline Flooring & Waterproofing is a single-business application. The database 
 
 `supabase/migrations/` now contains only the canonical forward chain. The previous prototype migrations are retained under `supabase/migrations_legacy/` for forensic reference and are **not** part of the deployment chain.
 
-The canonical order is:
+The canonical deployment chain currently contains 40 active migrations. The first four are:
 
 1. `20260910000000_topline_canonical_schema.sql`
 2. `20260910090000_032_commerce_contract_hardening.sql`
 3. `20260910100000_033_staff_rbac_audit_foundation.sql`
 4. `20260910110000_topline_rpc_contracts.sql`
+
+The remaining migrations continue chronologically through the current `066`–`069` hardening/operations layer. See `supabase/MIGRATION_MANIFEST.md` for the complete active chain.
 
 This baseline is intended for a new, dedicated Topline Supabase project. Do not apply the legacy directory to that project.

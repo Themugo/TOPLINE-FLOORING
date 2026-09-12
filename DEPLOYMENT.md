@@ -87,6 +87,20 @@ npm run verify:phase-5-hosting
 
 Follow `docs/PHASE_5_PRODUCTION_HOSTING_DOMAIN_RELEASE.md` for the safe DNS/Vercel cutover sequence. Keep existing cPanel MX/mail records unchanged during the web migration.
 
+## Remote database deployment gate
+
+After local replay and regression validation, inspect the linked migration history and run a dry-run before any real deployment:
+
+```cmd
+npx supabase login
+npx supabase link --project-ref jypkhvknfgoqrhwzbdwi
+npx supabase migration list --linked
+npx supabase db push --dry-run --linked
+npx supabase db lint --linked
+```
+
+Never run `supabase db reset --linked` against the real Topline production project.
+
 ## 6. Operational rule
 
 A successful frontend build does **not** prove that the database, RLS, authentication or business workflows are production-ready. Production sign-off requires the infrastructure and security verification described above.
