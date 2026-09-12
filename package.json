@@ -50,7 +50,8 @@
     "verify:phase-4-sms": "node scripts/verify-phase-4-sms.mjs",
     "verify:phase-5-hosting": "node scripts/verify-phase-5-hosting.mjs",
     "verify:phase-6-launch": "node scripts/verify-phase-6-launch-readiness.mjs",
-    "launch:check": "node scripts/production-launch-check.mjs"
+    "launch:check": "node scripts/production-launch-check.mjs",
+    "verify:phase-7-operations": "node scripts/verify-phase-7-operations.mjs"
   },
   "dependencies": {
     "@radix-ui/react-accordion": "^1.2.16",
