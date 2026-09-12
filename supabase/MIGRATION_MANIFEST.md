@@ -72,3 +72,8 @@ Never put a service-role or worker secret in a `VITE_*` variable.
 - 20260912140000_063_inventory_procurement_operations_360.sql — Phase 11 Inventory & Procurement Operations 360
 - 20260912150000_064_customer_portal_360.sql — Phase 12 Customer Portal 360
 - 20260912130100_062_sales_crm_360.sql — Phase 9 Sales & CRM Operations 360
+
+
+## Current active chain (Phases 30–32 verification baseline)
+
+The current production candidate contains 40 uniquely timestamped active migrations, ending with `20260912200000_069_reporting_operational_intelligence_360.sql`. Run `npm run verify:phases-30-32` before any linked database deployment.

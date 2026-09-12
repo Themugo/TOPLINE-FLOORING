@@ -77,7 +77,11 @@ jobs:
           npm run verify:phase-11-inventory-procurement-360
           npm run verify:phase-12-customer-portal-360
           npm run verify:phase-13-backup-export-360
+          npm run verify:phase-14-ci-release-gate
           npm run verify:phase-18-20-communications-provider-response
+          npm run verify:phases-21-23-finance-communications-analytics-360
+          npm run verify:phases-24-26-reporting-intelligence-360
+          npm run verify:phases-27-29-public-accessibility-seo-360
 
       - name: Frontend quality
         run: |
@@ -93,6 +97,3 @@ jobs:
           if-no-files-found: error
           retention-days: 7
 
-      - run: npm run verify:phases-21-23-finance-communications-analytics-360
-      - run: npm run verify:phases-24-26-reporting-intelligence-360
-      npm run verify:phases-27-29-public-accessibility-seo-360

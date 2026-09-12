@@ -35,6 +35,28 @@ The active migration chain is intentionally canonical and ordered:
 19. `20260911160000_048_ecommerce_stability_foundation.sql`
 20. `20260911170000_049_payment_inventory_lifecycle_hardening.sql` — idempotent checkout, stock reservations and provider-neutral payments.
 
+
+21. `20260911180000_054_refunds_and_payment_reconciliation.sql` — refund requests and payment reconciliation.
+22. `20260911190000_055_reservation_expiry_and_operations.sql` — reservation expiry and operations.
+23. `20260912000000_056_public_tracking_privacy.sql` — public tracking privacy controls.
+24. `20260912010000_057_commerce_fulfillment_integrity.sql` — commerce fulfillment integrity.
+25. `20260912020000_058_authorization_order_operations_360.sql` — authorization and order operations hardening.
+26. `20260912030000_059_fulfillment_operations_360.sql` — fulfillment operations.
+27. `20260912040000_launch_communications_worker.sql` — communications worker infrastructure.
+28. `20260912050000_production_infrastructure_rls_storage.sql` — production infrastructure, RLS and storage.
+29. `20260912100000_059_production_communications_worker.sql` — production communications worker controls.
+30. `20260912110000_060_sms_customer_notification_operations.sql` — SMS/customer notification operations.
+31. `20260912120000_061_field_operations_360.sql` — field operations.
+32. `20260912130000_062_finance_billing_operations_360.sql` — finance and billing operations.
+33. `20260912130100_062_sales_crm_360.sql` — sales and CRM operations.
+34. `20260912140000_063_inventory_procurement_operations_360.sql` — inventory and procurement operations.
+35. `20260912150000_064_customer_portal_360.sql` — customer portal.
+36. `20260912160000_065_backup_export_operations_360.sql` — backup and controlled export operations.
+37. `20260912170000_066_sales_project_lifecycle_360_hardening.sql` — sales/project lifecycle hardening.
+38. `20260912180000_067_communications_provider_response_360.sql` — provider delivery and inbound response handling.
+39. `20260912190000_068_finance_communications_analytics_360_hardening.sql` — finance/communications analytics hardening.
+40. `20260912200000_069_reporting_operational_intelligence_360.sql` — reporting and operational intelligence.
+
 `migrations_legacy/` is forensic reference material and must not be deployed.
 
 Use `npm run verify:phases-30-32` before database validation to catch migration-contract drift early.
