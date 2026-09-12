@@ -149,3 +149,6 @@ jobs:
 
       - name: Operation 13 identity and privileged access
         run: npm run verify:operation-13-identity-access
+
+      - name: Operation 14 quality assurance and corrective action
+        run: npm run verify:operation-14-quality-assurance

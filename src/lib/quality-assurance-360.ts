@@ -1,0 +1,7 @@
+import { supabase } from '@/lib/supabase';
+export type QualitySnapshot={generated_at:string;metrics:Record<string,number>;inspections:Array<Record<string,unknown>>;actions:Array<Record<string,unknown>>};
+async function rpc(name:string,args:Record<string,unknown>){const {data,error}=await supabase.rpc(name,args);if(error)throw error;return data;}
+export async function getQualityAssurance360(){return await rpc('get_quality_assurance_360',{}) as QualitySnapshot;}
+export async function createQualityInspection360(a:{referenceType:string;referenceId?:string|null;title:string;score?:number|null;findingsSummary?:string|null}){return rpc('create_quality_inspection_360',{p_reference_type:a.referenceType,p_reference_id:a.referenceId??null,p_title:a.title,p_score:a.score??null,p_findings_summary:a.findingsSummary??null});}
+export async function createQualityCorrectiveAction360(a:{inspectionId:string;finding:string;severity:string;actionPlan:string;ownerId?:string|null;dueAt?:string|null}){return rpc('create_quality_corrective_action_360',{p_inspection_id:a.inspectionId,p_finding:a.finding,p_severity:a.severity,p_action_plan:a.actionPlan,p_owner_id:a.ownerId??null,p_due_at:a.dueAt??null});}
+export async function updateQualityCorrectiveAction360(id:string,status:string,notes?:string){return rpc('update_quality_corrective_action_360',{p_action_id:id,p_status:status,p_verification_notes:notes??null});}
