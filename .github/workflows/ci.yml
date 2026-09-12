@@ -128,3 +128,5 @@ jobs:
 
       - name: Operation 6 customer lifecycle verification
         run: npm run verify:operation-6-customer-lifecycle
+      - name: Operation 7 communications customer journey verification
+        run: npm run verify:operation-7-communications-journey

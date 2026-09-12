@@ -14,5 +14,5 @@ for (const f of ['src/lib/customer-lifecycle-360.ts','src/pages/admin/customer-l
 const app=fs.readFileSync(path.join(root,'src/App.tsx'),'utf8');
 if (!app.includes("'/admin/customer-lifecycle-360': AdminCustomerLifecycle360")) throw new Error('Operation 6 route missing');
 const migrations=fs.readdirSync(path.join(root,'supabase/migrations')).filter(f=>f.endsWith('.sql')).sort();
-if (migrations.at(-1)!=='20260913060000_079_customer_lifecycle_360.sql') throw new Error('Operation 6 migration is not latest');
+if (!migrations.includes('20260913060000_079_customer_lifecycle_360.sql')) throw new Error('Operation 6 migration missing');
 console.log(`Operation 6 verification passed: ${migrations.length} migrations, ${migrations.at(-1)}`);

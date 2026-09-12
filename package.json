@@ -76,7 +76,8 @@
     "verify:operation-3-supply-chain": "node scripts/verify-operation-3-supply-chain.mjs",
     "verify:operation-4-finance": "node scripts/verify-operation-4-finance.mjs",
     "verify:operation-5-fulfillment-delivery": "node scripts/verify-operation-5-fulfillment-delivery.mjs",
-    "verify:operation-6-customer-lifecycle": "node scripts/verify-operation-6-customer-lifecycle.mjs"
+    "verify:operation-6-customer-lifecycle": "node scripts/verify-operation-6-customer-lifecycle.mjs",
+    "verify:operation-7-communications-journey": "node scripts/verify-operation-7-communications-journey.mjs"
   },
   "dependencies": {
     "@radix-ui/react-accordion": "^1.2.16",
