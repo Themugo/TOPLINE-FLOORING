@@ -6,7 +6,8 @@ import { queueCustomerMessage, retryCustomerMessage, cancelCustomerMessage } fro
 import { useToast } from '@/hooks/use-toast';
 
 interface Customer { id: string; name: string; email: string; phone: string; }
-interface Outbox { id: string; channel: string; recipient: string; subject: string | null; message: string; status: string; delivery_status: string; created_at: string; provider_reference?: string | null; }
+interface Outbox { id: string; channel: string; recipient: string; subject: string | null; message: string; status: string; delivery_status: string; created_at: string; provider_reference?: string | null; last_provider_event?: string | null; }
+interface Inbound { id: string; channel: string; sender: string; subject: string | null; message: string; provider: string; received_at: string; customer_id: string | null; }
 
 export default function AdminCommunications() {
   const { toast } = useToast();
@@ -19,15 +20,18 @@ export default function AdminCommunications() {
   const [message, setMessage] = useState('');
   const [saving, setSaving] = useState(false);
   const [summary, setSummary] = useState<Record<string, number>>({});
+  const [inbound, setInbound] = useState<Inbound[]>([]);
 
   const load = async () => {
-    const [{ data: c }, { data: o }, { data: s }] = await Promise.all([
+    const [{ data: c }, { data: o }, { data: i }, { data: s }] = await Promise.all([
       supabase.from('customers').select('id,name,email,phone').order('name').limit(500),
-      supabase.from('communication_outbox').select('id,channel,recipient,subject,message,status,delivery_status,provider_reference,created_at').order('created_at',{ ascending:false }).limit(75),
+      supabase.from('communication_outbox').select('id,channel,recipient,subject,message,status,delivery_status,provider_reference,last_provider_event,created_at').order('created_at',{ ascending:false }).limit(75),
+      supabase.from('communication_inbound').select('id,channel,sender,subject,message,provider,received_at,customer_id').order('received_at',{ ascending:false }).limit(50),
       supabase.rpc('get_communication_operations_summary'),
     ]);
     setCustomers((c || []) as Customer[]);
     setOutbox((o || []) as Outbox[]);
+    setInbound((i || []) as Inbound[]);
     setSummary((s || {}) as Record<string, number>);
   };
   useEffect(() => { void load(); }, []);
@@ -42,8 +46,8 @@ export default function AdminCommunications() {
   return <AdminLayout>
     <div className="max-w-6xl mx-auto p-6 space-y-6">
       <div><p className="text-xs uppercase tracking-widest text-primary-600 font-semibold">Customer communications</p><h1 className="text-2xl font-bold text-navy-900">Communication Center</h1><p className="text-sm text-gray-500 mt-1">Compose controlled outbound messages and keep every customer touchpoint auditable.</p></div>
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
-        {([['Queued','queued'],['Sent','sent'],['Failed','failed'],['SMS delivered','sms_delivered'],['SMS failed','sms_failed'],['Email sent','email_sent']] as const).map(([label,key])=><div key={key} className="bg-white border rounded-xl p-4"><p className="text-[11px] uppercase tracking-wider text-gray-500">{label}</p><p className="text-2xl font-bold mt-1">{summary[key] ?? 0}</p></div>)}
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-8 gap-3">
+        {([['Queued','queued'],['Sent','sent'],['Failed','failed'],['SMS delivered','sms_delivered'],['SMS failed','sms_failed'],['Email sent','email_sent'],['WhatsApp delivered','whatsapp_delivered'],['Inbound replies','inbound_responses']] as const).map(([label,key])=><div key={key} className="bg-white border rounded-xl p-4"><p className="text-[11px] uppercase tracking-wider text-gray-500">{label}</p><p className="text-2xl font-bold mt-1">{summary[key] ?? 0}</p></div>)}
       </div>
       <div className="grid lg:grid-cols-[1fr_1.2fr] gap-6">
         <form onSubmit={submit} className="bg-white border rounded-xl p-6 space-y-4">
@@ -55,7 +59,7 @@ export default function AdminCommunications() {
           <button disabled={saving || !customerId} className="w-full h-10 rounded-lg bg-primary-600 text-white font-semibold flex items-center justify-center gap-2 disabled:opacity-50"><Send className="w-4 h-4"/>{saving?'Queuing…':'Queue Message'}</button>
           <p className="text-xs text-gray-500">Provider delivery is intentionally decoupled. Queued messages are not falsely reported as sent.</p>
         </form>
-        <div className="bg-white border rounded-xl overflow-hidden"><div className="p-5 border-b"><h2 className="font-semibold">Recent outbox</h2></div><div className="divide-y">{outbox.length?outbox.map(x=><div key={x.id} className="p-4"><div className="flex justify-between gap-3"><span className="text-xs uppercase tracking-wide font-semibold">{x.channel}</span><span className="text-xs capitalize text-gray-500">{x.channel==='sms' ? x.delivery_status : x.status}</span></div><p className="text-sm font-medium mt-1">{x.recipient}</p>{x.subject&&<p className="text-sm text-gray-700">{x.subject}</p>}<p className="text-xs text-gray-500 mt-1 line-clamp-2">{x.message}</p>{(x.status==='queued'||x.status==='failed')&&<div className="mt-3 flex gap-2">{x.status==='failed'&&<button type="button" className="text-xs font-medium text-primary hover:underline" onClick={async()=>{try{await retryCustomerMessage(x.id);await load();}catch(e){toast({title:'Retry failed',description:e instanceof Error?e.message:'Unable to retry.',variant:'destructive'});}}}>Retry</button>}{x.status==='queued'&&<button type="button" className="text-xs font-medium text-destructive hover:underline" onClick={async()=>{try{await cancelCustomerMessage(x.id);await load();}catch(e){toast({title:'Cancel failed',description:e instanceof Error?e.message:'Unable to cancel.',variant:'destructive'});}}}>Cancel</button>}</div>}</div>):<p className="p-6 text-sm text-gray-500">No outbound messages queued yet.</p>}</div></div>
+        <div className="space-y-6"><div className="bg-white border rounded-xl overflow-hidden"><div className="p-5 border-b"><h2 className="font-semibold">Recent outbox</h2><p className="text-xs text-gray-500 mt-1">Provider acceptance and delivery events are tracked separately.</p></div><div className="divide-y">{outbox.length?outbox.map(x=><div key={x.id} className="p-4"><div className="flex justify-between gap-3"><span className="text-xs uppercase tracking-wide font-semibold">{x.channel}</span><span className="text-xs capitalize text-gray-500">{x.delivery_status || x.status}{x.last_provider_event ? ` · ${x.last_provider_event}` : ''}</span></div><p className="text-sm font-medium mt-1">{x.recipient}</p>{x.subject&&<p className="text-sm text-gray-700">{x.subject}</p>}<p className="text-xs text-gray-500 mt-1 line-clamp-2">{x.message}</p>{(x.status==='queued'||x.status==='failed')&&<div className="mt-3 flex gap-2">{x.status==='failed'&&<button type="button" className="text-xs font-medium text-primary hover:underline" onClick={async()=>{try{await retryCustomerMessage(x.id);await load();}catch(e){toast({title:'Retry failed',description:e instanceof Error?e.message:'Unable to retry.',variant:'destructive'});}}}>Retry</button>}{x.status==='queued'&&<button type="button" className="text-xs font-medium text-destructive hover:underline" onClick={async()=>{try{await cancelCustomerMessage(x.id);await load();}catch(e){toast({title:'Cancel failed',description:e instanceof Error?e.message:'Unable to cancel.',variant:'destructive'});}}}>Cancel</button>}</div>}</div>):<p className="p-6 text-sm text-gray-500">No outbound messages queued yet.</p>}</div></div><div className="bg-white border rounded-xl overflow-hidden"><div className="p-5 border-b"><h2 className="font-semibold">Customer responses</h2><p className="text-xs text-gray-500 mt-1">Inbound email, SMS and WhatsApp responses are recorded against the customer timeline when matched.</p></div><div className="divide-y">{inbound.length?inbound.map(x=><div key={x.id} className="p-4"><div className="flex justify-between gap-3"><span className="text-xs uppercase tracking-wide font-semibold">{x.channel}</span><span className="text-xs text-gray-500">{new Date(x.received_at).toLocaleString()}</span></div><p className="text-sm font-medium mt-1">{x.sender}</p>{x.subject&&<p className="text-sm text-gray-700">{x.subject}</p>}<p className="text-sm text-gray-600 mt-1 whitespace-pre-wrap">{x.message}</p></div>):<p className="p-6 text-sm text-gray-500">No customer responses received yet.</p>}</div></div></div>
       </div>
     </div>
   </AdminLayout>;

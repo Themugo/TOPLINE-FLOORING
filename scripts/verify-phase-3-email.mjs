@@ -30,7 +30,9 @@ for (const token of [
   'AT_API_KEY',
   'complete_communication_delivery_worker',
   'fail_communication_delivery_worker',
-  'WhatsApp delivery is not configured',
+  'WHATSAPP_ACCESS_TOKEN',
+  'WHATSAPP_PHONE_NUMBER_ID',
+  'sendWhatsApp',
 ]) if (!fn.includes(token)) throw new Error(`Missing provider contract: ${token}`);
 
 for (const token of ['Supabase Auth', 'Brevo', 'cPanel', 'SPF', 'DKIM', 'DMARC', '300 email']) {

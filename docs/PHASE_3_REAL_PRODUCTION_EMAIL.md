@@ -28,16 +28,27 @@ Set only in Supabase Edge Function secrets / Supabase Auth SMTP settings:
 - `BREVO_API_KEY`
 - `BREVO_SENDER_EMAIL`
 - `BREVO_SENDER_NAME`
+- `BREVO_REPLY_TO_EMAIL`
 - `SUPABASE_SERVICE_ROLE_KEY`
 - `AT_USERNAME` (when SMS is activated)
 - `AT_API_KEY` (when SMS is activated)
 - `AT_SENDER_ID` (when SMS is activated)
+- `WHATSAPP_ACCESS_TOKEN`
+- `WHATSAPP_PHONE_NUMBER_ID`
+- `WHATSAPP_VERIFY_TOKEN`
+- `WHATSAPP_TEMPLATE_NAME`
+- `WHATSAPP_TEMPLATE_LANGUAGE`
+- `TOPLINE_WORKER_SECRET`
+- `AT_DLR_SECRET`
+- `AT_INBOUND_SECRET`
+- `COMMUNICATION_WEBHOOK_SECRET`
+- `EMAIL_INBOUND_SECRET`
 
 Never use `VITE_` variables for these values and never commit them.
 
 ## Edge Function
 
-`deliver-communications` claims queued messages using service-role-only database RPCs and delivers email through Brevo or SMS through Africa's Talking. WhatsApp deliberately fails until a real provider is configured.
+`deliver-communications` claims queued messages using service-role-only database RPCs and delivers email through Brevo or SMS through Africa's Talking. WhatsApp is now supported through the Meta WhatsApp Cloud API. The same durable outbox/worker boundary is used for email, SMS and WhatsApp; Meta Business verification, phone-number registration and approved templates remain external configuration.
 
 ## Supabase Auth
 
@@ -67,6 +78,10 @@ Provider references are stored for operational reconciliation. A queued record i
 - [ ] Configure Supabase Auth custom SMTP.
 - [ ] Add Edge Function secrets.
 - [ ] Deploy `deliver-communications`.
+- [ ] Deploy `communication-provider-webhook`, `sms-inbound`, `email-inbound`, and `whatsapp-webhook`.
+- [ ] Configure provider callbacks and webhook secrets.
+- [ ] Configure the WhatsApp sender and approved template(s).
+- [ ] Test an inbound customer reply for each enabled channel.
 - [ ] Configure a scheduler/worker invocation at a safe cadence.
 - [ ] Send a real Auth email.
 - [ ] Queue a real Topline notification.

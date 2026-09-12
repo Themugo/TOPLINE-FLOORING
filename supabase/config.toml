@@ -9,3 +9,22 @@ enabled = true
 
 [db]
 major_version = 15
+
+[functions.deliver-communications]
+verify_jwt = false
+
+[functions.sms-delivery-report]
+verify_jwt = false
+
+[functions.communication-provider-webhook]
+verify_jwt = false
+
+[functions.sms-inbound]
+verify_jwt = false
+
+[functions.email-inbound]
+verify_jwt = false
+
+[functions.whatsapp-webhook]
+verify_jwt = false
+

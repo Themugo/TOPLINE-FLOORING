@@ -13,7 +13,13 @@ const supabaseUrl = Deno.env.get("SUPABASE_URL");
 const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
 const brevoApiKey = Deno.env.get("BREVO_API_KEY");
 const brevoSenderEmail = Deno.env.get("BREVO_SENDER_EMAIL");
-const brevoSenderName = Deno.env.get("BREVO_SENDER_NAME") ?? "Topline Flooring & Water Roofing";
+const brevoSenderName = Deno.env.get("BREVO_SENDER_NAME") ?? "Topline Flooring & Waterproofing";
+const brevoReplyToEmail = Deno.env.get("BREVO_REPLY_TO_EMAIL");
+const whatsappProvider = Deno.env.get("WHATSAPP_PROVIDER") ?? "meta";
+const whatsappAccessToken = Deno.env.get("WHATSAPP_ACCESS_TOKEN");
+const whatsappPhoneNumberId = Deno.env.get("WHATSAPP_PHONE_NUMBER_ID");
+const whatsappTemplateName = Deno.env.get("WHATSAPP_TEMPLATE_NAME");
+const whatsappTemplateLanguage = Deno.env.get("WHATSAPP_TEMPLATE_LANGUAGE") ?? "en";
 const atUsername = Deno.env.get("AT_USERNAME");
 const atApiKey = Deno.env.get("AT_API_KEY");
 const atSenderId = Deno.env.get("AT_SENDER_ID");
@@ -47,6 +53,7 @@ async function sendEmail(item: OutboxMessage) {
     body: JSON.stringify({
       sender: { email: brevoSenderEmail, name: brevoSenderName },
       to: [{ email: item.recipient }],
+      ...(brevoReplyToEmail ? { replyTo: { email: brevoReplyToEmail } } : {}),
       subject: item.subject ?? "Topline Flooring & Water Roofing",
       textContent: item.message,
       htmlContent: `<div style="font-family:Arial,sans-serif;line-height:1.6">${textToHtml(item.message)}</div>`,
@@ -87,17 +94,49 @@ async function sendSms(item: OutboxMessage) {
   return { provider: "africastalking", reference: messageId, status, cost, raw: parsed ?? body };
 }
 
+
+async function sendWhatsApp(item: OutboxMessage) {
+  if (whatsappProvider !== "meta") throw new Error(`Unsupported WhatsApp provider: ${whatsappProvider}`);
+  if (!whatsappAccessToken || !whatsappPhoneNumberId) throw new Error("WhatsApp Meta provider is not configured");
+  const to = item.recipient.replace(/\D/g, "");
+  const body: Record<string, unknown> = { messaging_product: "whatsapp", recipient_type: "individual", to };
+  if (whatsappTemplateName) {
+    body.type = "template";
+    body.template = {
+      name: whatsappTemplateName,
+      language: { code: whatsappTemplateLanguage },
+      components: [{ type: "body", parameters: [{ type: "text", text: item.message.slice(0, 4096) }] }],
+    };
+  } else {
+    body.type = "text";
+    body.text = { preview_url: true, body: item.message.slice(0, 4096) };
+  }
+  const response = await fetch(`https://graph.facebook.com/v21.0/${whatsappPhoneNumberId}/messages`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${whatsappAccessToken}`, "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  const raw = await response.text();
+  if (!response.ok) throw new Error(`Meta WhatsApp ${response.status}: ${raw.slice(0, 500)}`);
+  let parsed: any = {};
+  try { parsed = JSON.parse(raw); } catch {}
+  const reference = parsed?.messages?.[0]?.id ? String(parsed.messages[0].id) : null;
+  if (!reference) throw new Error(`Meta WhatsApp accepted without message id: ${raw.slice(0, 500)}`);
+  return { provider: "meta_whatsapp", reference, raw: parsed };
+}
+
 async function processItem(item: OutboxMessage) {
   try {
     let result: { provider: string; reference: string | null; status?: string; cost?: string | null; raw?: unknown };
     if (item.channel === "email") result = await sendEmail(item);
     else if (item.channel === "sms") result = await sendSms(item);
-    else throw new Error("WhatsApp delivery is not configured for this deployment");
+    else result = await sendWhatsApp(item);
 
     const { error } = await admin.rpc("complete_communication_delivery_worker", {
       p_outbox_id: item.id,
       p_provider: result.provider,
       p_provider_reference: result.reference,
+      p_provider_message_id: result.reference,
     });
     if (item.channel === "sms" && result.reference) {
       await admin.rpc("record_sms_delivery_report", {
