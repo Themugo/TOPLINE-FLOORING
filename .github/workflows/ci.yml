@@ -6,36 +6,57 @@ on:
   pull_request:
     branches: [main]
 
+concurrency:
+  group: topline-ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
 
 jobs:
   quality:
+    name: Production Quality Gate
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node 22
+        uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: npm
-      - run: npm ci
+
+      - name: Install dependencies
+        run: npm ci
+
       - name: Repository toolchain gate
         run: npm run verify:doctor
+
+      - name: Phase 14 CI / release-gate contract
+        run: npm run verify:phase-14-ci-release-gate
+
       - name: Vercel deployment contract
         run: npm run verify:vercel
+
       - name: Local Supabase replay
         run: npm run validate:local-db
+
       - name: Commerce Fulfillment 360 contract
         run: npm run verify:commerce-fulfillment-360
+
       - name: Order Operations 360 type contract
         run: npm run verify:order-operations-360
 
       - name: Authorization + Order Operations 360 contract
         run: npm run verify:authorization-order-360
+
       - name: Generated database type contract
         env:
           REQUIRE_GENERATED_TYPES: true
         run: npm run verify:generated-types
+
       - name: Static architecture and migration verification
         run: |
           npm run verify:phases-30-32
@@ -51,8 +72,22 @@ jobs:
           npm run verify:payment-provider-boundary
           npm run verify:release-candidate
           npm run verify:public-order-tracking-privacy
+          npm run verify:phase-8-field-operations
+          npm run verify:phase-10-finance-billing-360
+          npm run verify:phase-11-inventory-procurement-360
+          npm run verify:phase-12-customer-portal-360
+          npm run verify:phase-13-backup-export-360
+
       - name: Frontend quality
         run: |
           npm run lint
           npm run typecheck
           npm run build
+
+      - name: Upload production build
+        uses: actions/upload-artifact@v4
+        with:
+          name: topline-production-dist-${{ github.sha }}
+          path: dist
+          if-no-files-found: error
+          retention-days: 7
