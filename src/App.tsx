@@ -86,6 +86,7 @@ const AdminProjectDelivery360 = lazy(() => import('@/pages/admin/project-deliver
 const AdminServiceCases = lazy(() => import('@/pages/admin/service-cases'));
 const AdminMaintenancePlans = lazy(() => import('@/pages/admin/maintenance-plans'));
 const AdminCustomerRenewals = lazy(() => import('@/pages/admin/customer-renewals'));
+const AdminCustomerLifecycle360 = lazy(() => import('@/pages/admin/customer-lifecycle-360'));
 const AdminSupplyChain360 = lazy(() => import('@/pages/admin/supply-chain-360'));
 const AdminFulfillmentDelivery360 = lazy(() => import('@/pages/admin/fulfillment-delivery-360'));
 
@@ -196,6 +197,7 @@ function Router() {
     '/admin/service-cases': AdminServiceCases,
     '/admin/maintenance-plans': AdminMaintenancePlans,
     '/admin/customer-renewals': AdminCustomerRenewals,
+    '/admin/customer-lifecycle-360': AdminCustomerLifecycle360,
     '/admin/supply-chain-360': AdminSupplyChain360,
     '/admin/fulfillment-delivery-360': AdminFulfillmentDelivery360,
   };

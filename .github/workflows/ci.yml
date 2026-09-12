@@ -122,3 +122,9 @@ jobs:
 
       - name: Operation 4 finance verification
         run: npm run verify:operation-4-finance
+
+      - name: Operation 5 fulfillment and delivery verification
+        run: npm run verify:operation-5-fulfillment-delivery
+
+      - name: Operation 6 customer lifecycle verification
+        run: npm run verify:operation-6-customer-lifecycle
