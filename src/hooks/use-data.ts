@@ -1158,20 +1158,49 @@ export function useSuppliers() {
   useEffect(() => { refetch(); }, [refetch]);
 
   const createSupplier = async (supplier: Partial<Supplier>) => {
-    const { data, error: err } = await supabase.from('suppliers').insert(supplier).select().single();
+    const { data: id, error: err } = await supabase.rpc('create_supplier', {
+      p_name: supplier.name || '',
+      p_contact_person: supplier.contact_person || null,
+      p_email: supplier.email || null,
+      p_phone: supplier.phone || null,
+      p_address: supplier.address || null,
+      p_notes: supplier.notes || null,
+    });
     if (err) throw err;
     await refetch();
-    return data as Supplier;
+    return suppliers.find((item) => item.id === id) || ({ ...supplier, id } as Supplier);
   };
 
   const updateSupplier = async (id: string, updates: Partial<Supplier>) => {
-    const { error: err } = await supabase.from('suppliers').update({ ...updates, updated_at: new Date().toISOString() }).eq('id', id);
+    const current = suppliers.find((item) => item.id === id);
+    if (!current) throw new Error('Supplier not found');
+    const { error: err } = await supabase.rpc('update_supplier', {
+      p_supplier_id: id,
+      p_name: updates.name ?? current.name,
+      p_contact_person: updates.contact_person ?? current.contact_person ?? null,
+      p_email: updates.email ?? current.email ?? null,
+      p_phone: updates.phone ?? current.phone ?? null,
+      p_address: updates.address ?? current.address ?? null,
+      p_notes: updates.notes ?? current.notes ?? null,
+      p_is_active: updates.is_active ?? current.is_active,
+    });
     if (err) throw err;
     await refetch();
   };
 
   const deleteSupplier = async (id: string) => {
-    const { error: err } = await supabase.from('suppliers').delete().eq('id', id);
+    const current = suppliers.find((item) => item.id === id);
+    if (!current) throw new Error('Supplier not found');
+    const { error: err } = await supabase.rpc('update_supplier', {
+      p_supplier_id: id,
+      p_name: current.name,
+      p_contact_person: current.contact_person || null,
+      p_email: current.email || null,
+      p_phone: current.phone || null,
+      p_address: current.address || null,
+      p_notes: current.notes || null,
+      p_is_active: false,
+    });
     if (err) throw err;
     await refetch();
   };
@@ -1223,7 +1252,7 @@ export function usePurchaseOrders() {
   };
 
   const removePurchaseOrderItem = async (itemId: string) => {
-    const { error: err } = await supabase.from('purchase_order_items').delete().eq('id', itemId);
+    const { error: err } = await supabase.rpc('remove_purchase_order_item', { p_item_id: itemId });
     if (err) throw err;
     await refetch();
   };
@@ -1241,13 +1270,21 @@ export function usePurchaseOrders() {
   };
 
   const updatePurchaseOrderStatus = async (poId: string, status: string) => {
-    const { error: err } = await supabase.from('purchase_orders').update({ status, updated_at: new Date().toISOString() }).eq('id', poId);
+    const { error: err } = await supabase.rpc('transition_purchase_order_lifecycle', {
+      p_purchase_order_id: poId,
+      p_status: status,
+      p_note: null,
+    });
     if (err) throw err;
     await refetch();
   };
 
   const deletePurchaseOrder = async (poId: string) => {
-    const { error: err } = await supabase.from('purchase_orders').delete().eq('id', poId);
+    const { error: err } = await supabase.rpc('transition_purchase_order_lifecycle', {
+      p_purchase_order_id: poId,
+      p_status: 'cancelled',
+      p_note: 'Cancelled from procurement workspace',
+    });
     if (err) throw err;
     await refetch();
   };

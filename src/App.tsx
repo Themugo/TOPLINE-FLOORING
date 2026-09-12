@@ -60,6 +60,7 @@ const AdminServices = lazy(() => import('@/pages/admin/services'));
 const AdminInvoices = lazy(() => import('@/pages/admin/invoices'));
 const AdminFinancial = lazy(() => import('@/pages/admin/financial-command-center'));
 const AdminFinanceOperations = lazy(() => import('@/pages/admin/finance-operations'));
+const AdminInventoryProcurementOperations = lazy(() => import('@/pages/admin/inventory-procurement-operations'));
 const AdminSuppliers = lazy(() => import('@/pages/admin/suppliers'));
 const AdminWarehouses = lazy(() => import('@/pages/admin/warehouses'));
 const AdminProductBrands = lazy(() => import('@/pages/admin/product-brands'));
@@ -143,6 +144,7 @@ function Router() {
     '/admin/invoices': AdminInvoices,
     '/admin/finance': AdminFinancial,
     '/admin/finance-operations': AdminFinanceOperations,
+    '/admin/inventory-procurement-operations': AdminInventoryProcurementOperations,
     '/admin/suppliers': AdminSuppliers,
     '/admin/warehouses': AdminWarehouses,
     '/admin/products': AdminProducts,
