@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { MessageCircle, X, Send, PhoneCall } from 'lucide-react';
 import { useSiteSettings } from '@/hooks/use-data';
 
-const DEFAULT_WHATSAPP = '15550000000';
+const DEFAULT_WHATSAPP = '254720859737';
 
 export function WhatsAppButton() {
   const { settings } = useSiteSettings();
@@ -37,7 +37,7 @@ export function WhatsAppButton() {
                   {companyName} Sales Desk
                   <span className="w-2 h-2 rounded-full bg-emerald-300 animate-pulse" />
                 </h4>
-                <p className="text-[10px] text-emerald-100">Online • Instant Response</p>
+                <p className="text-[10px] text-emerald-100">WhatsApp Sales Desk</p>
               </div>
             </div>
             <button
@@ -59,6 +59,7 @@ export function WhatsAppButton() {
               rows={2}
               value={customMsg}
               onChange={(e) => setCustomMsg(e.target.value)}
+              aria-label="WhatsApp message"
               className="w-full p-2 bg-white border border-gray-300 rounded-xl text-xs focus:ring-2 focus:ring-emerald-500 focus:outline-none"
               placeholder="Type your inquiry..."
             />
@@ -92,7 +93,8 @@ export function WhatsAppButton() {
           type="button"
           onClick={() => setIsOpen(!isOpen)}
           className="relative w-12 h-12 bg-emerald-600 hover:bg-emerald-700 text-white rounded-full shadow-lg flex items-center justify-center transition-all duration-200 hover:scale-105 active:scale-95 border border-white/20"
-          aria-label="Contact Sales on WhatsApp"
+          aria-label={isOpen ? "Close WhatsApp sales chat" : "Open WhatsApp sales chat"}
+          aria-expanded={isOpen}
         >
           <MessageCircle className="w-6 h-6 text-white fill-current shrink-0" />
           

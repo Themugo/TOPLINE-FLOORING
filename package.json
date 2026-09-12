@@ -64,7 +64,8 @@
     "verify:phase-15-17-lifecycle-360": "node scripts/verify-phases-15-17.mjs",
     "verify:phase-18-20-communications-provider-response": "node scripts/verify-phase-18-20-communications-provider-response.mjs",
     "verify:phases-21-23-finance-communications-analytics-360": "node scripts/verify-phases-21-23-finance-communications-analytics-360.mjs",
-    "verify:phases-24-26-reporting-intelligence-360": "node scripts/verify-phases-24-26-reporting-intelligence-360.mjs"
+    "verify:phases-24-26-reporting-intelligence-360": "node scripts/verify-phases-24-26-reporting-intelligence-360.mjs",
+    "verify:phases-27-29-public-accessibility-seo-360": "node scripts/verify-phases-27-29.mjs"
   },
   "dependencies": {
     "@radix-ui/react-accordion": "^1.2.16",

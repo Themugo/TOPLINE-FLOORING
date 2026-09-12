@@ -1,7 +1,10 @@
 User-agent: *
 Allow: /
-Disallow: /admin/
+Disallow: /admin
+Disallow: /portal
 Disallow: /cart
-Disallow: /order-confirmation/
-
+Disallow: /checkout
+Disallow: /checkout-success
+Disallow: /order-confirmation
+Disallow: /track-order
 Sitemap: https://toplineflooringandwaterproofing.co.ke/sitemap.xml

@@ -241,3 +241,26 @@ button:disabled, input:disabled, textarea:disabled, select:disabled { cursor: no
   .btn { @apply px-5 py-3; }
   .card:hover { transform: none; }
 }
+
+
+/* Accessibility hardening: preserve keyboard visibility and honour user motion/contrast preferences. */
+@media (prefers-contrast: more) {
+  :root {
+    --border: 215 16% 35%;
+  }
+}
+
+@media (forced-colors: active) {
+  button, a, input, textarea, select {
+    forced-color-adjust: auto;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+}

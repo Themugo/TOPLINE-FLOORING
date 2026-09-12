@@ -171,7 +171,7 @@ export function useSeoMeta(
     setMetaTag('property', 'og:type', options?.type || 'website');
     setMetaTag('property', 'og:url', canonicalUrl);
     setMetaTag('property', 'og:site_name', companyName);
-    setMetaTag('property', 'og:locale', 'en_US');
+    setMetaTag('property', 'og:locale', 'en_KE');
 
     // Twitter Card tags
     setMetaTag('name', 'twitter:card', 'summary_large_image');
@@ -191,6 +191,17 @@ export function useSeoMeta(
     // ==========================================
     // STRUCTURED DATA (JSON-LD) GENERATION
     // ==========================================
+
+    // 0. WebSite schema for the canonical public domain.
+    setJsonLdScript('schema-website', {
+      '@context': 'https://schema.org',
+      '@type': 'WebSite',
+      '@id': `${siteUrl}/#website`,
+      name: companyName,
+      url: siteUrl,
+      inLanguage: 'en-KE',
+      publisher: { '@id': `${siteUrl}/#organization` },
+    });
 
     // 1. LocalBusiness / Organization Schema
     const sameAsUrls = [social.facebook, social.instagram, social.linkedin, social.twitter, social.youtube].filter(Boolean);
