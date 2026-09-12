@@ -83,3 +83,5 @@ The current production candidate contains 45 uniquely timestamped active migrati
 - `20260912230000_072_maintenance_retention_360.sql` — Phases 86–88 maintenance, renewal and retention operations 360.
 
 - `20260913000000_073_customer_renewal_orchestration_360.sql` — Phases 89–91 Customer Renewal Orchestration 360.
+
+- `20260913020000_075_project_delivery_360.sql` — Operation 2 Project Delivery 360: planning → workforce → materials → installation → progress → issues → cost → quality → customer sign-off.

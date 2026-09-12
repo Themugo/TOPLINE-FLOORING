@@ -96,6 +96,7 @@ const NAV_GROUPS: NavGroup[] = [
       { href: '/admin/site-visits', label: 'Site Visits', icon: ClipboardList },
       { href: '/admin/projects', label: 'Projects', icon: FolderKanban },
       { href: '/admin/project-delivery', label: 'Project Delivery', icon: ClipboardList },
+      { href: '/admin/project-delivery-360', label: 'Project Delivery 360', icon: ClipboardList },
       { href: '/admin/installation-workforce', label: 'Installation Workforce', icon: Users2 },
       { href: '/admin/project-profitability', label: 'Project Profitability', icon: BarChart3 },
       { href: '/admin/service-cases', label: 'Warranty & Service', icon: ShieldCheck },

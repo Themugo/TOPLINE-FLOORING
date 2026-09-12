@@ -113,3 +113,6 @@ jobs:
 
       - name: Operation 1 commercial lifecycle verification
         run: npm run verify:operation-1-commercial-lifecycle
+
+      - name: Operation 2 project delivery verification
+        run: npm run verify:operation-2-project-delivery

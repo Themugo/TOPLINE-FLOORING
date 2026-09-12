@@ -112,3 +112,5 @@ Phase 3 adds `deliver-communications` plus service-role-only worker RPCs for rea
 
 - `20260913000000_073_customer_renewal_orchestration_360.sql` — Phases 89–91 Customer Renewal Orchestration 360.
 - `20260913010000_074_commercial_lifecycle_360.sql` — Operation 1 Commercial Lifecycle 360: lead → customer → quotation → order → project handoff.
+
+- `20260913020000_075_project_delivery_360.sql` — Operation 2 Project Delivery 360: planning → workforce → materials → installation → progress → issues → cost → quality → customer sign-off.
