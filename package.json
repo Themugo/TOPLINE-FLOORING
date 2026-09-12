@@ -45,7 +45,7 @@
     "verify:commerce-fulfillment-360": "node scripts/verify-commerce-fulfillment-360.mjs",
     "verify:order-operations-360": "node scripts/verify-order-operations-360.mjs",
     "verify:authorization-order-360": "node scripts/verify-authorization-order-360.mjs",
-    "verify:launch-gap": "node scripts/verify-launch-gap.mjs"
+    "verify:phase-2-supabase": "node scripts/verify-phase-2-supabase.mjs"
   },
   "dependencies": {
     "@radix-ui/react-accordion": "^1.2.16",

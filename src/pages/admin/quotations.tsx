@@ -1,4 +1,3 @@
-import { TOPLINE_COMPANY } from '@/lib/company-defaults';
 import { useState } from 'react';
 import { Eye, X, Plus, Trash2, Download, ArrowRightCircle, UserPlus } from 'lucide-react';
 import { AdminLayout } from './dashboard';
@@ -50,7 +49,7 @@ export default function AdminQuotations() {
 
   const handleDownloadPdf = (q: Quotation) => {
     generateQuotationPdf(q, q.items || [], {
-      name: settings.site_info?.name || TOPLINE_COMPANY.name,
+      name: settings.site_info?.name || 'Your Flooring Company',
       tagline: settings.site_info?.tagline,
       phone: settings.contact?.phone,
       email: settings.contact?.email,

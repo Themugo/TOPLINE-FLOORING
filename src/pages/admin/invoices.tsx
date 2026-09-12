@@ -1,4 +1,3 @@
-import { TOPLINE_COMPANY } from '@/lib/company-defaults';
 import { useState } from 'react';
 import { Plus, X, Trash2, Download, DollarSign, FileText } from 'lucide-react';
 import { AdminLayout } from './dashboard';
@@ -89,7 +88,7 @@ export default function AdminInvoices() {
 
   const handleDownloadPdf = (inv: Invoice) => {
     generateInvoicePdf(inv, inv.items || [], inv.payments || [], {
-      name: settings.site_info?.name || TOPLINE_COMPANY.name,
+      name: settings.site_info?.name || 'Your Flooring Company',
       tagline: settings.site_info?.tagline,
       phone: settings.contact?.phone,
       email: settings.contact?.email,

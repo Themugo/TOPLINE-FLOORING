@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { isSupabaseConfigured, supabase } from './supabase';
+import { supabase } from './supabase';
 import type { CMSContentStore, CMSGroupKey } from './cms-types';
 import { DEFAULT_CMS_STORE } from './cms-defaults';
 
@@ -19,8 +19,9 @@ export async function fetchCMSContentStore(): Promise<CMSContentStore> {
 
   cmsFetchPromise = (async () => {
     try {
-      if (!isSupabaseConfigured) {
-        throw new Error('Topline production content is unavailable until the dedicated Supabase project is configured.');
+      if (!supabase) {
+        cmsStoreCache = DEFAULT_CMS_STORE;
+        return DEFAULT_CMS_STORE;
       }
 
       // Fetch site_settings table records
@@ -29,7 +30,9 @@ export async function fetchCMSContentStore(): Promise<CMSContentStore> {
         .select('setting_key, setting_value');
 
       if (error) {
-        throw new Error(`Topline CMS database error: ${error.message}`);
+        console.warn('[CMS] Database query error, using defaults:', error.message);
+        cmsStoreCache = DEFAULT_CMS_STORE;
+        return DEFAULT_CMS_STORE;
       }
 
       const mergedStore: CMSContentStore = JSON.parse(JSON.stringify(DEFAULT_CMS_STORE));
@@ -66,7 +69,9 @@ export async function fetchCMSContentStore(): Promise<CMSContentStore> {
       cmsStoreCache = mergedStore;
       return mergedStore;
     } catch (err) {
-      throw err;
+      console.warn('[CMS] Failed to fetch CMS store, falling back to defaults:', err);
+      cmsStoreCache = DEFAULT_CMS_STORE;
+      return DEFAULT_CMS_STORE;
     } finally {
       cmsFetchPromise = null;
     }

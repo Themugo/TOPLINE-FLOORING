@@ -1,4 +1,3 @@
-import { TOPLINE_COMPANY } from '@/lib/company-defaults';
 import { useParams, Link } from 'wouter';
 import { useEffect, useState } from 'react';
 import { CustomerLayout } from '@/components/layout/CustomerLayout';
@@ -27,7 +26,7 @@ export default function ServiceDetail() {
   const [service, setService] = useState<Service | null>(null);
   const [loading, setLoading] = useState(true);
   const { settings } = useSiteSettings();
-  const companyName = settings.site_info?.name || settings.company?.name || TOPLINE_COMPANY.name;
+  const companyName = settings.site_info?.name || settings.company?.name || 'Your Flooring Company';
 
   useSeoMeta('service', slug, service ? {
     title: `${service.name} | ${companyName}`,

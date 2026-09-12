@@ -201,11 +201,39 @@ export function useProducts(options?: { categoryId?: string; featured?: boolean;
       if (options?.limit) query = query.limit(options.limit);
 
       const { data, error: err } = await query;
-      if (err) throw err;
-      setProducts(data || []);
-    } catch (err) {
-      setProducts([]);
-      setError(errorMessage(err, 'Failed to load products'));
+      if (err || !data || data.length === 0) {
+        let filtered: any[] = [];
+        if (options?.categoryId) filtered = filtered.filter((p) => p.category_id === options.categoryId);
+        if (options?.featured) filtered = filtered.filter((p) => p.featured);
+        if (options?.search) {
+          const q = options.search.toLowerCase();
+          filtered = filtered.filter(
+            (p) =>
+              p.name.toLowerCase().includes(q) ||
+              p.slug.toLowerCase().includes(q) ||
+              (p.sku || '').toLowerCase().includes(q)
+          );
+        }
+        if (options?.limit) filtered = filtered.slice(0, options.limit);
+        setProducts(filtered);
+      } else {
+        setProducts(data);
+      }
+    } catch {
+      let filtered: any[] = [];
+      if (options?.categoryId) filtered = filtered.filter((p) => p.category_id === options.categoryId);
+      if (options?.featured) filtered = filtered.filter((p) => p.featured);
+      if (options?.search) {
+        const q = options.search.toLowerCase();
+        filtered = filtered.filter(
+          (p) =>
+            p.name.toLowerCase().includes(q) ||
+            p.slug.toLowerCase().includes(q) ||
+            (p.sku || '').toLowerCase().includes(q)
+        );
+      }
+      if (options?.limit) filtered = filtered.slice(0, options.limit);
+      setProducts(filtered);
     } finally {
       setLoading(false);
     }

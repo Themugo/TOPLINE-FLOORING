@@ -9,6 +9,3 @@ enabled = true
 
 [db]
 major_version = 15
-
-[functions.deliver-communications]
-verify_jwt = false
