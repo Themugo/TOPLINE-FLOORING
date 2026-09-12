@@ -98,3 +98,6 @@ jobs:
           if-no-files-found: error
           retention-days: 7
 
+
+      - name: Phase 80–82 verification
+        run: npm run verify:phases-80-82

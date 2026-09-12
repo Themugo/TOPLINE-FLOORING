@@ -103,3 +103,5 @@ Do not hand-author a production database type file when the remote schema is ava
 22. `20260911190000_055_reservation_expiry_and_operations.sql` — reservation expiry and operational reconciliation.
 
 Phase 3 adds `deliver-communications` plus service-role-only worker RPCs for real email/SMS delivery.
+
+- `20260912210000_070_customer_service_sla_operations_360.sql` — Phases 80–82 Customer Service SLA & After-Sales Operations 360.

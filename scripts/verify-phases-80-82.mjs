@@ -1,0 +1,12 @@
+import fs from 'node:fs'; import path from 'node:path';
+const root=process.cwd(); const errors=[];
+const migration='20260912210000_070_customer_service_sla_operations_360.sql';
+const mp=path.join(root,'supabase/migrations',migration); if(!fs.existsSync(mp)) errors.push(`Missing ${migration}`);
+const sql=fs.existsSync(mp)?fs.readFileSync(mp,'utf8'):'';
+for(const x of ['sla_due_at','service_case_events','transition_service_case_360','get_service_case_operations_360','service_case_sla_hours']) if(!sql.includes(x)) errors.push(`Missing service operations contract: ${x}`);
+for(const x of ['src/lib/service-cases-360.ts','src/pages/admin/service-cases.tsx']) if(!fs.existsSync(path.join(root,x))) errors.push(`Missing implementation: ${x}`);
+const page=fs.readFileSync(path.join(root,'src/pages/admin/service-cases.tsx'),'utf8'); for(const x of ['getServiceCaseOperations360','transitionServiceCase360','sla_due_at','Overdue']) if(!page.includes(x)) errors.push(`Service case UI missing: ${x}`);
+const pkg=JSON.parse(fs.readFileSync(path.join(root,'package.json'),'utf8')); if(!pkg.scripts['verify:phases-80-82']) errors.push('Missing package verifier script');
+const migrations=fs.readdirSync(path.join(root,'supabase/migrations')).filter(f=>f.endsWith('.sql')).sort(); const idx=migrations.indexOf(migration); if(idx<0) errors.push('Migration not in chain'); else if(idx!==migrations.length-1) errors.push('Phase 80-82 migration is not the final migration');
+const ci=fs.readFileSync(path.join(root,'.github/workflows/ci.yml'),'utf8'); if(!ci.includes('verify:phases-80-82')) errors.push('CI missing Phase 80-82 gate');
+if(errors.length){console.error('Phase 80–82 verification failed.');errors.forEach(e=>console.error('- '+e));process.exit(1)} console.log('Phase 80–82 source verification passed.'); console.log(`Active migrations: ${migrations.length}`);
