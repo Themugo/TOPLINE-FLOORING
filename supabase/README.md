@@ -120,3 +120,5 @@ Phase 3 adds `deliver-communications` plus service-role-only worker RPCs for rea
 - `20260913080000_081_executive_operations_control_360.sql` — Operation 8 Executive Operations & Control Centre 360
 
 - `20260913090000_082_reliability_observability_incident_response_360.sql` — Operation 10 Reliability, Observability & Incident Response 360
+
+- `20260913140000_087_health_safety_site_compliance_360.sql` — Operation 15 Health, Safety & Site Compliance 360.

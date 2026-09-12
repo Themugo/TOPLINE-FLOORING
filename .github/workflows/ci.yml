@@ -152,3 +152,6 @@ jobs:
 
       - name: Operation 14 quality assurance and corrective action
         run: npm run verify:operation-14-quality-assurance
+
+      - name: Verify Operation 15 — HSE Site Compliance 360
+        run: npm run verify:operation-15-hse-site-compliance

@@ -76,7 +76,7 @@ Never put a service-role or worker secret in a `VITE_*` variable.
 
 ## Current active chain (Phases 30–32 verification baseline)
 
-The current production candidate contains 57 uniquely timestamped active migrations, ending with `20260913130000_086_quality_assurance_corrective_action_360.sql`. Run the complete verification suite before any linked database deployment.
+The current production candidate contains 58 uniquely timestamped active migrations, ending with `20260913130000_086_quality_assurance_corrective_action_360.sql`. Run the complete verification suite before any linked database deployment.
 
 - `20260912210000_070_customer_service_sla_operations_360.sql` — Phases 80–82 Customer Service SLA & After-Sales Operations 360.
 
@@ -100,3 +100,5 @@ The current production candidate contains 57 uniquely timestamped active migrati
 - `20260913120000_085_identity_privileged_access_360.sql` — Identity & Privileged Access 360: controlled staff lifecycle, role changes and privileged-access approvals.
 
 57. `20260913130000_086_quality_assurance_corrective_action_360.sql` — quality assurance and corrective action 360
+
+- `20260913140000_087_health_safety_site_compliance_360.sql` — Operation 15 Health, Safety & Site Compliance 360.
