@@ -4,3 +4,4 @@ Disallow: /admin/
 Disallow: /cart
 Disallow: /order-confirmation/
 
+Sitemap: https://toplineflooringandwaterproofing.co.ke/sitemap.xml

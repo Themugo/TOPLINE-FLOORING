@@ -60,6 +60,7 @@ AS $$
 $$;
 
 -- Replace the invalid historical policy function reference with the canonical helper.
+ALTER TABLE public.payment_refunds ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS payment_refunds_staff_read ON public.payment_refunds;
 CREATE POLICY payment_refunds_staff_read
   ON public.payment_refunds FOR SELECT TO authenticated

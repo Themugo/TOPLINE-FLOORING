@@ -47,7 +47,8 @@
     "verify:authorization-order-360": "node scripts/verify-authorization-order-360.mjs",
     "verify:phase-2-supabase": "node scripts/verify-phase-2-supabase.mjs",
     "verify:phase-3-email": "node scripts/verify-phase-3-email.mjs",
-    "verify:phase-4-sms": "node scripts/verify-phase-4-sms.mjs"
+    "verify:phase-4-sms": "node scripts/verify-phase-4-sms.mjs",
+    "verify:phase-5-hosting": "node scripts/verify-phase-5-hosting.mjs"
   },
   "dependencies": {
     "@radix-ui/react-accordion": "^1.2.16",

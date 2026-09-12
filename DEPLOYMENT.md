@@ -74,6 +74,19 @@ After the Supabase infrastructure is verified:
 
 `vercel.json` contains the SPA routing configuration required for client-side Wouter routes.
 
+
+## 5A. Phase 5 hosting and domain release contract
+
+The canonical production website is `https://toplineflooringandwaterproofing.co.ke`. `www` is redirected to the canonical non-www host. `robots.txt` publishes the canonical sitemap and `/.well-known/security.txt` provides a security contact.
+
+Run the static release gate before deployment:
+
+```cmd
+npm run verify:phase-5-hosting
+```
+
+Follow `docs/PHASE_5_PRODUCTION_HOSTING_DOMAIN_RELEASE.md` for the safe DNS/Vercel cutover sequence. Keep existing cPanel MX/mail records unchanged during the web migration.
+
 ## 6. Operational rule
 
 A successful frontend build does **not** prove that the database, RLS, authentication or business workflows are production-ready. Production sign-off requires the infrastructure and security verification described above.
