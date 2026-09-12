@@ -145,3 +145,7 @@ jobs:
 
       - name: Operation 12 data governance and privacy
         run: npm run verify:operation-12-data-governance
+
+
+      - name: Operation 13 identity and privileged access
+        run: npm run verify:operation-13-identity-access

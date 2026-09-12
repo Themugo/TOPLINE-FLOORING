@@ -82,7 +82,8 @@
     "verify:operation-9-production-certification": "node scripts/verify-operation-9-production-certification.mjs",
     "verify:operation-10-reliability-incident-response": "node scripts/verify-operation-10-reliability-incident-response.mjs",
     "verify:operation-11-business-continuity": "node scripts/verify-operation-11-business-continuity.mjs",
-    "verify:operation-12-data-governance": "node scripts/verify-operation-12-data-governance.mjs"
+    "verify:operation-12-data-governance": "node scripts/verify-operation-12-data-governance.mjs",
+    "verify:operation-13-identity-access": "node scripts/verify-operation-13-identity-access.mjs"
   },
   "dependencies": {
     "@radix-ui/react-accordion": "^1.2.16",
