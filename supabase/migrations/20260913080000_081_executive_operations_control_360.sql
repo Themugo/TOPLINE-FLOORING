@@ -16,7 +16,7 @@ REVOKE ALL ON public.executive_operations_events FROM PUBLIC, anon, authenticate
 
 CREATE OR REPLACE FUNCTION public.reconcile_executive_operations_360()
 RETURNS jsonb LANGUAGE plpgsql SECURITY DEFINER SET search_path=public,private AS $$
-DECLARE v_user uuid := private.require_staff_permission('reports','read'); v_result jsonb;
+DECLARE v_user uuid := private.require_staff_permission('reports','select'); v_result jsonb;
 BEGIN
   SELECT jsonb_build_object(
     'checked_at', now(),
@@ -38,7 +38,7 @@ END; $$;
 
 CREATE OR REPLACE FUNCTION public.get_executive_operations_360(p_days integer DEFAULT 30)
 RETURNS jsonb LANGUAGE plpgsql SECURITY DEFINER STABLE SET search_path=public,private AS $$
-DECLARE v_user uuid := private.require_staff_permission('reports','read'); v_days integer:=greatest(1,least(coalesce(p_days,30),365)); v_since timestamptz; v_metrics jsonb; v_exceptions jsonb;
+DECLARE v_user uuid := private.require_staff_permission('reports','select'); v_days integer:=greatest(1,least(coalesce(p_days,30),365)); v_since timestamptz; v_metrics jsonb; v_exceptions jsonb;
 BEGIN
   v_since := now()-make_interval(days=>v_days);
   SELECT jsonb_build_object(
@@ -49,7 +49,7 @@ BEGIN
     'orders_active',(SELECT count(*) FROM public.orders WHERE status NOT IN ('completed','cancelled')),
     'orders_revenue',(SELECT COALESCE(sum(total_amount),0) FROM public.orders WHERE created_at>=v_since AND status<>'cancelled'),
     'projects_active',(SELECT count(*) FROM public.projects WHERE status NOT IN ('completed','cancelled')),
-    'projects_overdue',(SELECT count(*) FROM public.projects WHERE status NOT IN ('completed','cancelled') AND COALESCE(end_date,expected_completion_date) < current_date),
+    'projects_overdue',(SELECT count(*) FROM public.projects WHERE status NOT IN ('completed','cancelled') AND end_date < current_date),
     'low_stock',(SELECT count(*) FROM public.products WHERE is_active=true AND stock_quantity<=low_stock_threshold),
     'open_purchase_orders',(SELECT count(*) FROM public.purchase_orders WHERE status NOT IN ('received','cancelled')),
     'pending_deliveries',(SELECT count(*) FROM public.deliveries WHERE status NOT IN ('delivered','cancelled')),

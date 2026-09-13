@@ -386,7 +386,7 @@ AS $$
 DECLARE
   v_user uuid; v_order public.orders%ROWTYPE; v_paid numeric(12,2);
   v_item jsonb;
-  v_tx public.payment_transactions%ROWTYPE; v_status text;
+  v_tx public.payment_transactions%ROWTYPE; v_status text; v_reserved numeric(12,2);
 BEGIN
   v_user := private.require_staff_permission('finance','update');
   IF p_amount <= 0 THEN RAISE EXCEPTION 'Payment amount must be positive'; END IF;

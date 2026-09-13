@@ -21,7 +21,7 @@ REVOKE ALL ON public.finance_control_events FROM anon, authenticated;
 GRANT SELECT ON public.finance_control_events TO authenticated;
 DROP POLICY IF EXISTS finance_control_events_read ON public.finance_control_events;
 CREATE POLICY finance_control_events_read ON public.finance_control_events FOR SELECT TO authenticated
-  USING (private.current_user_has_permission('finance','read'));
+  USING (private.current_user_has_permission('finance','select'));
 
 -- Canonical invoice payment entry: record the ledger event and maintain the invoice balance atomically.
 CREATE OR REPLACE FUNCTION public.record_invoice_payment_transaction(
@@ -106,7 +106,7 @@ CREATE OR REPLACE FUNCTION public.get_finance_control_360(p_days integer DEFAULT
 RETURNS jsonb LANGUAGE plpgsql SECURITY DEFINER SET search_path=public,private AS $$
 DECLARE v_user uuid; v_days integer; v_since timestamptz; v_result jsonb;
 BEGIN
-  v_user := private.require_staff_permission('reports','read');
+  v_user := private.require_staff_permission('reports','select');
   v_days := greatest(1,least(coalesce(p_days,30),365)); v_since := now()-make_interval(days=>v_days);
   SELECT jsonb_build_object(
     'days',v_days,

@@ -30,6 +30,7 @@ CREATE OR REPLACE FUNCTION public.reconcile_customer_lifecycle_360()
 RETURNS jsonb
 LANGUAGE plpgsql SECURITY DEFINER SET search_path=public,private AS $$
 DECLARE
+  r record;
   v_user uuid := private.require_staff_permission('customers','update');
   v_sla jsonb;
   v_renewal jsonb;

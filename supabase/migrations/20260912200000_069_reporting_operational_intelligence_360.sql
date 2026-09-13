@@ -71,9 +71,9 @@ BEGIN
   FROM public.communication_inbound i
   WHERE i.processed_at IS NULL;
 
-  SELECT count(*)::integer FILTER (WHERE o.channel='email' AND coalesce(o.last_provider_event,'') IN ('delivered','opened','read')),
-         count(*)::integer FILTER (WHERE o.channel='whatsapp' AND coalesce(o.last_provider_event,'') IN ('delivered','read')),
-         count(*)::integer FILTER (WHERE o.channel='sms' AND coalesce(o.last_provider_event,'') IN ('delivered','success'))
+  SELECT (count(*) FILTER (WHERE o.channel='email' AND coalesce(o.last_provider_event,'') IN ('delivered','opened','read')))::integer,
+         (count(*) FILTER (WHERE o.channel='whatsapp' AND coalesce(o.last_provider_event,'') IN ('delivered','read')))::integer,
+         (count(*) FILTER (WHERE o.channel='sms' AND coalesce(o.last_provider_event,'') IN ('delivered','success')))::integer
     INTO v_email_delivered, v_whatsapp_delivered, v_sms_delivered
   FROM public.communication_outbox o
   WHERE o.created_at >= v_start;

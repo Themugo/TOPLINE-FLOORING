@@ -27,17 +27,21 @@ CREATE INDEX IF NOT EXISTS maintenance_plans_project_idx ON public.maintenance_p
 
 CREATE TABLE IF NOT EXISTS public.maintenance_plan_visits (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  plan_id uuid NOT NULL REFERENCES public.maintenance_plans(id) ON DELETE CASCADE,
+  plan_id uuid NOT NULL,
   service_case_id uuid REFERENCES public.service_cases(id) ON DELETE SET NULL,
   scheduled_for date NOT NULL,
   completed_on date,
   status text NOT NULL DEFAULT 'scheduled' CHECK (status IN ('scheduled','in_progress','completed','cancelled','missed')),
-  assigned_to uuid REFERENCES public.staff_profiles(id) ON DELETE SET NULL,
+  assigned_to uuid REFERENCES public.staff_profiles(user_id) ON DELETE SET NULL,
   notes text,
   created_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now()
 );
+
+ALTER TABLE public.maintenance_plan_visits
+  ADD CONSTRAINT maintenance_plan_visits_plan_fk
+  FOREIGN KEY (plan_id) REFERENCES public.maintenance_plans(id) ON DELETE CASCADE;
 
 CREATE INDEX IF NOT EXISTS maintenance_plan_visits_plan_idx ON public.maintenance_plan_visits(plan_id, scheduled_for DESC);
 CREATE INDEX IF NOT EXISTS maintenance_plan_visits_schedule_idx ON public.maintenance_plan_visits(status, scheduled_for);
@@ -94,7 +98,7 @@ BEGIN
   IF v_plan.status <> 'active' THEN RAISE EXCEPTION 'Only active maintenance plans can be scheduled'; END IF;
   IF p_scheduled_for < current_date THEN RAISE EXCEPTION 'Maintenance visit cannot be scheduled in the past'; END IF;
   IF v_plan.expires_on IS NOT NULL AND p_scheduled_for > v_plan.expires_on THEN RAISE EXCEPTION 'Visit is beyond the maintenance plan expiry date'; END IF;
-  IF p_assigned_to IS NOT NULL AND NOT EXISTS (SELECT 1 FROM public.staff_profiles s WHERE s.id=p_assigned_to AND COALESCE(s.is_active,true)) THEN RAISE EXCEPTION 'Assigned staff member is not active'; END IF;
+  IF p_assigned_to IS NOT NULL AND NOT EXISTS (SELECT 1 FROM public.staff_profiles s WHERE s.user_id=p_assigned_to AND COALESCE(s.is_active,true)) THEN RAISE EXCEPTION 'Assigned staff member is not active'; END IF;
   INSERT INTO public.maintenance_plan_visits(plan_id,scheduled_for,assigned_to,notes,created_by)
   VALUES(p_plan_id,p_scheduled_for,p_assigned_to,nullif(trim(p_notes),''),v_user) RETURNING id INTO v_id;
   RETURN jsonb_build_object('success',true,'visit_id',v_id,'plan_id',p_plan_id,'scheduled_for',p_scheduled_for);

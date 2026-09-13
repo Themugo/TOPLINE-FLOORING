@@ -21,7 +21,7 @@ ALTER TABLE public.supply_chain_events ENABLE ROW LEVEL SECURITY;
 REVOKE ALL ON public.supply_chain_events FROM anon, authenticated;
 GRANT SELECT ON public.supply_chain_events TO authenticated;
 DROP POLICY IF EXISTS supply_chain_events_read ON public.supply_chain_events;
-CREATE POLICY supply_chain_events_read ON public.supply_chain_events FOR SELECT TO authenticated USING (private.current_user_has_permission('inventory','read'));
+CREATE POLICY supply_chain_events_read ON public.supply_chain_events FOR SELECT TO authenticated USING (private.current_user_has_permission('inventory','select'));
 
 -- Warehouses are controlled operational resources; browser DML is removed.
 REVOKE INSERT, UPDATE, DELETE ON public.warehouses FROM authenticated;
@@ -138,7 +138,7 @@ CREATE OR REPLACE FUNCTION public.reconcile_supply_chain_360()
 RETURNS jsonb LANGUAGE plpgsql SECURITY DEFINER SET search_path=public,private AS $$
 DECLARE v_user uuid; v_products jsonb; v_po jsonb; v_alloc jsonb;
 BEGIN
- v_user:=private.require_staff_permission('inventory','read');
+ v_user:=private.require_staff_permission('inventory','select');
  SELECT coalesce(jsonb_agg(to_jsonb(x) ORDER BY x.product_name),'[]'::jsonb) INTO v_products FROM (
    SELECT p.id product_id,p.name product_name,p.stock_quantity product_stock,coalesce(sum(ws.quantity),0) warehouse_stock,p.stock_quantity-coalesce(sum(ws.quantity),0) discrepancy FROM public.products p LEFT JOIN public.warehouse_stock ws ON ws.product_id=p.id WHERE p.is_active=true GROUP BY p.id,p.name,p.stock_quantity HAVING p.stock_quantity<>coalesce(sum(ws.quantity),0)
  ) x;
@@ -156,7 +156,7 @@ CREATE OR REPLACE FUNCTION public.get_supply_chain_360(p_days integer DEFAULT 30
 RETURNS jsonb LANGUAGE plpgsql SECURITY DEFINER SET search_path=public,private AS $$
 DECLARE v_user uuid; v_days integer:=greatest(1,least(coalesce(p_days,30),365)); v_since timestamptz; v_result jsonb;
 BEGIN
- v_user:=private.require_staff_permission('reports','read'); v_since:=now()-make_interval(days=>v_days);
+ v_user:=private.require_staff_permission('reports','select'); v_since:=now()-make_interval(days=>v_days);
  SELECT jsonb_build_object(
   'days',v_days,'active_products',(SELECT count(*) FROM public.products WHERE is_active=true),'low_stock',(SELECT count(*) FROM public.products WHERE is_active=true AND stock_quantity<=low_stock_threshold),'stock_units',(SELECT coalesce(sum(stock_quantity),0) FROM public.products WHERE is_active=true),'active_warehouses',(SELECT count(*) FROM public.warehouses WHERE is_active=true),'warehouse_stock_units',(SELECT coalesce(sum(quantity),0) FROM public.warehouse_stock ws JOIN public.warehouses w ON w.id=ws.warehouse_id WHERE w.is_active=true),'active_suppliers',(SELECT count(*) FROM public.suppliers WHERE is_active=true),'open_purchase_orders',(SELECT count(*) FROM public.purchase_orders WHERE status NOT IN ('received','cancelled')),'pending_receipts',(SELECT count(*) FROM public.purchase_orders WHERE status IN ('ordered','partial','sent','pending')),'procurement_value',(SELECT coalesce(sum(total_amount),0) FROM public.purchase_orders WHERE created_at>=v_since AND status<>'cancelled'),'received_value',(SELECT coalesce(sum(total_amount),0) FROM public.purchase_orders WHERE actual_delivery_date>=current_date-v_days AND status='received'),'inventory_movements',(SELECT count(*) FROM public.inventory_movements WHERE created_at>=v_since),'active_allocations',(SELECT count(*) FROM public.installation_material_allocations WHERE status IN ('allocated','issued')),'unresolved_alerts',(SELECT count(*) FROM public.inventory_alerts WHERE is_resolved=false),'events',(SELECT count(*) FROM public.supply_chain_events WHERE created_at>=v_since)
  ) INTO v_result;

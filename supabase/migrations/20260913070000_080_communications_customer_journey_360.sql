@@ -21,7 +21,7 @@ GRANT SELECT ON public.communication_workflow_events TO authenticated;
 DROP POLICY IF EXISTS communication_workflow_events_staff ON public.communication_workflow_events;
 CREATE POLICY communication_workflow_events_staff ON public.communication_workflow_events
   FOR SELECT TO authenticated
-  USING (private.current_user_has_permission('customers','read'));
+  USING (private.current_user_has_permission('customers','select'));
 
 -- Customers can manage their own channel preferences; staff can manage them for support.
 CREATE OR REPLACE FUNCTION public.update_customer_notification_preferences(
@@ -136,7 +136,7 @@ RETURNS jsonb
 LANGUAGE plpgsql STABLE SECURITY DEFINER SET search_path=public,private AS $$
 DECLARE v_days integer:=greatest(1,least(coalesce(p_days,30),365));
 BEGIN
-  PERFORM private.require_staff_permission('customers','read');
+  PERFORM private.require_staff_permission('customers','select');
   RETURN jsonb_build_object(
     'period_days',v_days,
     'metrics',jsonb_build_object(

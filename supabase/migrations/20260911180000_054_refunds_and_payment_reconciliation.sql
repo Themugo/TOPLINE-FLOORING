@@ -33,7 +33,7 @@ GRANT SELECT ON public.payment_refunds TO authenticated;
 DROP POLICY IF EXISTS payment_refunds_staff_read ON public.payment_refunds;
 CREATE POLICY payment_refunds_staff_read ON public.payment_refunds
   FOR SELECT TO authenticated
-  USING (private.has_staff_permission('finance','read'));
+  USING (private.current_user_has_permission('finance','select'));
 
 CREATE OR REPLACE FUNCTION public.create_order_refund_request(
   p_order_id uuid,
