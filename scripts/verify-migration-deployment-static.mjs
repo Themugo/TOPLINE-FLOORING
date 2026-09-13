@@ -45,8 +45,8 @@ for (const file of files) {
   }
 }
 
-if (files.length !== 64) failures.push(`expected 59 active migrations, found ${files.length}`);
-if (!files.some((f) => f.startsWith('20260913164000_093_'))) failures.push('migration 093 missing');
+if (files.length !== 65) failures.push(`expected 65 active migrations, found ${files.length}`);
+if (!files.some((f) => f.startsWith('20260913170000_094_'))) failures.push('migration 094 missing');
 
 if (failures.length) {
   console.error('Migration deployment static verification FAILED');
