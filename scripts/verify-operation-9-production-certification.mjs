@@ -4,7 +4,7 @@ import path from 'node:path';
 const root = process.cwd();
 const failures = [];
 const warnings = [];
-const expectedProjectRef = 'jypkhvknfgoqrhwzbdwi';
+const expectedProjectRef = 'zmbsskvnzjdaxuxlauyx';
 const expectedSupabaseUrl = `https://${expectedProjectRef}.supabase.co`;
 const expectedSiteUrl = 'https://toplineflooringandwaterproofing.co.ke';
 

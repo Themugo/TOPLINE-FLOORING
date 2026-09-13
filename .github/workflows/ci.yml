@@ -155,3 +155,6 @@ jobs:
 
       - name: Verify Operation 15 — HSE Site Compliance 360
         run: npm run verify:operation-15-hse-site-compliance
+
+      - name: Verify Operation 16 — Client-Owned Supabase Integration
+        run: npm run verify:operation-16-client-owned-supabase

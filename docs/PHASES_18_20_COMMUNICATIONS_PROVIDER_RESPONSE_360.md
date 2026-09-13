@@ -58,7 +58,7 @@ The existing `SUPABASE_SERVICE_ROLE_KEY` backend secret is used by the current w
 
 Verify the Topline sending domain/sender and configure a transactional webhook for delivery events to:
 
-`https://jypkhvknfgoqrhwzbdwi.supabase.co/functions/v1/communication-provider-webhook`
+`https://zmbsskvnzjdaxuxlauyx.supabase.co/functions/v1/communication-provider-webhook`
 
 Use the `x-topline-webhook-secret` header.
 
@@ -70,7 +70,7 @@ Create/connect the Topline WhatsApp Business Account and phone number in Meta Bu
 
 Configure the Meta webhook callback to:
 
-`https://jypkhvknfgoqrhwzbdwi.supabase.co/functions/v1/whatsapp-webhook`
+`https://zmbsskvnzjdaxuxlauyx.supabase.co/functions/v1/whatsapp-webhook`
 
 Use `WHATSAPP_VERIFY_TOKEN` for the webhook verification challenge. The same endpoint records Meta outbound status events and inbound customer messages into the Topline database.
 
@@ -78,13 +78,13 @@ Use `WHATSAPP_VERIFY_TOKEN` for the webhook verification challenge. The same end
 
 Configure the Africa's Talking delivery report callback to:
 
-`https://jypkhvknfgoqrhwzbdwi.supabase.co/functions/v1/sms-delivery-report`
+`https://zmbsskvnzjdaxuxlauyx.supabase.co/functions/v1/sms-delivery-report`
 
 Use `x-topline-callback-secret` and the configured `AT_DLR_SECRET`.
 
 Configure inbound SMS to:
 
-`https://jypkhvknfgoqrhwzbdwi.supabase.co/functions/v1/sms-inbound`
+`https://zmbsskvnzjdaxuxlauyx.supabase.co/functions/v1/sms-inbound`
 
 Use `x-topline-callback-secret` with `AT_INBOUND_SECRET`.
 
@@ -92,7 +92,7 @@ Use `x-topline-callback-secret` with `AT_INBOUND_SECRET`.
 
 For true email replies, configure Brevo inbound parsing on a dedicated receiving subdomain such as `reply.toplineflooringandwaterproofing.co.ke`. Do not use the same domain/subdomain used for outbound sending. Point the inbound webhook to:
 
-`https://jypkhvknfgoqrhwzbdwi.supabase.co/functions/v1/email-inbound`
+`https://zmbsskvnzjdaxuxlauyx.supabase.co/functions/v1/email-inbound`
 
 Use `x-topline-webhook-secret` with `EMAIL_INBOUND_SECRET`.
 

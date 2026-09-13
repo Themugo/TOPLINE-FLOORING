@@ -93,7 +93,7 @@ After local replay and regression validation, inspect the linked migration histo
 
 ```cmd
 npx supabase login
-npx supabase link --project-ref jypkhvknfgoqrhwzbdwi
+npx supabase link --project-ref zmbsskvnzjdaxuxlauyx
 npx supabase migration list --linked
 npx supabase db push --dry-run --linked
 npx supabase db lint --linked

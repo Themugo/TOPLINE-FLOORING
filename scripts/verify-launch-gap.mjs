@@ -17,7 +17,7 @@ for (const forbidden of ['example.com', 'Your Flooring Company', '+1 (555)', 'US
 }
 
 const supabase = read('src/lib/supabase.ts');
-if (!supabase.includes('jypkhvknfgoqrhwzbdwi.supabase.co')) failures.push('Supabase client is not pinned to the dedicated Topline project.');
+if (!supabase.includes('zmbsskvnzjdaxuxlauyx.supabase.co')) failures.push('Supabase client is not pinned to the dedicated Topline project.');
 
 const migrationDir = path.join(root, 'supabase', 'migrations');
 const migrations = fs.readdirSync(migrationDir).filter((f) => f.endsWith('.sql')).sort();

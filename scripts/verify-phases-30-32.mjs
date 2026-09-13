@@ -40,7 +40,7 @@ for (const file of required) if (!readme.includes(file)) fail(`supabase/README.m
 
 if (!existsSync('supabase/config.toml')) fail('Missing supabase/config.toml');
 const config = readFileSync('supabase/config.toml', 'utf8');
-if (!config.includes('project_id = "jypkhvknfgoqrhwzbdwi"')) fail('Supabase config is not pinned to the Topline project.');
+if (!config.includes('project_id = "zmbsskvnzjdaxuxlauyx"')) fail('Supabase config is not pinned to the Topline project.');
 
 const securityTest = 'supabase/tests/security_regression.sql';
 if (!existsSync(securityTest)) fail('Missing security regression SQL test.');
@@ -53,7 +53,7 @@ if (!/roles\s*@>\s*ARRAY\['anon'\]/.test(security)) fail('Security regression te
 
 const envExample = readFileSync('.env.example', 'utf8');
 for (const key of ['VITE_SUPABASE_URL','VITE_SUPABASE_PUBLISHABLE_KEY']) if (!envExample.includes(key)) fail(`.env.example is missing ${key}`);
-if (!envExample.includes('jypkhvknfgoqrhwzbdwi.supabase.co')) fail('Topline Supabase URL missing from environment contract.');
+if (!envExample.includes('zmbsskvnzjdaxuxlauyx.supabase.co')) fail('Topline Supabase URL missing from environment contract.');
 for (const secretFile of ['.env','.env.local','.env.production']) if (existsSync(secretFile)) fail(`${secretFile} must not be committed or packaged.`);
 const gitignore = readFileSync('.gitignore','utf8');
 if (!gitignore.includes('.env*')) fail('.gitignore must exclude environment files.');

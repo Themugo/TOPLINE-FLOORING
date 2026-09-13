@@ -1,6 +1,6 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 
-const TOPLINE_SUPABASE_URL = 'https://jypkhvknfgoqrhwzbdwi.supabase.co';
+const TOPLINE_SUPABASE_URL = 'https://zmbsskvnzjdaxuxlauyx.supabase.co';
 const supabaseUrl = (import.meta.env.VITE_SUPABASE_URL || TOPLINE_SUPABASE_URL)?.trim();
 const isSupabaseUrlValid = supabaseUrl === TOPLINE_SUPABASE_URL;
 const supabasePublishableKey = (

@@ -10,4 +10,4 @@ Finance mutations use protected RPCs. Invoice collection state is recalculated f
 `supabase/functions/payment-webhook` remains fail-closed until a real payment provider adapter verifies signatures and normalizes provider events. Browser-supplied success cannot mark an order paid.
 
 ## Validation
-Run local Supabase replay before remote deployment. Then use `npx supabase link --project-ref jypkhvknfgoqrhwzbdwi`, `npx supabase migration list --linked`, and `npx supabase db push --dry-run --linked`. Never run `db reset --linked` against the production project.
+Run local Supabase replay before remote deployment. Then use `npx supabase link --project-ref zmbsskvnzjdaxuxlauyx`, `npx supabase migration list --linked`, and `npx supabase db push --dry-run --linked`. Never run `db reset --linked` against the production project.

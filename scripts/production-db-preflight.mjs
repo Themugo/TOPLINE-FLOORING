@@ -4,10 +4,10 @@ import path from 'node:path';
 const root = process.cwd();
 const errors = [];
 const warnings = [];
-const projectRef = 'jypkhvknfgoqrhwzbdwi';
+const projectRef = 'zmbsskvnzjdaxuxlauyx';
 
 const env = fs.readFileSync(path.join(root, '.env.example'), 'utf8');
-if (!env.includes('VITE_SUPABASE_URL=https://jypkhvknfgoqrhwzbdwi.supabase.co')) errors.push('Canonical Topline Supabase URL is missing from .env.example.');
+if (!env.includes('VITE_SUPABASE_URL=https://zmbsskvnzjdaxuxlauyx.supabase.co')) errors.push('Canonical Topline Supabase URL is missing from .env.example.');
 if (env.includes('service_role') || env.includes('SUPABASE_SERVICE_ROLE_KEY')) errors.push('Server-only service-role credential is exposed in .env.example.');
 
 const workflows = fs.readFileSync(path.join(root, '.github/workflows/ci.yml'), 'utf8');

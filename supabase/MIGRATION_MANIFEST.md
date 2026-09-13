@@ -46,7 +46,7 @@ Do not reset or destroy a live Topline production database. Establish the clean 
 
 ```cmd
 npx supabase login
-npx supabase link --project-ref jypkhvknfgoqrhwzbdwi
+npx supabase link --project-ref zmbsskvnzjdaxuxlauyx
 npx supabase migration list --linked
 npx supabase db push --dry-run --linked
 ```
@@ -102,3 +102,4 @@ The current production candidate contains 58 uniquely timestamped active migrati
 57. `20260913130000_086_quality_assurance_corrective_action_360.sql` — quality assurance and corrective action 360
 
 - `20260913140000_087_health_safety_site_compliance_360.sql` — Operation 15 Health, Safety & Site Compliance 360.
+- `20260913150000_088_client_owned_infrastructure_hardening.sql` — Operation 16 Client-Owned Supabase Integration & Infrastructure Hardening 360.

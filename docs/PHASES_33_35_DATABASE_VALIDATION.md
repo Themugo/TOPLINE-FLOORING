@@ -37,7 +37,7 @@ npm run verify:production-readiness
 Remote activation remains a separate, deliberate operation:
 
 ```cmd
-npx supabase link --project-ref jypkhvknfgoqrhwzbdwi
+npx supabase link --project-ref zmbsskvnzjdaxuxlauyx
 npx supabase migration list --linked
 npx supabase db push --dry-run --linked
 ```

@@ -20,7 +20,7 @@ for(const [name,ok] of [
  ['admin route',app.includes("'/admin/hse-site-compliance-360': AdminHseSiteCompliance360")],
  ['package verifier',pkg.scripts['verify:operation-15-hse-site-compliance']==='node scripts/verify-operation-15-hse-site-compliance.mjs'],
  ['CI verifier',ci.includes('npm run verify:operation-15-hse-site-compliance')],
- ['migration count',fs.readdirSync(path.join(root,'supabase/migrations')).filter(x=>x.endsWith('.sql')).length>=58]
+ ['migration count',fs.readdirSync(path.join(root,'supabase/migrations')).filter(x=>x.endsWith('.sql')).length>=59]
 ]) if(!ok) fail.push(name);
 if(fail.length){console.error('Operation 15 HSE certification: FAIL'); fail.forEach(x=>console.error(`- ${x}`)); process.exit(1)}
 console.log('Operation 15 HSE Site Compliance 360: PASS');

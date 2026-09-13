@@ -85,7 +85,8 @@
     "verify:operation-12-data-governance": "node scripts/verify-operation-12-data-governance.mjs",
     "verify:operation-13-identity-access": "node scripts/verify-operation-13-identity-access.mjs",
     "verify:operation-14-quality-assurance": "node scripts/verify-operation-14-quality-assurance.mjs",
-    "verify:operation-15-hse-site-compliance": "node scripts/verify-operation-15-hse-site-compliance.mjs"
+    "verify:operation-15-hse-site-compliance": "node scripts/verify-operation-15-hse-site-compliance.mjs",
+    "verify:operation-16-client-owned-supabase": "node scripts/verify-operation-16-client-owned-supabase.mjs"
   },
   "dependencies": {
     "@radix-ui/react-accordion": "^1.2.16",

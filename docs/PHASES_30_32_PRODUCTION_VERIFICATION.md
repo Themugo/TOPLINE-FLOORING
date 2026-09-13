@@ -27,7 +27,7 @@ npx supabase gen types typescript --local > src/types/database.ts
 Only after local validation and remote migration-history reconciliation should production be considered:
 
 ```cmd
-npx supabase link --project-ref jypkhvknfgoqrhwzbdwi
+npx supabase link --project-ref zmbsskvnzjdaxuxlauyx
 npx supabase migration list --linked
 npx supabase db push --dry-run --linked
 ```

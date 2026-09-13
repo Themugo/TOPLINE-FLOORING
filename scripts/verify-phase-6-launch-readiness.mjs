@@ -8,7 +8,7 @@ const read = (file) => fs.readFileSync(path.join(root, file), 'utf8');
 const exists = (file) => fs.existsSync(path.join(root, file));
 const check = (condition, message) => condition ? checks.push(message) : failures.push(message);
 
-const expectedProjectRef = 'jypkhvknfgoqrhwzbdwi';
+const expectedProjectRef = 'zmbsskvnzjdaxuxlauyx';
 const expectedUrl = `https://${expectedProjectRef}.supabase.co`;
 const migrationsDir = path.join(root, 'supabase', 'migrations');
 const migrations = fs.readdirSync(migrationsDir).filter((f) => f.endsWith('.sql')).sort();

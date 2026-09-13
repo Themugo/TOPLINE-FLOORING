@@ -11,7 +11,7 @@ if (process.platform === 'win32' && root.includes('&')) warnings.push(`Windows p
 
 const configPath = path.join(root, 'supabase', 'config.toml');
 const config = fs.readFileSync(configPath, 'utf8');
-if (!config.includes('project_id = "jypkhvknfgoqrhwzbdwi"')) failures.push('Supabase config is not pinned to the dedicated Topline project.');
+if (!config.includes('project_id = "zmbsskvnzjdaxuxlauyx"')) failures.push('Supabase config is not pinned to the dedicated Topline project.');
 if (/\[auth\.email\][\s\S]*?enabled\s*=/.test(config)) failures.push('Supabase config contains obsolete [auth.email].enabled.');
 
 const migrations = fs.readdirSync(path.join(root, 'supabase', 'migrations')).filter((f) => f.endsWith('.sql'));
@@ -30,4 +30,4 @@ if (failures.length) {
 console.log('Topline toolchain verification PASSED.');
 console.log(`- Node: ${process.version}`);
 console.log(`- Active migrations: ${migrations.length}`);
-console.log('- Supabase target: jypkhvknfgoqrhwzbdwi');
+console.log('- Supabase target: zmbsskvnzjdaxuxlauyx');

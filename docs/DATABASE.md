@@ -47,3 +47,4 @@ This baseline is intended for a new, dedicated Topline Supabase project. Do not 
 - `20260913020000_075_project_delivery_360.sql` — Operation 2 Project Delivery 360: planning → workforce → materials → installation → progress → issues → cost → quality → customer sign-off.
 
 - `20260913140000_087_health_safety_site_compliance_360.sql` — Operation 15 Health, Safety & Site Compliance 360.
+- `20260913150000_088_client_owned_infrastructure_hardening.sql` — Operation 16 Client-Owned Supabase Integration & Infrastructure Hardening 360.

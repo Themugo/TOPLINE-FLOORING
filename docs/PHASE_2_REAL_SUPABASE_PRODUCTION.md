@@ -58,7 +58,7 @@ production migration deployment
 post-deploy advisors + smoke tests
 ```
 
-The current ChatGPT-connected Supabase project is `jypkhvknfgoqrhwzbdwi`, but this environment currently lacks permission to inspect or mutate that project through the connected Supabase control plane. Therefore Phase 2 source changes are prepared, but **no production migration is claimed as deployed**.
+At the time Phase 2 was completed, the project had not yet been connected for production database deployment. Phase 2 source changes were therefore prepared without claiming production migration deployment. The canonical production project is now the client-owned Supabase project `zmbsskvnzjdaxuxlauyx`.
 
 ## Backups and recovery
 

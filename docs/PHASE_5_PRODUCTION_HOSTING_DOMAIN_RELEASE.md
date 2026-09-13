@@ -40,7 +40,7 @@ The website and business operating system are independent of cPanel hosting. cPa
 2. Use Node 22.x and the repository's existing `npm run build` command.
 3. Configure Production and Preview environment variables separately.
 4. Production values:
-   - `VITE_SUPABASE_URL=https://jypkhvknfgoqrhwzbdwi.supabase.co`
+   - `VITE_SUPABASE_URL=https://zmbsskvnzjdaxuxlauyx.supabase.co`
    - `VITE_SUPABASE_PUBLISHABLE_KEY=<real public key>`
    - `VITE_SITE_URL=https://toplineflooringandwaterproofing.co.ke`
 5. Do not add service-role, Brevo, Africa's Talking, or other server secrets to Vercel browser environment variables.

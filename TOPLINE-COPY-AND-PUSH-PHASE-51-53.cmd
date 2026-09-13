@@ -49,7 +49,7 @@ echo.
 echo AFTER LOCAL VALIDATION:
 echo   npx supabase login
 
-echo   npx supabase link --project-ref jypkhvknfgoqrhwzbdwi
+echo   npx supabase link --project-ref zmbsskvnzjdaxuxlauyx
 
 echo   npx supabase migration list --linked
 

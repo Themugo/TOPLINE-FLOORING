@@ -46,6 +46,6 @@ for (const file of required) if (!readme.includes(file)) throw new Error(`supaba
 
 if (!existsSync('supabase/config.toml')) throw new Error('Missing supabase/config.toml');
 const config = readFileSync('supabase/config.toml', 'utf8');
-if (!config.includes('project_id = "jypkhvknfgoqrhwzbdwi"')) throw new Error('Supabase config is not pinned to the Topline project.');
+if (!config.includes('project_id = "zmbsskvnzjdaxuxlauyx"')) throw new Error('Supabase config is not pinned to the Topline project.');
 
 console.log(`Database contract verification passed (${files.length} active migrations).`);

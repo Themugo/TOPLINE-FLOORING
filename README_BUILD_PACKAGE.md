@@ -53,7 +53,7 @@ Then reconcile the linked Topline Supabase project:
 
 ```cmd
 npx supabase login
-npx supabase link --project-ref jypkhvknfgoqrhwzbdwi
+npx supabase link --project-ref zmbsskvnzjdaxuxlauyx
 npx supabase migration list --linked
 npx supabase db push --dry-run --linked
 ```

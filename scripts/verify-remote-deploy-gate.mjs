@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 const root = process.cwd();
-const projectRef = 'jypkhvknfgoqrhwzbdwi';
+const projectRef = 'zmbsskvnzjdaxuxlauyx';
 const migrationDir = path.join(root, 'supabase', 'migrations');
 const migrations = fs.readdirSync(migrationDir).filter((f) => f.endsWith('.sql')).sort();
 const failures = [];

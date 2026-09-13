@@ -5,8 +5,8 @@
 This repository is configured for the dedicated Topline Flooring & Water Roofing Supabase project:
 
 - Organization: **Frameworks Suites**
-- Project ref: `jypkhvknfgoqrhwzbdwi`
-- API URL: `https://jypkhvknfgoqrhwzbdwi.supabase.co`
+- Project ref: `zmbsskvnzjdaxuxlauyx`
+- API URL: `https://zmbsskvnzjdaxuxlauyx.supabase.co`
 
 This project is completely independent of CALQULUS-PMS. Do not substitute the CALQULUS project ref or credentials.
 
@@ -67,7 +67,7 @@ The remote database is intentionally **not changed by Phase 5 in this repository
 
 ```cmd
 npx supabase login
-npx supabase link --project-ref jypkhvknfgoqrhwzbdwi
+npx supabase link --project-ref zmbsskvnzjdaxuxlauyx
 npx supabase migration list --linked
 npx supabase db push --dry-run --linked
 ```
@@ -122,3 +122,4 @@ Phase 3 adds `deliver-communications` plus service-role-only worker RPCs for rea
 - `20260913090000_082_reliability_observability_incident_response_360.sql` — Operation 10 Reliability, Observability & Incident Response 360
 
 - `20260913140000_087_health_safety_site_compliance_360.sql` — Operation 15 Health, Safety & Site Compliance 360.
+- `20260913150000_088_client_owned_infrastructure_hardening.sql` — Operation 16 Client-Owned Supabase Integration & Infrastructure Hardening 360.
