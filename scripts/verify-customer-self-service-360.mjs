@@ -1,0 +1,13 @@
+import fs from 'node:fs';
+import path from 'node:path';
+const root = process.cwd();
+const migration = path.join(root,'supabase/migrations/20260913200000_100_customer_self_service_experience_360.sql');
+const lib = path.join(root,'src/lib/customer-self-service.ts');
+const portal = path.join(root,'src/pages/portal.tsx');
+for (const f of [migration,lib,portal]) if (!fs.existsSync(f)) throw new Error(`Missing ${path.relative(root,f)}`);
+const sql=fs.readFileSync(migration,'utf8');
+for (const token of ['get_customer_portal_preferences','update_customer_notification_preferences','get_customer_portal_documents','public.get_current_customer_id()','REVOKE ALL']) if (!sql.includes(token)) throw new Error(`Missing security contract: ${token}`);
+if (sql.includes("'file_url'")) throw new Error('Document metadata RPC must not expose legacy file_url values');
+const source=fs.readFileSync(lib,'utf8');
+for (const token of ["get_customer_portal_preferences","update_customer_notification_preferences","get_customer_portal_documents"]) if (!source.includes(token)) throw new Error(`Missing client RPC: ${token}`);
+console.log('Customer Self-Service Experience 360 static verification PASSED');
