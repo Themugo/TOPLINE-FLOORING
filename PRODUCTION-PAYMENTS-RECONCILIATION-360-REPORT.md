@@ -18,8 +18,3 @@ Use either `PAYMENT_<PROVIDER>_WEBHOOK_SECRET` or the fallback `PAYMENT_WEBHOOK_
 
 ## Verification
 The static verifier checks migration 099, the service-role boundary, replay/hash protection, row locking, stock finalization, reconciliation, signature validation, timestamp protection, body-size limits, and server-side service-role usage.
-
-
-## Migration 099 deployment repair
-
-The first production push correctly reached migration 099 but stopped before applying it because the migration attempted to `REVOKE` the provider RPC before the function existed. The migration has been corrected so the function is created/replaced first and its client privileges are revoked immediately afterward. This preserves the service-role-only boundary and allows migration 099 to apply transactionally.

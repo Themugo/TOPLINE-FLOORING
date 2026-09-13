@@ -33,7 +33,7 @@ import {
   Navigation,
   ChevronRight,
   ExternalLink,
-  CheckCircle2, ShieldAlert,
+  CheckCircle2, ShieldAlert, TimerReset,
   Building2,
   Briefcase,
 } from 'lucide-react';
@@ -134,6 +134,7 @@ const NAV_GROUPS: NavGroup[] = [
       { href: '/admin/settings', label: 'Admin Settings', icon: Settings },
       { href: '/admin/system-health', label: 'System Health', icon: CheckCircle2 },
       { href: '/admin/reliability-operations-360', label: 'Reliability & Incidents', icon: ShieldAlert },
+      { href: '/admin/automation-operations-360', label: 'Automation & Workers', icon: TimerReset },
       { href: '/admin/business-continuity-360', label: 'Business Continuity', icon: ShieldAlert },
       { href: '/admin/data-governance-360', label: 'Data Governance & Privacy', icon: ShieldAlert },
       { href: '/admin/identity-access-360', label: 'Identity & Privileged Access', icon: ShieldAlert },

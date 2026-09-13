@@ -3,7 +3,6 @@ setlocal
 cd /d "C:\Users\hp\Desktop\TOPLINE FLOORING & ROOFING"
 
 npm run verify:customer-self-service-360 || exit /b 1
-npm run verify:payment-webhook-reconciliation-360 || exit /b 1
 npm run verify:migration-integrity || exit /b 1
 npm run typecheck || exit /b 1
 npm run build || exit /b 1

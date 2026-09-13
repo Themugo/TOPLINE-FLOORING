@@ -34,3 +34,6 @@ verify_jwt = true
 
 [functions.expire-reservations]
 verify_jwt = false
+
+[functions.operations-scheduler]
+verify_jwt = false

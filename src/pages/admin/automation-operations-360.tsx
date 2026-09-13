@@ -1,0 +1,16 @@
+import { useCallback, useEffect, useState } from 'react';
+import { RefreshCw, TimerReset, CheckCircle2, XCircle, Clock3 } from 'lucide-react';
+import { AdminLayout } from './dashboard';
+import { getAutomationOperations360, type AutomationSnapshot } from '@/lib/automation-operations-360';
+
+const label = (job: string) => job.replaceAll('_', ' ');
+export default function AutomationOperations360() {
+  const [data,setData]=useState<AutomationSnapshot|null>(null); const [days,setDays]=useState(7); const [loading,setLoading]=useState(true); const [message,setMessage]=useState('');
+  const load=useCallback(async()=>{setLoading(true);setMessage('');try{setData(await getAutomationOperations360(days));}catch(e){setMessage(e instanceof Error?e.message:'Unable to load automation control.');}finally{setLoading(false);}},[days]);
+  useEffect(()=>{void load();},[load]);
+  return <AdminLayout title="Automation & Worker Control 360" subtitle="Scheduled operational workers with bounded locks, replay protection and auditable execution history." actions={<div className="flex gap-2"><select value={days} onChange={e=>setDays(Number(e.target.value))} className="rounded-lg border px-3 py-2 text-sm"><option value={1}>24 hours</option><option value={7}>7 days</option><option value={30}>30 days</option></select><button onClick={()=>void load()} disabled={loading} className="inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-sm"><RefreshCw className={loading?'h-4 w-4 animate-spin':'h-4 w-4'}/>Refresh</button></div>}>
+    {message&&<div className="mb-5 rounded-xl border bg-white p-4 text-sm text-destructive">{message}</div>}
+    <div className="grid gap-4 md:grid-cols-3">{data?.jobs.map(j=><div key={j.job_key} className="rounded-2xl border bg-card p-5"><div className="flex items-center justify-between gap-3"><p className="font-semibold capitalize">{label(j.job_key)}</p>{j.active_status==='running'?<Clock3 className="h-4 w-4"/>:<TimerReset className="h-4 w-4"/>}</div><p className="mt-2 text-sm text-muted-foreground">Last run: {j.last_status ?? 'never'}</p><p className="mt-1 text-xs text-muted-foreground">{j.last_started_at?new Date(j.last_started_at).toLocaleString():'No execution recorded'}</p>{j.last_error&&<p className="mt-3 text-xs text-destructive">{j.last_error}</p>}</div>)}</div>
+    <section className="mt-6 rounded-2xl border bg-card p-6"><h2 className="font-semibold">Recent execution history</h2><div className="mt-4 space-y-3">{data?.recent_runs.length?data.recent_runs.map(r=><div key={r.id} className="flex flex-col gap-2 rounded-xl border p-4 md:flex-row md:items-center md:justify-between"><div><p className="font-medium capitalize">{label(r.job_key)}</p><p className="text-xs text-muted-foreground">{new Date(r.started_at).toLocaleString()} · {r.trigger_source}</p></div><span className="inline-flex items-center gap-1 text-sm capitalize">{r.status==='succeeded'?<CheckCircle2 className="h-4 w-4"/>:r.status==='failed'?<XCircle className="h-4 w-4"/>:<Clock3 className="h-4 w-4"/>}{r.status}</span></div>):<p className="py-8 text-sm text-muted-foreground">No worker runs have been recorded yet. This is expected until the scheduler is deployed and invoked.</p>}</div></section>
+  </AdminLayout>;
+}

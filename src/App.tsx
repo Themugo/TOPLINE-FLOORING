@@ -81,6 +81,7 @@ const AdminOperationsCommandCenter = lazy(() => import('@/pages/admin/operations
 const AdminExecutiveOperations360 = lazy(() => import('@/pages/admin/executive-operations-360'));
 const AdminSystemHealth = lazy(() => import('@/pages/admin/system-health'));
 const AdminReliabilityOperations360 = lazy(() => import('@/pages/admin/reliability-operations-360'));
+const AdminAutomationOperations360 = lazy(() => import('@/pages/admin/automation-operations-360'));
 const AdminBusinessContinuity360 = lazy(() => import('@/pages/admin/business-continuity-360'));
 const AdminDataGovernance360 = lazy(() => import('@/pages/admin/data-governance-360'));
 const AdminIdentityAccess360 = lazy(() => import('@/pages/admin/identity-access-360'));
@@ -200,6 +201,7 @@ function Router() {
     '/admin/communications-journey-360': AdminCommunicationsJourney360,
     '/admin/system-health': AdminSystemHealth,
     '/admin/reliability-operations-360': AdminReliabilityOperations360,
+    '/admin/automation-operations-360': AdminAutomationOperations360,
     '/admin/business-continuity-360': AdminBusinessContinuity360,
     '/admin/data-governance-360': AdminDataGovernance360,
     '/admin/identity-access-360': AdminIdentityAccess360,

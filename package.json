@@ -93,7 +93,8 @@
     "verify:rpc-authorization-certification": "node scripts/verify-rpc-authorization-certification.mjs",
     "verify:production-communications-integration-360": "node scripts/verify-production-communications-integration-360.mjs",
     "verify:payment-webhook-reconciliation-360": "node scripts/verify-payment-webhook-reconciliation-360.mjs",
-    "verify:customer-self-service-360": "node scripts/verify-customer-self-service-360.mjs"
+    "verify:customer-self-service-360": "node scripts/verify-customer-self-service-360.mjs",
+    "verify:operation-17-production-automation": "node scripts/verify-operation-17-production-automation.mjs"
   },
   "dependencies": {
     "@radix-ui/react-accordion": "^1.2.16",
