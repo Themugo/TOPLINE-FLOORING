@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { AdminLayout } from '@/components/layout/AdminLayout';
+import { AdminLayout } from './dashboard';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Activity, FileText, Headphones, Receipt, ShieldCheck, Truck } from 'lucide-react';
 import { supabase } from '@/lib/supabase';

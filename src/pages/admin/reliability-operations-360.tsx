@@ -19,8 +19,8 @@ export default function ReliabilityOperations360() {
     try { setLoading(true); await createOperationalIncident({ severity, domain, title }); await load(); setMessage('Incident recorded.'); } catch (e) { setLoading(false); setMessage(e instanceof Error ? e.message : 'Unable to create incident.'); }
   };
   const advance = async (id: string, status: IncidentStatus) => {
-    const resolutionSummary = status === 'resolved' ? window.prompt('Resolution summary') ?? '' : undefined;
-    if (status === 'resolved' && !resolutionSummary.trim()) return;
+    const resolutionSummary = status === 'resolved' ? (window.prompt('Resolution summary') ?? '') : undefined;
+    if (status === 'resolved' && !resolutionSummary?.trim()) return;
     try { setLoading(true); await updateOperationalIncident({ id, status, resolutionSummary }); await load(); setMessage('Incident updated.'); } catch (e) { setLoading(false); setMessage(e instanceof Error ? e.message : 'Unable to update incident.'); }
   };
   const m = data?.metrics;

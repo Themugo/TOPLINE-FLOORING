@@ -8,7 +8,7 @@ enabled = true
 # Do not use the obsolete [auth.email].enabled key.
 
 [db]
-major_version = 15
+major_version = 17
 
 [functions.deliver-communications]
 verify_jwt = false

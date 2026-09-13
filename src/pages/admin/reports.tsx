@@ -41,7 +41,6 @@ function StatCard({ title, value, change, icon, color }: StatCardProps) {
   );
 }
 
-interface OrderRow { total_amount: number; status: string; created_at: string; }
 interface ActivityLogRow { id: string; action: string; entity_type: string | null; details: Record<string, unknown> | null; created_at: string; }
 interface TopProductRow { name: string; quantity: number; revenue: number; }
 interface TrendPoint { date: string; revenue: number; }

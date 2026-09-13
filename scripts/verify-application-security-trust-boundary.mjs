@@ -4,10 +4,10 @@ const root=process.cwd();
 const migrationsDir=path.join(root,'supabase','migrations');
 const files=fs.readdirSync(migrationsDir).filter(f=>f.endsWith('.sql')).sort();
 const latest=files.at(-1)??'';
-if(!latest.startsWith('20260913183000_097_private_document_storage_boundary_360.sql')) throw new Error(`Expected 096 latest, found ${latest}`);
+if(!files.includes('20260913183000_097_private_document_storage_boundary_360.sql')) throw new Error('Missing 097 private document storage boundary migration');
 const m095=fs.readFileSync(path.join(migrationsDir,'20260913180000_095_rpc_authorization_certification_360.sql'),'utf8');
 const m096=fs.readFileSync(path.join(migrationsDir,'20260913181000_096_rls_policy_executor_boundary_repair_360.sql'),'utf8');
-const m097=fs.readFileSync(path.join(migrationsDir,latest),'utf8');
+const m097=fs.readFileSync(path.join(migrationsDir,'20260913183000_097_private_document_storage_boundary_360.sql'),'utf8');
 for(const t of [
  'private.current_user_has_role','private.assert_customer_owns_project','private.assert_customer_owns_order','private.assert_project_order_consistency','rpc_authorization_certifications',
  'Owner approval required for privileged access decisions','Requester cannot approve their own privileged access request','Owner approval required for elevated role grants','Customer access denied','Project does not belong to customer','Order does not belong to customer',

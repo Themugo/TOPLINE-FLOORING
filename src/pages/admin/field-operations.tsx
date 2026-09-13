@@ -12,6 +12,7 @@ import {
   signoffInstallation,
 } from '@/lib/field-operations';
 import { AlertTriangle, CheckCircle2, ClipboardList, HardHat, Plus, RefreshCw, Ruler, Truck, Users, X } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 
 type Installation = { id: string; installation_number: string | null; project_id: string | null; scheduled_date: string | null; scheduled_time: string | null; status: string; projects?: { title?: string | null; client_name?: string | null } | null };
 type Staff = { user_id: string; display_name: string | null; is_active: boolean };
@@ -90,10 +91,11 @@ export default function FieldOperations() {
   const metrics = useMemo(() => ({ scheduled: installations.filter((x) => x.status === 'scheduled').length, active: installations.filter((x) => x.status === 'in_progress').length, completed: installations.filter((x) => x.status === 'completed').length, openIssues: detail.issues.filter((x) => x.status === 'open' || x.status === 'in_progress').length }), [installations, detail.issues]);
   const latestProgress = detail.progress[0]?.percent_complete ?? 0;
 
+  const metricCards: Array<[string, number, LucideIcon]> = [['Scheduled', metrics.scheduled, ClipboardList], ['In progress', metrics.active, HardHat], ['Completed', metrics.completed, CheckCircle2], ['Open issues', metrics.openIssues, AlertTriangle]];
   return <AdminLayout title="Field Operations 360" subtitle="Control the field execution loop from site evidence through installation sign-off." actions={<button className="btn-secondary" onClick={() => void load()} disabled={loading}><RefreshCw className={`w-4 h-4 mr-2 inline ${loading ? 'animate-spin' : ''}`} />Refresh</button>}>
     {error && <div className="mb-5 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">Field operations could not be loaded: {error}</div>}
     <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4 mb-6">
-      {[['Scheduled', metrics.scheduled, ClipboardList], ['In progress', metrics.active, HardHat], ['Completed', metrics.completed, CheckCircle2], ['Open issues', metrics.openIssues, AlertTriangle]].map(([label, value, Icon]) => <div className="surface p-5" key={String(label)}><Icon className="w-5 h-5 text-primary-600" /><p className="eyebrow mt-4">{label}</p><p className="text-3xl font-bold mt-1">{loading ? '—' : value}</p></div>)}
+      {metricCards.map(([label, value, Icon]) => <div className="surface p-5" key={String(label)}><Icon className="w-5 h-5 text-primary-600" /><p className="eyebrow mt-4">{label}</p><p className="text-3xl font-bold mt-1">{loading ? '—' : value}</p></div>)}
     </div>
 
     <div className="grid xl:grid-cols-[.9fr_1.6fr] gap-6">

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { ArrowRight, BriefcaseBusiness, CalendarDays, FileText, Users, WalletCards } from 'lucide-react';
+import { ArrowRight, Briefcase, CalendarDays, FileText, Users, WalletCards } from 'lucide-react';
 import { Link } from 'wouter';
 import { AdminLayout } from './dashboard';
 import { getCommercialLifecycle360 } from '@/lib/lifecycle';
@@ -23,7 +23,7 @@ export default function CommercialLifecycle() {
 
   const cards = [
     ['Open leads', n(data.leads_open), Users, '/admin/leads'],
-    ['Qualified leads', n(data.leads_qualified), BriefcaseBusiness, '/admin/crm'],
+    ['Qualified leads', n(data.leads_qualified), Briefcase, '/admin/crm'],
     ['Open quotations', n(data.quotations_open), FileText, '/admin/quotations'],
     ['Upcoming site visits', n(data.site_visits_upcoming), CalendarDays, '/admin/site-visits'],
   ] as const;

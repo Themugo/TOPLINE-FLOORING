@@ -1,5 +1,6 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { constantTimeEqual, hmacSha256Hex } from "../_shared/security.ts";
 
 const url=Deno.env.get("SUPABASE_URL");
 const key=Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
@@ -9,30 +10,18 @@ const phoneNumberId=Deno.env.get("WHATSAPP_PHONE_NUMBER_ID");
 if(!url||!key||!verifyToken||!appSecret) throw new Error("WhatsApp webhook is not configured");
 const admin=createClient(url,key,{auth:{persistSession:false,autoRefreshToken:false}});
 
-async function verifySignature(req: Request, rawBody: string) {
-  const signature = req.headers.get("x-hub-signature-256") || "";
-  if (!signature.startsWith("sha256=")) return false;
-  const supplied = signature.slice(7);
-  const keyData = await crypto.subtle.importKey("raw", new TextEncoder().encode(appSecret), {name:"HMAC",hash:"SHA-256"}, false, ["sign"]);
-  const digest = new Uint8Array(await crypto.subtle.sign("HMAC", keyData, new TextEncoder().encode(rawBody)));
-  const expected = Array.from(digest).map(b=>b.toString(16).padStart(2,"0")).join("");
-  if (expected.length !== supplied.length) return false;
-  let diff = 0;
-  for (let i=0;i<expected.length;i++) diff |= expected.charCodeAt(i) ^ supplied.charCodeAt(i);
-  return diff === 0;
-}
-
 Deno.serve(async(req)=>{
  if(req.method==="GET"){
    const u=new URL(req.url);
-   if(u.searchParams.get("hub.verify_token")!==verifyToken) return new Response("Forbidden",{status:403});
+   if(!constantTimeEqual(u.searchParams.get("hub.verify_token"),verifyToken)) return new Response("Forbidden",{status:403});
    return new Response(u.searchParams.get("hub.challenge")||"",{status:200});
  }
  if(req.method!=="POST") return new Response("Method Not Allowed",{status:405});
  const rawBody=await req.text();
- if(!(await verifySignature(req,rawBody))) return new Response("Unauthorized",{status:401});
- const body=JSON.parse(rawBody) as any;
- if(!body) return Response.json({error:"Invalid JSON"},{status:400});
+ if(rawBody.length>1_048_576) return new Response("Payload Too Large",{status:413});
+ const signature=req.headers.get("x-hub-signature-256")||"";
+ if(!signature.startsWith("sha256=")||!constantTimeEqual(signature.slice(7),await hmacSha256Hex(appSecret,rawBody))) return new Response("Unauthorized",{status:401});
+ let body:any; try{body=JSON.parse(rawBody);}catch{return Response.json({error:"Invalid JSON"},{status:400});}
  for(const entry of body.entry||[]) for(const change of entry.changes||[]){
    const value=change.value||{};
    if(phoneNumberId && value.metadata?.phone_number_id && String(value.metadata.phone_number_id)!==phoneNumberId) return new Response("Forbidden",{status:403});

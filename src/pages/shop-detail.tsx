@@ -392,7 +392,7 @@ export default function ShopDetail() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                 {relatedProducts.map((rp) => {
-                  const selectedRpVariant = selectedRpVariant;
+                  const selectedRpVariant = selectedRelatedVariantIds[rp.id] ? getActiveProductVariants(rp).find((v) => v.id === selectedRelatedVariantIds[rp.id]) : getDefaultProductVariant(rp);
                   const rpPlaceholder = getProductPlaceholder(rp.category?.slug || rp.category?.name);
                   const rpImage = withFallback(rp.image_url, rpPlaceholder);
 

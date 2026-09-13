@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { CheckCircle2, ClipboardCheck, RefreshCw, ShieldCheck, Wrench, AlertTriangle, Users, PackageCheck, CircleDollarSign } from 'lucide-react';
+import { CheckCircle2, ClipboardCheck, RefreshCw, ShieldCheck, AlertTriangle, Users, PackageCheck, CircleDollarSign } from 'lucide-react';
 import { AdminLayout } from './dashboard';
 import { useToast } from '@/hooks/use-toast';
 import { getProjectDelivery360, reconcileProjectDelivery360, recordProjectQualityInspection, updateProjectDeliveryStatus } from '@/lib/project-delivery-360';
@@ -21,8 +21,8 @@ export default function AdminProjectDelivery360() {
     setLoading(true);
     try {
       const data = await getProjectDelivery360();
-      const next = data.projects || [];
-      setRows(next as any[]);
+      const next = (Array.isArray(data.projects) ? data.projects : []) as Array<Record<string, any>>;
+      setRows(next);
       if (!selected && next[0]?.project?.id) setSelected(next[0].project.id as string);
     } catch (e) { toast({ title: 'Unable to load project delivery', description: e instanceof Error ? e.message : 'Unknown error', variant: 'destructive' }); }
     finally { setLoading(false); }

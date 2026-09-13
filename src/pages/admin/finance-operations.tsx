@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { RefreshCw, AlertTriangle, CheckCircle2, Clock3, Receipt, WalletCards } from 'lucide-react';
+import { RefreshCw, AlertTriangle, Clock3, Receipt, WalletCards } from 'lucide-react';
 import { AdminLayout } from './dashboard';
 import { formatKES } from '@/lib/utils';
 import { getFinanceOperations360, refreshInvoiceLifecycleStatuses } from '@/lib/finance-operations';
@@ -20,7 +20,6 @@ export default function FinanceOperations() {
   useEffect(() => { void load(); }, [load]);
   const refresh = async () => { setRefreshing(true); try { const r = await refreshInvoiceLifecycleStatuses(); toast({ title: 'Invoice lifecycle refreshed', description: `${Number(r.updated_count || 0)} invoice(s) updated.` }); await load(); } catch (e) { toast({ title: 'Refresh failed', description: e instanceof Error ? e.message : 'Unable to refresh', variant: 'destructive' }); } finally { setRefreshing(false); } };
   const control = (data.control || {}) as Record<string, any>;
-  const controlInvoices = (control.invoices || {}) as Record<string, unknown>;
   const controlPayments = (control.payments || {}) as Record<string, unknown>;
   const controlRefunds = (control.refunds || {}) as Record<string, unknown>;
   const reconciliation = (control.reconciliation || {}) as Record<string, unknown>;
