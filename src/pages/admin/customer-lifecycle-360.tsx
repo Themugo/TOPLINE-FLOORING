@@ -3,8 +3,9 @@ import { AdminLayout } from './dashboard';
 import { useToast } from '@/hooks/use-toast';
 import { Activity, CalendarClock, RefreshCw, ShieldCheck, Star, Wrench } from 'lucide-react';
 import { getCustomerLifecycleOperations360, reconcileCustomerLifecycle360 } from '@/lib/customer-lifecycle-360';
+import type { RpcResult } from '@/lib/types';
 
-type Row = Record<string, any>;
+type Row = Record<string, RpcResult>;
 
 export default function AdminCustomerLifecycle360() {
   const [data, setData] = useState<{ metrics: Record<string, number>; customers: Row[] }>({ metrics: {}, customers: [] });

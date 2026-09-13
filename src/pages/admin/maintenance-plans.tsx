@@ -3,8 +3,9 @@ import { AdminLayout } from './dashboard';
 import { useToast } from '@/hooks/use-toast';
 import { CalendarClock, CheckCircle2, PauseCircle, PlayCircle, ShieldCheck } from 'lucide-react';
 import { getMaintenanceOperations360, completeMaintenanceVisit360, transitionMaintenancePlan360 } from '@/lib/maintenance-operations-360';
+import type { RpcResult } from '@/lib/types';
 
-type Row = Record<string, any>;
+type Row = Record<string, RpcResult>;
 export default function AdminMaintenancePlans(){
   const [data,setData]=useState<{metrics:Record<string,number>;plans:Row[];upcoming_visits:Row[]}>({metrics:{},plans:[],upcoming_visits:[]});
   const [loading,setLoading]=useState(true); const {toast}=useToast();

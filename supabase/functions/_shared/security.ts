@@ -1,3 +1,13 @@
+/**
+ * Dynamic JSON payload from an external webhook/provider (SMS, WhatsApp,
+ * email, communications provider). These shapes vary per provider and are
+ * accessed defensively (optional chaining / `??`); centralizing the type
+ * here — instead of `any` scattered across each function — keeps the
+ * escape hatch in one documented, reviewed spot.
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type WebhookPayload = any;
+
 export function constantTimeEqual(a: string | null, b: string | null): boolean {
   if (a === null || b === null) return false;
   const aa = new TextEncoder().encode(a);

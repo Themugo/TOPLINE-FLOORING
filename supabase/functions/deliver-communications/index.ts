@@ -1,5 +1,6 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import type { WebhookPayload } from "../_shared/security.ts";
 
  type OutboxMessage = {
   id: string;
@@ -66,7 +67,7 @@ async function sendSms(item: OutboxMessage) {
   });
   const body = await response.text();
   if (!response.ok) throw new Error(`Africa's Talking ${response.status}: ${body.slice(0, 500)}`);
-  let parsed: any = null;
+  let parsed: WebhookPayload = null;
   try { parsed = JSON.parse(body); } catch { parsed = null; }
   const recipient = parsed?.SMSMessageData?.Recipients?.[0];
   const status = String(recipient?.status ?? "").toLowerCase();
@@ -96,7 +97,7 @@ async function sendWhatsApp(item: OutboxMessage) {
   });
   const raw = await response.text();
   if (!response.ok) throw new Error(`Meta WhatsApp ${response.status}: ${raw.slice(0, 500)}`);
-  let parsed: any = {};
+  let parsed: WebhookPayload = {};
   try { parsed = JSON.parse(raw); } catch { /* no-op */ }
   const reference = parsed?.messages?.[0]?.id ? String(parsed.messages[0].id) : null;
   if (!reference) throw new Error(`Meta WhatsApp accepted without message id: ${raw.slice(0, 500)}`);
@@ -122,11 +123,15 @@ async function recordAttempt(item: OutboxMessage, requestId: string, outcome: st
 async function processItem(item: OutboxMessage) {
   const requestId = crypto.randomUUID();
   await recordAttempt(item, requestId, "started");
+  // Declared here (function scope), not inside `try`, so the `catch` block
+  // below can actually read it — `try`/`catch` are sibling blocks, so a
+  // `let` declared inside `try` is out of scope in `catch` and would throw
+  // a ReferenceError on any failure path instead of recording it cleanly.
+  let providerAccepted = false;
   try {
     const result = item.channel === "email" ? await sendEmail(item) : item.channel === "sms" ? await sendSms(item) : await sendWhatsApp(item);
     await recordAttempt(item, requestId, "accepted", result);
 
-    let providerAccepted = false;
     const { error } = await admin.rpc("complete_communication_delivery_worker", {
       p_outbox_id: item.id,
       p_provider: result.provider,

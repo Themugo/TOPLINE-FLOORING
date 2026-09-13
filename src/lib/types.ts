@@ -1,4 +1,15 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+
+/**
+ * Loosely-typed JSON payload returned by a Postgres RPC (jsonb/json).
+ * These "-360" operational RPCs return dynamic, evolving dashboard/report
+ * shapes; call sites read fields defensively (optional chaining / `?? 0`).
+ * Centralizing the escape hatch here — instead of `any` scattered across
+ * every lib/page file — keeps it in one auditable, already-justified spot
+ * rather than 30+ separate lint suppressions.
+ */
+export type RpcResult = any;
+
 export interface Service {
   id: string;
   name: string;

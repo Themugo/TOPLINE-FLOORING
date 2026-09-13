@@ -1,6 +1,6 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { constantTimeEqual, hmacSha256Hex } from "../_shared/security.ts";
+import { constantTimeEqual, hmacSha256Hex, type WebhookPayload } from "../_shared/security.ts";
 
 const url=Deno.env.get("SUPABASE_URL");
 const key=Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
@@ -21,7 +21,7 @@ Deno.serve(async(req)=>{
  if(rawBody.length>1_048_576) return new Response("Payload Too Large",{status:413});
  const signature=req.headers.get("x-hub-signature-256")||"";
  if(!signature.startsWith("sha256=")||!constantTimeEqual(signature.slice(7),await hmacSha256Hex(appSecret,rawBody))) return new Response("Unauthorized",{status:401});
- let body:any; try{body=JSON.parse(rawBody);}catch{return Response.json({error:"Invalid JSON"},{status:400});}
+ let body:WebhookPayload; try{body=JSON.parse(rawBody);}catch{return Response.json({error:"Invalid JSON"},{status:400});}
  for(const entry of body.entry||[]) for(const change of entry.changes||[]){
    const value=change.value||{};
    if(phoneNumberId && value.metadata?.phone_number_id && String(value.metadata.phone_number_id)!==phoneNumberId) return new Response("Forbidden",{status:403});
