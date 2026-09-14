@@ -13,7 +13,7 @@ const expected = [
 ];
 const failures = [];
 
-if (migrations.length < 82) failures.push(`Expected at least 84 active migrations, found ${migrations.length}.`);
+if (migrations.length !== 88) failures.push(`Expected 88 active migrations, found ${migrations.length}.`);
 for (const file of expected) if (!migrations.includes(file)) failures.push(`Missing required late-stage migration: ${file}`);
 for (let i = 1; i < migrations.length; i += 1) if (migrations[i - 1] >= migrations[i]) failures.push(`Migration order is not strictly increasing at ${migrations[i]}.`);
 
@@ -24,12 +24,17 @@ const scripts = [
 ];
 const npm = process.platform === 'win32' ? 'npm.cmd' : 'npm';
 for (const [script, label] of scripts) {
-  try { execFileSync(npm, ['run', script], { cwd: root, stdio: 'inherit' }); }
+  try {
+    const command = process.platform === 'win32' ? 'npm.cmd' : npm;
+    execFileSync(process.platform === 'win32' ? process.env.ComSpec : command,
+      process.platform === 'win32' ? ['/d', '/s', '/c', `${command} run ${script}`] : ['run', script],
+      { cwd: root, stdio: 'inherit' });
+  }
   catch { failures.push(`${label} failed.`); }
 }
 
 const docs = fs.readFileSync(path.join(root, 'docs', 'PHASES_36_38_DATABASE_RECONCILIATION.md'), 'utf8');
-for (const requiredText of ['84 active migrations', '142 tables', '214 functions', 'db push --dry-run --linked', 'Never run `supabase db reset --linked`']) {
+for (const requiredText of ['88 active migrations', '148 tables', '217 functions', 'db push --dry-run --linked', 'Never run `supabase db reset --linked`']) {
   if (!docs.includes(requiredText)) failures.push(`Phase 36–38 documentation is missing: ${requiredText}`);
 }
 
