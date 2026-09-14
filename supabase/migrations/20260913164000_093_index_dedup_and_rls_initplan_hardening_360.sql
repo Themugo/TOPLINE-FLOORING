@@ -1,5 +1,7 @@
 -- 093 — Remove only redundant FK indexes introduced by 092; optimize auth.uid RLS predicates.
 BEGIN;
+ALTER TABLE public.customer_portal_access ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.notification_reads ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS customer_portal_self_select ON public.customer_portal_access;
 CREATE POLICY customer_portal_self_select ON public.customer_portal_access FOR SELECT TO authenticated USING (auth_user_id=(select auth.uid()));
 DROP POLICY IF EXISTS notification_reads_self ON public.notification_reads;

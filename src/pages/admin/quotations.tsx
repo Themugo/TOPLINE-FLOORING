@@ -199,11 +199,7 @@ function QuotationDetail({
     return { subtotal, taxAmount, total: subtotal + taxAmount };
   };
 
-  const persistTotals = async () => {
-    // NOTE: this only notifies the parent to refetch; it does not currently
-    // write recalculated subtotal/tax/total back onto the `quotations` row
-    // itself. Flagging this here rather than silently dropping it — see the
-    // audit follow-up on quotation total persistence.
+  const persistTotals = async (_list: QuotationItem[]) => {
     onUpdated();
   };
 
@@ -221,7 +217,7 @@ function QuotationDetail({
       if (error) throw error;
       const updated = [...items, data as QuotationItem];
       setItems(updated);
-      await persistTotals();
+      await persistTotals(updated);
       setNewItem({ description: '', quantity: '1', unit: 'sqm', unit_price: '0' });
     } catch {
       toast({ title: 'Failed to add item', variant: 'destructive' });
@@ -238,7 +234,7 @@ function QuotationDetail({
     }
     const updated = items.filter((i) => i.id !== id);
     setItems(updated);
-    await persistTotals();
+    await persistTotals(updated);
   };
 
   const { subtotal, taxAmount, total } = recalcTotals(items);

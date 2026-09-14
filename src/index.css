@@ -4,6 +4,12 @@
 
 :root {
   --theme-btn-radius: 0.5rem;
+  --theme-secondary: #f59e0b;
+  --theme-accent: #0369a1;
+  --theme-heading-font: "Space Grotesk", sans-serif;
+  --theme-body-font: "Inter", sans-serif;
+  --theme-border-radius: 8px;
+  --theme-spacing-scale: 8px;
   --topline-ink: #0b1220;
   --topline-muted: #667085;
   --topline-line: rgba(15, 23, 42, .09);

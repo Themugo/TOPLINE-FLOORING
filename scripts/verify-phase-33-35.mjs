@@ -6,7 +6,7 @@ const migrationsDir = path.join(root, 'supabase', 'migrations');
 const files = fs.readdirSync(migrationsDir).filter((f) => f.endsWith('.sql')).sort();
 const errors = [];
 
-if (files.length !== 40) errors.push(`Expected at least 40 active migrations, found ${files.length}.`);
+if (files.length < 40) errors.push(`Expected at least 40 active migrations, found ${files.length}.`);
 
 const timestamps = files.map((f) => f.slice(0, 14));
 const unique = new Set(timestamps);

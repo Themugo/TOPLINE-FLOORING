@@ -1,6 +1,5 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import type { WebhookPayload } from "../_shared/security.ts";
 
  type OutboxMessage = {
   id: string;
@@ -67,7 +66,7 @@ async function sendSms(item: OutboxMessage) {
   });
   const body = await response.text();
   if (!response.ok) throw new Error(`Africa's Talking ${response.status}: ${body.slice(0, 500)}`);
-  let parsed: WebhookPayload = null;
+  let parsed: any = null;
   try { parsed = JSON.parse(body); } catch { parsed = null; }
   const recipient = parsed?.SMSMessageData?.Recipients?.[0];
   const status = String(recipient?.status ?? "").toLowerCase();
@@ -97,7 +96,7 @@ async function sendWhatsApp(item: OutboxMessage) {
   });
   const raw = await response.text();
   if (!response.ok) throw new Error(`Meta WhatsApp ${response.status}: ${raw.slice(0, 500)}`);
-  let parsed: WebhookPayload = {};
+  let parsed: any = {};
   try { parsed = JSON.parse(raw); } catch { /* no-op */ }
   const reference = parsed?.messages?.[0]?.id ? String(parsed.messages[0].id) : null;
   if (!reference) throw new Error(`Meta WhatsApp accepted without message id: ${raw.slice(0, 500)}`);
@@ -123,22 +122,18 @@ async function recordAttempt(item: OutboxMessage, requestId: string, outcome: st
 async function processItem(item: OutboxMessage) {
   const requestId = crypto.randomUUID();
   await recordAttempt(item, requestId, "started");
-  // Declared here (function scope), not inside `try`, so the `catch` block
-  // below can actually read it — `try`/`catch` are sibling blocks, so a
-  // `let` declared inside `try` is out of scope in `catch` and would throw
-  // a ReferenceError on any failure path instead of recording it cleanly.
-  let providerAccepted = false;
   try {
     const result = item.channel === "email" ? await sendEmail(item) : item.channel === "sms" ? await sendSms(item) : await sendWhatsApp(item);
     await recordAttempt(item, requestId, "accepted", result);
 
+    let completionUncertain = false;
     const { error } = await admin.rpc("complete_communication_delivery_worker", {
       p_outbox_id: item.id,
       p_provider: result.provider,
       p_provider_reference: result.reference,
       p_provider_message_id: result.reference,
     });
-    if (error) { providerAccepted = true; throw error; }
+    if (error) { completionUncertain = true; throw error; }
 
     if (item.channel === "sms" && result.reference) {
       const { error: reportError } = await admin.rpc("record_sms_delivery_report", {
@@ -153,8 +148,8 @@ async function processItem(item: OutboxMessage) {
     return { id: item.id, status: "sent", provider: result.provider };
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
-    await recordAttempt(item, requestId, providerAccepted ? "uncertain" : "failed", { error: message });
-    const { error: failError } = providerAccepted
+    await recordAttempt(item, requestId, completionUncertain ? "uncertain" : "failed", { error: message });
+    const { error: failError } = completionUncertain
       ? await admin.rpc("mark_communication_delivery_uncertain_worker", { p_outbox_id: item.id, p_error_message: message })
       : await admin.rpc("fail_communication_delivery_worker", { p_outbox_id: item.id, p_error_message: message, p_retry: true });
     if (failError) throw failError;

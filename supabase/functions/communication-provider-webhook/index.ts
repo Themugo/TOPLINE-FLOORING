@@ -1,6 +1,6 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { constantTimeEqual, type WebhookPayload } from "../_shared/security.ts";
+import { constantTimeEqual } from "../_shared/security.ts";
 
 const url = Deno.env.get("SUPABASE_URL");
 const key = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
@@ -13,7 +13,7 @@ Deno.serve(async (req) => {
   if (!constantTimeEqual(req.headers.get("x-topline-webhook-secret"), secret)) return new Response("Unauthorized", { status: 401 });
   const raw = await req.text();
   if (raw.length > 1_048_576) return new Response("Payload Too Large", { status: 413 });
-  const body = JSON.parse(raw) as WebhookPayload;
+  const body = JSON.parse(raw) as Record<string, unknown>;
 
   if (body?.event) {
     const event = String(body.event);

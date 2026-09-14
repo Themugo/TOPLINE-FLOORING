@@ -130,3 +130,34 @@ export function resetPrimaryColorOverrides() {
   const styleTag = document.getElementById('dynamic-theme-overrides');
   if (styleTag) styleTag.textContent = '';
 }
+
+
+export interface AppliedTheme {
+  primary_color: string;
+  secondary_color: string;
+  accent_color: string;
+  heading_font: string;
+  body_font: string;
+  button_style: string;
+  border_radius: number;
+  spacing_scale: number;
+}
+
+const RADIUS_BY_BUTTON_STYLE: Record<string, string> = {
+  square: '0.25rem',
+  rounded: '0.5rem',
+  pill: '9999px',
+};
+
+export function applyTheme(theme: AppliedTheme) {
+  if (typeof document === 'undefined') return;
+  const root = document.documentElement;
+  root.style.setProperty('--theme-secondary', theme.secondary_color);
+  root.style.setProperty('--theme-accent', theme.accent_color);
+  root.style.setProperty('--theme-heading-font', theme.heading_font);
+  root.style.setProperty('--theme-body-font', theme.body_font);
+  root.style.setProperty('--theme-border-radius', `${Math.max(0, theme.border_radius)}px`);
+  root.style.setProperty('--theme-spacing-scale', `${Math.max(1, theme.spacing_scale)}px`);
+  root.style.setProperty('--theme-btn-radius', RADIUS_BY_BUTTON_STYLE[theme.button_style] ?? RADIUS_BY_BUTTON_STYLE.rounded);
+  applyPrimaryColorRamp(theme.primary_color);
+}

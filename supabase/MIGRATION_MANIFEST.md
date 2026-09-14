@@ -76,7 +76,7 @@ Never put a service-role or worker secret in a `VITE_*` variable.
 
 ## Current active chain (Phases 30–32 verification baseline)
 
-The current production candidate contains 72 uniquely timestamped active migrations, ending with `20260913210000_101_production_automation_control_360.sql`. Run the complete verification suite before any linked database deployment.
+The current production candidate contains 73 uniquely timestamped active migrations, ending with `20260914080000_102_theme_brand_governance_360.sql`. Run the complete verification suite before any linked database deployment.
 
 - `20260912210000_070_customer_service_sla_operations_360.sql` — Phases 80–82 Customer Service SLA & After-Sales Operations 360.
 
@@ -105,3 +105,7 @@ The current production candidate contains 72 uniquely timestamped active migrati
 - `20260913150000_088_client_owned_infrastructure_hardening.sql` — Operation 16 Client-Owned Supabase Integration & Infrastructure Hardening 360.
 
 - `20260913210000_101_production_automation_control_360.sql` — Operation 17 Production Automation & Worker Control 360.
+
+
+## Operation 18
+- `20260914080000_102_theme_brand_governance_360.sql` — Theme & Brand Governance 360: version history, governed publication, audit notes, and controlled rollback.

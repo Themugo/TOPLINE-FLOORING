@@ -7,7 +7,7 @@ if(!mig.includes('20260913040000_077_finance_control_360.sql')) fail.push('Opera
 const m=read('supabase/migrations/20260913040000_077_finance_control_360.sql');
 for(const x of ['finance_control_events','record_invoice_payment_transaction','reconcile_finance_control_360','get_finance_control_360','payment_refunds','payment_transactions','invoice_events']) if(!m.includes(x)) fail.push(`Finance contract missing: ${x}`);
 if(!m.includes("require_staff_permission('finance','update')")) fail.push('Finance mutation does not require finance update permission.');
-if(!m.includes("require_staff_permission('reports','read')")) fail.push('Finance snapshot does not require reports read permission.');
+if(!m.includes("require_staff_permission('reports','select')")) fail.push('Finance snapshot does not require reports read permission.');
 if(!m.includes('REVOKE EXECUTE ON FUNCTION public.reconcile_finance_control_360')) fail.push('Reconciliation RPC public execute not revoked.');
 if(!read('src/lib/finance-control-360.ts').includes("get_finance_control_360")) fail.push('Finance control client is missing snapshot RPC.');
 if(!read('src/pages/admin/finance-operations.tsx').includes('Reconcile finance')) fail.push('Finance operations UI missing reconciliation action.');

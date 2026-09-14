@@ -77,7 +77,7 @@ Deno.serve(async (req) => {
 
   const supabaseUrl = Deno.env.get("SUPABASE_URL");
   const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-  if (!supabaseUrl || !serviceRoleKey) return json(500, { success: false, error: "Server payment configuration incomplete" });
+  if (!supabaseUrl || !serviceRoleKey) return json(501, { success: false, error: "Provider adapter not configured: payment provider boundary is disabled until server credentials are configured; payment state was not changed." });
 
   const supabase = createClient(supabaseUrl, serviceRoleKey, { auth: { persistSession: false, autoRefreshToken: false } });
   const { data, error } = await supabase.rpc("apply_payment_provider_event", {

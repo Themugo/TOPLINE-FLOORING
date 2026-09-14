@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { Palette } from 'lucide-react';
+import { useCallback, useEffect, useState } from 'react';
+import { History, Palette, RotateCcw, Save } from 'lucide-react';
 import { AdminLayout } from './dashboard';
 import { supabase } from '@/lib/supabase';
 import { useToast } from '@/hooks/use-toast';
@@ -14,307 +14,129 @@ const presets = [
   { name: 'Royal', primary: '#4c1d95', secondary: '#a855f7', accent: '#6b21a8' },
   { name: 'Slate', primary: '#1e293b', secondary: '#64748b', accent: '#334155' },
 ];
-
 const fonts = ['Inter', 'Space Grotesk', 'Montserrat', 'Open Sans', 'Poppins', 'Roboto', 'Playfair Display', 'Source Sans Pro'];
 const buttonStyles = ['rounded', 'pill', 'square'];
 const spacingOptions = [6, 8, 10, 12];
 
+type ThemeVersion = {
+  id: string;
+  version_number: number;
+  theme_snapshot: ThemeSetting;
+  change_type: 'save' | 'rollback';
+  change_note: string | null;
+  created_at: string;
+};
+
+type GovernanceResponse = { theme: ThemeSetting | null; versions: ThemeVersion[] };
+
 export default function AdminTheme() {
   const [theme, setTheme] = useState<ThemeSetting | null>(null);
+  const [versions, setVersions] = useState<ThemeVersion[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [rollingBack, setRollingBack] = useState<string | null>(null);
+  const [changeNote, setChangeNote] = useState('');
   const { toast } = useToast();
   const { refetch: refetchCms } = useCMS();
 
-  useEffect(() => {
-    fetchTheme();
-  }, []);
-
-  const fetchTheme = async () => {
-    const { data } = await supabase.from('theme_settings').select('*').eq('is_active', true).single();
-    setTheme(data || null);
-    setLoading(false);
-  };
-
-  const applyPreset = (preset: typeof presets[0]) => {
-    if (theme) {
-      setTheme({ ...theme, primary_color: preset.primary, secondary_color: preset.secondary, accent_color: preset.accent });
+  const loadGovernance = useCallback(async () => {
+    setLoading(true);
+    try {
+      const { data, error } = await supabase.rpc('get_theme_brand_governance_360');
+      if (error) throw error;
+      const result = (data ?? { theme: null, versions: [] }) as GovernanceResponse;
+      setTheme(result.theme);
+      setVersions(result.versions ?? []);
+    } catch (error) {
+      toast({ title: 'Unable to load governed theme', description: error instanceof Error ? error.message : 'Theme governance is unavailable.', variant: 'destructive' });
+    } finally {
+      setLoading(false);
     }
+  }, [toast]);
+
+  useEffect(() => { void loadGovernance(); }, [loadGovernance]);
+
+  const updateTheme = (updates: Partial<ThemeSetting>) => {
+    setTheme((current) => current ? { ...current, ...updates } : current);
   };
+
+  const applyPreset = (preset: typeof presets[number]) => updateTheme({ primary_color: preset.primary, secondary_color: preset.secondary, accent_color: preset.accent, preset: preset.name });
 
   const handleSave = async () => {
     if (!theme) return;
     setSaving(true);
     try {
-      await supabase.from('theme_settings').update({ ...theme, updated_at: new Date().toISOString() }).eq('id', theme.id);
-      await refetchCms();
-      toast({ title: 'Theme saved successfully' });
-    } catch {
-      toast({ title: 'Failed to save theme', variant: 'destructive' });
-    }
-    setSaving(false);
+      const { data, error } = await supabase.rpc('save_theme_brand_version', { p_theme: theme, p_change_note: changeNote || null });
+      if (error) throw error;
+      const result = data as { theme: ThemeSetting; version_number: number };
+      setTheme(result.theme);
+      setChangeNote('');
+      await Promise.all([refetchCms(), loadGovernance()]);
+      toast({ title: `Theme saved as version ${result.version_number}` });
+    } catch (error) {
+      toast({ title: 'Failed to save governed theme', description: error instanceof Error ? error.message : 'The theme was not saved.', variant: 'destructive' });
+    } finally { setSaving(false); }
   };
 
-  const updateTheme = (updates: Partial<ThemeSetting>) => {
-    if (theme) setTheme({ ...theme, ...updates });
+  const handleRollback = async (version: ThemeVersion) => {
+    if (!window.confirm(`Rollback the live theme to version ${version.version_number}?`)) return;
+    setRollingBack(version.id);
+    try {
+      const { error } = await supabase.rpc('rollback_theme_brand_version', { p_version_id: version.id, p_change_note: `Admin rollback to version ${version.version_number}` });
+      if (error) throw error;
+      await Promise.all([refetchCms(), loadGovernance()]);
+      toast({ title: `Theme rolled back to version ${version.version_number}` });
+    } catch (error) {
+      toast({ title: 'Rollback failed', description: error instanceof Error ? error.message : 'The theme was not changed.', variant: 'destructive' });
+    } finally { setRollingBack(null); }
   };
 
-  if (loading) return <AdminLayout title="Theme Settings"><div className="text-center py-12">Loading...</div></AdminLayout>;
+  if (loading) return <AdminLayout title="Theme Settings"><div className="text-center py-12">Loading governed theme...</div></AdminLayout>;
+  if (!theme) return <AdminLayout title="Theme Settings"><div className="p-6 bg-white rounded-xl border">No active theme is configured.</div></AdminLayout>;
 
   return (
     <AdminLayout title="Theme Settings">
-      <div className="max-w-4xl">
-        {/* Color Presets */}
-        <div className="bg-white rounded-xl border border-gray-200 p-6 mb-6">
-          <h2 className="font-semibold text-gray-900 mb-4">Color Presets</h2>
+      <div className="max-w-5xl space-y-6">
+        <div className="bg-white rounded-xl border p-6 flex items-start justify-between gap-4">
+          <div><div className="flex items-center gap-2"><Palette className="w-5 h-5" /><h2 className="font-semibold">Theme & Brand Governance</h2></div><p className="text-sm text-gray-500 mt-1">Changes are versioned, auditable, and reversible.</p></div>
+          <span className="text-xs font-semibold rounded-full px-3 py-1 bg-green-100 text-green-700">GOVERNED</span>
+        </div>
+
+        <section className="bg-white rounded-xl border p-6">
+          <h2 className="font-semibold mb-4">Color Presets</h2>
           <div className="grid grid-cols-3 sm:grid-cols-6 gap-4">
-            {presets.map((preset) => (
-              <button
-                key={preset.name}
-                onClick={() => applyPreset(preset)}
-                className="relative group"
-              >
-                <div
-                  className="h-16 rounded-lg overflow-hidden shadow-sm ring-2 ring-transparent hover:ring-primary-500 transition-all"
-                  style={{ background: `linear-gradient(135deg, ${preset.primary} 0%, ${preset.primary} 50%, ${preset.secondary} 50%, ${preset.secondary} 100%)` }}
-                />
-                <p className="text-xs text-center mt-2 text-gray-600">{preset.name}</p>
-              </button>
-            ))}
+            {presets.map((preset) => <button key={preset.name} type="button" onClick={() => applyPreset(preset)} className="group"><div className="h-16 rounded-lg shadow-sm ring-2 ring-transparent group-hover:ring-primary-500 transition-all" style={{ background: `linear-gradient(135deg, ${preset.primary} 0 50%, ${preset.secondary} 50% 100%)` }} /><p className="text-xs text-center mt-2 text-gray-600">{preset.name}</p></button>)}
           </div>
-        </div>
+        </section>
 
-        {/* Custom Colors */}
-        <div className="bg-white rounded-xl border border-gray-200 p-6 mb-6">
-          <div className="flex items-center gap-2 mb-1">
-            <h2 className="font-semibold text-gray-900">Custom Colors</h2>
-          </div>
-          <p className="text-sm text-gray-500 mb-4">
-            <strong className="text-green-700">Primary Color is live</strong> - it updates buttons, links, and
-            accents across the whole site (and admin) immediately on save. Secondary and Accent
-            are saved for future use but not yet applied anywhere.
-          </p>
+        <section className="bg-white rounded-xl border p-6">
+          <h2 className="font-semibold mb-1">Custom Colors</h2><p className="text-sm text-gray-500 mb-4">All three brand colors are live and governed.</p>
           <div className="grid sm:grid-cols-3 gap-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-1.5">
-                Primary Color
-                <span className="text-[10px] font-semibold bg-green-100 text-green-700 px-1.5 py-0.5 rounded-full">LIVE</span>
-              </label>
-              <div className="flex items-center gap-3">
-                <input
-                  type="color"
-                  value={theme?.primary_color || '#0369a1'}
-                  onChange={(e) => updateTheme({ primary_color: e.target.value })}
-                  className="w-12 h-12 rounded border cursor-pointer"
-                />
-                <input
-                  type="text"
-                  value={theme?.primary_color || '#0369a1'}
-                  onChange={(e) => updateTheme({ primary_color: e.target.value })}
-                  className="input flex-1 font-mono text-sm"
-                />
-              </div>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Secondary Color</label>
-              <div className="flex items-center gap-3">
-                <input
-                  type="color"
-                  value={theme?.secondary_color || '#f59e0b'}
-                  onChange={(e) => updateTheme({ secondary_color: e.target.value })}
-                  className="w-12 h-12 rounded border cursor-pointer"
-                />
-                <input
-                  type="text"
-                  value={theme?.secondary_color || '#f59e0b'}
-                  onChange={(e) => updateTheme({ secondary_color: e.target.value })}
-                  className="input flex-1 font-mono text-sm"
-                />
-              </div>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Accent Color</label>
-              <div className="flex items-center gap-3">
-                <input
-                  type="color"
-                  value={theme?.accent_color || '#0369a1'}
-                  onChange={(e) => updateTheme({ accent_color: e.target.value })}
-                  className="w-12 h-12 rounded border cursor-pointer"
-                />
-                <input
-                  type="text"
-                  value={theme?.accent_color || '#0369a1'}
-                  onChange={(e) => updateTheme({ accent_color: e.target.value })}
-                  className="input flex-1 font-mono text-sm"
-                />
-              </div>
-            </div>
+            {([['Primary Color','primary_color','#0369a1'],['Secondary Color','secondary_color','#f59e0b'],['Accent Color','accent_color','#0369a1']] as const).map(([label,key,fallback]) => <div key={key}><label className="block text-sm font-medium text-gray-700 mb-2">{label}</label><div className="flex gap-3"><input type="color" value={theme[key] || fallback} onChange={(e) => updateTheme({ [key]: e.target.value })} className="w-12 h-12 rounded border cursor-pointer" /><input type="text" value={theme[key] || fallback} onChange={(e) => updateTheme({ [key]: e.target.value })} className="input flex-1 font-mono text-sm" /></div></div>)}
           </div>
-        </div>
+        </section>
 
-        {/* Typography */}
-        <div className="bg-white rounded-xl border border-gray-200 p-6 mb-6">
-          <h2 className="font-semibold text-gray-900 mb-1">Typography</h2>
-          <p className="text-sm text-gray-500 mb-4">
-            Saved for future use - not yet applied to the live site, which currently uses a
-            fixed font pairing chosen to match your brand.
-          </p>
-          <div className="grid sm:grid-cols-2 gap-6 opacity-60 pointer-events-none">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Heading Font</label>
-              <select
-                value={theme?.heading_font || 'Space Grotesk'}
-                onChange={(e) => updateTheme({ heading_font: e.target.value })}
-                className="input"
-              >
-                {fonts.map((font) => (
-                  <option key={font} value={font}>{font}</option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Body Font</label>
-              <select
-                value={theme?.body_font || 'Inter'}
-                onChange={(e) => updateTheme({ body_font: e.target.value })}
-                className="input"
-              >
-                {fonts.map((font) => (
-                  <option key={font} value={font}>{font}</option>
-                ))}
-              </select>
-            </div>
+        <section className="bg-white rounded-xl border p-6">
+          <h2 className="font-semibold mb-4">Typography & Layout</h2>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
+            <label className="text-sm font-medium text-gray-700">Heading Font<select value={theme.heading_font} onChange={(e) => updateTheme({ heading_font: e.target.value })} className="input mt-2 w-full">{fonts.map((font) => <option key={font}>{font}</option>)}</select></label>
+            <label className="text-sm font-medium text-gray-700">Body Font<select value={theme.body_font} onChange={(e) => updateTheme({ body_font: e.target.value })} className="input mt-2 w-full">{fonts.map((font) => <option key={font}>{font}</option>)}</select></label>
+            <label className="text-sm font-medium text-gray-700">Button Style<select value={theme.button_style} onChange={(e) => updateTheme({ button_style: e.target.value })} className="input mt-2 w-full">{buttonStyles.map((style) => <option key={style}>{style}</option>)}</select></label>
+            <label className="text-sm font-medium text-gray-700">Spacing Scale<select value={theme.spacing_scale} onChange={(e) => updateTheme({ spacing_scale: Number(e.target.value) })} className="input mt-2 w-full">{spacingOptions.map((value) => <option key={value} value={value}>{value}px</option>)}</select></label>
           </div>
-        </div>
+          <label className="block text-sm font-medium text-gray-700 mt-5">Border Radius<input type="number" min={0} max={32} value={theme.border_radius} onChange={(e) => updateTheme({ border_radius: Number(e.target.value) })} className="input mt-2 max-w-xs" /></label>
+        </section>
 
-        {/* Layout */}
-        <div className="bg-white rounded-xl border border-gray-200 p-6 mb-6">
-          <h2 className="font-semibold text-gray-900 mb-4">Layout & Styling</h2>
-          <div className="grid sm:grid-cols-3 gap-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-1.5">
-                Button Style
-                <span className="text-[10px] font-semibold bg-green-100 text-green-700 px-1.5 py-0.5 rounded-full">LIVE</span>
-              </label>
-              <select
-                value={theme?.button_style || 'rounded'}
-                onChange={(e) => updateTheme({ button_style: e.target.value })}
-                className="input"
-              >
-                {buttonStyles.map((style) => (
-                  <option key={style} value={style}>{style.charAt(0).toUpperCase() + style.slice(1)}</option>
-                ))}
-              </select>
-            </div>
-            <div className="opacity-60 pointer-events-none">
-              <label className="block text-sm font-medium text-gray-700 mb-2">Border Radius</label>
-              <input
-                type="number"
-                min={0}
-                max={24}
-                value={theme?.border_radius || 8}
-                onChange={(e) => updateTheme({ border_radius: parseInt(e.target.value) })}
-                className="input"
-              />
-              <p className="text-xs text-gray-500 mt-1">Not yet applied - use Button Style above instead</p>
-            </div>
-            <div className="opacity-60 pointer-events-none">
-              <label className="block text-sm font-medium text-gray-700 mb-2">Spacing Scale</label>
-              <select
-                value={theme?.spacing_scale || 8}
-                onChange={(e) => updateTheme({ spacing_scale: parseInt(e.target.value) })}
-                className="input"
-              >
-                {spacingOptions.map((s) => (
-                  <option key={s} value={s}>{s}px</option>
-                ))}
-              </select>
-              <p className="text-xs text-gray-500 mt-1">Not yet applied to the live site</p>
-            </div>
-          </div>
-        </div>
+        <section className="bg-white rounded-xl border p-6">
+          <div className="flex items-center gap-2 mb-3"><Save className="w-5 h-5" /><h2 className="font-semibold">Publish Governed Theme</h2></div>
+          <label className="block text-sm font-medium text-gray-700">Change note<textarea value={changeNote} onChange={(e) => setChangeNote(e.target.value)} placeholder="Describe why this theme change is being published" className="input mt-2 min-h-20 w-full" /></label>
+          <button type="button" onClick={() => void handleSave()} disabled={saving} className="btn-primary mt-4 inline-flex items-center gap-2"><Save className="w-4 h-4" />{saving ? 'Saving...' : 'Save Theme Version'}</button>
+        </section>
 
-        {/* Homepage Layout */}
-        <div className="bg-white rounded-xl border border-gray-200 p-6 mb-6">
-          <h2 className="font-semibold text-gray-900 mb-1">Homepage Layout</h2>
-          <p className="text-sm text-gray-500 mb-4">
-            Switch how the Services and Materials Shop sections are arranged on your homepage.
-            Changes apply instantly to the live site.
-          </p>
-          <div className="grid sm:grid-cols-2 gap-4">
-            <button
-              onClick={() => updateTheme({ layout_style: 'classic' })}
-              className={`text-left rounded-xl border-2 p-4 transition-all ${
-                (theme?.layout_style || 'classic') === 'classic' ? 'border-primary-500 bg-primary-50' : 'border-gray-200 hover:border-gray-300'
-              }`}
-            >
-              <div className="grid grid-cols-4 gap-1 mb-3">
-                {Array.from({ length: 8 }).map((_, i) => (
-                  <div key={i} className="aspect-square bg-navy-200 rounded" />
-                ))}
-              </div>
-              <p className="font-medium text-sm text-gray-900">Classic Grid</p>
-              <p className="text-xs text-gray-500">Even tile grid - clean and familiar</p>
-            </button>
-
-            <button
-              onClick={() => updateTheme({ layout_style: 'showcase' })}
-              className={`text-left rounded-xl border-2 p-4 transition-all ${
-                theme?.layout_style === 'showcase' ? 'border-primary-500 bg-primary-50' : 'border-gray-200 hover:border-gray-300'
-              }`}
-            >
-              <div className="flex gap-1 mb-3">
-                <div className="w-1/3 aspect-[3/4] bg-navy-300 rounded" />
-                <div className="flex-1 grid grid-cols-2 gap-1">
-                  {Array.from({ length: 4 }).map((_, i) => (
-                    <div key={i} className="aspect-square bg-navy-200 rounded" />
-                  ))}
-                </div>
-              </div>
-              <p className="font-medium text-sm text-gray-900">Showcase</p>
-              <p className="text-xs text-gray-500">Horizontal scroll services + featured-first product grid</p>
-            </button>
-          </div>
-        </div>
-
-        {/* Preview */}
-        <div className="bg-white rounded-xl border border-gray-200 p-6 mb-6">
-          <h2 className="font-semibold text-gray-900 mb-4">Live Preview</h2>
-          <div className="rounded-lg border p-4" style={{ fontFamily: theme?.body_font }}>
-            <h3 className="text-lg font-semibold mb-3" style={{ fontFamily: theme?.heading_font, color: theme?.primary_color }}>
-              Sample Heading
-            </h3>
-            <p className="text-gray-600 mb-4">This is how your body text will look. The theme settings change the overall appearance of your website.</p>
-            <div className="flex gap-3">
-              <button
-                className="px-4 py-2 text-white font-medium"
-                style={{
-                  backgroundColor: theme?.primary_color,
-                  borderRadius: theme?.button_style === 'pill' ? 9999 : theme?.button_style === 'square' ? 0 : `${theme?.border_radius}px`
-                }}
-              >
-                Primary Button
-              </button>
-              <button
-                className="px-4 py-2 text-white font-medium"
-                style={{
-                  backgroundColor: theme?.secondary_color,
-                  borderRadius: theme?.button_style === 'pill' ? 9999 : theme?.button_style === 'square' ? 0 : `${theme?.border_radius}px`
-                }}
-              >
-                Secondary Button
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* Save */}
-        <div className="flex justify-end">
-          <button onClick={handleSave} disabled={saving} className="btn-primary flex items-center gap-2">
-            <Palette className="w-4 h-4" />
-            {saving ? 'Saving...' : 'Save Theme'}
-          </button>
-        </div>
+        <section className="bg-white rounded-xl border p-6">
+          <div className="flex items-center gap-2 mb-4"><History className="w-5 h-5" /><h2 className="font-semibold">Theme Version History</h2></div>
+          {versions.length === 0 ? <p className="text-sm text-gray-500">No theme versions have been recorded yet.</p> : <div className="divide-y">{versions.map((version) => <div key={version.id} className="py-4 flex items-center justify-between gap-4"><div><p className="font-medium">Version {version.version_number} <span className="text-xs uppercase text-gray-500 ml-2">{version.change_type}</span></p><p className="text-sm text-gray-500">{version.change_note || 'No change note'} · {new Date(version.created_at).toLocaleString()}</p></div><button type="button" onClick={() => void handleRollback(version)} disabled={rollingBack !== null} className="inline-flex items-center gap-2 px-3 py-2 rounded border text-sm hover:bg-gray-50"><RotateCcw className="w-4 h-4" />{rollingBack === version.id ? 'Rolling back...' : 'Rollback'}</button></div>)}</div>}
+        </section>
       </div>
     </AdminLayout>
   );

@@ -1,37 +1,25 @@
 import { useEffect } from 'react';
 import { useThemeSettings } from '@/hooks/use-data';
-import { applyPrimaryColorRamp } from '@/lib/theme-engine';
+import { applyTheme } from '@/lib/theme-engine';
 
-const DEFAULT_PRIMARY = '#c9971f';
-
-const RADIUS_BY_BUTTON_STYLE: Record<string, string> = {
-  square: '0.25rem',
-  rounded: '0.5rem',
-  pill: '9999px',
+const DEFAULT_THEME = {
+  primary_color: '#c9971f',
+  secondary_color: '#f59e0b',
+  accent_color: '#0369a1',
+  heading_font: 'Space Grotesk',
+  body_font: 'Inter',
+  button_style: 'rounded',
+  border_radius: 8,
+  spacing_scale: 8,
 };
 
-/**
- * Applies the parts of Admin -> Theme that are genuinely wired up to
- * the live site: the primary brand color (as a full generated tint/
- * shade ramp, not a flat override) and button corner style. Mounted
- * once near the app root so it applies everywhere - storefront and
- * admin - without every page needing to know about it.
- *
- * Font and spacing controls in the Theme page are saved but not yet
- * applied here - see the note in that admin screen.
- */
+/** Applies the governed CMS theme as CSS custom properties at the app root. */
 export function ThemeApplier() {
   const { theme } = useThemeSettings();
 
   useEffect(() => {
-    const primary = theme?.primary_color || DEFAULT_PRIMARY;
-    applyPrimaryColorRamp(primary);
-  }, [theme?.primary_color]);
-
-  useEffect(() => {
-    const radius = RADIUS_BY_BUTTON_STYLE[theme?.button_style || 'rounded'];
-    document.documentElement.style.setProperty('--theme-btn-radius', radius);
-  }, [theme?.button_style]);
+    applyTheme({ ...DEFAULT_THEME, ...theme });
+  }, [theme]);
 
   return null;
 }

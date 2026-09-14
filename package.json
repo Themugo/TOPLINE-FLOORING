@@ -94,7 +94,8 @@
     "verify:production-communications-integration-360": "node scripts/verify-production-communications-integration-360.mjs",
     "verify:payment-webhook-reconciliation-360": "node scripts/verify-payment-webhook-reconciliation-360.mjs",
     "verify:customer-self-service-360": "node scripts/verify-customer-self-service-360.mjs",
-    "verify:operation-17-production-automation": "node scripts/verify-operation-17-production-automation.mjs"
+    "verify:operation-17-production-automation": "node scripts/verify-operation-17-production-automation.mjs",
+    "verify:operation-18-theme-brand-governance": "node scripts/verify-operation-18-theme-brand-governance.mjs"
   },
   "dependencies": {
     "@radix-ui/react-accordion": "^1.2.16",

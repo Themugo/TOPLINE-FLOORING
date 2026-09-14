@@ -45,7 +45,7 @@ for (const file of files) {
   }
 }
 
-if (files.length !== 72) failures.push(`expected 72 active migrations, found ${files.length}`);
+if (files.length !== 73) failures.push(`expected 73 active migrations, found ${files.length}`);
 if (!files.some((f) => f.startsWith('20260913170000_094_'))) failures.push('migration 094 missing');
 if (!files.some((f) => f.startsWith('20260913180000_095_'))) failures.push('migration 095 missing');
 if (!files.some((f) => f.startsWith('20260913181000_096_'))) failures.push('migration 096 missing');
@@ -54,6 +54,7 @@ if (!files.some((f) => f.startsWith('20260913190000_098_'))) failures.push('migr
 if (!files.some((f) => f.startsWith('20260913195000_099_'))) failures.push('migration 099 missing');
 if (!files.some((f) => f.startsWith('20260913200000_100_'))) failures.push('migration 100 missing');
 if (!files.some((f) => f.startsWith('20260913210000_101_'))) failures.push('migration 101 missing');
+if (!files.some((f) => f.startsWith('20260914080000_102_'))) failures.push('migration 102 missing');
 
 if (failures.length) {
   console.error('Migration deployment static verification FAILED');
