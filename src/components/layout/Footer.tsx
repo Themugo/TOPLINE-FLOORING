@@ -1,6 +1,6 @@
 import { Link } from 'wouter';
 import { Phone, Mail, MapPin, Facebook, Instagram, Linkedin, Twitter } from 'lucide-react';
-import { useSiteSettings, useServices } from '@/hooks/use-data';
+import { useSiteSettings, useServices, useNavigationMenus } from '@/hooks/use-data';
 import { telHref } from '@/lib/utils';
 
 const DEFAULTS = {
@@ -17,6 +17,7 @@ export function Footer() {
   const currentYear = new Date().getFullYear();
   const { settings } = useSiteSettings();
   const { services } = useServices();
+  const { menus: footerMenus } = useNavigationMenus('footer');
 
   const siteName = settings.site_info?.name || DEFAULTS.name;
   const [firstWord, ...restWords] = siteName.split(' ');
@@ -66,13 +67,13 @@ export function Footer() {
           <div>
             <h3 className="font-semibold text-primary-600 mb-4">Quick Links</h3>
             <nav className="space-y-3">
-              {[
+              {(footerMenus.length > 0 ? footerMenus : [
                 { href: '/', label: 'Home' },
                 { href: '/services', label: 'Services' },
                 { href: '/shop', label: 'Materials Shop' },
                 { href: '/contact', label: 'Contact Us' },
                 { href: '/quotation', label: 'Get a Quote' },
-              ].map((link) => (
+              ]).map((link) => (
                 <Link
                   key={link.href}
                   href={link.href}

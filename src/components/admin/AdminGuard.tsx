@@ -43,6 +43,8 @@ const ROUTE_PERMISSIONS: Record<string, { resource: string; action: string }> = 
   '/admin/settings': { resource: 'settings', action: 'select' },
   '/admin/site-settings': { resource: 'settings', action: 'select' },
   '/admin/theme': { resource: 'settings', action: 'select' },
+  '/admin/site-control': { resource: 'settings', action: 'select' },
+  '/admin/pages': { resource: 'content', action: 'select' },
   '/admin/homepage': { resource: 'content', action: 'select' },
   '/admin/delivery-zones': { resource: 'orders', action: 'select' },
   '/admin/projects': { resource: 'projects', action: 'select' },

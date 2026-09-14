@@ -14,7 +14,7 @@ import {
   X,
   Globe,
   Palette,
-  LayoutTemplate,
+  LayoutTemplate, Type,
   Truck,
   FolderKanban,
   Megaphone,
@@ -36,6 +36,7 @@ import {
   CheckCircle2, ShieldAlert, TimerReset,
   Building2,
   Briefcase,
+  SlidersHorizontal,
 } from 'lucide-react';
 import { useAdminAuth } from '@/hooks/use-data';
 import { useState, useEffect, useMemo, useCallback } from 'react';
@@ -126,6 +127,9 @@ const NAV_GROUPS: NavGroup[] = [
     label: 'Configuration',
     items: [
       { href: '/admin/theme', label: 'Theme', icon: Palette },
+      { href: '/admin/site-control', label: 'Site Control Center', icon: SlidersHorizontal },
+      { href: '/admin/pages', label: 'No-Code Pages', icon: LayoutTemplate },
+      { href: '/admin/site-content', label: 'Public Content Control', icon: Type },
       { href: '/admin/site-settings', label: 'Site Settings', icon: Globe },
       { href: '/admin/reports', label: 'Reports', icon: BarChart3 },
       { href: '/admin/navigation', label: 'Navigation', icon: Navigation },

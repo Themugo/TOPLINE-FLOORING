@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link, useLocation } from 'wouter';
 import { Menu, X, ShoppingCart, Phone, Mail, MapPin, LogIn, Facebook, Instagram, Linkedin } from 'lucide-react';
 import { useCart } from '@/hooks/use-cart';
-import { useSiteSettings } from '@/hooks/use-data';
+import { useSiteSettings, useNavigationMenus } from '@/hooks/use-data';
 import { telHref } from '@/lib/utils';
 
 const DEFAULT_PHONE = '+1 (555) 000-0000';
@@ -14,6 +14,7 @@ export function Header() {
   const [location] = useLocation();
   const { totalItems } = useCart();
   const { settings } = useSiteSettings();
+  const { menus } = useNavigationMenus('header');
 
   const siteName = settings.site_info?.name || 'Your Flooring Company';
   const [firstWord, ...restWords] = siteName.split(' ');
@@ -29,14 +30,14 @@ export function Header() {
     { key: 'linkedin', url: social.linkedin, Icon: Linkedin },
   ].filter((s) => !!s.url);
 
-  const navLinks = [
-    { href: '/', label: 'Home' },
-    { href: '/services', label: 'Services' },
-    { href: '/portfolio', label: 'Portfolio' },
-    { href: '/shop', label: 'Shop' },
-    { href: '/contact', label: 'Contact' },
-    { href: '/quotation', label: 'Get Quote' },
-  ];
+  const navLinks = (menus.length > 0 ? menus : [
+    { href: '/', label: 'Home', open_in_new_tab: false },
+    { href: '/services', label: 'Services', open_in_new_tab: false },
+    { href: '/portfolio', label: 'Portfolio', open_in_new_tab: false },
+    { href: '/shop', label: 'Shop', open_in_new_tab: false },
+    { href: '/contact', label: 'Contact', open_in_new_tab: false },
+    { href: '/quotation', label: 'Get Quote', open_in_new_tab: false },
+  ]).filter((link) => link.href && link.label);
 
   const isActive = (href: string) => {
     if (href === '/') return location === '/';

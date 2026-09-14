@@ -98,6 +98,10 @@ const AdminCustomerRenewals = lazy(() => import('@/pages/admin/customer-renewals
 const AdminCustomerLifecycle360 = lazy(() => import('@/pages/admin/customer-lifecycle-360'));
 const AdminSupplyChain360 = lazy(() => import('@/pages/admin/supply-chain-360'));
 const AdminFulfillmentDelivery360 = lazy(() => import('@/pages/admin/fulfillment-delivery-360'));
+const AdminSiteControl = lazy(() => import('@/pages/admin/site-control'));
+const AdminPages = lazy(() => import('@/pages/admin/pages'));
+const AdminSiteContent = lazy(() => import('@/pages/admin/site-content'));
+const CustomPage = lazy(() => import('@/pages/custom-page'));
 
 function AdminLoading() {
   return (
@@ -217,6 +221,9 @@ function Router() {
     '/admin/customer-lifecycle-360': AdminCustomerLifecycle360,
     '/admin/supply-chain-360': AdminSupplyChain360,
     '/admin/fulfillment-delivery-360': AdminFulfillmentDelivery360,
+    '/admin/site-control': AdminSiteControl,
+    '/admin/pages': AdminPages,
+    '/admin/site-content': AdminSiteContent,
   };
 
   const AdminComponent = adminRoutes[location as keyof typeof adminRoutes];
@@ -364,6 +371,14 @@ function Router() {
     return (
       <Suspense fallback={<PublicLoading />}>
         <ShopDetail />
+      </Suspense>
+    );
+  }
+
+  if (location.startsWith('/page/')) {
+    return (
+      <Suspense fallback={<PublicLoading />}>
+        <CustomPage />
       </Suspense>
     );
   }
