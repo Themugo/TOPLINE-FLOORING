@@ -37,7 +37,7 @@ The Admin router remains protected by `AdminAuthGuard`, while the guard now maps
 ## Verification
 
 - Admin Authentication & Authorization 360 static verification: **16/16 passed**.
-- Migration deployment static verification: **82 active migrations passed**.
+- Migration deployment static verification: **84 active migrations passed**.
 - DB-9–DB-11 verification: passed.
 - Live permission boundary: `system.select` exists for `admin` and `owner` only.
 - Live staff profile/permission RPC grants: authenticated only; anon/PUBLIC denied.

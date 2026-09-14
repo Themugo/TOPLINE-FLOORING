@@ -99,7 +99,8 @@
     "verify:all": "node scripts/verify-all.mjs",
     "verify:db-9-11": "node scripts/verify-db-9-11.mjs",
     "verify:admin-auth-360": "node scripts/verify-admin-authentication-authorization-360.mjs",
-    "verify:admin-control-plane-360": "node scripts/verify-admin-control-plane-privileged-operations-360.mjs"
+    "verify:admin-control-plane-360": "node scripts/verify-admin-control-plane-privileged-operations-360.mjs",
+    "verify:customer-self-service-rpc-360": "node scripts/verify-customer-self-service-rpc-trust-boundary-360.mjs"
   },
   "dependencies": {
     "@radix-ui/react-accordion": "^1.2.16",

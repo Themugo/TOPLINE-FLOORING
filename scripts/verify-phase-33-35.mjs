@@ -29,7 +29,7 @@ for (const file of files) {
   for (const m of sql.matchAll(/create\s+table\s+(?:if\s+not\s+exists\s+)?(?:public\.)?([a-zA-Z0-9_]+)/gi)) tableCreators.set(m[1].toLowerCase(), file);
   for (const m of sql.matchAll(/create\s+(?:or\s+replace\s+)?function\s+(?:public\.)?([a-zA-Z0-9_]+)/gi)) functions.set(m[1].toLowerCase(), file);
   if (/drop\s+schema\s+public\s+cascade/i.test(sql)) errors.push(`${file}: destructive DROP SCHEMA public CASCADE is forbidden.`);
-  if (/security\s+definer/i.test(sql) && !/set\s+search_path\s*=\s*public(?:\s*,[^\n;]+)?/i.test(sql)) {
+  if (/security\s+definer/i.test(sql) && !/set\s+search_path\s*=\s*(?:public(?:\s*,[^\n;]+)?|'')/i.test(sql)) {
     errors.push(`${file}: SECURITY DEFINER functions must explicitly set search_path to public, pg_temp.`);
   }
 }

@@ -76,7 +76,7 @@ Never put a service-role or worker secret in a `VITE_*` variable.
 
 ## Current active chain (Phases 30–32 verification baseline)
 
-The current production candidate contains 82 uniquely timestamped active migrations, ending with `20260914110100_109_admin_system_permission_boundary.sql`. Run the complete verification suite before any linked database deployment.
+The current production candidate contains 84 uniquely timestamped active migrations, ending with `20260914133000_110_customer_self_service_rpc_trust_boundary_360.sql`. Run the complete verification suite before any linked database deployment.
 
 - `20260912210000_070_customer_service_sla_operations_360.sql` — Phases 80–82 Customer Service SLA & After-Sales Operations 360.
 
