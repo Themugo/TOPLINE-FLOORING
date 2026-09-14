@@ -1,11 +1,10 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { useLocation } from 'wouter';
 import { Lock, Mail, AlertCircle, Eye, EyeOff, ArrowLeft } from 'lucide-react';
 import { useAdminAuth } from '@/hooks/use-data';
 import { isSupabaseConfigured, supabase } from '@/lib/supabase';
 
 export default function AdminLogin() {
-  useSessionTimeout();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');

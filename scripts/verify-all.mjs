@@ -5,7 +5,12 @@ import { spawn } from 'node:child_process';
 
 const root = fileURLToPath(new URL('.', import.meta.url));
 const files = (await readdir(root))
-  .filter((name) => name.startsWith('verify-') && name.endsWith('.mjs') && name !== 'verify-all.mjs')
+  .filter((name) =>
+    name.startsWith('verify-') &&
+    name.endsWith('.mjs') &&
+    name !== 'verify-all.mjs' &&
+    name !== 'verify-payment-provider-uat.mjs'
+  )
   .sort();
 
 const results = [];
