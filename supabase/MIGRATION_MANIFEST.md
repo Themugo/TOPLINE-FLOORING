@@ -76,7 +76,7 @@ Never put a service-role or worker secret in a `VITE_*` variable.
 
 ## Current active chain (Phases 30–32 verification baseline)
 
-The current production candidate contains 85 uniquely timestamped active migrations, ending with `20260914133000_110_customer_self_service_rpc_trust_boundary_360.sql`. Run the complete verification suite before any linked database deployment.
+The current production candidate contains 88 uniquely timestamped active migrations, ending with `20260914104315_110_customer_self_service_rpc_trust_boundary_360.sql`. Run the complete verification suite before any linked database deployment.
 
 - `20260912210000_070_customer_service_sla_operations_360.sql` — Phases 80–82 Customer Service SLA & After-Sales Operations 360.
 
@@ -116,6 +116,11 @@ The current production candidate contains 85 uniquely timestamped active migrati
 - `20260914100100_106_db_10_identity_privileged_access_hardening.sql` — Privileged-access and staff identity audit indexes plus public/anonymous grant boundary hardening.
 - `20260914100200_107_db_11_quality_corrective_action_hardening.sql` — Quality inspection/corrective-action operational indexes and public/anonymous grant boundary hardening.
 
-- `20260914110000_108_admin_authentication_authorization_360.sql` — Admin Authentication & Authorization 360: Auth identity verification, effective permission retrieval, least-privilege UI gating, inactivity lifecycle, and SECURITY DEFINER helper hardening.
-- `20260914133000_110_customer_self_service_rpc_trust_boundary_360.sql` — Customer self-service RPC and public trust-boundary hardening.
-- `20260914140000_111_payment_refund_provider_trust_boundary_360.sql` — Payment, refund and provider webhook trust-boundary hardening.
+- `20260914101056_108_admin_authentication_authorization_360.sql` — Admin Authentication & Authorization 360: Auth identity verification, effective permission retrieval, least-privilege UI gating, inactivity lifecycle, and SECURITY DEFINER helper hardening.
+- `20260914101403_109_admin_system_permission_boundary.sql` — Admin system permission boundary hardening.
+- `20260914102545_admin_control_plane_privileged_operations_360.sql` — Admin control-plane privileged operations hardening.
+- `20260914104315_110_customer_self_service_rpc_trust_boundary_360.sql` — Customer self-service RPC and public trust-boundary hardening.
+- `20260914105846_111_payment_refund_provider_trust_boundary_360.sql` — Payment, refund and provider webhook trust-boundary hardening.
+- `20260914114114_112_admin_no_code_site_control_plane_360.sql` — Admin no-code site control plane.
+- `20260914115101_public_site_content_registry_360.sql` — Public site content registry and admin content control.
+- `20260914122211_113_brevo_email_integration_360.sql` — Brevo transactional email integration and authentication configuration.

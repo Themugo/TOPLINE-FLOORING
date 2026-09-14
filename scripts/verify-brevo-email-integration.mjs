@@ -6,7 +6,7 @@ const checks = [];
 function ok(name, condition, detail='') { checks.push({ name, pass: Boolean(condition), detail }); }
 function read(file) { return fs.readFileSync(path.join(root, file), 'utf8'); }
 
-const migration = read('supabase/migrations/20260914160000_113_brevo_email_integration_360.sql');
+const migration = read('supabase/migrations/20260914122211_113_brevo_email_integration_360.sql');
 const worker = read('supabase/functions/deliver-communications/index.ts');
 const webhook = read('supabase/functions/communication-provider-webhook/index.ts');
 const testFn = read('supabase/functions/brevo-test-email/index.ts');

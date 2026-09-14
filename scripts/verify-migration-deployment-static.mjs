@@ -45,7 +45,7 @@ for (const file of files) {
   }
 }
 
-if (files.length !== 85) failures.push(`expected 85 active migrations, found ${files.length}`);
+if (files.length !== 88) failures.push(`expected 88 active migrations, found ${files.length}`);
 if (!files.some((f) => f.startsWith('20260913170000_094_'))) failures.push('migration 094 missing');
 if (!files.some((f) => f.startsWith('20260913180000_095_'))) failures.push('migration 095 missing');
 if (!files.some((f) => f.startsWith('20260913181000_096_'))) failures.push('migration 096 missing');
@@ -55,9 +55,14 @@ if (!files.some((f) => f.startsWith('20260913195000_099_'))) failures.push('migr
 if (!files.some((f) => f.startsWith('20260913200000_100_'))) failures.push('migration 100 missing');
 if (!files.some((f) => f.startsWith('20260913210000_101_'))) failures.push('migration 101 missing');
 if (!files.some((f) => f.startsWith('20260914080000_102_'))) failures.push('migration 102 missing');
-if (!files.some((f) => f.startsWith('20260914110000_108_'))) failures.push('migration 108 missing');
-if (!files.some((f) => f.startsWith('20260914110100_109_'))) failures.push('migration 109 missing');
-if (!files.some((f) => f.startsWith('20260914133000_110_'))) failures.push('migration 110 missing');
+if (!files.some((f) => f.startsWith('20260914101056_108_'))) failures.push('migration 108 missing');
+if (!files.some((f) => f.startsWith('20260914101403_109_'))) failures.push('migration 109 missing');
+if (!files.some((f) => f.startsWith('20260914102545_'))) failures.push('admin control-plane migration missing');
+if (!files.some((f) => f.startsWith('20260914104315_110_'))) failures.push('migration 110 missing');
+if (!files.some((f) => f.startsWith('20260914105846_'))) failures.push('payment/refund/provider migration missing');
+if (!files.some((f) => f.startsWith('20260914114114_'))) failures.push('no-code site control-plane migration missing');
+if (!files.some((f) => f.startsWith('20260914115101_'))) failures.push('public site content registry migration missing');
+if (!files.some((f) => f.startsWith('20260914122211_'))) failures.push('Brevo email integration migration missing');
 
 if (failures.length) {
   console.error('Migration deployment static verification FAILED');

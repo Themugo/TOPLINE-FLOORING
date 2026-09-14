@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 const root = process.cwd();
-const migration = path.join(root,'supabase','migrations','20260914133000_110_customer_self_service_rpc_trust_boundary_360.sql');
+const migration = path.join(root,'supabase','migrations','20260914104315_110_customer_self_service_rpc_trust_boundary_360.sql');
 const text = fs.readFileSync(migration,'utf8');
 const checks = [
   ['migration exists', fs.existsSync(migration)],

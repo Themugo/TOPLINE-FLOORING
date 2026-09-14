@@ -9,7 +9,7 @@ const check = (name, ok) => { checks.push({ name, ok: Boolean(ok) }); console.lo
 const guard = read('src/components/admin/AdminGuard.tsx');
 const rbac = read('src/lib/staff-rbac.ts');
 const login = read('src/pages/admin/login.tsx');
-const migration = read('supabase/migrations/20260914110000_108_admin_authentication_authorization_360.sql');
+const migration = read('supabase/migrations/20260914101056_108_admin_authentication_authorization_360.sql');
 const app = read('src/App.tsx');
 
 check('Admin guard verifies Auth identity with getUser', guard.includes('supabase.auth.getUser()'));

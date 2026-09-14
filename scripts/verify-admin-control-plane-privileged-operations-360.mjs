@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 const root = process.cwd();
-const migration = path.join(root, 'supabase', 'migrations', '20260914110200_admin_control_plane_privileged_operations_360.sql');
+const migration = path.join(root, 'supabase', 'migrations', '20260914102545_admin_control_plane_privileged_operations_360.sql');
 const text = fs.readFileSync(migration, 'utf8');
 const checks = [
   ['control-plane migration exists', fs.existsSync(migration)],
