@@ -18,6 +18,8 @@ export default function AdminSiteControl() {
   const [flags, setFlags] = useState<Flag[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [testRecipient, setTestRecipient] = useState('');
+  const [testingBrevo, setTestingBrevo] = useState(false);
   const { toast } = useToast();
 
   const load = useCallback(async () => {
@@ -76,6 +78,28 @@ export default function AdminSiteControl() {
     finally { setSaving(false); }
   };
 
+  const testBrevo = async () => {
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(testRecipient.trim())) {
+      toast({ title: 'Enter a valid test recipient', variant: 'destructive' });
+      return;
+    }
+    setTestingBrevo(true);
+    try {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const token = sessionData.session?.access_token;
+      if (!token) throw new Error('Admin session is no longer available.');
+      const { data, error } = await supabase.functions.invoke('brevo-test-email', {
+        body: { recipient: testRecipient.trim().toLowerCase() },
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (error) throw error;
+      if (!data?.ok) throw new Error(data?.error || 'Brevo test failed.');
+      toast({ title: 'Brevo test accepted', description: data.message_id ? `Provider message ID: ${data.message_id}` : 'Check the recipient mailbox.' });
+    } catch (error) {
+      toast({ title: 'Brevo test failed', description: error instanceof Error ? error.message : 'Provider unavailable.', variant: 'destructive' });
+    } finally { setTestingBrevo(false); }
+  };
+
   const saveFlag = async (item: Flag) => {
     setSaving(true);
     try {
@@ -109,7 +133,7 @@ export default function AdminSiteControl() {
         </section>
       </div>}
 
-      {tab === 'integrations' && <div className="space-y-4">{integrations.map(item => <section key={item.id} className="bg-white border rounded-xl p-6"><div className="flex items-start justify-between gap-4"><div><h2 className="font-semibold capitalize">{item.channel}: {item.integration_key}</h2><p className="text-sm text-gray-500 mt-1">Provider configuration is editable here; secret values are intentionally kept outside the browser.</p></div><span className={`text-xs rounded-full px-3 py-1 ${item.is_enabled?'bg-green-100 text-green-700':'bg-gray-100 text-gray-600'}`}>{item.is_enabled?'ENABLED':'DISABLED'}</span></div><div className="grid md:grid-cols-3 gap-4 mt-5"><label className="text-sm font-medium">Provider<input value={item.provider} onChange={e=>setIntegrations(prev=>prev.map(x=>x.id===item.id?{...x,provider:e.target.value}:x))} className="input mt-1"/></label><label className="text-sm font-medium">Required secret<input value={item.required_secret_env || ''} readOnly className="input mt-1 bg-gray-50 font-mono text-xs"/></label><label className="flex items-center gap-2 text-sm mt-7"><input type="checkbox" checked={item.is_enabled} onChange={e=>setIntegrations(prev=>prev.map(x=>x.id===item.id?{...x,is_enabled:e.target.checked}:x))}/><span>Enable provider</span></label></div><label className="block text-sm font-medium mt-4">Public configuration JSON<textarea value={JSON.stringify(item.public_config ?? {}, null, 2)} onChange={e=>{try{const parsed=JSON.parse(e.target.value);setIntegrations(prev=>prev.map(x=>x.id===item.id?{...x,public_config:parsed}:x));}catch{/* wait for valid JSON */}}} className="input font-mono text-xs min-h-[110px] mt-1"/></label><div className="mt-4 flex items-center justify-between"><div className="text-xs text-gray-500">Secret status: <strong>{item.secret_configured?'configured':'not confirmed'}</strong> · Last test: {item.last_tested_at ? new Date(item.last_tested_at).toLocaleString() : 'never'}</div><button disabled={saving} onClick={()=>void saveIntegration(item)} className="btn-primary"><Save className="w-4 h-4 inline mr-2"/>Save</button></div></section>)}</div>}
+      {tab === 'integrations' && <div className="space-y-4">{integrations.map(item => <section key={item.id} className="bg-white border rounded-xl p-6"><div className="flex items-start justify-between gap-4"><div><h2 className="font-semibold capitalize">{item.channel}: {item.integration_key}</h2><p className="text-sm text-gray-500 mt-1">Provider configuration is editable here; secret values are intentionally kept outside the browser.</p></div><span className={`text-xs rounded-full px-3 py-1 ${item.is_enabled?'bg-green-100 text-green-700':'bg-gray-100 text-gray-600'}`}>{item.is_enabled?'ENABLED':'DISABLED'}</span></div><div className="grid md:grid-cols-3 gap-4 mt-5"><label className="text-sm font-medium">Provider<input value={item.provider} onChange={e=>setIntegrations(prev=>prev.map(x=>x.id===item.id?{...x,provider:e.target.value}:x))} className="input mt-1"/></label><label className="text-sm font-medium">Required secret<input value={item.required_secret_env || ''} readOnly className="input mt-1 bg-gray-50 font-mono text-xs"/></label><label className="flex items-center gap-2 text-sm mt-7"><input type="checkbox" checked={item.is_enabled} onChange={e=>setIntegrations(prev=>prev.map(x=>x.id===item.id?{...x,is_enabled:e.target.checked}:x))}/><span>Enable provider</span></label></div><label className="block text-sm font-medium mt-4">Public configuration JSON<textarea value={JSON.stringify(item.public_config ?? {}, null, 2)} onChange={e=>{try{const parsed=JSON.parse(e.target.value);setIntegrations(prev=>prev.map(x=>x.id===item.id?{...x,public_config:parsed}:x));}catch{/* wait for valid JSON */}}} className="input font-mono text-xs min-h-[110px] mt-1"/></label><div className="mt-4 flex flex-wrap items-center justify-between gap-3"><div className="text-xs text-gray-500">Secret status: <strong>{item.secret_configured?'configured':'not confirmed'}</strong> · Last test: {item.last_tested_at ? new Date(item.last_tested_at).toLocaleString() : 'never'}</div><div className="flex flex-wrap gap-2">{item.integration_key==='communications.email' && <><input type="email" value={testRecipient} onChange={e=>setTestRecipient(e.target.value)} placeholder="test recipient@example.com" className="input w-64"/><button disabled={testingBrevo} onClick={()=>void testBrevo()} className="btn-secondary"><MailCheck className="w-4 h-4 inline mr-2"/>{testingBrevo?'Testing…':'Test Brevo'}</button></>}<button disabled={saving} onClick={()=>void saveIntegration(item)} className="btn-primary"><Save className="w-4 h-4 inline mr-2"/>Save</button></div></div></section>)}</div>}
 
       {tab === 'features' && <div className="grid md:grid-cols-2 gap-4">{flags.map(item=><section key={item.id} className="bg-white border rounded-xl p-5"><div className="flex items-center justify-between gap-4"><div><h2 className="font-semibold">{item.label}</h2><p className="text-sm text-gray-500 mt-1">{item.description}</p></div><label className="relative inline-flex items-center cursor-pointer"><input type="checkbox" className="sr-only peer" checked={item.is_enabled} onChange={e=>{const next={...item,is_enabled:e.target.checked};setFlags(prev=>prev.map(x=>x.id===item.id?next:x));void saveFlag(next);}}/><span className="w-11 h-6 bg-gray-200 rounded-full peer peer-checked:bg-primary-600 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-full"/></label></div></section>)}</div>}
     </div>

@@ -84,6 +84,9 @@ jobs:
           npm run verify:phases-24-26-reporting-intelligence-360
           npm run verify:phases-27-29-public-accessibility-seo-360
 
+      - name: Brevo email integration contract
+        run: npm run verify:brevo-email
+
       - name: Frontend quality
         run: |
           npm run lint

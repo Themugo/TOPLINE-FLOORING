@@ -102,7 +102,8 @@
     "verify:admin-control-plane-360": "node scripts/verify-admin-control-plane-privileged-operations-360.mjs",
     "verify:customer-self-service-rpc-360": "node scripts/verify-customer-self-service-rpc-trust-boundary-360.mjs",
     "verify:payment-refund-provider-360": "node scripts/verify-payment-refund-provider-trust-boundary-360.mjs",
-    "verify:payment-provider-uat": "node scripts/verify-payment-provider-uat.mjs"
+    "verify:payment-provider-uat": "node scripts/verify-payment-provider-uat.mjs",
+    "verify:brevo-email": "node scripts/verify-brevo-email-integration.mjs"
   },
   "dependencies": {
     "@radix-ui/react-accordion": "^1.2.16",
