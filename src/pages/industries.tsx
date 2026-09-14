@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, type ComponentType } from "react";
 import { CustomerLayout } from "@/components/layout/CustomerLayout";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { Building2, Warehouse, ShoppingBag, Stethoscope, School, Building, Ship, Trees, ArrowRight } from "lucide-react";
@@ -20,8 +20,7 @@ const FALLBACK_INDUSTRIES = [
   { icon: "Trees", title: "Infrastructure", desc: "Large-scale waterproofing for bridges, tunnels, and public infrastructure.", href: "/quotation" },
 ];
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const ICON_MAP: Record<string, any> = { Building2, Warehouse, ShoppingBag, Stethoscope, School, Building, Ship, Trees };
+const ICON_MAP: Record<string, ComponentType<{ className?: string }>> = { Building2, Warehouse, ShoppingBag, Stethoscope, School, Building, Ship, Trees };
 
 export default function Industries() {
   usePageVisit("/industries");

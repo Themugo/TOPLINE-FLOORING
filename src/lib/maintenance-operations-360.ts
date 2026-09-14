@@ -1,37 +1,11 @@
 import { supabase } from '@/lib/supabase';
-
-export async function getMaintenanceOperations360() {
-  const { data, error } = await supabase.rpc('get_maintenance_operations_360');
-  if (error) throw error;
-  return data as any;
-}
-
-export async function createMaintenancePlan360(input: { customerId: string; name: string; frequencyMonths: number; startsOn: string; projectId?: string | null; orderId?: string | null; description?: string | null; expiresOn?: string | null; notes?: string | null }) {
-  const { data, error } = await supabase.rpc('create_maintenance_plan_360', { p_customer_id: input.customerId, p_name: input.name, p_frequency_months: input.frequencyMonths, p_starts_on: input.startsOn, p_project_id: input.projectId ?? null, p_order_id: input.orderId ?? null, p_description: input.description ?? null, p_expires_on: input.expiresOn ?? null, p_notes: input.notes ?? null });
-  if (error) throw error;
-  return data as any;
-}
-
-export async function scheduleMaintenanceVisit360(planId: string, scheduledFor: string, assignedTo?: string | null, notes?: string | null) {
-  const { data, error } = await supabase.rpc('schedule_maintenance_visit_360', { p_plan_id: planId, p_scheduled_for: scheduledFor, p_assigned_to: assignedTo ?? null, p_notes: notes ?? null });
-  if (error) throw error;
-  return data as any;
-}
-
-export async function completeMaintenanceVisit360(visitId: string, completedOn?: string, notes?: string | null) {
-  const { data, error } = await supabase.rpc('complete_maintenance_visit_360', { p_visit_id: visitId, p_completed_on: completedOn ?? new Date().toISOString().slice(0, 10), p_notes: notes ?? null });
-  if (error) throw error;
-  return data as any;
-}
-
-export async function transitionMaintenancePlan360(planId: string, status: string, notes?: string | null) {
-  const { data, error } = await supabase.rpc('transition_maintenance_plan_360', { p_plan_id: planId, p_status: status, p_notes: notes ?? null });
-  if (error) throw error;
-  return data as any;
-}
-
-export async function getCustomerMaintenancePlans360() {
-  const { data, error } = await supabase.rpc('get_customer_maintenance_plans_360');
-  if (error) throw error;
-  return data as any;
-}
+export type MaintenancePlan360={id:string;name:string;plan_number?:string|null;customer_name?:string|null;customer_phone?:string|null;customer_email?:string|null;next_due_on?:string|null;status?:string;frequency_months?:number;starts_on?:string;expires_on?:string|null;customer_id?:string;project_id?:string|null;order_id?:string|null;description?:string|null;notes?:string|null;[key:string]:unknown};
+export type MaintenanceVisit360={id:string;plan_id?:string;plan_name?:string|null;customer_name?:string|null;scheduled_for?:string;completed_on?:string|null;status?:string;assigned_to?:string|null;notes?:string|null;[key:string]:unknown};
+export type MaintenanceOperations360={metrics:Record<string,number>;plans:MaintenancePlan360[];upcoming_visits:MaintenanceVisit360[];[key:string]:unknown};
+export type MaintenanceMutationResult={id?:string;status?:string;[key:string]:unknown};
+export async function getMaintenanceOperations360():Promise<MaintenanceOperations360>{const {data,error}=await supabase.rpc('get_maintenance_operations_360');if(error)throw error;return (data??{metrics:{},plans:[],upcoming_visits:[]}) as MaintenanceOperations360;}
+export async function createMaintenancePlan360(input:{customerId:string;name:string;frequencyMonths:number;startsOn:string;projectId?:string|null;orderId?:string|null;description?:string|null;expiresOn?:string|null;notes?:string|null}):Promise<MaintenanceMutationResult>{const {data,error}=await supabase.rpc('create_maintenance_plan_360',{p_customer_id:input.customerId,p_name:input.name,p_frequency_months:input.frequencyMonths,p_starts_on:input.startsOn,p_project_id:input.projectId??null,p_order_id:input.orderId??null,p_description:input.description??null,p_expires_on:input.expiresOn??null,p_notes:input.notes??null});if(error)throw error;return (data??{}) as MaintenanceMutationResult;}
+export async function scheduleMaintenanceVisit360(planId:string,scheduledFor:string,assignedTo?:string|null,notes?:string|null):Promise<MaintenanceMutationResult>{const {data,error}=await supabase.rpc('schedule_maintenance_visit_360',{p_plan_id:planId,p_scheduled_for:scheduledFor,p_assigned_to:assignedTo??null,p_notes:notes??null});if(error)throw error;return (data??{}) as MaintenanceMutationResult;}
+export async function completeMaintenanceVisit360(visitId:string,completedOn?:string,notes?:string|null):Promise<MaintenanceMutationResult>{const {data,error}=await supabase.rpc('complete_maintenance_visit_360',{p_visit_id:visitId,p_completed_on:completedOn??new Date().toISOString().slice(0,10),p_notes:notes??null});if(error)throw error;return (data??{}) as MaintenanceMutationResult;}
+export async function transitionMaintenancePlan360(planId:string,status:string,notes?:string|null):Promise<MaintenanceMutationResult>{const {data,error}=await supabase.rpc('transition_maintenance_plan_360',{p_plan_id:planId,p_status:status,p_notes:notes??null});if(error)throw error;return (data??{}) as MaintenanceMutationResult;}
+export async function getCustomerMaintenancePlans360():Promise<MaintenancePlan360[]>{const {data,error}=await supabase.rpc('get_customer_maintenance_plans_360');if(error)throw error;return (data??[]) as MaintenancePlan360[];}

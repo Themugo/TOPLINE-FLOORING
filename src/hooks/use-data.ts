@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState, useEffect, useCallback } from 'react';
 import { isSupabaseConfigured, supabase } from '@/lib/supabase';
 import { useCMS } from '@/context/CMSContext';
@@ -37,28 +36,57 @@ import type {
   WarehouseStock,
   StockTransfer,
 } from '@/lib/types';
+import type { CMSContentStore } from '@/lib/cms-types';
 
 function errorMessage(err: unknown, fallback: string): string {
   return err instanceof Error ? err.message : fallback;
 }
 
 // Site Settings (Centralized CMS Sourced)
+export type SiteSettings = {
+  site_info: CMSContentStore['website_settings']['site_info'] & { founded?: number };
+  company: CMSContentStore['website_settings']['company'];
+  contact: CMSContentStore['website_settings']['contact'] & { phone_alt?: string };
+  social_links: CMSContentStore['website_settings']['social'] & { whatsapp?: string };
+  localization: CMSContentStore['website_settings']['localization'];
+  business_hours: {
+    weekdays?: { open?: string; close?: string };
+    saturday?: { open?: string; close?: string };
+    sunday?: string;
+  };
+  footer: { copyright: string; show_social: boolean; disclaimer?: string };
+  company_name: string;
+  phone: string;
+  email: string;
+  address: string;
+};
+
 export function useSiteSettings() {
   const { cms, loading, error, updateGroup, refetch } = useCMS();
 
-  const settings: Record<string, any> = {
+  const settings: SiteSettings = {
     site_info: cms.website_settings.site_info,
     company: cms.website_settings.company,
     contact: cms.website_settings.contact,
     social_links: cms.website_settings.social,
     localization: cms.website_settings.localization,
+    business_hours: {
+      weekdays: { open: '08:00', close: '18:00' },
+      saturday: { open: '09:00', close: '14:00' },
+      sunday: 'Closed',
+    },
     footer: {
-      copyright_text: cms.footer.copyright,
+      copyright: cms.footer.copyright,
+      show_social: true,
       disclaimer: cms.footer.legal_disclaimer,
     },
+    company_name: cms.website_settings.company.name || cms.website_settings.site_info.name,
+    phone: cms.website_settings.contact.phone,
+    email: cms.website_settings.contact.email,
+    address: cms.website_settings.contact.address,
   };
 
-  const updateSetting = async (key: string, value: any) => {
+  const updateSetting = async (key: string, value: unknown) => {
     if (key in cms.website_settings) {
       await updateGroup('website_settings', {
         ...cms.website_settings,
@@ -202,7 +230,7 @@ export function useProducts(options?: { categoryId?: string; featured?: boolean;
 
       const { data, error: err } = await query;
       if (err || !data || data.length === 0) {
-        let filtered: any[] = [];
+        let filtered: Product[] = []
         if (options?.categoryId) filtered = filtered.filter((p) => p.category_id === options.categoryId);
         if (options?.featured) filtered = filtered.filter((p) => p.featured);
         if (options?.search) {
@@ -220,7 +248,7 @@ export function useProducts(options?: { categoryId?: string; featured?: boolean;
         setProducts(data);
       }
     } catch {
-      let filtered: any[] = [];
+      let filtered: Product[] = []
       if (options?.categoryId) filtered = filtered.filter((p) => p.category_id === options.categoryId);
       if (options?.featured) filtered = filtered.filter((p) => p.featured);
       if (options?.search) {

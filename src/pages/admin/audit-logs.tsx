@@ -10,8 +10,8 @@ function formatAction(action: string) {
 }
 
 export default function AdminAuditLogs() {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [logs, setLogs] = useState<any[]>([]);
+  type AuditLog = { id: string; action: string; entity_type: string | null; entity_id: string | null; details: Record<string, unknown>; user_agent: string | null; created_at: string; };
+  const [logs, setLogs] = useState<AuditLog[]>([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(0);
   const [totalCount, setTotalCount] = useState(0);
@@ -105,7 +105,7 @@ export default function AdminAuditLogs() {
                     <td className="p-3 text-sm max-w-[200px] truncate" title={log.details ? JSON.stringify(log.details) : ''}>
                       {log.details ? JSON.stringify(log.details).substring(0, 60) + '...' : '-'}
                     </td>
-                    <td className="p-3 text-sm font-mono text-xs max-w-[150px] truncate" title={log.user_agent}>
+                    <td className="p-3 text-sm font-mono text-xs max-w-[150px] truncate" title={log.user_agent ?? undefined}>
                       {log.user_agent || '-'}
                     </td>
                   </tr>

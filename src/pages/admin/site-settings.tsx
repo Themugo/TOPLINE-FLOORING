@@ -34,8 +34,10 @@ export default function AdminSiteSettings() {
       const newSettings = { ...settings };
       data.forEach((s) => {
         if (newSettings[s.setting_key as keyof typeof newSettings]) {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          (newSettings as any)[s.setting_key] = typeof s.setting_value === 'object' ? s.setting_value : JSON.parse(s.setting_value || '{}');
+          const settingKey = s.setting_key as keyof typeof newSettings;
+          const rawValue = s.setting_value;
+          const parsedValue: unknown = typeof rawValue === 'object' ? rawValue : JSON.parse(rawValue || '{}');
+          (newSettings as unknown as Record<string, unknown>)[settingKey] = parsedValue;
         }
       });
       setSettings(newSettings);

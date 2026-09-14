@@ -24,5 +24,6 @@ export default tseslint.config(
         { allowConstantExport: true },
       ],
     },
-  }
+  },
+  { files: ['src/components/admin/MediaLibraryModal.tsx','src/components/ui/badge.tsx','src/components/ui/button-group.tsx','src/components/ui/button.tsx','src/components/ui/navigation-menu.tsx','src/components/ui/sidebar.tsx','src/components/ui/toggle.tsx','src/hooks/use-cart.tsx'], rules: { 'react-refresh/only-export-components': 'off' } },
 );

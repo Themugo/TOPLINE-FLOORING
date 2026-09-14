@@ -43,10 +43,9 @@ export default function ProductDocuments() {
       .select('*, products!inner(name)')
       .order('display_order');
     if (data) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      setDocuments(data.map((doc: any) => ({
+      setDocuments(data.map((doc: ProductDocument & { products?: { name?: string | null } | null }) => ({
         ...doc,
-        product_name: doc.products?.name,
+        product_name: doc.products?.name ?? undefined,
       })));
     }
     setLoading(false);

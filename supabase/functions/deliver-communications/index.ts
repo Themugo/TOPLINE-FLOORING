@@ -1,7 +1,9 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
- type OutboxMessage = {
+type JsonValue = null | boolean | number | string | JsonValue[] | { [key:string]: JsonValue };
+type JsonRecord = { [key:string]: JsonValue };
+type OutboxMessage = {
   id: string;
   channel: "email" | "sms" | "whatsapp";
   recipient: string;
@@ -66,9 +68,9 @@ async function sendSms(item: OutboxMessage) {
   });
   const body = await response.text();
   if (!response.ok) throw new Error(`Africa's Talking ${response.status}: ${body.slice(0, 500)}`);
-  let parsed: any = null;
+  let parsed: JsonRecord | null = null;
   try { parsed = JSON.parse(body); } catch { parsed = null; }
-  const recipient = parsed?.SMSMessageData?.Recipients?.[0];
+  const smsData=parsed?.SMSMessageData; const recipients=typeof smsData==="object"&&smsData!==null&&!Array.isArray(smsData)?smsData.Recipients:undefined; const recipient=Array.isArray(recipients)&&typeof recipients[0]==="object"&&recipients[0]!==null?recipients[0] as JsonRecord:undefined;
   const status = String(recipient?.status ?? "").toLowerCase();
   const messageId = recipient?.messageId ? String(recipient.messageId) : null;
   const cost = recipient?.cost ? String(recipient.cost) : null;
@@ -96,9 +98,9 @@ async function sendWhatsApp(item: OutboxMessage) {
   });
   const raw = await response.text();
   if (!response.ok) throw new Error(`Meta WhatsApp ${response.status}: ${raw.slice(0, 500)}`);
-  let parsed: any = {};
+  let parsed: JsonRecord = {};
   try { parsed = JSON.parse(raw); } catch { /* no-op */ }
-  const reference = parsed?.messages?.[0]?.id ? String(parsed.messages[0].id) : null;
+  const messages=parsed.messages; const reference=Array.isArray(messages)&&typeof messages[0]==="object"&&messages[0]!==null&&"id" in messages[0]?String((messages[0] as JsonRecord).id):null;
   if (!reference) throw new Error(`Meta WhatsApp accepted without message id: ${raw.slice(0, 500)}`);
   return { provider: "meta_whatsapp", reference, httpStatus: response.status, raw: parsed };
 }
@@ -126,14 +128,22 @@ async function processItem(item: OutboxMessage) {
     const result = item.channel === "email" ? await sendEmail(item) : item.channel === "sms" ? await sendSms(item) : await sendWhatsApp(item);
     await recordAttempt(item, requestId, "accepted", result);
 
-    let completionUncertain = false;
     const { error } = await admin.rpc("complete_communication_delivery_worker", {
       p_outbox_id: item.id,
       p_provider: result.provider,
       p_provider_reference: result.reference,
       p_provider_message_id: result.reference,
     });
-    if (error) { completionUncertain = true; throw error; }
+    if (error) {
+      const message = error.message;
+      await recordAttempt(item, requestId, "uncertain", { error: message });
+      const { error: uncertainError } = await admin.rpc("mark_communication_delivery_uncertain_worker", {
+        p_outbox_id: item.id,
+        p_error_message: message,
+      });
+      if (uncertainError) throw uncertainError;
+      return { id: item.id, status: "uncertain", provider: result.provider, error: message };
+    }
 
     if (item.channel === "sms" && result.reference) {
       const { error: reportError } = await admin.rpc("record_sms_delivery_report", {
@@ -148,10 +158,12 @@ async function processItem(item: OutboxMessage) {
     return { id: item.id, status: "sent", provider: result.provider };
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
-    await recordAttempt(item, requestId, completionUncertain ? "uncertain" : "failed", { error: message });
-    const { error: failError } = completionUncertain
-      ? await admin.rpc("mark_communication_delivery_uncertain_worker", { p_outbox_id: item.id, p_error_message: message })
-      : await admin.rpc("fail_communication_delivery_worker", { p_outbox_id: item.id, p_error_message: message, p_retry: true });
+    await recordAttempt(item, requestId, "failed", { error: message });
+    const { error: failError } = await admin.rpc("fail_communication_delivery_worker", {
+      p_outbox_id: item.id,
+      p_error_message: message,
+      p_retry: true,
+    });
     if (failError) throw failError;
     return { id: item.id, status: "failed_or_requeued", error: message };
   }

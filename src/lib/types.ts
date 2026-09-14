@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 export interface Service {
   id: string;
   name: string;
@@ -106,7 +105,7 @@ export interface ProductVariant {
   sku: string | null;
   price_adjustment: number;
   stock_quantity: number;
-  attributes: Record<string, any>;
+  attributes: Record<string, unknown>;
   is_active: boolean;
   display_order: number;
   is_default: boolean;
@@ -272,7 +271,7 @@ export interface AdminSettings {
 export interface SiteSetting {
   id: string;
   setting_key: string;
-  setting_value: Record<string, any>;
+  setting_value: Record<string, unknown>;
   created_at: string;
   updated_at: string;
 }
@@ -311,7 +310,17 @@ export interface HomepageSection {
   section_key: string;
   title: string | null;
   subtitle: string | null;
-  content: Record<string, any>;
+  content: {
+    badge_text?: string; title?: string; subtitle?: string; description?: string;
+    slide_interval?: number; overlay_opacity?: number;
+    show_featured_products?: boolean; show_featured_services?: boolean;
+    stats?: Array<{ value: string; label: string }>;
+    paragraph_1?: string; paragraph_2?: string; image_url?: string;
+    max_items?: number; limit?: number; view_all_text?: string;
+    add_to_cart_text?: string; cta_text?: string; cta_link?: string;
+    phone_button_text?: string; transition?: string;
+    [key: string]: unknown;
+  };
   display_order: number;
   is_active: boolean;
   background_color: string | null;
@@ -527,7 +536,7 @@ export interface SeoPage {
   og_description: string | null;
   og_image: string | null;
   canonical_url: string | null;
-  structured_data: Record<string, any> | null;
+  structured_data: Record<string, unknown> | null;
   no_index: boolean;
   no_follow: boolean;
 }
@@ -567,7 +576,7 @@ export interface ActivityLog {
   action: string;
   entity_type: string | null;
   entity_id: string | null;
-  details: Record<string, any>;
+  details: Record<string, unknown>;
   ip_address: string | null;
   user_agent: string | null;
   created_at: string;

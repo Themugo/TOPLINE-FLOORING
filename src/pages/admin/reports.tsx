@@ -50,8 +50,7 @@ const QUOTE_STAGES = ['draft', 'sent', 'negotiating', 'accepted', 'rejected', 'c
 // recharts' Formatter<ValueType, NameType> generic is awkward to satisfy
 // inline (ValueType includes arrays/undefined); this is a values-only
 // currency formatter for the revenue trend tooltip.
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const tooltipFormatter = (value: any) => formatKES(Number(value) || 0);
+const tooltipFormatter = (value: unknown) => formatKES(Number(value) || 0);
 
 function ReportsContent() {
   const [dateRange, setDateRange] = useState('30');

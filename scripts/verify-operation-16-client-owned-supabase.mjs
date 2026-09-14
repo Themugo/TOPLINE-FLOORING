@@ -1,7 +1,9 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 const root = process.cwd();
+const verifierPath = path.resolve(fileURLToPath(import.meta.url));
 const failures = [];
 const canonicalRef = 'zmbsskvnzjdaxuxlauyx';
 const canonicalUrl = `https://${canonicalRef}.supabase.co`;
@@ -20,7 +22,7 @@ function walk(dir) {
 walk(root);
 
 for (const file of files) {
-  if (file.endsWith('scripts/verify-operation-16-client-owned-supabase.mjs')) continue;
+  if (path.resolve(file) === verifierPath) continue;
   const text = fs.readFileSync(file, 'utf8');
   if (text.includes(['jypkhvknfgoqrhwzbdwi'].join(''))) failures.push(`Retired Supabase project reference found in ${path.relative(root, file)}.`);
 }

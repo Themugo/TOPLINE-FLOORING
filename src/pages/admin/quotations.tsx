@@ -199,7 +199,8 @@ function QuotationDetail({
     return { subtotal, taxAmount, total: subtotal + taxAmount };
   };
 
-  const persistTotals = async (_list: QuotationItem[]) => {
+  const persistTotals = async (list: QuotationItem[]) => {
+    void list;
     onUpdated();
   };
 

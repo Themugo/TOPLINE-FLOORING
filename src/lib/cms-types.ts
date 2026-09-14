@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import type {
   HeroSlide,
   Testimonial,
@@ -51,13 +50,37 @@ export interface WebsiteSettingsGroup {
   };
 }
 
+export interface HomepageSectionContent {
+  badge_text?: string;
+  title?: string;
+  subtitle?: string;
+  description?: string;
+  slide_interval?: number;
+  overlay_opacity?: number;
+  show_featured_products?: boolean;
+  show_featured_services?: boolean;
+  stats?: Array<{ value: string; label: string }>;
+  paragraph_1?: string;
+  paragraph_2?: string;
+  image_url?: string;
+  max_items?: number;
+  limit?: number;
+  view_all_text?: string;
+  add_to_cart_text?: string;
+  cta_text?: string;
+  cta_link?: string;
+  phone_button_text?: string;
+  transition?: string;
+  [key: string]: unknown;
+}
+
 export interface HomepageBuilderSection {
   id: string;
   section_type: string;
   section_key: string;
   title: string | null;
   subtitle: string | null;
-  content: Record<string, any>;
+  content: HomepageSectionContent;
   display_order: number;
   is_active: boolean;
   background_color: string | null;

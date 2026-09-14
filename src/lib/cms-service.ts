@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { supabase } from './supabase';
 import type { CMSContentStore, CMSGroupKey } from './cms-types';
 import { DEFAULT_CMS_STORE } from './cms-defaults';
@@ -51,9 +50,12 @@ export async function fetchCMSContentStore(): Promise<CMSContentStore> {
 
           // Check if key corresponds to one of the 13 logical content groups
           if (key in mergedStore) {
-            (mergedStore as any)[key] = {
-              ...(mergedStore as any)[key],
-              ...val,
+            const groupKey = key as CMSGroupKey;
+            const currentGroup = mergedStore[groupKey];
+            const incomingGroup = val && typeof val === 'object' ? val as Record<string, unknown> : {};
+            (mergedStore as unknown as Record<CMSGroupKey, unknown>)[groupKey] = {
+              ...(currentGroup as unknown as Record<string, unknown>),
+              ...incomingGroup,
             };
           } else if (key === 'site_info' || key === 'company' || key === 'contact' || key === 'social') {
             // Legacy site_settings compatibility mapping into website_settings

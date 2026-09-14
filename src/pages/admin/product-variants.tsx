@@ -18,8 +18,7 @@ type ProductVariant = {
   sku: string | null;
   price_adjustment: number;
   stock_quantity: number;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  attributes: Record<string, any>;
+  attributes: Record<string, unknown>;
   display_order: number;
   is_active: boolean;
   product_name?: string;
@@ -51,10 +50,9 @@ export default function ProductVariants() {
       .select('*, products!inner(name)')
       .order('display_order');
     if (data) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      setVariants(data.map((variant: any) => ({
+      setVariants(data.map((variant: ProductVariant & { products?: { name?: string | null } | null }) => ({
         ...variant,
-        product_name: variant.products?.name,
+        product_name: variant.products?.name ?? undefined,
       })));
     }
     setLoading(false);

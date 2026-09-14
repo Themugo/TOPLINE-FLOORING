@@ -1,14 +1,18 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { CheckCircle2, ClipboardCheck, RefreshCw, ShieldCheck, AlertTriangle, Users, PackageCheck, CircleDollarSign } from 'lucide-react';
 import { AdminLayout } from './dashboard';
 import { useToast } from '@/hooks/use-toast';
 import { getProjectDelivery360, reconcileProjectDelivery360, recordProjectQualityInspection, updateProjectDeliveryStatus } from '@/lib/project-delivery-360';
 
 const money = (value: unknown) => new Intl.NumberFormat('en-KE', { style: 'currency', currency: 'KES', maximumFractionDigits: 0 }).format(Number(value || 0));
-const arr = (value: unknown) => Array.isArray(value) ? value as Array<Record<string, any>> : [];
+type DeliveryProject={id:string;title:string;project_number?:string|null;client_name?:string|null;status:string;progress_percentage?:number|null;project_value?:number|null};
+type DeliveryItem={id:string;status:string;[key:string]:unknown};
+type DeliverySignoff={approved?:boolean|null;[key:string]:unknown};
+type DeliveryRecord={project:DeliveryProject;installations?:DeliveryItem[];tasks?:DeliveryItem[];issues?:DeliveryItem[];materials?:DeliveryItem[];costs?:DeliveryItem[];quality?:DeliveryItem[];workforce?:DeliveryItem[];signoff?:DeliverySignoff|null;[key:string]:unknown};
+const arr=(value:unknown):DeliveryItem[]=>Array.isArray(value)?value.filter((item):item is DeliveryItem=>typeof item==='object'&&item!==null&&typeof (item as Record<string,unknown>).id==='string'):[];
 
 export default function AdminProjectDelivery360() {
-  const [rows, setRows] = useState<Array<Record<string, any>>>([]);
+  const [rows, setRows] = useState<DeliveryRecord[]>([]);
   const [selected, setSelected] = useState('');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -17,20 +21,20 @@ export default function AdminProjectDelivery360() {
   const [findings, setFindings] = useState('');
   const { toast } = useToast();
 
-  const load = async () => {
+  const load = useCallback(async () => {
     setLoading(true);
     try {
       const data = await getProjectDelivery360();
-      const next = (Array.isArray(data.projects) ? data.projects : []) as Array<Record<string, any>>;
+      const next = (Array.isArray(data.projects) ? data.projects : []) as DeliveryRecord[];
       setRows(next);
-      if (!selected && next[0]?.project?.id) setSelected(next[0].project.id as string);
+      if (next[0]?.project?.id) setSelected(currentSelected => currentSelected || next[0].project.id);
     } catch (e) { toast({ title: 'Unable to load project delivery', description: e instanceof Error ? e.message : 'Unknown error', variant: 'destructive' }); }
     finally { setLoading(false); }
-  };
-  useEffect(() => { void load(); }, []);
+  }, [toast]);
+  useEffect(() => { void load(); }, [load]);
   const current = useMemo(() => rows.find(r => r.project?.id === selected) || rows[0], [rows, selected]);
-  const project = current?.project || {};
-  const installations = arr(current?.installations); const tasks = arr(current?.tasks); const issues = arr(current?.issues); const materials = arr(current?.materials); const costs = arr(current?.costs); const qualityRows = arr(current?.quality); const workforce = arr(current?.workforce); const signoff = current?.signoff;
+  const project:DeliveryProject=current?.project ?? {id:"",title:"",status:"",progress_percentage:0};
+  const installations = arr(current?.installations); const tasks = arr(current?.tasks); const issues = arr(current?.issues); const materials = arr(current?.materials); const costs = arr(current?.costs); const qualityRows = arr(current?.quality); const workforce = arr(current?.workforce); const signoff = current?.signoff ?? null;
   const openIssues = issues.filter(i => !['resolved','closed'].includes(i.status)).length;
   const openTasks = tasks.filter(t => !['completed','cancelled'].includes(t.status)).length;
   const latestQuality = qualityRows[0]?.status;
@@ -50,7 +54,7 @@ export default function AdminProjectDelivery360() {
           <div className="surface p-5"><div className="flex flex-wrap justify-between gap-4"><div><p className="eyebrow">{project.project_number || 'Project'}</p><h2 className="text-2xl font-bold mt-1">{project.title}</h2><p className="text-sm text-muted-foreground mt-1">{project.client_name || 'Customer not linked'} · {project.status}</p></div><span className={`chip ${ready?'text-emerald-700':'text-amber-700'}`}>{ready?'Ready to close':'Delivery in progress'}</span></div><div className="grid sm:grid-cols-4 gap-3 mt-5"><div className="surface-muted p-3"><p className="eyebrow">Progress</p><p className="text-xl font-bold mt-1">{project.progress_percentage || 0}%</p></div><div className="surface-muted p-3"><p className="eyebrow">Installation</p><p className="text-xl font-bold mt-1">{latestInstallation || 'Not scheduled'}</p></div><div className="surface-muted p-3"><p className="eyebrow">Actual cost</p><p className="text-xl font-bold mt-1">{money(costs.reduce((n,c)=>n+Number(c.actual_amount||0),0))}</p></div><div className="surface-muted p-3"><p className="eyebrow">Quality</p><p className="text-xl font-bold mt-1">{latestQuality || 'Pending'}</p></div></div><div className="mt-5 flex flex-wrap gap-2">{project.status!=='completed' && <><button className="btn-secondary" disabled={saving} onClick={()=>run(()=>updateProjectDeliveryStatus(project.id,'in_progress'),'Project marked in progress')}>Start execution</button><button className="btn-secondary" disabled={saving} onClick={()=>run(()=>updateProjectDeliveryStatus(project.id,'scheduled'),'Project marked scheduled')}>Mark scheduled</button></>}</div></div>
           <div className="grid md:grid-cols-2 gap-6">
             <section className="surface p-5"><h3 className="font-bold flex items-center gap-2"><ClipboardCheck className="w-4 h-4"/>Execution readiness</h3><div className="mt-4 space-y-2 text-sm"><div className="flex justify-between"><span>Tasks complete</span><span>{tasks.length-openTasks}/{tasks.length}</span></div><div className="flex justify-between"><span>Issues resolved</span><span>{issues.length-openIssues}/{issues.length}</span></div><div className="flex justify-between"><span>Workforce assigned</span><span>{workforce.length}</span></div><div className="flex justify-between"><span>Materials allocated</span><span>{materials.length}</span></div><div className="flex justify-between"><span>Customer sign-off</span><span>{signoff?.approved?'Approved':'Pending'}</span></div></div></section>
-            <section className="surface p-5"><h3 className="font-bold flex items-center gap-2"><ShieldCheck className="w-4 h-4"/>Quality inspection</h3><div className="grid grid-cols-2 gap-2 mt-4"><select className="input" value={quality} onChange={e=>setQuality(e.target.value as any)}><option value="passed">Passed</option><option value="failed">Failed</option><option value="waived">Waived</option><option value="pending">Pending</option></select><input className="input" type="number" min="0" max="100" value={score} onChange={e=>setScore(e.target.value)} placeholder="Score"/></div><textarea className="input mt-2" value={findings} onChange={e=>setFindings(e.target.value)} placeholder="Inspection findings / corrective action"/><button className="btn-primary mt-3" disabled={saving} onClick={()=>run(()=>recordProjectQualityInspection({projectId:project.id,installationId:installations[0]?.id,status:quality,score:Number(score),findings}),'Quality inspection recorded')}>Record inspection</button></section>
+            <section className="surface p-5"><h3 className="font-bold flex items-center gap-2"><ShieldCheck className="w-4 h-4"/>Quality inspection</h3><div className="grid grid-cols-2 gap-2 mt-4"><select className="input" value={quality} onChange={e=>setQuality(e.target.value as 'passed'|'failed'|'waived'|'pending')}><option value="passed">Passed</option><option value="failed">Failed</option><option value="waived">Waived</option><option value="pending">Pending</option></select><input className="input" type="number" min="0" max="100" value={score} onChange={e=>setScore(e.target.value)} placeholder="Score"/></div><textarea className="input mt-2" value={findings} onChange={e=>setFindings(e.target.value)} placeholder="Inspection findings / corrective action"/><button className="btn-primary mt-3" disabled={saving} onClick={()=>run(()=>recordProjectQualityInspection({projectId:project.id,installationId:installations[0]?.id,status:quality,score:Number(score),findings}),'Quality inspection recorded')}>Record inspection</button></section>
           </div>
           <div className="grid md:grid-cols-4 gap-3"><div className="surface p-4"><Users className="w-4 h-4"/><p className="eyebrow mt-2">Workforce</p><p className="text-xl font-bold">{workforce.length}</p></div><div className="surface p-4"><PackageCheck className="w-4 h-4"/><p className="eyebrow mt-2">Material allocations</p><p className="text-xl font-bold">{materials.length}</p></div><div className="surface p-4"><AlertTriangle className="w-4 h-4"/><p className="eyebrow mt-2">Open issues</p><p className="text-xl font-bold">{openIssues}</p></div><div className="surface p-4"><CircleDollarSign className="w-4 h-4"/><p className="eyebrow mt-2">Project value</p><p className="text-xl font-bold">{money(project.project_value)}</p></div></div>
           {project.status==='completed' && <div className="surface p-5 flex items-center gap-3"><CheckCircle2 className="w-5 h-5 text-emerald-600"/><div><p className="font-semibold">Project completed</p><p className="text-sm text-muted-foreground">Customer completion and delivery controls are recorded.</p></div></div>}

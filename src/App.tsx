@@ -151,8 +151,7 @@ function Router() {
     );
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const adminRoutes: Record<string, React.LazyExoticComponent<React.ComponentType<any>>> = {
+  const adminRoutes: Record<string, React.LazyExoticComponent<React.ComponentType>> = {
     '/admin/orders': AdminOrders,
     '/admin/sales': AdminSalesCommandCenter,
     '/admin/commercial-lifecycle': AdminCommercialLifecycle,

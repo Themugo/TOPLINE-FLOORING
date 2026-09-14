@@ -48,8 +48,7 @@ export interface SeoOptions {
   productData?: SeoProductData;
   serviceData?: SeoServiceData;
   faqData?: SeoFaqData[];
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  customSchema?: Record<string, any>;
+  customSchema?: Record<string, unknown>;
 }
 
 function setMetaTag(attr: 'name' | 'property', key: string, content: string | null | undefined) {
@@ -90,8 +89,7 @@ function removeCanonical() {
   if (link) link.remove();
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function setJsonLdScript(id: string, data: Record<string, any> | null) {
+function setJsonLdScript(id: string, data: Record<string, unknown> | null) {
   let script = document.getElementById(id) as HTMLScriptElement | null;
   if (!data) {
     if (script) script.remove();

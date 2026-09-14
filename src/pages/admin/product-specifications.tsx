@@ -40,10 +40,9 @@ export default function ProductSpecifications() {
       .select('*, products!inner(name)')
       .order('display_order');
     if (data) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      setSpecs(data.map((spec: any) => ({
+      setSpecs(data.map((spec: ProductSpecification & { products?: { name?: string | null } | null }) => ({
         ...spec,
-        product_name: spec.products?.name,
+        product_name: spec.products?.name ?? undefined,
       })));
     }
     setLoading(false);

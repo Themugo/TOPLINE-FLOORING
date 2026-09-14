@@ -1,8 +1,25 @@
 import { supabase } from '@/lib/supabase';
 
+export interface ServiceCaseRow360 {
+  id: string;
+  case_number: string;
+  customer_name?: string | null;
+  customer_phone?: string | null;
+  customer_email?: string | null;
+  issue_title?: string | null;
+  description?: string | null;
+  priority?: string | null;
+  sla_due_at?: string | null;
+  type?: string | null;
+  warranty_valid?: boolean | null;
+  status: string;
+  assigned_to?: string | null;
+  [key: string]: unknown;
+}
+
 export interface ServiceCaseOperations360 {
   checked_at: string;
-  cases: Array<Record<string, unknown>>;
+  cases: ServiceCaseRow360[];
   metrics: Record<string, number>;
   events: Array<Record<string, unknown>>;
   viewer: string;
