@@ -20,3 +20,12 @@ Only checks actually executed against this package are recorded here.
 
 ## Launch gate
 `npm run launch:check` is expected to remain BLOCKED until local/Vercel environment variables, provider UAT, authorized Supabase deployment, DNS/domain checks, and launch smoke tests are completed. This is an environment readiness gate, not a source-code failure.
+
+## DB-9–DB-11 final sweep
+- 80 local migration files; 142 tables; 213 static dependency functions / 214 live functions.
+- DB-9 Data Governance & Privacy: passed.
+- DB-10 Identity & Privileged Access: passed.
+- DB-11 Quality & Corrective Action: passed.
+- Full structural verification: 83/83 passed, 0 failed.
+- Typecheck, lint and production build are included in the final commit script.
+- Generated database types remain intentionally absent until a successful local Supabase replay.

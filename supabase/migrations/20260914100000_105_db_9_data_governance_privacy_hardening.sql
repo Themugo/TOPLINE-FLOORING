@@ -1,0 +1,13 @@
+BEGIN;
+CREATE INDEX IF NOT EXISTS idx_data_governance_policies_review ON public.data_governance_policies (status, next_review_at, classification);
+CREATE INDEX IF NOT EXISTS idx_data_governance_policies_domain ON public.data_governance_policies (domain, classification);
+CREATE INDEX IF NOT EXISTS idx_data_subject_requests_customer_status ON public.data_subject_requests (customer_id, status, due_at);
+CREATE INDEX IF NOT EXISTS idx_data_subject_requests_type_status ON public.data_subject_requests (request_type, status, due_at);
+CREATE INDEX IF NOT EXISTS idx_access_reviews_status_due ON public.access_reviews (status, review_due_at);
+REVOKE ALL ON public.data_governance_policies FROM anon;
+REVOKE ALL ON public.data_subject_requests FROM anon;
+REVOKE ALL ON public.access_reviews FROM anon;
+REVOKE ALL ON public.data_governance_policies FROM PUBLIC;
+REVOKE ALL ON public.data_subject_requests FROM PUBLIC;
+REVOKE ALL ON public.access_reviews FROM PUBLIC;
+COMMIT;

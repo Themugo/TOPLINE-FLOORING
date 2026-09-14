@@ -76,7 +76,7 @@ Never put a service-role or worker secret in a `VITE_*` variable.
 
 ## Current active chain (Phases 30–32 verification baseline)
 
-The current production candidate contains 73 uniquely timestamped active migrations, ending with `20260914080000_102_theme_brand_governance_360.sql`. Run the complete verification suite before any linked database deployment.
+The current production candidate contains 80 uniquely timestamped active migrations, ending with `20260914100200_107_db_11_quality_corrective_action_hardening.sql`. Run the complete verification suite before any linked database deployment.
 
 - `20260912210000_070_customer_service_sla_operations_360.sql` — Phases 80–82 Customer Service SLA & After-Sales Operations 360.
 
@@ -109,3 +109,9 @@ The current production candidate contains 73 uniquely timestamped active migrati
 
 ## Operation 18
 - `20260914080000_102_theme_brand_governance_360.sql` — Theme & Brand Governance 360: version history, governed publication, audit notes, and controlled rollback.
+
+
+## DB-9 — DB-11 Hardening
+- `20260914100000_105_db_9_data_governance_privacy_hardening.sql` — Data governance/privacy query indexes and public/anonymous grant boundary hardening.
+- `20260914100100_106_db_10_identity_privileged_access_hardening.sql` — Privileged-access and staff identity audit indexes plus public/anonymous grant boundary hardening.
+- `20260914100200_107_db_11_quality_corrective_action_hardening.sql` — Quality inspection/corrective-action operational indexes and public/anonymous grant boundary hardening.

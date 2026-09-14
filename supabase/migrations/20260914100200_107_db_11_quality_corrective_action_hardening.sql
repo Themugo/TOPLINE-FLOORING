@@ -1,0 +1,14 @@
+BEGIN;
+CREATE INDEX IF NOT EXISTS idx_quality_inspections_reference_status ON public.quality_inspections_360 (reference_type, reference_id, status, inspected_at DESC);
+CREATE INDEX IF NOT EXISTS idx_quality_actions_due_open ON public.quality_corrective_actions_360 (status, due_at, owner_id) WHERE status IN ('open','in_progress','blocked');
+CREATE INDEX IF NOT EXISTS idx_hse_actions_due_open ON public.hse_corrective_actions_360 (status, due_at, owner_id) WHERE status IN ('open','in_progress','blocked');
+CREATE INDEX IF NOT EXISTS idx_project_quality_inspections_status_date ON public.project_quality_inspections (status, created_at DESC);
+REVOKE ALL ON public.quality_inspections_360 FROM anon;
+REVOKE ALL ON public.quality_corrective_actions_360 FROM anon;
+REVOKE ALL ON public.hse_corrective_actions_360 FROM anon;
+REVOKE ALL ON public.project_quality_inspections FROM anon;
+REVOKE ALL ON public.quality_inspections_360 FROM PUBLIC;
+REVOKE ALL ON public.quality_corrective_actions_360 FROM PUBLIC;
+REVOKE ALL ON public.hse_corrective_actions_360 FROM PUBLIC;
+REVOKE ALL ON public.project_quality_inspections FROM PUBLIC;
+COMMIT;

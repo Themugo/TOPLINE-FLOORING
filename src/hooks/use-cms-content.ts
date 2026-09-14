@@ -1,4 +1,5 @@
 import { useCMS } from '@/context/CMSContext';
+import type { HomepageSectionContent } from '@/lib/cms-types';
 
 export interface CMSPageContent {
   hero?: { title?: string; subtitle?: string; background_image?: string };
