@@ -1,0 +1,18 @@
+import fs from 'node:fs';
+import path from 'node:path';
+const root=process.cwd(); const md=path.join(root,'supabase','migrations'); const files=fs.readdirSync(md).filter(f=>f.endsWith('.sql')).sort(); const failures=[];
+const migration='20260914140000_111_payment_refund_provider_trust_boundary_360.sql';
+if(files.length!==85) failures.push(`Expected 85 active migrations, found ${files.length}.`);
+if(!files.includes(migration)) failures.push('Payment/refund/provider migration missing.');
+const sql=fs.readFileSync(path.join(md,migration),'utf8');
+for(const t of ["ALTER FUNCTION public.apply_payment_provider_event", "ALTER FUNCTION public.complete_order_refund", "ALTER FUNCTION public.create_order_refund_request", "ALTER FUNCTION public.record_order_payment_transaction", "SET search_path = ''", 'payment_provider_events_currency_check','payment_provider_events_event_id_length_check','payment_transactions_amount_positive_check','payment_transactions_provider_tx_length_check','payment_refunds_provider_ref_length_check','Successful provider event requires transaction id','Provider transaction conflicts with existing payment','Refunds exceed successful payments']) if(!sql.includes(t)) failures.push(`Missing control: ${t}`);
+const manifest=fs.readFileSync(path.join(root,'supabase','MIGRATION_MANIFEST.md'),'utf8');
+if(!manifest.includes('20260914133000_110_customer_self_service_rpc_trust_boundary_360.sql')) failures.push('Manifest missing migration 110.');
+if(!manifest.includes('20260914140000_111_payment_refund_provider_trust_boundary_360.sql')) failures.push('Manifest missing migration 111.');
+if(!manifest.includes('85 uniquely timestamped active migrations')) failures.push('Manifest count is stale.');
+const docs=fs.readFileSync(path.join(root,'docs','PAYMENT-REFUND-PROVIDER-TRUST-BOUNDARY-360.md'),'utf8');
+for(const t of ['service-role-only','Successful provider events require a provider transaction ID.','Provider payload replays are rejected','Refunds cannot exceed successful payments.','search_path =']) if(!docs.includes(t)) failures.push(`Runbook missing: ${t}`);
+if(!fs.existsSync(path.join(root,'COMMIT-PUSH-PAYMENT-REFUND-PROVIDER-TRUST-BOUNDARY-360.cmd'))) failures.push('Commit helper missing.');
+for(const f of files) if(!/^\d{14}_.*\.sql$/.test(f)) failures.push(`Invalid migration filename: ${f}`);
+const versions=files.map(f=>f.slice(0,14)); if(new Set(versions).size!==versions.length) failures.push('Duplicate migration timestamps detected.'); for(let i=1;i<versions.length;i++) if(versions[i-1]>=versions[i]) failures.push('Migration ordering is not strictly increasing.');
+if(failures.length){console.error('Payment/Refund/Provider Trust Boundary 360 FAILED.'); failures.forEach(x=>console.error(`- ${x}`)); process.exit(1);} console.log('Payment/Refund/Provider Trust Boundary 360: 14/14 PASSED'); console.log(`- Active migrations: ${files.length}`); console.log(`- Latest migration: ${files.at(-1)}`);

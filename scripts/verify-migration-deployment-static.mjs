@@ -45,7 +45,7 @@ for (const file of files) {
   }
 }
 
-if (files.length !== 84) failures.push(`expected 84 active migrations, found ${files.length}`);
+if (files.length !== 85) failures.push(`expected 85 active migrations, found ${files.length}`);
 if (!files.some((f) => f.startsWith('20260913170000_094_'))) failures.push('migration 094 missing');
 if (!files.some((f) => f.startsWith('20260913180000_095_'))) failures.push('migration 095 missing');
 if (!files.some((f) => f.startsWith('20260913181000_096_'))) failures.push('migration 096 missing');
