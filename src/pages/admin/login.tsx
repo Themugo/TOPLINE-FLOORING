@@ -4,38 +4,6 @@ import { Lock, Mail, AlertCircle, Eye, EyeOff, ArrowLeft } from 'lucide-react';
 import { useAdminAuth } from '@/hooks/use-data';
 import { isSupabaseConfigured, supabase } from '@/lib/supabase';
 
-const SESSION_TIMEOUT_MS = 30 * 60 * 1000; // 30 minutes inactivity
-const ACTIVITY_EVENTS = ['mousedown', 'keydown', 'scroll', 'touchstart'];
-
-function useSessionTimeout() {
-  useEffect(() => {
-    if (!isSupabaseConfigured) return;
-
-    let timeoutId: ReturnType<typeof setTimeout>;
-
-    const resetTimer = () => {
-      clearTimeout(timeoutId);
-      timeoutId = setTimeout(async () => {
-        await supabase.auth.signOut();
-        window.location.href = '/admin/login';
-      }, SESSION_TIMEOUT_MS);
-    };
-
-    ACTIVITY_EVENTS.forEach((event) => {
-      document.addEventListener(event, resetTimer, { passive: true });
-    });
-
-    resetTimer();
-
-    return () => {
-      clearTimeout(timeoutId);
-      ACTIVITY_EVENTS.forEach((event) => {
-        document.removeEventListener(event, resetTimer);
-      });
-    };
-  }, []);
-}
-
 export default function AdminLogin() {
   useSessionTimeout();
   const [email, setEmail] = useState('');

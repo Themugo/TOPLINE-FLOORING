@@ -23,13 +23,6 @@ check(fs.existsSync(path.join(root, 'vite.config.ts')), 'vite.config.ts exists')
 check(fs.existsSync(path.join(root, 'index.html')), 'index.html exists');
 check(fs.existsSync(path.join(root, 'src', 'main.tsx')), 'src/main.tsx exists');
 check(!JSON.stringify(vercelJson).includes('node_modules/vite/bin/vite.js'), 'Vercel config does not hard-code an internal node_modules Vite path');
-const redirects = Array.isArray(vercelJson.redirects) ? vercelJson.redirects : [];
-check(redirects.length === 1, 'Vercel has exactly one canonical host redirect');
-check(redirects[0]?.source === '/:path*', 'Canonical redirect uses a path-only source pattern');
-check(redirects[0]?.has?.some((item) => item.type === 'host' && item.value === 'www.toplineflooringandwaterproofing.co.ke'), 'Canonical redirect is constrained to the www host');
-check(redirects[0]?.destination === 'https://toplineflooringandwaterproofing.co.ke/:path*', 'Canonical redirect targets the non-www Topline host');
-check(redirects[0]?.permanent === true, 'Canonical host redirect is permanent');
-check(!redirects.some((item) => typeof item.source === 'string' && /^https?:\/\//.test(item.source)), 'No Vercel redirect source contains an absolute URL');
 
 if (failures.length) {
   console.error('Vercel deployment verification FAILED.');

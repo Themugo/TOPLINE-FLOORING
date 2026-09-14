@@ -97,7 +97,8 @@
     "verify:operation-17-production-automation": "node scripts/verify-operation-17-production-automation.mjs",
     "verify:operation-18-theme-brand-governance": "node scripts/verify-operation-18-theme-brand-governance.mjs",
     "verify:all": "node scripts/verify-all.mjs",
-    "verify:db-9-11": "node scripts/verify-db-9-11.mjs"
+    "verify:db-9-11": "node scripts/verify-db-9-11.mjs",
+    "verify:admin-auth-360": "node scripts/verify-admin-authentication-authorization-360.mjs"
   },
   "dependencies": {
     "@radix-ui/react-accordion": "^1.2.16",
