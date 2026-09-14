@@ -30,7 +30,7 @@ check(JSON.stringify(vercel).includes('Content-Security-Policy'), 'Content-Secur
 check(JSON.stringify(vercel).includes('X-Content-Type-Options'), 'X-Content-Type-Options is configured');
 check(JSON.stringify(vercel).includes('X-Frame-Options'), 'X-Frame-Options is configured');
 check(Array.isArray(vercel.redirects), 'Canonical host redirect rules are explicitly declared');
-check(vercel.redirects?.some((r) => r.source === 'https://www.toplineflooringandwaterproofing.co.ke/:path*' && r.destination === 'https://toplineflooringandwaterproofing.co.ke/:path*'), 'www host redirects to the canonical non-www host');
+check(vercel.redirects?.some((r) => r.source === '/:path*' && r.destination === 'https://toplineflooringandwaterproofing.co.ke/:path*' && r.has?.some((condition) => condition.type === 'host' && condition.value === 'www.toplineflooringandwaterproofing.co.ke')), 'www host redirects to the canonical non-www host');
 check(robots.includes('Disallow: /admin/'), 'robots blocks the admin portal');
 check(robots.includes('Sitemap: https://toplineflooringandwaterproofing.co.ke/sitemap.xml'), 'robots advertises the canonical sitemap');
 check(fs.existsSync(path.join(root, 'public', '.well-known', 'security.txt')), 'security.txt is published under /.well-known/');
