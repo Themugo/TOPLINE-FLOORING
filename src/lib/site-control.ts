@@ -1,4 +1,4 @@
-import { publicSupabase, supabase } from '@/lib/supabase';
+import { publicSupabase } from '@/lib/supabase';
 
 export type SitePage = {
   id: string; slug: string; title: string; seo_title: string | null; seo_description: string | null;

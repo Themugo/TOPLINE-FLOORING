@@ -25,7 +25,7 @@ export function ThemeApplier() {
       const root = document.documentElement;
       tokens.forEach((token) => root.style.setProperty(`--${token.token_key.replace(/[^a-zA-Z0-9_-]/g, '-')}`, token.token_value));
     }).catch(() => undefined);
-    void supabase.from('site_settings').select('setting_value').eq('setting_key', 'custom_css').maybeSingle().then(({ data }) => {
+    void publicSupabase.from('site_settings').select('setting_value').eq('setting_key', 'custom_css').maybeSingle().then(({ data }) => {
       const raw = data?.setting_value as unknown;
       const customCss = typeof raw === 'string' ? raw : (raw && typeof raw === 'object' && 'css' in raw ? String((raw as { css?: unknown }).css || '') : '');
       const id = 'admin-custom-css';
