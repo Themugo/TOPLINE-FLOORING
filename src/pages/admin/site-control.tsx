@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Code2, Save, ShieldCheck, SlidersHorizontal } from 'lucide-react';
+import { Code2, MailCheck, Save, ShieldCheck, SlidersHorizontal } from 'lucide-react';
 import { AdminLayout } from './dashboard';
 import { supabase } from '@/lib/supabase';
 import { useToast } from '@/hooks/use-toast';

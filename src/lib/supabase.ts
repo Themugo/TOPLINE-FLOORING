@@ -45,7 +45,7 @@ export const publicSupabase: SupabaseClient = createClient(
   supabaseUrl || 'https://missing-supabase-configuration.invalid',
   supabasePublishableKey || 'missing-supabase-publishable-key',
   {
-    auth: { persistSession: false, autoRefreshToken: false },
+    auth: { persistSession: false, autoRefreshToken: false, storageKey: 'topline-public-supabase-auth' },
     global: {
       fetch: isSupabaseConfigured ? fetch : noOpFetch,
     },

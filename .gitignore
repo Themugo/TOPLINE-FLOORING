@@ -26,3 +26,6 @@ dist-ssr
 .env*
 
 supabase/.temp/
+
+# Keep the safe template versioned
+!.env.example

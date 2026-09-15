@@ -24,7 +24,7 @@ export function ThemeApplier() {
     void loadSiteDesignTokens().then((tokens) => {
       const root = document.documentElement;
       tokens.forEach((token) => root.style.setProperty(`--${token.token_key.replace(/[^a-zA-Z0-9_-]/g, '-')}`, token.token_value));
-    }).catch(() => undefined);
+    }, () => undefined);
     void publicSupabase.from('site_settings').select('setting_value').eq('setting_key', 'custom_css').maybeSingle().then(({ data }) => {
       const raw = data?.setting_value as unknown;
       const customCss = typeof raw === 'string' ? raw : (raw && typeof raw === 'object' && 'css' in raw ? String((raw as { css?: unknown }).css || '') : '');
@@ -32,7 +32,7 @@ export function ThemeApplier() {
       let style = document.getElementById(id) as HTMLStyleElement | null;
       if (!style) { style = document.createElement('style'); style.id = id; document.head.appendChild(style); }
       style.textContent = customCss;
-    }).catch(() => undefined);
+    }, () => undefined);
   }, [theme]);
 
   return null;
