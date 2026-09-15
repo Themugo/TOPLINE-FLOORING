@@ -11,6 +11,10 @@ const replyTo = Deno.env.get("BREVO_REPLY_TO_EMAIL") ?? "support@toplineflooring
 if (!supabaseUrl || !serviceRoleKey) throw new Error("Missing Supabase service configuration");
 const admin = createClient(supabaseUrl, serviceRoleKey, { auth: { persistSession: false, autoRefreshToken: false } });
 
+type StaffPermission = { resource: string; action: string };
+type StaffRolePermission = { staff_permissions?: StaffPermission[] | null };
+type StaffRoleAssignment = { staff_role_permissions?: StaffRolePermission[] | null };
+
 function validEmail(value: unknown): value is string {
   return typeof value === "string" && value.trim().length <= 254 && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
 }
@@ -41,9 +45,9 @@ Deno.serve(async (req) => {
     .select("role_id,staff_role_permissions!inner(permission_id,staff_permissions!inner(resource,action))")
     .eq("user_id", authData.user.id);
   if (permissionError) return Response.json({ ok: false, error: "Unable to verify staff permission" }, { status: 500 });
-  const allowed = (permissions ?? []).some((row: any) =>
-    Array.isArray(row.staff_role_permissions) && row.staff_role_permissions.some((rp: any) =>
-      Array.isArray(rp.staff_permissions) && rp.staff_permissions.some((p: any) => p.resource === "settings" && ["update", "insert"].includes(p.action))
+  const allowed = (permissions ?? []).some((row: StaffRoleAssignment) =>
+    Array.isArray(row.staff_role_permissions) && row.staff_role_permissions.some((rp: StaffRolePermission) =>
+      Array.isArray(rp.staff_permissions) && rp.staff_permissions.some((p: StaffPermission) => p.resource === "settings" && ["update", "insert"].includes(p.action))
     )
   );
   if (!allowed) return new Response("Forbidden", { status: 403 });
