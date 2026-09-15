@@ -5,13 +5,7 @@
   "framework": "vite",
   "redirects": [
     {
-      "source": "/:path*",
-      "has": [
-        {
-          "type": "host",
-          "value": "www.toplineflooringandwaterproofing.co.ke"
-        }
-      ],
+      "source": "https://www.toplineflooringandwaterproofing.co.ke/:path*",
       "destination": "https://toplineflooringandwaterproofing.co.ke/:path*",
       "permanent": true
     }

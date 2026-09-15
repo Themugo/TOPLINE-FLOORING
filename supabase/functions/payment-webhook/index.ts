@@ -49,12 +49,6 @@ Deno.serve(async (req) => {
   const eventIdHeader = req.headers.get("x-payment-event-id")?.trim();
   if (!provider) return json(400, { success: false, error: "Missing provider" });
 
-  // Fail closed, explicitly: a provider with no signing secret configured
-  // is "not implemented yet" (501), which is a distinct, honest condition
-  // from "a signature was presented and it didn't match" (401) below - it
-  // should never look like an auth failure that needs investigating. This
-  // is separate from the SUPABASE_URL/SERVICE_ROLE_KEY check further down,
-  // which covers the edge function's own infra being unconfigured.
   const providerSecret = secretFor(provider);
   if (!providerSecret) {
     return json(501, {

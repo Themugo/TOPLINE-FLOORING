@@ -1,4 +1,4 @@
-import { supabase } from '@/lib/supabase';
+import { publicSupabase, supabase } from '@/lib/supabase';
 
 export type SitePage = {
   id: string; slug: string; title: string; seo_title: string | null; seo_description: string | null;
@@ -13,19 +13,19 @@ export type SitePageBlock = {
 };
 
 export async function loadPublishedPage(slug: string) {
-  const { data, error } = await supabase.rpc('get_published_site_page', { p_slug: slug });
+  const { data, error } = await publicSupabase.rpc('get_published_site_page', { p_slug: slug });
   if (error) throw error;
   return data as { page: SitePage; blocks: SitePageBlock[] } | null;
 }
 
 export async function loadSiteDesignTokens() {
-  const { data, error } = await supabase.from('site_design_tokens').select('token_key,token_value,token_type').eq('is_active', true);
+  const { data, error } = await publicSupabase.from('site_design_tokens').select('token_key,token_value,token_type').eq('is_active', true);
   if (error) throw error;
   return (data ?? []) as Array<{ token_key: string; token_value: string; token_type: string }>;
 }
 
 export async function loadPublicSiteContent(route: string) {
-  const { data, error } = await supabase.rpc('get_public_site_content', { p_route: route });
+  const { data, error } = await publicSupabase.rpc('get_public_site_content', { p_route: route });
   if (error) throw error;
   return (data ?? {}) as Record<string, unknown>;
 }

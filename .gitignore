@@ -24,6 +24,5 @@ dist-ssr
 
 .vercel
 .env*
- 
-# Supabase CLI local runtime cache - machine-specific, regenerates automatically 
-supabase/.temp/ 
+
+supabase/.temp/

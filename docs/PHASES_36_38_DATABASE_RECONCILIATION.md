@@ -33,7 +33,7 @@ npx supabase gen types typescript --local > src/types/database.ts
 
 - dedicated Topline project binding (`zmbsskvnzjdaxuxlauyx`);
 - exact production URL contract;
-- 88 active migrations;
+- 84 active migrations;
 - unique, strictly formatted migration timestamps;
 - no destructive `DROP SCHEMA public` in active migrations;
 - no service-role credential identifiers or historical plaintext credentials in active migrations;
@@ -60,7 +60,7 @@ Review the dry-run and linked migration history before any real `db push`.
 
 ## Current repository baseline
 
-The canonical repository currently contains **88 active migrations**, with a static inventory of **148 tables and 217 functions**. These figures describe the repository migration chain, not the live remote database.
+The canonical repository currently contains **84 active migrations**, with a static inventory of **142 tables and 214 functions**. These figures describe the repository migration chain, not the live remote database.
 
 The late-stage canonical migrations are:
 

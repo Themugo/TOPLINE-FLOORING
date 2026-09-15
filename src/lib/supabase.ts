@@ -35,6 +35,23 @@ export const supabase: SupabaseClient = createClient(
   }
 );
 
+/**
+ * Public read client for anonymous CMS/site content. It deliberately does not
+ * persist or attach a user session, so a stale/expired admin JWT cannot turn
+ * an otherwise public read into a 401. Never use this client for mutations or
+ * privileged/admin data.
+ */
+export const publicSupabase: SupabaseClient = createClient(
+  supabaseUrl || 'https://missing-supabase-configuration.invalid',
+  supabasePublishableKey || 'missing-supabase-publishable-key',
+  {
+    auth: { persistSession: false, autoRefreshToken: false },
+    global: {
+      fetch: isSupabaseConfigured ? fetch : noOpFetch,
+    },
+  }
+);
+
 if (!isSupabaseConfigured && import.meta.env.DEV) {
   console.info(`[Database] ${CONFIGURATION_ERROR}`);
 }

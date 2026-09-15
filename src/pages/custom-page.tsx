@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link, useLocation } from 'wouter';
 import { CustomerLayout } from '@/components/layout/CustomerLayout';
 import { useSeoMeta } from '@/hooks/use-seo';
-import { loadPublishedPage, SitePage, SitePageBlock } from '@/lib/site-control';
+import { loadPublishedPage, SitePageBlock } from '@/lib/site-control';
 
 function css(style: Record<string, unknown>): React.CSSProperties {
   return {
@@ -222,7 +222,7 @@ export default function CustomPage() {
     [location],
   );
   const [data, setData] = useState<{
-    page: SitePage;
+    page: any;
     blocks: SitePageBlock[];
   } | null>(null);
   const [error, setError] = useState(false);

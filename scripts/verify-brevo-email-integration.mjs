@@ -20,9 +20,12 @@ ok('Transactional worker uses Brevo API', worker.includes('https://api.brevo.com
 ok('Transactional worker uses idempotency header', worker.includes('Idempotency-Key'));
 ok('Webhook is provider-scoped', webhook.includes('p_provider: "brevo"'));
 ok('Brevo test function requires authenticated staff', testFn.includes('auth.getUser(token)') && testFn.includes('staff_profiles'));
+ok('Brevo test function handles CORS preflight', testFn.includes('req.method === \"OPTIONS\"') && testFn.includes('Access-Control-Allow-Origin') && testFn.includes('Access-Control-Allow-Headers'));
+ok('Brevo test function records provider test state', testFn.includes('recordTest') && testFn.includes('last_tested_at') && testFn.includes('status: \"healthy\"'));
 ok('Brevo test function requires settings permission', testFn.includes('p.resource === "settings"'));
 ok('Brevo test function reads secret only from Edge env', testFn.includes('Deno.env.get("BREVO_API_KEY")') && !testFn.includes('import.meta.env.BREVO_API_KEY'));
 ok('Admin control plane keeps secrets out of browser', control.includes('secrets remain in the deployment secret store'));
+ok('Public site-control reads use non-session client', read('src/lib/site-control.ts').includes('publicSupabase') && read('src/components/ThemeApplier.tsx').includes('publicSupabase'));
 ok('Auth SMTP setup is documented in env/config docs', envExample.includes('BREVO') || fs.existsSync(path.join(root,'docs','BREVO-EMAIL-INTEGRATION-RUNBOOK.md')));
 
 const failed = checks.filter(c => !c.pass);

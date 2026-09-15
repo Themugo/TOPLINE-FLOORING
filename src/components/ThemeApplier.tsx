@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { useThemeSettings } from '@/hooks/use-data';
 import { applyTheme } from '@/lib/theme-engine';
 import { loadSiteDesignTokens } from '@/lib/site-control';
-import { supabase } from '@/lib/supabase';
+import { publicSupabase } from '@/lib/supabase';
 
 const DEFAULT_THEME = {
   primary_color: '#c9971f',
@@ -21,37 +21,18 @@ export function ThemeApplier() {
 
   useEffect(() => {
     applyTheme({ ...DEFAULT_THEME, ...theme });
-
-    let cancelled = false;
-
-    (async () => {
-      try {
-        const tokens = await loadSiteDesignTokens();
-        if (cancelled) return;
-        const root = document.documentElement;
-        tokens.forEach((token) => root.style.setProperty(`--${token.token_key.replace(/[^a-zA-Z0-9_-]/g, '-')}`, token.token_value));
-      } catch {
-        // Design tokens are an enhancement over DEFAULT_THEME/theme above,
-        // which are already applied - silently keep the base theme on error.
-      }
-    })();
-
-    (async () => {
-      try {
-        const { data } = await supabase.from('site_settings').select('setting_value').eq('setting_key', 'custom_css').maybeSingle();
-        if (cancelled) return;
-        const raw = data?.setting_value as unknown;
-        const customCss = typeof raw === 'string' ? raw : (raw && typeof raw === 'object' && 'css' in raw ? String((raw as { css?: unknown }).css || '') : '');
-        const id = 'admin-custom-css';
-        let style = document.getElementById(id) as HTMLStyleElement | null;
-        if (!style) { style = document.createElement('style'); style.id = id; document.head.appendChild(style); }
-        style.textContent = customCss;
-      } catch {
-        // No custom CSS to apply - not an error condition worth surfacing.
-      }
-    })();
-
-    return () => { cancelled = true; };
+    void loadSiteDesignTokens().then((tokens) => {
+      const root = document.documentElement;
+      tokens.forEach((token) => root.style.setProperty(`--${token.token_key.replace(/[^a-zA-Z0-9_-]/g, '-')}`, token.token_value));
+    }).catch(() => undefined);
+    void supabase.from('site_settings').select('setting_value').eq('setting_key', 'custom_css').maybeSingle().then(({ data }) => {
+      const raw = data?.setting_value as unknown;
+      const customCss = typeof raw === 'string' ? raw : (raw && typeof raw === 'object' && 'css' in raw ? String((raw as { css?: unknown }).css || '') : '');
+      const id = 'admin-custom-css';
+      let style = document.getElementById(id) as HTMLStyleElement | null;
+      if (!style) { style = document.createElement('style'); style.id = id; document.head.appendChild(style); }
+      style.textContent = customCss;
+    }).catch(() => undefined);
   }, [theme]);
 
   return null;
