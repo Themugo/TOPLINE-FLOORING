@@ -13,10 +13,9 @@ function secretFor(provider: string): string | null {
   return Deno.env.get(`PAYMENT_${normalized}_WEBHOOK_SECRET`) ?? Deno.env.get("PAYMENT_WEBHOOK_SECRET") ?? null;
 }
 
-async function verifySignature(req: Request, provider: string, rawBody: string): Promise<boolean> {
-  const secret = secretFor(provider);
+async function verifySignature(req: Request, secret: string, rawBody: string): Promise<boolean> {
   const signatureHeader = req.headers.get("x-payment-signature");
-  if (!secret || !signatureHeader) return false;
+  if (!signatureHeader) return false;
   const signature = signatureHeader.replace(/^sha256=/i, "").trim();
   const timestamp = req.headers.get("x-payment-timestamp");
   if (timestamp) {
@@ -50,10 +49,24 @@ Deno.serve(async (req) => {
   const eventIdHeader = req.headers.get("x-payment-event-id")?.trim();
   if (!provider) return json(400, { success: false, error: "Missing provider" });
 
+  // Fail closed, explicitly: a provider with no signing secret configured
+  // is "not implemented yet" (501), which is a distinct, honest condition
+  // from "a signature was presented and it didn't match" (401) below - it
+  // should never look like an auth failure that needs investigating. This
+  // is separate from the SUPABASE_URL/SERVICE_ROLE_KEY check further down,
+  // which covers the edge function's own infra being unconfigured.
+  const providerSecret = secretFor(provider);
+  if (!providerSecret) {
+    return json(501, {
+      success: false,
+      error: `Provider adapter not configured for '${provider}'. Set PAYMENT_${provider.toUpperCase().replace(/[^A-Z0-9]/g, "_")}_WEBHOOK_SECRET or PAYMENT_WEBHOOK_SECRET before enabling this provider; payment state was not changed.`,
+    });
+  }
+
   const body = await req.arrayBuffer();
   if (body.byteLength > MAX_BODY_BYTES) return json(413, { success: false, error: "Payload too large" });
   const rawBody = new TextDecoder().decode(body);
-  if (!(await verifySignature(req, provider, rawBody))) return json(401, { success: false, error: "Invalid payment signature" });
+  if (!(await verifySignature(req, providerSecret, rawBody))) return json(401, { success: false, error: "Invalid payment signature" });
 
   let payload: Record<string, unknown>;
   try {

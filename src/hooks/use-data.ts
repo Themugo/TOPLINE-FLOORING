@@ -149,7 +149,7 @@ export function useThemeSettings() {
     body_font: currentTheme.body_font || 'Inter',
     button_style: currentTheme.button_style || 'rounded-md',
     border_radius: currentTheme.border_radius ?? 6,
-    spacing_scale: currentTheme.spacing_scale ?? 1,
+    spacing_scale: currentTheme.spacing_scale ?? 8,
     layout_style: currentTheme.layout_style || 'classic',
     is_active: true,
   };

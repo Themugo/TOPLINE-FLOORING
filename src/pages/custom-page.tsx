@@ -37,7 +37,7 @@ function Block({ block }: { block: SitePageBlock }) {
           className="rounded-2xl overflow-hidden p-8 md:p-14"
         >
           <div className="grid md:grid-cols-2 gap-8 items-center">
-            {c.image_url && (
+            {Boolean(c.image_url) && (
               <img
                 src={String(c.image_url)}
                 alt={String(c.alt || '')}
@@ -54,7 +54,7 @@ function Block({ block }: { block: SitePageBlock }) {
               <p className="mt-3 opacity-80">
                 {String(c.description || '')}
               </p>
-              {c.button_text && (
+              {Boolean(c.button_text) && (
                 <div className="mt-6">
                   {linkOrText(
                     String(c.button_text),
@@ -83,7 +83,7 @@ function Block({ block }: { block: SitePageBlock }) {
             alt={String(c.alt || '')}
             className="w-full max-h-[650px] object-cover rounded-xl"
           />
-          {c.caption && (
+          {Boolean(c.caption) && (
             <figcaption className="text-sm text-gray-500 mt-2">
               {String(c.caption)}
             </figcaption>
@@ -98,7 +98,7 @@ function Block({ block }: { block: SitePageBlock }) {
           className="grid md:grid-cols-2 gap-8 py-8"
         >
           <div>
-            {c.left_image && (
+            {Boolean(c.left_image) && (
               <img
                 src={String(c.left_image)}
                 alt=""
@@ -113,7 +113,7 @@ function Block({ block }: { block: SitePageBlock }) {
             </p>
           </div>
           <div>
-            {c.right_image && (
+            {Boolean(c.right_image) && (
               <img
                 src={String(c.right_image)}
                 alt=""
@@ -144,7 +144,7 @@ function Block({ block }: { block: SitePageBlock }) {
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {items.map((x, i) => (
               <article key={i} className="border rounded-xl p-5 bg-white">
-                {x.image_url && (
+                {Boolean(x.image_url) && (
                   <img
                     src={String(x.image_url)}
                     alt=""
@@ -176,7 +176,7 @@ function Block({ block }: { block: SitePageBlock }) {
           <p className="mt-3 whitespace-pre-line">
             {String(c.body || '')}
           </p>
-          {c.button_text && (
+          {Boolean(c.button_text) && (
             <div className="mt-5">
               {linkOrText(
                 String(c.button_text),

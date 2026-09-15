@@ -11,10 +11,54 @@ if (new Set(timestamps).size !== timestamps.length) fail('Duplicate migration ti
 for (let i = 1; i < timestamps.length; i++) if (timestamps[i] <= timestamps[i - 1]) fail(`Migration ordering is not strictly increasing: ${migrationFiles[i - 1]} -> ${migrationFiles[i]}`);
 
 const forbidden = [/admin123/i, /ToplineSecure2024/i, /example\.com/i, /nirchkrkwtpobwtrkpgy/i, /service_role\s*[:=]\s*["'][^"']+["']/i];
+
+// Build the set of tables that have RLS enabled *anywhere* in the migration
+// history (not just the file being checked). A later migration that adds or
+// tightens a policy on an already-RLS-enabled table (e.g. a dedicated
+// "deny baseline" pass across several existing sensitive tables) is a
+// normal, safe pattern - it should not be flagged just because the ENABLE
+// statement lives in an earlier file. Conversely, a file that merely
+// mentions RLS enablement for table A somewhere should not blanket-clear a
+// policy it also defines against unrelated, never-RLS'd table B - so this
+// checks the specific table(s) each policy targets, not just "does this
+// file contain the phrase anywhere".
+const rlsEnabledTables = new Set();
+for (const file of migrationFiles) {
+  const text = readFileSync(path.join(migrationsDir, file), 'utf8');
+  // Literal form: ALTER TABLE public.foo ENABLE ROW LEVEL SECURITY
+  for (const m of text.matchAll(/alter\s+table\s+(?:only\s+)?public\."?([a-zA-Z_][a-zA-Z0-9_]*)"?\s+enable\s+row\s+level\s+security/gi)) {
+    rlsEnabledTables.add(m[1].toLowerCase());
+  }
+  // Dynamic form: execute format('alter table public.%I enable row level
+  // security', t) inside a `FOREACH t IN ARRAY ARRAY[...]` loop - every
+  // literal table name in that array gets RLS enabled at runtime.
+  if (/alter\s+table\s+public\.%I\s+enable\s+row\s+level\s+security/i.test(text)) {
+    for (const arr of text.matchAll(/FOREACH\s+\w+\s+IN\s+ARRAY\s+ARRAY\s*\[([^\]]+)\]/gi)) {
+      for (const m of arr[1].matchAll(/'([a-zA-Z_][a-zA-Z0-9_]*)'/g)) rlsEnabledTables.add(m[1].toLowerCase());
+    }
+  }
+}
+
 for (const file of migrationFiles) {
   const text = readFileSync(path.join(migrationsDir, file), 'utf8');
   for (const pattern of forbidden) if (pattern.test(text)) fail(`${file}: forbidden legacy/placeholder/credential pattern ${pattern}`);
-  if (/CREATE\s+POLICY/i.test(text) && !/ENABLE\s+ROW\s+LEVEL\s+SECURITY/i.test(text)) fail(`${file}: policy definitions must be accompanied by explicit RLS enablement.`);
+  if (/CREATE\s+POLICY/i.test(text)) {
+    const targeted = new Set();
+    // Scope the table extraction to the "ON public.<table>" that
+    // immediately follows each CREATE POLICY clause - not every
+    // "ON public.X" in the file (triggers, grants, FKs, etc. also use
+    // that phrase and are not policy targets).
+    for (const m of text.matchAll(/CREATE\s+POLICY\s+[^\n;]*?\bON\s+public\."?([a-zA-Z_][a-zA-Z0-9_]*)"?/gi)) {
+      targeted.add(m[1].toLowerCase());
+    }
+    // Dynamic `FOREACH t IN ARRAY ARRAY[...]` policy generators: pull the
+    // literal table names out of the array instead of the %I placeholder.
+    for (const arr of text.matchAll(/FOREACH\s+\w+\s+IN\s+ARRAY\s+ARRAY\[([^\]]+)\]/gi)) {
+      for (const m of arr[1].matchAll(/'([a-zA-Z_][a-zA-Z0-9_]*)'/g)) targeted.add(m[1].toLowerCase());
+    }
+    const missing = [...targeted].filter((t) => !rlsEnabledTables.has(t));
+    if (missing.length) fail(`${file}: policy references table(s) with RLS never enabled anywhere in migration history: ${missing.join(', ')}`);
+  }
   if (/SECURITY\s+DEFINER/i.test(text) && !/SET\s+search_path/i.test(text)) fail(`${file}: SECURITY DEFINER function is missing an explicit search_path.`);
 }
 
