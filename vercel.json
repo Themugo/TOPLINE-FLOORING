@@ -39,5 +39,21 @@
         }
       ]
     }
+  ],
+  "env": {
+    "VITE_SITE_URL": "https://toplineflooringandwaterproofing.co.ke"
+  },
+  "redirects": [
+    {
+      "source": "/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "www.toplineflooringandwaterproofing.co.ke"
+        }
+      ],
+      "destination": "https://toplineflooringandwaterproofing.co.ke/:path*",
+      "permanent": true
+    }
   ]
 }

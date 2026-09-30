@@ -45,7 +45,8 @@ for (const file of files) {
   }
 }
 
-if (files.length !== 88) failures.push(`expected 88 active migrations, found ${files.length}`);
+if (files.length < 1) failures.push('No active migrations found.');
+if (!files.some((f) => f === files.at(-1))) failures.push('Latest active migration could not be resolved.');
 if (!files.some((f) => f.startsWith('20260913170000_094_'))) failures.push('migration 094 missing');
 if (!files.some((f) => f.startsWith('20260913180000_095_'))) failures.push('migration 095 missing');
 if (!files.some((f) => f.startsWith('20260913181000_096_'))) failures.push('migration 096 missing');

@@ -76,7 +76,7 @@ Never put a service-role or worker secret in a `VITE_*` variable.
 
 ## Current active chain (Phases 30–32 verification baseline)
 
-The current production candidate contains 88 uniquely timestamped active migrations, ending with `20260914104315_110_customer_self_service_rpc_trust_boundary_360.sql`. Run the complete verification suite before any linked database deployment.
+The current production candidate contains 90 uniquely timestamped active migrations, ending with `20260930190000_project_document_vault_360.sql`. Run the complete verification suite before any linked database deployment.
 
 - `20260912210000_070_customer_service_sla_operations_360.sql` — Phases 80–82 Customer Service SLA & After-Sales Operations 360.
 
@@ -124,3 +124,8 @@ The current production candidate contains 88 uniquely timestamped active migrati
 - `20260914114114_112_admin_no_code_site_control_plane_360.sql` — Admin no-code site control plane.
 - `20260914115101_public_site_content_registry_360.sql` — Public site content registry and admin content control.
 - `20260914122211_113_brevo_email_integration_360.sql` — Brevo transactional email integration and authentication configuration.
+
+## Launch Repair — Service Catalogue & Communications
+
+89. `20260930170000_service_catalog_and_communications_worker_hardening.sql` — service catalogue contract reconciliation and scheduled communications delivery hardening.
+90. `20260930190000_project_document_vault_360.sql` — private project document metadata, storage boundary, RLS and audit integration.

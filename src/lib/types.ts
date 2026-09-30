@@ -503,11 +503,15 @@ export interface ProjectDocument {
   id: string;
   project_id: string;
   name: string;
-  doc_type: string;
+  doc_type: 'contract' | 'site_survey' | 'completion_certificate' | 'safety_compliance' | 'other';
   file_url: string;
+  storage_path: string;
+  mime_type: string;
+  file_size_bytes: number;
   file_size: string;
   uploaded_at: string;
   uploaded_by: string;
+  uploaded_by_id: string | null;
   notes: string;
 }
 

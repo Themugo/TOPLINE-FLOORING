@@ -39,6 +39,8 @@ const envExample = read('.env.example');
 for (const key of ['VITE_SUPABASE_URL', 'VITE_SUPABASE_PUBLISHABLE_KEY', 'VITE_SITE_URL']) if (!envExample.includes(key)) fail(`.env.example missing ${key}.`);
 if (!envExample.includes(expectedSupabaseUrl)) fail('Environment contract is not pinned to the dedicated Topline Supabase URL.');
 if (!envExample.includes(expectedSiteUrl)) fail('Environment contract is not pinned to the canonical Topline site URL.');
+const vercelConfig = JSON.parse(read('vercel.json'));
+if (vercelConfig.env?.VITE_SITE_URL !== expectedSiteUrl) fail('Canonical site URL is missing from Vercel configuration.');
 const supabaseClient = read('src/lib/supabase.ts');
 if (!supabaseClient.includes(expectedSupabaseUrl)) fail('Browser Supabase client is missing the dedicated Topline target guard.');
 for (const secretFile of ['.env', '.env.local', '.env.production']) if (exists(secretFile)) fail(`Secret-bearing file exists in release tree: ${secretFile}`);

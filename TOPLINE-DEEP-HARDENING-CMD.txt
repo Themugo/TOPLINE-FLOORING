@@ -1,0 +1,12 @@
+cd /d "C:\Users\hp\Desktop\TOPLINE FLOORING & ROOFING"
+npm ci
+npm run verify:deep-hardening
+npm run verify:all
+npm run db:types
+npm run typecheck
+npm run lint
+npm run build:all
+git status
+git add -A
+git commit -m "Deep audit and production hardening"
+git push origin main

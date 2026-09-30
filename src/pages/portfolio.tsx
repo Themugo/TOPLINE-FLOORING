@@ -52,7 +52,7 @@ export default function Portfolio() {
           setProjects([]);
         }
       } catch (err) {
-        console.warn('Using mock projects fallback:', err);
+        console.warn('Portfolio project query failed; showing the empty state.', err);
         setProjects([]);
       } finally {
         setLoading(false);

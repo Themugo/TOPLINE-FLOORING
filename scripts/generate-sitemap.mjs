@@ -40,7 +40,16 @@ if (!supabaseUrl || !supabaseKey) {
 
 const hasSupabase = Boolean(supabaseUrl && supabaseKey);
 const supabase = hasSupabase ? createClient(supabaseUrl, supabaseKey) : null;
-const BASE = process.env.VITE_SITE_URL?.trim();
+let BASE = process.env.VITE_SITE_URL?.trim();
+if (!BASE) {
+  try {
+    const example = readFileSync(resolve(root, '.env.example'), 'utf-8');
+    const match = example.match(/^VITE_SITE_URL=(.+)$/m);
+    if (match?.[1]) BASE = match[1].trim();
+  } catch {
+    // .env.example is optional at runtime.
+  }
+}
 if (!BASE) {
   console.error('Missing VITE_SITE_URL. Set the canonical Topline production domain before generating a sitemap.');
   process.exit(1);
