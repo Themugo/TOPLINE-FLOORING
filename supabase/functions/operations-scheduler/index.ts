@@ -6,7 +6,7 @@ const workerSecret = Deno.env.get('TOPLINE_WORKER_SECRET');
 if (!supabaseUrl || !serviceRoleKey || !workerSecret) throw new Error('Operations scheduler is not configured');
 
 const supabase = createClient(supabaseUrl, serviceRoleKey, { auth: { persistSession: false } });
-const jobs = ['expire_inventory_reservations','reconcile_payment_provider_events','reconcile_communications'] as const;
+const jobs = ['deliver_communications','expire_inventory_reservations','reconcile_payment_provider_events','reconcile_communications'] as const;
 type Job = typeof jobs[number];
 
 function authorized(req: Request) {
@@ -23,7 +23,21 @@ async function runJob(job: Job) {
 
   try {
     let result: unknown;
-    if (job === 'expire_inventory_reservations') {
+    if (job === 'deliver_communications') {
+      const response = await fetch(`${supabaseUrl}/functions/v1/deliver-communications`, {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          'x-topline-worker-secret': workerSecret,
+        },
+        body: JSON.stringify({ limit: 20 }),
+      });
+      const raw = await response.text();
+      let payload: unknown = raw;
+      try { payload = JSON.parse(raw); } catch { /* preserve provider/worker text */ }
+      if (!response.ok) throw new Error(`deliver-communications ${response.status}: ${raw.slice(0, 500)}`);
+      result = payload;
+    } else if (job === 'expire_inventory_reservations') {
       const response = await supabase.rpc('expire_inventory_reservations');
       if (response.error) throw response.error;
       result = { expired: response.data };
