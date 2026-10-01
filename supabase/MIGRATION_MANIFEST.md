@@ -76,7 +76,7 @@ Never put a service-role or worker secret in a `VITE_*` variable.
 
 ## Current active chain (Phases 30–32 verification baseline)
 
-The current production candidate contains 95 uniquely timestamped active migrations, ending with `20261001110000_catalog_product_service_upload_integrity_360.sql`. Run the complete verification suite before any linked database deployment.
+The current production candidate contains 92 uniquely timestamped active migrations, ending with `20260930200000_project_templates.sql`. Run the complete verification suite before any linked database deployment.
 
 - `20260912210000_070_customer_service_sla_operations_360.sql` — Phases 80–82 Customer Service SLA & After-Sales Operations 360.
 
@@ -131,10 +131,6 @@ The current production candidate contains 95 uniquely timestamped active migrati
 
 ## Project Documents
 
-90. `20260930180000_project_documents_private_storage.sql` — canonical `project_documents` metadata table, RLS, audit trigger, and project-scoped policies on the existing `private-documents` bucket; replaces the localStorage/sample-data document manager.
+90. `20260930180000_project_documents_private_storage.sql` — `project_documents` metadata table (RLS, audit trigger) and project-scoped policies on the existing `private-documents` bucket; replaces the localStorage/sample-data document manager.
 91. `20260930190000_staff_read_inactive_cms_catalog_rows.sql` — staff SELECT policies so admins can create, see, deactivate and re-activate inactive CMS/catalogue rows (services, products, categories, hero slides, etc.).
-92. `20260930193000_private_document_policy_overlap_hardening.sql` — removes legacy broad private-document storage policies and keeps project-document access metadata-scoped.
-93. `20261001090000_project_template_persistence_360.sql` — canonical Supabase persistence and RLS for custom project templates.
-94. `20261001100000_admin_notification_state_360.sql` — per-staff server-side read/dismiss state for operational admin notifications.
-
-- `20261001110000_catalog_product_service_upload_integrity_360.sql` — Catalog, product, service, media metadata and image-upload storage integrity hardening.
+92. `20260930200000_project_templates.sql` — database-backed `project_templates` (RLS, audit) replacing browser localStorage and sample templates.

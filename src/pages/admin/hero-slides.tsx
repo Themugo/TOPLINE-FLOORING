@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Plus, Pencil, Trash2, X, Image as ImageIcon } from 'lucide-react';
 import { AdminLayout } from './dashboard';
 import { supabase } from '@/lib/supabase';
+import { dbFailure, describeDbError } from '@/lib/db';
 import { useToast } from '@/hooks/use-toast';
 import { ImageUpload } from '@/components/ui/image-upload';
 import type { HeroSlide } from '@/lib/types';
@@ -34,12 +35,14 @@ export default function AdminHeroSlides() {
   });
 
   useEffect(() => {
-    fetchSlides();
+    void fetchSlides();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- load once on mount
   }, []);
 
   const fetchSlides = async () => {
     setLoading(true);
-    const { data } = await supabase.from('hero_slides').select('*').order('display_order');
+    const { data, error } = await supabase.from('hero_slides').select('*').order('display_order');
+    if (error) toast({ title: 'Could not load slides', description: describeDbError(error), variant: 'destructive' });
     setSlides(data || []);
     setLoading(false);
   };
@@ -58,41 +61,22 @@ export default function AdminHeroSlides() {
     }
     setSaving(true);
     try {
-      let savedSuccessfully = false;
-      if (editing) {
-        const { error } = await supabase.from('hero_slides').update({ ...form, updated_at: new Date().toISOString() }).eq('id', editing.id);
-        if (!error) {
-          savedSuccessfully = true;
-          toast({ title: 'Slide updated' });
-        }
-      } else {
-        const { error } = await supabase.from('hero_slides').insert(form);
-        if (!error) {
-          savedSuccessfully = true;
-          toast({ title: 'Slide added' });
-        }
+      const failure = editing
+        ? await dbFailure(
+            supabase.from('hero_slides').update({ ...form, updated_at: new Date().toISOString() }).eq('id', editing.id).select('id'),
+            { requireRows: true }
+          )
+        : await dbFailure(supabase.from('hero_slides').insert(form));
+      if (failure) {
+        // Never pretend a slide was saved: nothing was written to the database.
+        toast({ title: 'Failed to save slide', description: failure, variant: 'destructive' });
+        return;
       }
-
-      if (savedSuccessfully) {
-        await fetchSlides();
-      } else {
-        if (editing) {
-          setSlides((prev) => prev.map((s) => (s.id === editing.id ? { ...s, ...form } : s)));
-          toast({ title: 'Slide updated' });
-        } else {
-          const newSlide: HeroSlide = {
-            id: `slide-${Date.now()}`,
-            ...form,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-          };
-          setSlides((prev) => [...prev, newSlide]);
-          toast({ title: 'Slide added' });
-        }
-      }
+      toast({ title: editing ? 'Slide updated' : 'Slide added' });
+      await fetchSlides();
       resetForm();
-    } catch {
-      toast({ title: 'Failed to save slide', variant: 'destructive' });
+    } catch (err) {
+      toast({ title: 'Failed to save slide', description: err instanceof Error ? err.message : undefined, variant: 'destructive' });
     } finally {
       setSaving(false);
     }

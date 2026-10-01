@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { dbFailure } from '@/lib/db';
 import { Plus, Pencil, Trash2, X } from 'lucide-react';
 import { AdminLayout } from './dashboard';
 import { supabase } from '@/lib/supabase';
@@ -52,9 +53,17 @@ export default function AdminDeliveryZones() {
     };
 
     if (editing) {
-      await supabase.from('delivery_zones').update(data).eq('id', editing.id);
+      const failure0 = await dbFailure(supabase.from('delivery_zones').update(data).eq('id', editing.id).select('id'), { requireRows: true });
+      if (failure0) {
+        toast({ title: 'Save failed', description: failure0, variant: 'destructive' });
+        return;
+      }
     } else {
-      await supabase.from('delivery_zones').insert(data);
+      const failure1 = await dbFailure(supabase.from('delivery_zones').insert(data));
+      if (failure1) {
+        toast({ title: 'Save failed', description: failure1, variant: 'destructive' });
+        return;
+      }
     }
     resetForm();
     fetchZones();
@@ -63,7 +72,11 @@ export default function AdminDeliveryZones() {
 
   const handleDelete = async (id: string) => {
     if (!confirm('Are you sure?')) return;
-    await supabase.from('delivery_zones').delete().eq('id', id);
+    const failure2 = await dbFailure(supabase.from('delivery_zones').delete().eq('id', id).select('id'), { requireRows: true });
+    if (failure2) {
+      toast({ title: 'Delete failed', description: failure2, variant: 'destructive' });
+      return;
+    }
     fetchZones();
   };
 

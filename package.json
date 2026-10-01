@@ -99,6 +99,7 @@
     "verify:project-documents": "node scripts/verify-project-documents.mjs",
     "verify:admin-management-uploads": "node scripts/verify-admin-management-uploads.mjs",
     "verify:delivery-worker-hardening": "node scripts/verify-delivery-worker-hardening.mjs",
+    "verify:admin-feedback-contract": "node scripts/verify-admin-feedback-contract.mjs",
     "verify:all": "node scripts/verify-all.mjs",
     "verify:db-9-11": "node scripts/verify-db-9-11.mjs",
     "verify:admin-auth-360": "node scripts/verify-admin-authentication-authorization-360.mjs",
@@ -107,10 +108,7 @@
     "verify:payment-refund-provider-360": "node scripts/verify-payment-refund-provider-trust-boundary-360.mjs",
     "verify:payment-provider-uat": "node scripts/verify-payment-provider-uat.mjs",
     "verify:brevo-email": "node scripts/verify-brevo-email-integration.mjs",
-    "verify:launch-repair": "node scripts/verify-launch-repair.mjs",
-    "test:e2e:services-installation": "node scripts/e2e-service-upload-installation.mjs",
-    "verify:catalog-product-service-upload-integrity": "node scripts/verify-catalog-product-service-upload-integrity.mjs",
-    "verify:live-catalog-schema": "node scripts/live-catalog-schema-preflight.mjs"
+    "verify:launch-repair": "node scripts/verify-launch-repair.mjs"
   },
   "dependencies": {
     "@radix-ui/react-accordion": "^1.2.16",

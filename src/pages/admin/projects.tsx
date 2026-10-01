@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { dbFailure } from '@/lib/db';
 import { Plus, Pencil, Trash2, X, Star, Images, Eye, ZoomIn, Sparkles, CheckCircle2, GripVertical, ArrowUp, ArrowDown, Save, FileSpreadsheet, MapPin, Table as TableIcon, Columns, Kanban, DollarSign, Layers, FileText } from 'lucide-react';
 import { AdminLayout } from './dashboard';
 import { supabase } from '@/lib/supabase';
@@ -85,13 +86,18 @@ export default function AdminProjects() {
       )
     );
 
-    try {
-      await supabase.from('projects').update({
+    const failure0 = await dbFailure(
+      supabase.from('projects').update({
         estimated_budget: estimatedBudget,
         actual_expenses: actualExpenses,
-      }).eq('id', projectId);
-    } catch (e) {
-      console.log('Budget updated in local state:', e);
+      }).eq('id', projectId).select('id'),
+      { requireRows: true }
+    );
+    if (failure0) {
+      // The optimistic change above did not persist: reload the real values.
+      toast({ title: 'Budget not saved', description: failure0, variant: 'destructive' });
+      fetchProjects();
+      return;
     }
 
     toast({ title: 'Project budget & expenditures updated' });
@@ -130,9 +136,17 @@ export default function AdminProjects() {
     };
 
     if (editing) {
-      await supabase.from('projects').update(data).eq('id', editing.id);
+      const failure1 = await dbFailure(supabase.from('projects').update(data).eq('id', editing.id).select('id'), { requireRows: true });
+      if (failure1) {
+        toast({ title: 'Save failed', description: failure1, variant: 'destructive' });
+        return;
+      }
     } else {
-      await supabase.from('projects').insert(data);
+      const failure2 = await dbFailure(supabase.from('projects').insert(data));
+      if (failure2) {
+        toast({ title: 'Save failed', description: failure2, variant: 'destructive' });
+        return;
+      }
     }
     resetForm();
     fetchProjects();
@@ -141,7 +155,11 @@ export default function AdminProjects() {
 
   const handleDelete = async (id: string) => {
     if (!confirm('Are you sure?')) return;
-    await supabase.from('projects').delete().eq('id', id);
+    const failure3 = await dbFailure(supabase.from('projects').delete().eq('id', id).select('id'), { requireRows: true });
+    if (failure3) {
+      toast({ title: 'Delete failed', description: failure3, variant: 'destructive' });
+      return;
+    }
     fetchProjects();
   };
 
@@ -170,7 +188,11 @@ export default function AdminProjects() {
   };
 
   const toggleFeatured = async (id: string, current: boolean) => {
-    await supabase.from('projects').update({ featured: !current }).eq('id', id);
+    const failure4 = await dbFailure(supabase.from('projects').update({ featured: !current }).eq('id', id).select('id'), { requireRows: true });
+    if (failure4) {
+      toast({ title: 'Save failed', description: failure4, variant: 'destructive' });
+      return;
+    }
     fetchProjects();
   };
 

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Save, Globe, Phone, Code, Image as ImageIcon } from 'lucide-react';
 import { AdminLayout } from './dashboard';
+import { dbFailure } from '@/lib/db';
 import { supabase } from '@/lib/supabase';
 import { useToast } from '@/hooks/use-toast';
 import { useCMS } from '@/context/CMSContext';
@@ -49,15 +50,18 @@ export default function AdminSiteSettings() {
     setSaving(true);
     try {
       for (const [key, value] of Object.entries(settings)) {
-        await supabase.from('site_settings').upsert(
-          { setting_key: key, setting_value: value, updated_at: new Date().toISOString() },
-          { onConflict: 'setting_key' }
+        const failure = await dbFailure(
+          supabase.from('site_settings').upsert(
+            { setting_key: key, setting_value: value, updated_at: new Date().toISOString() },
+            { onConflict: 'setting_key' }
+          )
         );
+        if (failure) throw new Error(failure);
       }
       await refetchCms();
       toast({ title: 'Settings saved successfully' });
-    } catch {
-      toast({ title: 'Failed to save settings', variant: 'destructive' });
+    } catch (err) {
+      toast({ title: 'Failed to save settings', description: err instanceof Error ? err.message : undefined, variant: 'destructive' });
     }
     setSaving(false);
   };

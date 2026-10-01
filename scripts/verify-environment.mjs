@@ -1,5 +1,4 @@
 import { existsSync, readFileSync } from 'node:fs';
-import { execFileSync } from 'node:child_process';
 
 const envExample = readFileSync('.env.example', 'utf8');
 for (const key of ['VITE_SUPABASE_URL', 'VITE_SUPABASE_PUBLISHABLE_KEY']) {
@@ -7,17 +6,8 @@ for (const key of ['VITE_SUPABASE_URL', 'VITE_SUPABASE_PUBLISHABLE_KEY']) {
 }
 if (!envExample.includes('zmbsskvnzjdaxuxlauyx.supabase.co')) throw new Error('Topline Supabase URL missing from environment contract.');
 
-const secretFiles = ['.env', '.env.local', '.env.production'];
-const gitTrackedFiles = existsSync('.git')
-  ? execFileSync('git', ['ls-files', '--', ...secretFiles], { encoding: 'utf8' }).split(/\r?\n/).filter(Boolean)
-  : [];
-if (gitTrackedFiles.length > 0) {
-  throw new Error(`Secret-bearing environment files are tracked by git: ${gitTrackedFiles.join(', ')}`);
-}
-if (!existsSync('.git')) {
-  for (const secretFile of secretFiles) {
-    if (existsSync(secretFile)) throw new Error(`${secretFile} must not be included in a release package.`);
-  }
+for (const secretFile of ['.env', '.env.local', '.env.production']) {
+  if (existsSync(secretFile)) throw new Error(`${secretFile} must not be committed or packaged.`);
 }
 
 const gitignore = readFileSync('.gitignore', 'utf8');

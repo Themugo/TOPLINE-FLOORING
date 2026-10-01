@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
   Layers,
   Plus,
@@ -14,280 +14,36 @@ import {
 } from 'lucide-react';
 import type { ProjectTemplate } from '@/lib/types';
 import { supabase } from '@/lib/supabase';
+import { dbFailure, describeDbError } from '@/lib/db';
 import { useToast } from '@/hooks/use-toast';
 
-const DEFAULT_PROJECT_TEMPLATES: ProjectTemplate[] = [
-  {
-    id: 'tmpl-epoxy-std',
-    name: 'Standard Heavy-Duty Epoxy Flooring',
-    category: 'Commercial Epoxy',
-    service_type: 'Epoxy Flooring',
-    description: '4-layer high-durability epoxy system designed for industrial warehouses, automotive workshops, and manufacturing floors.',
-    default_materials: 'Epoxy Primer (EP-100), Self-Leveling Epoxy Body Coat (EP-200), Quartz Anti-Slip Aggregate, High-Gloss Polyurethane Topcoat (PU-300)',
-    default_estimated_budget: 380000,
-    default_area_size: '450 SQM',
-    phases: [
-      {
-        id: 'p1',
-        name: 'Phase 1: Surface Preparation & Repairs',
-        estimated_days: 2,
-        tasks: [
-          'Perform diamond grinding to achieve CSP-3 surface profile',
-          'V-groove and fill expansion joints & substrate hairline cracks',
-          'Industrial HEPA vacuuming & oil stain degreasing',
-        ],
-      },
-      {
-        id: 'p2',
-        name: 'Phase 2: Primer & Base System Application',
-        estimated_days: 2,
-        tasks: [
-          'Apply 100% solids epoxy moisture barrier primer coat',
-          'Broadcast silica sand aggregate for mechanical interlock',
-          'Apply high-build self-leveling epoxy body coat (2mm thickness)',
-        ],
-      },
-      {
-        id: 'p3',
-        name: 'Phase 3: Topcoat & Quality Inspection',
-        estimated_days: 2,
-        tasks: [
-          'Light sand & solvent wipe body coat',
-          'Apply UV-resistant polyurethane wear layer topcoat',
-          'Conduct pencil hardness & specular gloss quality check',
-        ],
-      },
-    ],
-    default_expense_items: [
-      {
-        category: 'materials',
-        description: 'Epoxy Resin, Hardener & Quartz Aggregate',
-        estimated_amount: 150000,
-        actual_amount: 0,
-        notes: 'Includes EP-100 Primer and PU-300 Clear Topcoat',
-      },
-      {
-        category: 'labor',
-        description: 'Diamond Grinding & Application Crew (4 Technicians)',
-        estimated_amount: 110000,
-        actual_amount: 0,
-      },
-      {
-        category: 'equipment',
-        description: 'Heavy Floor Grinder & HEPA Dust Extractor Rental',
-        estimated_amount: 80000,
-        actual_amount: 0,
-      },
-      {
-        category: 'permits',
-        description: 'Industrial Safety Compliance & Quality Certificate',
-        estimated_amount: 40000,
-        actual_amount: 0,
-      },
-    ],
-  },
-  {
-    id: 'tmpl-waterproof-elastomeric',
-    name: 'Deep-Base Waterproofing & Elastomeric System',
-    category: 'Waterproofing',
-    service_type: 'Waterproofing & Sealants',
-    description: 'Comprehensive negative/positive side waterproofing with elastomeric polyurethane membrane for flat roofs, podium decks, and wet rooms.',
-    default_materials: 'Bituminous Moisture Primer, Cold Applied Polyurethane Liquid Membrane, Polyester Reinforcement Mesh, UV Reflective Topcoat',
-    default_estimated_budget: 290000,
-    default_area_size: '300 SQM',
-    phases: [
-      {
-        id: 'p1',
-        name: 'Phase 1: Substrate Preparation & Moisture Testing',
-        estimated_days: 2,
-        tasks: [
-          'Perform calcium chloride moisture vapor emission test',
-          'Pressure wash substrate & repair spalled concrete corners',
-          'Install 50mm coved mortar fillets along wall-floor junctions',
-        ],
-      },
-      {
-        id: 'p2',
-        name: 'Phase 2: Polyurethane Liquid Membrane Laying',
-        estimated_days: 3,
-        tasks: [
-          'Apply deep-penetrating polyurethane moisture-sealing primer',
-          'Embed 110gsm woven polyester reinforcement mesh at penetrations',
-          'Apply 1st and 2nd coats of elastomeric liquid membrane (1.8mm dry film)',
-        ],
-      },
-      {
-        id: 'p3',
-        name: 'Phase 3: Flood Testing & Protective Screed',
-        estimated_days: 2,
-        tasks: [
-          'Perform 24-hour standing water flood test',
-          'Apply protective solar reflective aliphatic polyurethane coat',
-          'Final handover inspection & sign-off',
-        ],
-      },
-    ],
-    default_expense_items: [
-      {
-        category: 'materials',
-        description: 'Polyurethane Waterproofing Membrane & Mesh Roll',
-        estimated_amount: 130000,
-        actual_amount: 0,
-      },
-      {
-        category: 'labor',
-        description: 'Waterproofing Specialist Crew',
-        estimated_amount: 85000,
-        actual_amount: 0,
-      },
-      {
-        category: 'equipment',
-        description: 'Pressure Washer & Airless Spray Machine',
-        estimated_amount: 45000,
-        actual_amount: 0,
-      },
-      {
-        category: 'other',
-        description: 'Flood Test Monitoring & Site Logistics',
-        estimated_amount: 30000,
-        actual_amount: 0,
-      },
-    ],
-  },
-  {
-    id: 'tmpl-terrazzo-polyurethane',
-    name: 'Commercial Heavy-Duty Polyurethane Terrazzo',
-    category: 'Commercial Flooring',
-    service_type: 'Terrazzo & Decorative',
-    description: 'Seamless antimicrobial cementitious polyurethane floor with natural marble aggregate for food processing plants and healthcare facilities.',
-    default_materials: 'Polyurethane Cement Slurry, Colored Marble & Granite Aggregates, Zinc Dividers, Matte Antimicrobial Sealer',
-    default_estimated_budget: 650000,
-    default_area_size: '600 SQM',
-    phases: [
-      {
-        id: 'p1',
-        name: 'Phase 1: Layout, Dividers & Shotblasting',
-        estimated_days: 3,
-        tasks: [
-          'Shotblast substrate to CSP-5 standard for heavy thermal resistance',
-          'Anchor solid brass or zinc divider strips according to architectural grid',
-          'Cut perimeter anchor grooves along walls and drains',
-        ],
-      },
-      {
-        id: 'p2',
-        name: 'Phase 2: Screed & Aggregate Troweling',
-        estimated_days: 3,
-        tasks: [
-          'Batch mix 3-component polyurethane cement with marble chips',
-          'Power trowel matrix to uniform 6mm thickness',
-          'Allow 24-hour thermal cure cycle',
-        ],
-      },
-      {
-        id: 'p3',
-        name: 'Phase 3: Diamond Grinding & Grouting',
-        estimated_days: 4,
-        tasks: [
-          'Grind surface using 50 to 800 grit metal-bond diamond discs',
-          'Grout pinholes with matching cement resin slurry',
-          'Polish to satin luster and apply anti-bacterial sealer',
-        ],
-      },
-    ],
-    default_expense_items: [
-      {
-        category: 'materials',
-        description: 'PU Cement Compound, Marble Aggregates & Brass Strips',
-        estimated_amount: 320000,
-        actual_amount: 0,
-      },
-      {
-        category: 'labor',
-        description: 'Master Terrazzo Craftsmen & Polishing Crew',
-        estimated_amount: 180000,
-        actual_amount: 0,
-      },
-      {
-        category: 'equipment',
-        description: 'Planetary Grinder, Shotblaster & Diamond Segment Tooling',
-        estimated_amount: 110000,
-        actual_amount: 0,
-      },
-      {
-        category: 'permits',
-        description: 'HACCP Hygiene & Food Safety Certification',
-        estimated_amount: 40000,
-        actual_amount: 0,
-      },
-    ],
-  },
-  {
-    id: 'tmpl-polished-concrete',
-    name: 'Architectural Polished Concrete & Lithium Densifier',
-    category: 'Industrial Flooring',
-    service_type: 'Polished Concrete',
-    description: 'High-gloss eco-friendly floor refining process utilizing lithium silicate hardeners and progressive diamond abrasives.',
-    default_materials: 'Lithium Silicate Densifier, Penetrating Stain Guard Sealer, Diamond Abrasive Resin Pads (30 to 3000 grit)',
-    default_estimated_budget: 310000,
-    default_area_size: '500 SQM',
-    phases: [
-      {
-        id: 'p1',
-        name: 'Phase 1: Coarse Grinding & Crack Filling',
-        estimated_days: 2,
-        tasks: [
-          'Remove existing coatings or laitance with 30-grit metal diamonds',
-          'Grout pinholes and minor spalls using rapid-cure polyurea sealant',
-        ],
-      },
-      {
-        id: 'p2',
-        name: 'Phase 2: Densification & Fine Polishing',
-        estimated_days: 3,
-        tasks: [
-          'Flood coat surface with lithium silicate densifier for deep crystalline hardening',
-          'Progressive honing with 100, 200, 400, 800, and 1500 grit resin pads',
-        ],
-      },
-      {
-        id: 'p3',
-        name: 'Phase 3: High-Gloss Burnishing & Sealing',
-        estimated_days: 1,
-        tasks: [
-          'Apply penetrating stain protector shield',
-          'High-speed burnish with diamond-impregnated pad at 2000 RPM',
-        ],
-      },
-    ],
-    default_expense_items: [
-      {
-        category: 'materials',
-        description: 'Lithium Densifier, Polyurea Grout & Stain Guard',
-        estimated_amount: 90000,
-        actual_amount: 0,
-      },
-      {
-        category: 'labor',
-        description: 'Concrete Polishing Operators (3 Crew Members)',
-        estimated_amount: 110000,
-        actual_amount: 0,
-      },
-      {
-        category: 'equipment',
-        description: 'Heavy Planetary Floor Grinder & High-Speed Burnisher',
-        estimated_amount: 85000,
-        actual_amount: 0,
-      },
-      {
-        category: 'other',
-        description: 'Diamond Tooling Consumables Wear',
-        estimated_amount: 25000,
-        actual_amount: 0,
-      },
-    ],
-  },
-];
+interface ProjectTemplateRow {
+  id: string;
+  name: string;
+  category: string;
+  service_type: string;
+  description: string;
+  default_materials: string;
+  default_estimated_budget: number | string;
+  default_area_size: string;
+  phases: ProjectTemplate['phases'] | null;
+  default_expense_items: ProjectTemplate['default_expense_items'] | null;
+}
+
+function rowToTemplate(row: ProjectTemplateRow): ProjectTemplate {
+  return {
+    id: row.id,
+    name: row.name,
+    category: row.category,
+    service_type: row.service_type,
+    description: row.description,
+    default_materials: row.default_materials,
+    default_estimated_budget: Number(row.default_estimated_budget) || 0,
+    default_area_size: row.default_area_size,
+    phases: Array.isArray(row.phases) ? row.phases : [],
+    default_expense_items: Array.isArray(row.default_expense_items) ? row.default_expense_items : [],
+  };
+}
 
 interface ProjectTemplateLibraryProps {
   isOpen: boolean;
@@ -301,47 +57,46 @@ export function ProjectTemplateLibrary({
   onSelectTemplate,
 }: ProjectTemplateLibraryProps) {
   const { toast } = useToast();
-  const [templates, setTemplates] = useState<ProjectTemplate[]>(DEFAULT_PROJECT_TEMPLATES);
-  const [selectedTemplate, setSelectedTemplate] = useState<ProjectTemplate | null>(DEFAULT_PROJECT_TEMPLATES[0] || null);
-  const [loadingTemplates, setLoadingTemplates] = useState(true);
+  const [templates, setTemplates] = useState<ProjectTemplate[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [selectedTemplate, setSelectedTemplate] = useState<ProjectTemplate | null>(null);
+
+  const loadTemplates = useCallback(async () => {
+    setLoading(true);
+    setLoadError(null);
+    const { data, error } = await supabase
+      .from('project_templates')
+      .select('*')
+      .order('created_at', { ascending: false });
+    if (error) {
+      setTemplates([]);
+      setLoadError(describeDbError(error));
+    } else {
+      const rows = ((data ?? []) as ProjectTemplateRow[]).map(rowToTemplate);
+      setTemplates(rows);
+      setSelectedTemplate((current) => rows.find((t) => t.id === current?.id) ?? rows[0] ?? null);
+    }
+    setLoading(false);
+  }, []);
 
   useEffect(() => {
-    let cancelled = false;
-    const loadTemplates = async () => {
-      setLoadingTemplates(true);
-      const { data, error } = await supabase
-        .from('project_templates')
-        .select('id,name,category,service_type,description,default_materials,default_estimated_budget,default_area_size,phases,default_expense_items')
-        .order('updated_at', { ascending: false });
-      if (cancelled) return;
-      if (error) {
-        console.error('[ProjectTemplateLibrary] Failed to load custom templates:', error);
-        setTemplates(DEFAULT_PROJECT_TEMPLATES);
-        setSelectedTemplate(DEFAULT_PROJECT_TEMPLATES[0] || null);
-        toast({ title: 'Custom templates unavailable', description: 'Built-in templates remain available. Database templates could not be loaded.', variant: 'destructive' });
-      } else {
-        const custom = (data ?? []) as unknown as ProjectTemplate[];
-        const merged = [...custom, ...DEFAULT_PROJECT_TEMPLATES];
-        setTemplates(merged);
-        setSelectedTemplate((current) => current && merged.some((t) => t.id === current.id) ? current : (merged[0] || null));
-      }
-      setLoadingTemplates(false);
-    };
-    void loadTemplates();
-    return () => { cancelled = true; };
-  }, [toast]);
+    if (isOpen) void loadTemplates();
+  }, [isOpen, loadTemplates]);
+
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState<'overview' | 'phases' | 'costs'>('overview');
 
   // Custom template editor state
   const [isCreatingCustom, setIsCreatingCustom] = useState(false);
   const [customName, setCustomName] = useState('');
-  const [customCategory, setCustomCategory] = useState('Commercial Epoxy');
-  const [customServiceType, setCustomServiceType] = useState('Epoxy Flooring');
+  const [customCategory, setCustomCategory] = useState('');
+  const [customServiceType, setCustomServiceType] = useState('');
   const [customDescription, setCustomDescription] = useState('');
   const [customMaterials, setCustomMaterials] = useState('');
-  const [customBudget, setCustomBudget] = useState(300000);
-  const [customArea, setCustomArea] = useState('400 SQM');
+  const [customBudget, setCustomBudget] = useState(0);
+  const [customArea, setCustomArea] = useState('');
 
   if (!isOpen) return null;
 
@@ -353,102 +108,52 @@ export function ProjectTemplateLibrary({
   );
 
   const handleSaveCustomTemplate = async () => {
-    if (!customName.trim()) return;
-
-    const newTmpl: ProjectTemplate = {
-      id: crypto.randomUUID(),
-      name: customName.trim(),
-      category: customCategory,
-      service_type: customServiceType,
-      description: customDescription.trim() || 'Custom project template definition.',
-      default_materials: customMaterials.trim() || 'Standard flooring supplies',
-      default_estimated_budget: Number(customBudget) || 250000,
-      default_area_size: customArea.trim() || '350 SQM',
-      phases: [
-        {
-          id: `phase-${Date.now()}-1`,
-          name: 'Phase 1: Initial Preparation',
-          estimated_days: 2,
-          tasks: ['Substrate inspection & cleaning', 'Surface grinding'],
-        },
-        {
-          id: `phase-${Date.now()}-2`,
-          name: 'Phase 2: Main Coating & Application',
-          estimated_days: 3,
-          tasks: ['Primer coat application', 'Main resin coat laying'],
-        },
-        {
-          id: `phase-${Date.now()}-3`,
-          name: 'Phase 3: Topcoat & Quality Handover',
-          estimated_days: 1,
-          tasks: ['Topcoat sealing', 'Final quality signoff'],
-        },
-      ],
-      default_expense_items: [
-        {
-          category: 'materials',
-          description: 'Resin & Chemical Materials',
-          estimated_amount: Math.round(customBudget * 0.45),
-          actual_amount: 0,
-        },
-        {
-          category: 'labor',
-          description: 'Technical Installation Crew',
-          estimated_amount: Math.round(customBudget * 0.35),
-          actual_amount: 0,
-        },
-        {
-          category: 'equipment',
-          description: 'Equipment & Tooling Rental',
-          estimated_amount: Math.round(customBudget * 0.2),
-          actual_amount: 0,
-        },
-      ],
-    };
-
+    if (!customName.trim() || saving) return;
+    setSaving(true);
+    // Only what the user entered is stored: no invented phases, budget splits or defaults.
     const { data, error } = await supabase
       .from('project_templates')
       .insert({
-        name: newTmpl.name,
-        category: newTmpl.category,
-        service_type: newTmpl.service_type,
-        description: newTmpl.description,
-        default_materials: newTmpl.default_materials,
-        default_estimated_budget: newTmpl.default_estimated_budget,
-        default_area_size: newTmpl.default_area_size,
-        phases: newTmpl.phases,
-        default_expense_items: newTmpl.default_expense_items ?? [],
+        name: customName.trim(),
+        category: customCategory.trim(),
+        service_type: customServiceType.trim(),
+        description: customDescription.trim(),
+        default_materials: customMaterials.trim(),
+        default_estimated_budget: Math.max(0, Number(customBudget) || 0),
+        default_area_size: customArea.trim(),
+        phases: [],
+        default_expense_items: [],
       })
-      .select('id,name,category,service_type,description,default_materials,default_estimated_budget,default_area_size,phases,default_expense_items')
+      .select('*')
       .single();
+    setSaving(false);
     if (error || !data) {
-      toast({ title: 'Template not saved', description: error?.message || 'Unable to save template.', variant: 'destructive' });
+      toast({ title: 'Template not saved', description: describeDbError(error), variant: 'destructive' });
       return;
     }
-
-    const savedTemplate = data as unknown as ProjectTemplate;
-    const updated = [savedTemplate, ...templates];
-    setTemplates(updated);
-    setSelectedTemplate(savedTemplate);
+    const created = rowToTemplate(data as ProjectTemplateRow);
+    setTemplates((prev) => [created, ...prev]);
+    setSelectedTemplate(created);
     setIsCreatingCustom(false);
     setCustomName('');
     setCustomDescription('');
     setCustomMaterials('');
-    toast({ title: 'Template saved', description: 'The custom template is now stored in Supabase.' });
+    setCustomBudget(0);
+    setCustomArea('');
+    toast({ title: 'Template saved' });
   };
 
   const handleDeleteTemplate = async (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    if (DEFAULT_PROJECT_TEMPLATES.some((t) => t.id === id)) return;
-    const { error } = await supabase.from('project_templates').delete().eq('id', id);
-    if (error) {
-      toast({ title: 'Template not deleted', description: error.message, variant: 'destructive' });
+    if (!window.confirm('Delete this template? This cannot be undone.')) return;
+    const failure = await dbFailure(supabase.from('project_templates').delete().eq('id', id).select('id'), { requireRows: true });
+    if (failure) {
+      toast({ title: 'Delete failed', description: failure, variant: 'destructive' });
       return;
     }
     const updated = templates.filter((t) => t.id !== id);
     setTemplates(updated);
-    if (selectedTemplate?.id === id) setSelectedTemplate(updated[0] || null);
-    toast({ title: 'Template deleted' });
+    if (selectedTemplate?.id === id) setSelectedTemplate(updated[0] ?? null);
   };
 
   const formatCurrency = (val: number) => {
@@ -515,9 +220,18 @@ export function ProjectTemplateLibrary({
 
             {/* List */}
             <div className="flex-1 overflow-y-auto p-2 space-y-1.5">
-              {loadingTemplates ? (
-                <div className="p-4 text-xs text-gray-500">Loading templates…</div>
-              ) : filteredTemplates.map((t) => {
+              {loading && <p className="p-4 text-xs text-gray-500 text-center">Loading templates...</p>}
+              {!loading && loadError && (
+                <div className="p-4 text-center space-y-2">
+                  <p className="text-xs font-semibold text-red-700">Could not load templates</p>
+                  <p className="text-[11px] text-red-600">{loadError}</p>
+                  <button onClick={() => void loadTemplates()} className="px-3 py-1 text-[11px] font-semibold bg-white border border-red-200 rounded-lg text-red-700">Retry</button>
+                </div>
+              )}
+              {!loading && !loadError && templates.length === 0 && (
+                <p className="p-4 text-xs text-gray-500 text-center">No templates yet. Use the add button to create your first one.</p>
+              )}
+              {filteredTemplates.map((t) => {
                 const isSelected = selectedTemplate?.id === t.id && !isCreatingCustom;
                 return (
                   <div
@@ -536,9 +250,9 @@ export function ProjectTemplateLibrary({
                       <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded bg-gray-100 text-gray-700">
                         {t.category}
                       </span>
-                      {!DEFAULT_PROJECT_TEMPLATES.some((defaultTemplate) => defaultTemplate.id === t.id) && (
+                      {(
                         <button
-                          onClick={(e) => handleDeleteTemplate(t.id, e)}
+                          onClick={(e) => void handleDeleteTemplate(t.id, e)}
                           className="text-gray-300 hover:text-rose-600 p-0.5 rounded"
                           title="Delete Template"
                         >
@@ -677,11 +391,11 @@ export function ProjectTemplateLibrary({
                   </div>
 
                   <button
-                    onClick={handleSaveCustomTemplate}
-                    disabled={!customName.trim()}
+                    onClick={() => void handleSaveCustomTemplate()}
+                    disabled={!customName.trim() || saving}
                     className="w-full py-3 bg-primary-600 hover:bg-primary-700 disabled:opacity-50 text-white font-bold rounded-xl text-xs transition-colors shadow-sm"
                   >
-                    Save Template to Library
+                    {saving ? 'Saving...' : 'Save Template to Library'}
                   </button>
                 </div>
               </div>

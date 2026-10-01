@@ -1,3 +1,5 @@
+import { dbFailure } from '@/lib/db';
+import { useToast } from '@/hooks/use-toast';
 import { useState, useEffect } from "react";
 import { AdminLayout } from './dashboard';
 import { Button } from "@/components/ui/button";
@@ -25,6 +27,7 @@ type ProductVariant = {
 };
 
 export default function ProductVariants() {
+  const { toast } = useToast();
   const [search, setSearch] = useState("");
   const [open, setOpen] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
@@ -116,9 +119,17 @@ export default function ProductVariants() {
     };
 
     if (editId) {
-      await supabase.from('product_variants').update(data).eq('id', editId);
+      const failure0 = await dbFailure(supabase.from('product_variants').update(data).eq('id', editId).select('id'), { requireRows: true });
+      if (failure0) {
+        toast({ title: 'Save failed', description: failure0, variant: 'destructive' });
+        return;
+      }
     } else {
-      await supabase.from('product_variants').insert(data);
+      const failure1 = await dbFailure(supabase.from('product_variants').insert(data));
+      if (failure1) {
+        toast({ title: 'Save failed', description: failure1, variant: 'destructive' });
+        return;
+      }
     }
     fetchVariants();
     setOpen(false);
@@ -126,7 +137,11 @@ export default function ProductVariants() {
 
   const handleDelete = async (id: string) => {
     if (!confirm("Delete this variant?") || !supabase) return;
-    await supabase.from('product_variants').delete().eq('id', id);
+    const failure2 = await dbFailure(supabase.from('product_variants').delete().eq('id', id).select('id'), { requireRows: true });
+    if (failure2) {
+      toast({ title: 'Delete failed', description: failure2, variant: 'destructive' });
+      return;
+    }
     fetchVariants();
   };
 

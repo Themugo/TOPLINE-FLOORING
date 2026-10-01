@@ -1,3 +1,5 @@
+import { dbFailure } from '@/lib/db';
+import { useToast } from '@/hooks/use-toast';
 import { useState, useEffect } from "react";
 import { AdminLayout } from './dashboard';
 import { Button } from "@/components/ui/button";
@@ -21,6 +23,7 @@ type ProductDocument = {
 };
 
 export default function ProductDocuments() {
+  const { toast } = useToast();
   const [search, setSearch] = useState("");
   const [open, setOpen] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
@@ -96,9 +99,17 @@ export default function ProductDocuments() {
     };
 
     if (editId) {
-      await supabase.from('product_documents').update(data).eq('id', editId);
+      const failure0 = await dbFailure(supabase.from('product_documents').update(data).eq('id', editId).select('id'), { requireRows: true });
+      if (failure0) {
+        toast({ title: 'Save failed', description: failure0, variant: 'destructive' });
+        return;
+      }
     } else {
-      await supabase.from('product_documents').insert(data);
+      const failure1 = await dbFailure(supabase.from('product_documents').insert(data));
+      if (failure1) {
+        toast({ title: 'Save failed', description: failure1, variant: 'destructive' });
+        return;
+      }
     }
     fetchDocuments();
     setOpen(false);
@@ -106,7 +117,11 @@ export default function ProductDocuments() {
 
   const handleDelete = async (id: string) => {
     if (!confirm("Delete this document?") || !supabase) return;
-    await supabase.from('product_documents').delete().eq('id', id);
+    const failure2 = await dbFailure(supabase.from('product_documents').delete().eq('id', id).select('id'), { requireRows: true });
+    if (failure2) {
+      toast({ title: 'Delete failed', description: failure2, variant: 'destructive' });
+      return;
+    }
     fetchDocuments();
   };
 

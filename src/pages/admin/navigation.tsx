@@ -1,3 +1,4 @@
+import { dbFailure } from '@/lib/db';
 import { useState, useEffect } from "react";
 import { AdminLayout } from './dashboard';
 import { supabase } from "@/lib/supabase";
@@ -75,7 +76,11 @@ export default function AdminNavigation() {
   };
 
   const toggleActive = async (item: NavItem) => {
-    await supabase.from("navigation_menus").update({ is_active: !item.is_active }).eq("id", item.id);
+    const failure0 = await dbFailure(supabase.from("navigation_menus").update({ is_active: !item.is_active }).eq("id", item.id).select('id'), { requireRows: true });
+    if (failure0) {
+      toast({ title: 'Save failed', description: failure0, variant: 'destructive' });
+      return;
+    }
     await refetchCms();
     fetchItems();
   };
