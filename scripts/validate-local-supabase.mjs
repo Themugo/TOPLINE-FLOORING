@@ -1,4 +1,4 @@
-import { execFileSync } from 'node:child_process';
+import { execFileSync, execSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
 
@@ -12,7 +12,16 @@ const npxCommand = process.platform === 'win32' ? 'npx.cmd' : 'npx';
 
 function run(args, label) {
   try {
-    const out = execFileSync(npxCommand, ['supabase', ...args], { cwd: root, encoding: 'utf8', stdio: ['ignore','pipe','pipe'] });
+    const commandArgs = ['supabase', ...args];
+    let out;
+    try {
+      out = execFileSync(npxCommand, commandArgs, { cwd: root, encoding: 'utf8', stdio: ['ignore','pipe','pipe'] });
+    } catch (error) {
+      if (process.platform !== 'win32' || error?.code !== 'EINVAL') throw error;
+      // Windows can reject execFileSync('npx.cmd', ...) when the project path contains '&'.
+      // Fall back to the command shell; the command and arguments are fixed, not user input.
+      out = execSync([npxCommand, ...commandArgs].join(' '), { cwd: root, encoding: 'utf8', stdio: ['ignore','pipe','pipe'], shell: true });
+    }
     console.log(`${label}: passed`);
     if (out.trim()) console.log(out.trim());
     return out;
