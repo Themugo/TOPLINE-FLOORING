@@ -11,6 +11,13 @@ import {
 } from 'lucide-react';
 import type { AdminAlertNotification, Project } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/lib/supabase';
+
+interface AdminNotificationState {
+  notification_key: string;
+  is_read: boolean;
+  is_dismissed: boolean;
+}
 
 interface AdminNotificationCenterProps {
   projects: Project[];
@@ -95,19 +102,6 @@ function generateAlertNotifications(projects: Project[]): AdminAlertNotification
     }
   });
 
-  // 3. CRM Leads Followup Alert
-  alerts.push({
-    id: 'alert-crm-lead-1',
-    type: 'crm_followup',
-    title: 'CRM Alert: Pending Commercial Quote Request',
-    message: 'Metropolitan Logistics Hub submitted a high-value epoxy quotation request over 24 hrs ago.',
-    crm_lead_id: 'lead-101',
-    severity: 'info',
-    created_at: new Date().toISOString().split('T')[0],
-    read: false,
-    action_label: 'Contact Lead in CRM',
-  });
-
   return alerts;
 }
 
@@ -120,53 +114,78 @@ export function AdminNotificationCenter({
   const [isOpen, setIsOpen] = useState(false);
   const [filter, setFilter] = useState<'all' | 'budget' | 'deadline' | 'crm'>('all');
 
-  const [notifications, setNotifications] = useState<AdminAlertNotification[]>(() => {
-    const saved = localStorage.getItem('template_admin_notifications');
-    if (saved) {
-      try {
-        return JSON.parse(saved);
-      } catch (e) {
-        console.error('Failed to parse notifications:', e);
-      }
-    }
-    return generateAlertNotifications(projects);
-  });
+  const [notifications, setNotifications] = useState<AdminAlertNotification[]>(() => generateAlertNotifications(projects));
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 
   useEffect(() => {
-    // Refresh generated alerts when projects change if no local overrides exist
-    const generated = generateAlertNotifications(projects);
-    setNotifications((prev) => {
-      const existingIds = new Set(prev.map((n) => n.id));
-      const newItems = generated.filter((g) => !existingIds.has(g.id));
-      const updated = [...newItems, ...prev];
-      localStorage.setItem('template_admin_notifications', JSON.stringify(updated));
-      return updated;
-    });
+    let cancelled = false;
+    const loadNotificationState = async () => {
+      const { data: userData } = await supabase.auth.getUser();
+      const userId = userData.user?.id ?? null;
+      if (cancelled) return;
+      setCurrentUserId(userId);
+      const generated = generateAlertNotifications(projects);
+      if (!userId || generated.length === 0) {
+        setNotifications(generated);
+        return;
+      }
+      const { data: states, error } = await supabase
+        .from('admin_notification_states')
+        .select('notification_key,is_read,is_dismissed')
+        .eq('user_id', userId)
+        .in('notification_key', generated.map((n) => n.id));
+      if (error) {
+        console.warn('[AdminNotificationCenter] Could not load notification state:', error.message);
+        setNotifications(generated);
+        return;
+      }
+      const stateRows = (states ?? []) as AdminNotificationState[];
+      const stateByKey = new Map<string, AdminNotificationState>(stateRows.map((state) => [state.notification_key, state]));
+      setNotifications(generated.filter((n) => !stateByKey.get(n.id)?.is_dismissed).map((n) => ({
+        ...n,
+        read: stateByKey.get(n.id)?.is_read ?? false,
+      })));
+    };
+    void loadNotificationState();
+    return () => { cancelled = true; };
   }, [projects]);
+
+  const persistNotificationState = async (notificationKey: string, state: { is_read?: boolean; is_dismissed?: boolean }) => {
+    if (!currentUserId) return;
+    const { error } = await supabase.from('admin_notification_states').upsert({
+      user_id: currentUserId,
+      notification_key: notificationKey,
+      ...state,
+      updated_at: new Date().toISOString(),
+    }, { onConflict: 'user_id,notification_key' });
+    if (error) {
+      console.error('[AdminNotificationCenter] Failed to persist notification state:', error.message);
+      toast({ title: 'Notification state not saved', description: error.message, variant: 'destructive' });
+    }
+  };
 
   const unreadCount = notifications.filter((n) => !n.read).length;
 
   const markAllAsRead = () => {
     const updated = notifications.map((n) => ({ ...n, read: true }));
     setNotifications(updated);
-    localStorage.setItem('template_admin_notifications', JSON.stringify(updated));
+    void Promise.all(updated.map((n) => persistNotificationState(n.id, { is_read: true, is_dismissed: false })));
     toast({ title: 'All alerts marked as read' });
   };
 
   const toggleRead = (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    const updated = notifications.map((n) =>
-      n.id === id ? { ...n, read: !n.read } : n
-    );
-    setNotifications(updated);
-    localStorage.setItem('template_admin_notifications', JSON.stringify(updated));
+    const target = notifications.find((n) => n.id === id);
+    if (!target) return;
+    const nextRead = !target.read;
+    setNotifications((prev) => prev.map((n) => n.id === id ? { ...n, read: nextRead } : n));
+    void persistNotificationState(id, { is_read: nextRead, is_dismissed: false });
   };
 
   const deleteNotification = (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    const updated = notifications.filter((n) => n.id !== id);
-    setNotifications(updated);
-    localStorage.setItem('template_admin_notifications', JSON.stringify(updated));
+    setNotifications((prev) => prev.filter((n) => n.id !== id));
+    void persistNotificationState(id, { is_dismissed: true, is_read: true });
   };
 
   const filteredNotifications = notifications.filter((n) => {

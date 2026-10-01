@@ -223,13 +223,30 @@ export function ProjectDocumentManager({
     if (!window.confirm(`Delete "${doc.file_name}"? This permanently removes the file.`)) return;
     setBusyDocId(doc.id);
     try {
-      // Storage first: if the row delete then fails the row remains and delete can be retried
-      // (removing an already-missing object is a no-op), so no invisible orphan is left behind.
-      const { error: storageError } = await supabase.storage.from(DOCUMENT_BUCKET).remove([doc.storage_path]);
-      if (storageError) throw storageError;
+      // Remove the metadata first so the RLS/storage trust boundary immediately stops
+      // authorizing reads of the object. Storage cleanup is then retried independently.
       const { error: rowError } = await supabase.from('project_documents').delete().eq('id', doc.id);
       if (rowError) throw rowError;
-      toast({ title: 'Document deleted', description: `"${doc.file_name}" was removed from this project.` });
+
+      let storageError: unknown = null;
+      for (let attempt = 0; attempt < 2; attempt += 1) {
+        const { error } = await supabase.storage.from(DOCUMENT_BUCKET).remove([doc.storage_path]);
+        if (!error) {
+          storageError = null;
+          break;
+        }
+        storageError = error;
+      }
+
+      if (storageError) {
+        toast({
+          title: 'Document record deleted',
+          description: `The metadata was removed, but the stored file could not be cleaned up. Please retry storage cleanup or contact an administrator. (${errorMessage(storageError)})`,
+          variant: 'destructive',
+        });
+      } else {
+        toast({ title: 'Document deleted', description: `"${doc.file_name}" was removed from this project.` });
+      }
       await loadDocuments();
     } catch (err) {
       toast({ title: 'Delete failed', description: errorMessage(err), variant: 'destructive' });

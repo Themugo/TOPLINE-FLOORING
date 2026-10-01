@@ -1,5 +1,7 @@
 -- 361: Harden private document storage policy overlap.
 -- The earlier 097 policies granted broad media/customer access to the entire bucket.
+ALTER TABLE storage.objects ENABLE ROW LEVEL SECURITY;
+
 -- The bucket is currently used by the project document vault, so remove that overlap
 -- and scope Storage access to rows represented in project_documents.
 

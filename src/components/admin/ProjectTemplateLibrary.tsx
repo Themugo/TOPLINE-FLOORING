@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Layers,
   Plus,
@@ -13,6 +13,8 @@ import {
   Check,
 } from 'lucide-react';
 import type { ProjectTemplate } from '@/lib/types';
+import { supabase } from '@/lib/supabase';
+import { useToast } from '@/hooks/use-toast';
 
 const DEFAULT_PROJECT_TEMPLATES: ProjectTemplate[] = [
   {
@@ -298,21 +300,36 @@ export function ProjectTemplateLibrary({
   onClose,
   onSelectTemplate,
 }: ProjectTemplateLibraryProps) {
-  const [templates, setTemplates] = useState<ProjectTemplate[]>(() => {
-    const saved = localStorage.getItem('project_templates_cache');
-    if (saved) {
-      try {
-        return JSON.parse(saved);
-      } catch (e) {
-        console.error('Failed to parse saved templates:', e);
-      }
-    }
-    return DEFAULT_PROJECT_TEMPLATES;
-  });
+  const { toast } = useToast();
+  const [templates, setTemplates] = useState<ProjectTemplate[]>(DEFAULT_PROJECT_TEMPLATES);
+  const [selectedTemplate, setSelectedTemplate] = useState<ProjectTemplate | null>(DEFAULT_PROJECT_TEMPLATES[0] || null);
+  const [loadingTemplates, setLoadingTemplates] = useState(true);
 
-  const [selectedTemplate, setSelectedTemplate] = useState<ProjectTemplate | null>(
-    templates[0] || null
-  );
+  useEffect(() => {
+    let cancelled = false;
+    const loadTemplates = async () => {
+      setLoadingTemplates(true);
+      const { data, error } = await supabase
+        .from('project_templates')
+        .select('id,name,category,service_type,description,default_materials,default_estimated_budget,default_area_size,phases,default_expense_items')
+        .order('updated_at', { ascending: false });
+      if (cancelled) return;
+      if (error) {
+        console.error('[ProjectTemplateLibrary] Failed to load custom templates:', error);
+        setTemplates(DEFAULT_PROJECT_TEMPLATES);
+        setSelectedTemplate(DEFAULT_PROJECT_TEMPLATES[0] || null);
+        toast({ title: 'Custom templates unavailable', description: 'Built-in templates remain available. Database templates could not be loaded.', variant: 'destructive' });
+      } else {
+        const custom = (data ?? []) as unknown as ProjectTemplate[];
+        const merged = [...custom, ...DEFAULT_PROJECT_TEMPLATES];
+        setTemplates(merged);
+        setSelectedTemplate((current) => current && merged.some((t) => t.id === current.id) ? current : (merged[0] || null));
+      }
+      setLoadingTemplates(false);
+    };
+    void loadTemplates();
+    return () => { cancelled = true; };
+  }, [toast]);
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState<'overview' | 'phases' | 'costs'>('overview');
 
@@ -335,16 +352,11 @@ export function ProjectTemplateLibrary({
       t.service_type.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const saveTemplatesToStorage = (updated: ProjectTemplate[]) => {
-    setTemplates(updated);
-    localStorage.setItem('project_templates_cache', JSON.stringify(updated));
-  };
-
-  const handleSaveCustomTemplate = () => {
+  const handleSaveCustomTemplate = async () => {
     if (!customName.trim()) return;
 
     const newTmpl: ProjectTemplate = {
-      id: `custom-tmpl-${Date.now()}`,
+      id: crypto.randomUUID(),
       name: customName.trim(),
       category: customCategory,
       service_type: customServiceType,
@@ -394,24 +406,49 @@ export function ProjectTemplateLibrary({
       ],
     };
 
-    const updated = [newTmpl, ...templates];
-    saveTemplatesToStorage(updated);
-    setSelectedTemplate(newTmpl);
+    const { data, error } = await supabase
+      .from('project_templates')
+      .insert({
+        name: newTmpl.name,
+        category: newTmpl.category,
+        service_type: newTmpl.service_type,
+        description: newTmpl.description,
+        default_materials: newTmpl.default_materials,
+        default_estimated_budget: newTmpl.default_estimated_budget,
+        default_area_size: newTmpl.default_area_size,
+        phases: newTmpl.phases,
+        default_expense_items: newTmpl.default_expense_items ?? [],
+      })
+      .select('id,name,category,service_type,description,default_materials,default_estimated_budget,default_area_size,phases,default_expense_items')
+      .single();
+    if (error || !data) {
+      toast({ title: 'Template not saved', description: error?.message || 'Unable to save template.', variant: 'destructive' });
+      return;
+    }
+
+    const savedTemplate = data as unknown as ProjectTemplate;
+    const updated = [savedTemplate, ...templates];
+    setTemplates(updated);
+    setSelectedTemplate(savedTemplate);
     setIsCreatingCustom(false);
-    // Reset form
     setCustomName('');
     setCustomDescription('');
     setCustomMaterials('');
+    toast({ title: 'Template saved', description: 'The custom template is now stored in Supabase.' });
   };
 
-  const handleDeleteTemplate = (id: string, e: React.MouseEvent) => {
+  const handleDeleteTemplate = async (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    if (templates.length <= 1) return;
-    const updated = templates.filter((t) => t.id !== id);
-    saveTemplatesToStorage(updated);
-    if (selectedTemplate?.id === id) {
-      setSelectedTemplate(updated[0] || null);
+    if (DEFAULT_PROJECT_TEMPLATES.some((t) => t.id === id)) return;
+    const { error } = await supabase.from('project_templates').delete().eq('id', id);
+    if (error) {
+      toast({ title: 'Template not deleted', description: error.message, variant: 'destructive' });
+      return;
     }
+    const updated = templates.filter((t) => t.id !== id);
+    setTemplates(updated);
+    if (selectedTemplate?.id === id) setSelectedTemplate(updated[0] || null);
+    toast({ title: 'Template deleted' });
   };
 
   const formatCurrency = (val: number) => {
@@ -478,7 +515,9 @@ export function ProjectTemplateLibrary({
 
             {/* List */}
             <div className="flex-1 overflow-y-auto p-2 space-y-1.5">
-              {filteredTemplates.map((t) => {
+              {loadingTemplates ? (
+                <div className="p-4 text-xs text-gray-500">Loading templates…</div>
+              ) : filteredTemplates.map((t) => {
                 const isSelected = selectedTemplate?.id === t.id && !isCreatingCustom;
                 return (
                   <div
@@ -497,7 +536,7 @@ export function ProjectTemplateLibrary({
                       <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded bg-gray-100 text-gray-700">
                         {t.category}
                       </span>
-                      {templates.length > 1 && t.id.startsWith('custom-tmpl') && (
+                      {!DEFAULT_PROJECT_TEMPLATES.some((defaultTemplate) => defaultTemplate.id === t.id) && (
                         <button
                           onClick={(e) => handleDeleteTemplate(t.id, e)}
                           className="text-gray-300 hover:text-rose-600 p-0.5 rounded"

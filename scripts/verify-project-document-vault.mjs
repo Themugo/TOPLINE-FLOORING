@@ -4,7 +4,7 @@ import path from 'node:path';
 const root = process.cwd();
 const read = (file) => fs.readFileSync(path.join(root, file), 'utf8');
 const fail = [];
-const migration = '20260930190000_project_document_vault_360.sql';
+const migration = '20260930180000_project_documents_private_storage.sql';
 const sql = read(`supabase/migrations/${migration}`);
 const component = read('src/components/admin/ProjectDocumentManager.tsx');
 const types = read('src/lib/types.ts');
@@ -12,6 +12,8 @@ const types = read('src/lib/types.ts');
 for (const required of [
   'CREATE TABLE IF NOT EXISTS public.project_documents',
   'project_id uuid NOT NULL REFERENCES public.projects(id)',
+  'file_name text NOT NULL',
+  'storage_bucket text NOT NULL DEFAULT \'private-documents\'',
   'storage_path text NOT NULL UNIQUE',
   'file_size_bytes bigint NOT NULL',
   'ALTER TABLE public.project_documents ENABLE ROW LEVEL SECURITY',
@@ -20,31 +22,34 @@ for (const required of [
   "private.current_user_has_permission('projects','update')",
   "private.current_user_has_permission('projects','delete')",
   'trg_topline_audit_project_documents',
-  "'private-documents', 'private-documents', false",
+  'Topline project documents read',
+  'Topline project documents upload',
+  'Topline project documents delete',
 ]) if (!sql.includes(required)) fail.push(`Migration missing: ${required}`);
 
 for (const required of [
   "from('project_documents')",
-  "from('private-documents').upload",
-  "createSignedUrl",
-  "from('private-documents').remove",
+  "from(DOCUMENT_BUCKET)\n        .upload",
+  'createSignedUrl',
+  "from(DOCUMENT_BUCKET).remove",
   'supabase.auth.getUser()',
+]) {
+  if (!component.includes(required)) fail.push(`Document component missing: ${required}`);
+}
+for (const forbidden of [
   'localStorage',
   'w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf',
-]) {
-  const present = component.includes(required);
-  if (['localStorage','w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf'].includes(required)) {
-    if (present) fail.push(`Production document component still contains forbidden fallback: ${required}`);
-  } else if (!present) fail.push(`Document component missing: ${required}`);
-}
+]) if (component.includes(forbidden)) fail.push(`Production document component still contains forbidden fallback: ${forbidden}`);
 
-for (const required of ['storage_path: string;', 'mime_type: string;', 'file_size_bytes: number;', 'uploaded_by_id: string | null;']) {
+for (const required of ['storage_path: string;', 'mime_type: string;', 'file_size_bytes: number;', 'uploaded_by: string | null;']) {
   if (!types.includes(required)) fail.push(`ProjectDocument type missing: ${required}`);
 }
 
 const manifest = read('supabase/MIGRATION_MANIFEST.md');
-if (!manifest.includes(migration)) fail.push('Migration manifest missing project document vault migration.');
-if (!manifest.includes('contains 90 uniquely timestamped active migrations')) fail.push('Migration manifest count is stale.');
+if (!manifest.includes(migration)) fail.push('Migration manifest missing canonical project document migration.');
+if (!manifest.includes('contains 95 uniquely timestamped active migrations')) fail.push('Migration manifest count is stale.');
+if (fs.existsSync(path.join(root, 'supabase/migrations/20260930190000_project_document_vault_360.sql')))
+  fail.push('Redundant duplicate project document vault migration still exists.');
 
 if (fail.length) {
   console.error('Project document vault verification FAILED.');
