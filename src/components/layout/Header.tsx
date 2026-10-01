@@ -5,10 +5,6 @@ import { useCart } from '@/hooks/use-cart';
 import { useSiteSettings, useNavigationMenus } from '@/hooks/use-data';
 import { telHref } from '@/lib/utils';
 
-const DEFAULT_PHONE = '+1 (555) 000-0000';
-const DEFAULT_EMAIL = 'contact@example.com';
-const DEFAULT_ADDRESS = '123 Industrial Parkway, Commerce City, ST';
-
 export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [location] = useLocation();
@@ -16,12 +12,12 @@ export function Header() {
   const { settings } = useSiteSettings();
   const { menus } = useNavigationMenus('header');
 
-  const siteName = settings.site_info?.name || 'Your Flooring Company';
+  const siteName = settings.site_info?.name || 'Topline Flooring & Waterproofing';
   const [firstWord, ...restWords] = siteName.split(' ');
   const tagline = settings.site_info?.tagline || 'FLOORING & WATERPROOFING';
-  const phone = settings.contact?.phone || DEFAULT_PHONE;
-  const email = settings.contact?.email || DEFAULT_EMAIL;
-  const address = settings.contact?.address || DEFAULT_ADDRESS;
+  const phone = settings.contact?.phone || '';
+  const email = settings.contact?.email || '';
+  const address = settings.contact?.address || '';
 
   const social = settings.social_links || {};
   const socialLinks = [
@@ -51,18 +47,24 @@ export function Header() {
         <div className="max-w-7xl mx-auto px-6 xl:px-8">
           <div className="flex items-center justify-between h-9 text-xs">
             <div className="flex items-center gap-5 text-navy-100">
-              <span className="flex items-center gap-1.5">
-                <MapPin className="w-3.5 h-3.5 text-primary-400" />
-                {address}
-              </span>
-              <a href={telHref(phone)} className="flex items-center gap-1.5 hover:text-primary-400 transition-colors">
-                <Phone className="w-3.5 h-3.5 text-primary-400" />
-                {phone}
-              </a>
-              <a href={`mailto:${email}`} className="flex items-center gap-1.5 hover:text-primary-400 transition-colors">
-                <Mail className="w-3.5 h-3.5 text-primary-400" />
-                {email}
-              </a>
+              {address && (
+                <span className="flex items-center gap-1.5">
+                  <MapPin className="w-3.5 h-3.5 text-primary-400" />
+                  {address}
+                </span>
+              )}
+              {phone && (
+                <a href={telHref(phone)} className="flex items-center gap-1.5 hover:text-primary-400 transition-colors">
+                  <Phone className="w-3.5 h-3.5 text-primary-400" />
+                  {phone}
+                </a>
+              )}
+              {email && (
+                <a href={`mailto:${email}`} className="flex items-center gap-1.5 hover:text-primary-400 transition-colors">
+                  <Mail className="w-3.5 h-3.5 text-primary-400" />
+                  {email}
+                </a>
+              )}
             </div>
             {socialLinks.length > 0 && (
               <div className="flex items-center gap-3">
@@ -181,20 +183,24 @@ export function Header() {
               </Link>
             ))}
             <div className="pt-4 mt-4 border-t border-gray-200 space-y-1">
-              <a
-                href={telHref(phone)}
-                className="flex items-center gap-2 px-4 py-3 text-sm text-navy-700"
-              >
-                <Phone className="w-4 h-4" />
-                <span>{phone}</span>
-              </a>
-              <a
-                href={`mailto:${email}`}
-                className="flex items-center gap-2 px-4 py-3 text-sm text-navy-700"
-              >
-                <Mail className="w-4 h-4" />
-                <span>{email}</span>
-              </a>
+              {phone && (
+                <a
+                  href={telHref(phone)}
+                  className="flex items-center gap-2 px-4 py-3 text-sm text-navy-700"
+                >
+                  <Phone className="w-4 h-4" />
+                  <span>{phone}</span>
+                </a>
+              )}
+              {email && (
+                <a
+                  href={`mailto:${email}`}
+                  className="flex items-center gap-2 px-4 py-3 text-sm text-navy-700"
+                >
+                  <Mail className="w-4 h-4" />
+                  <span>{email}</span>
+                </a>
+              )}
               <Link
                 href="/admin/login"
                 onClick={() => setMobileMenuOpen(false)}

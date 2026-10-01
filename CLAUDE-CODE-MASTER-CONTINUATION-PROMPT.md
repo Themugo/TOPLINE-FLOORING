@@ -13,10 +13,10 @@ Repository target:
 - Node: `22.x`
 
 ## Verified baseline
-The supplied handoff has **90 active Supabase migrations** and the complete static verification suite currently passes **89/89**.
+The supplied handoff has **89 active Supabase migrations** and the complete static verification suite currently passes **89/89**.
 
 The latest migration is:
-`20260930190000_project_document_vault_360.sql`
+`20260930170000_service_catalog_and_communications_worker_hardening.sql`
 
 It fixes the service catalogue contract by adding/reconciling:
 - `services.slug`

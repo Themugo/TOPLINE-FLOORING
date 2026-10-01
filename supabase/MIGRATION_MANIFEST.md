@@ -76,7 +76,7 @@ Never put a service-role or worker secret in a `VITE_*` variable.
 
 ## Current active chain (Phases 30–32 verification baseline)
 
-The current production candidate contains 90 uniquely timestamped active migrations, ending with `20260930190000_project_document_vault_360.sql`. Run the complete verification suite before any linked database deployment.
+The current production candidate contains 90 uniquely timestamped active migrations, ending with `20260930180000_project_documents_private_storage.sql`. Run the complete verification suite before any linked database deployment.
 
 - `20260912210000_070_customer_service_sla_operations_360.sql` — Phases 80–82 Customer Service SLA & After-Sales Operations 360.
 
@@ -128,4 +128,7 @@ The current production candidate contains 90 uniquely timestamped active migrati
 ## Launch Repair — Service Catalogue & Communications
 
 89. `20260930170000_service_catalog_and_communications_worker_hardening.sql` — service catalogue contract reconciliation and scheduled communications delivery hardening.
-90. `20260930190000_project_document_vault_360.sql` — private project document metadata, storage boundary, RLS and audit integration.
+
+## Project Documents
+
+90. `20260930180000_project_documents_private_storage.sql` — `project_documents` metadata table (RLS, audit trigger) and project-scoped policies on the existing `private-documents` bucket; replaces the localStorage/sample-data document manager.

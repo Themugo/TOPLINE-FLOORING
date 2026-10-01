@@ -4,13 +4,13 @@ import { useSiteSettings, useServices, useNavigationMenus } from '@/hooks/use-da
 import { telHref } from '@/lib/utils';
 
 const DEFAULTS = {
-  name: 'Your Flooring Company',
+  name: 'Topline Flooring & Waterproofing',
   tagline: 'FLOORING & WATERPROOFING',
   description:
     'Professional flooring and waterproofing solutions for commercial, industrial, and residential projects.',
-  phone: '+1 (555) 000-0000',
-  email: 'contact@example.com',
-  address: '123 Industrial Parkway, Commerce City, ST 12345',
+  phone: '',
+  email: '',
+  address: '',
 };
 
 export function Footer() {
@@ -121,24 +121,30 @@ export function Footer() {
           <div>
             <h3 className="font-semibold text-primary-600 mb-4">Contact Info</h3>
             <div className="space-y-4">
-              <a
-                href={telHref(phone)}
-                className="flex items-start gap-3 text-sm text-navy-600 hover:text-primary-600 transition-colors"
-              >
-                <Phone className="w-4 h-4 mt-0.5 flex-shrink-0" />
-                <span>{phone}</span>
-              </a>
-              <a
-                href={`mailto:${email}`}
-                className="flex items-start gap-3 text-sm text-navy-600 hover:text-primary-600 transition-colors"
-              >
-                <Mail className="w-4 h-4 mt-0.5 flex-shrink-0" />
-                <span>{email}</span>
-              </a>
-              <div className="flex items-start gap-3 text-sm text-navy-600">
-                <MapPin className="w-4 h-4 mt-0.5 flex-shrink-0" />
-                <span>{address}</span>
-              </div>
+              {phone && (
+                <a
+                  href={telHref(phone)}
+                  className="flex items-start gap-3 text-sm text-navy-600 hover:text-primary-600 transition-colors"
+                >
+                  <Phone className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                  <span>{phone}</span>
+                </a>
+              )}
+              {email && (
+                <a
+                  href={`mailto:${email}`}
+                  className="flex items-start gap-3 text-sm text-navy-600 hover:text-primary-600 transition-colors"
+                >
+                  <Mail className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                  <span>{email}</span>
+                </a>
+              )}
+              {address && (
+                <div className="flex items-start gap-3 text-sm text-navy-600">
+                  <MapPin className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                  <span>{address}</span>
+                </div>
+              )}
               <div className="text-sm text-navy-500">
                 {weekdays ? (
                   <p>Mon - Fri: {weekdays.open} - {weekdays.close}</p>

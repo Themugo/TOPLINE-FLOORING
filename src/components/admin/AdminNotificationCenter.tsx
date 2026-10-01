@@ -6,8 +6,6 @@ import {
   Clock,
   Check,
   X,
-  Mail,
-  Send,
   ExternalLink,
   Trash2,
 } from 'lucide-react';
@@ -121,8 +119,6 @@ export function AdminNotificationCenter({
   const { toast } = useToast();
   const [isOpen, setIsOpen] = useState(false);
   const [filter, setFilter] = useState<'all' | 'budget' | 'deadline' | 'crm'>('all');
-  const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
-  const [teamEmail, setTeamEmail] = useState('project-alerts@example.com');
 
   const [notifications, setNotifications] = useState<AdminAlertNotification[]>(() => {
     const saved = localStorage.getItem('template_admin_notifications');
@@ -171,14 +167,6 @@ export function AdminNotificationCenter({
     const updated = notifications.filter((n) => n.id !== id);
     setNotifications(updated);
     localStorage.setItem('template_admin_notifications', JSON.stringify(updated));
-  };
-
-  const handleSendTeamEmailAlerts = () => {
-    setIsEmailModalOpen(false);
-    toast({
-      title: 'Automated Team Email Dispatched',
-      description: `Notification summary sent to ${teamEmail} for ${notifications.length} active alerts.`,
-    });
   };
 
   const filteredNotifications = notifications.filter((n) => {
@@ -363,70 +351,6 @@ export function AdminNotificationCenter({
           </div>
 
           {/* Footer Action */}
-          <div className="p-3 bg-gray-50 border-t border-gray-200 flex items-center justify-between text-xs">
-            <span className="text-[10px] text-gray-500 font-medium">
-              Automated Email Dispatch System
-            </span>
-            <button
-              onClick={() => setIsEmailModalOpen(true)}
-              className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-[11px] font-bold flex items-center gap-1 shadow-2xs transition-colors"
-            >
-              <Mail className="w-3.5 h-3.5" /> Send Team Email Alert
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Email Alert Simulation Modal */}
-      {isEmailModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-2xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-gray-200 space-y-4 text-xs">
-            <div className="flex justify-between items-center pb-3 border-b border-gray-100">
-              <h3 className="font-bold text-sm text-gray-900 flex items-center gap-2">
-                <Send className="w-4 h-4 text-indigo-600" />
-                Dispatch Email Alert Summary
-              </h3>
-              <button
-                onClick={() => setIsEmailModalOpen(false)}
-                className="text-gray-400 hover:text-gray-700"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            <div className="p-3 bg-amber-50 border border-amber-200 rounded-2xl text-amber-900 text-[11px] leading-relaxed">
-              <strong>Automated Alert Summary:</strong> You are about to dispatch an automated email report containing {notifications.length} active project budget & deadline alerts to your engineering operations team.
-            </div>
-
-            <div>
-              <label className="block font-semibold text-gray-700 mb-1">
-                Recipient Team Email Address
-              </label>
-              <input
-                type="email"
-                value={teamEmail}
-                onChange={(e) => setTeamEmail(e.target.value)}
-                className="w-full p-2.5 border border-gray-300 rounded-xl font-mono"
-              />
-            </div>
-
-            <div className="pt-2 flex justify-end gap-2">
-              <button
-                type="button"
-                onClick={() => setIsEmailModalOpen(false)}
-                className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl font-semibold"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                onClick={handleSendTeamEmailAlerts}
-                className="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold shadow-xs flex items-center gap-1.5"
-              >
-                <Send className="w-3.5 h-3.5" /> Dispatch Alert Email
-              </button>
-            </div>
-          </div>
         </div>
       )}
     </div>

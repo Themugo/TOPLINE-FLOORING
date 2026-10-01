@@ -499,20 +499,27 @@ export interface ProjectTemplate {
   default_expense_items?: ProjectExpenseItem[];
 }
 
+export type ProjectDocumentType =
+  | 'contract'
+  | 'site_survey'
+  | 'completion_certificate'
+  | 'safety_compliance'
+  | 'other';
+
+/** Row shape of public.project_documents (files live in the private-documents bucket). */
 export interface ProjectDocument {
   id: string;
   project_id: string;
-  name: string;
-  doc_type: 'contract' | 'site_survey' | 'completion_certificate' | 'safety_compliance' | 'other';
-  file_url: string;
+  file_name: string;
+  doc_type: ProjectDocumentType;
+  storage_bucket: 'private-documents';
   storage_path: string;
   mime_type: string;
   file_size_bytes: number;
-  file_size: string;
-  uploaded_at: string;
-  uploaded_by: string;
-  uploaded_by_id: string | null;
-  notes: string;
+  notes: string | null;
+  uploaded_by: string | null;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface AdminAlertNotification {
