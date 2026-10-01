@@ -1,8 +1,7 @@
 import { useRef, useState } from 'react';
 import { Upload, X, Image as ImageIcon, Loader2, FolderOpen } from 'lucide-react';
-import { supabase } from '@/lib/supabase';
 import { MediaLibraryModal } from '@/components/admin/MediaLibraryModal';
-import { validateUpload } from '@/lib/upload';
+import { uploadImageToStorage } from '@/lib/upload';
 
 interface ImageUploadProps {
   value: string;
@@ -30,50 +29,11 @@ export function ImageUpload({
     setError(null);
     setWarning(null);
 
-    const validation = validateUpload(file);
-    if (!validation.valid) {
-      setError(validation.error || 'Invalid file');
-      return;
-    }
-
     setUploading(true);
 
     try {
-      const ext = file.name.split('.').pop()?.toLowerCase() || 'jpg';
-      const fileName = `${folder}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
-
-      let uploadedUrl = '';
-      try {
-        const { error: uploadError } = await supabase.storage
-          .from('images')
-          .upload(fileName, file, {
-            cacheControl: '31536000',
-            upsert: false,
-          });
-
-        if (!uploadError) {
-          const { data: urlData } = supabase.storage
-            .from('images')
-            .getPublicUrl(fileName);
-          uploadedUrl = urlData.publicUrl;
-        } else {
-          console.error('Storage upload failed:', uploadError);
-        }
-      } catch (storageErr) {
-        console.error('Storage unreachable:', storageErr);
-      }
-
-      if (!uploadedUrl) {
-        setWarning('Cloud storage isn\'t set up yet, so this photo is embedded directly on the page instead of uploaded. It will still show, but ask your developer to run the storage setup script so future uploads work properly.');
-        uploadedUrl = await new Promise<string>((resolve, reject) => {
-          const reader = new FileReader();
-          reader.onload = () => resolve(reader.result as string);
-          reader.onerror = () => reject(new Error('Failed to read image file'));
-          reader.readAsDataURL(file);
-        });
-      }
-
-      onChange(uploadedUrl);
+      const { url } = await uploadImageToStorage(file, folder);
+      onChange(url);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Upload failed');
     } finally {
@@ -172,7 +132,7 @@ export function ImageUpload({
                   Click to upload or drag & drop
                 </p>
                 <p className="text-xs text-gray-400 mt-1">
-                  PNG, JPG, WebP up to 5MB
+                  PNG, JPG, WebP, GIF, AVIF up to 5MB
                 </p>
               </>
             )}
@@ -197,7 +157,7 @@ export function ImageUpload({
       <input
         ref={fileInputRef}
         type="file"
-        accept="image/png,image/jpeg,image/webp,image/gif,image/svg+xml"
+        accept="image/png,image/jpeg,image/webp,image/gif,image/avif"
         onChange={handleFileSelect}
         className="hidden"
       />
@@ -240,50 +200,17 @@ export function MultiImageUpload({
 
     try {
       const urls: string[] = [];
-      let usedFallback = false;
+      const failures: string[] = [];
       for (const file of Array.from(files)) {
-        const validation = validateUpload(file);
-        if (!validation.valid) {
-          setError(validation.error || 'Invalid file');
-          setUploading(false);
-          return;
-        }
-
-        const ext = file.name.split('.').pop()?.toLowerCase() || 'jpg';
-        const fileName = `${folder}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
-
-        let fileUrl = '';
         try {
-          const { error: uploadError } = await supabase.storage
-            .from('images')
-            .upload(fileName, file, { cacheControl: '31536000', upsert: false });
-
-          if (!uploadError) {
-            const { data: urlData } = supabase.storage.from('images').getPublicUrl(fileName);
-            fileUrl = urlData.publicUrl;
-          } else {
-            console.error('Storage upload failed:', uploadError);
-          }
-        } catch (storageErr) {
-          console.error('Storage unreachable:', storageErr);
+          const { url } = await uploadImageToStorage(file, folder);
+          urls.push(url);
+        } catch (err) {
+          failures.push(`${file.name}: ${err instanceof Error ? err.message : 'Upload failed'}`);
         }
-
-        if (!fileUrl) {
-          usedFallback = true;
-          fileUrl = await new Promise<string>((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onload = () => resolve(reader.result as string);
-            reader.onerror = () => reject(new Error('Failed to read image file'));
-            reader.readAsDataURL(file);
-          });
-        }
-
-        urls.push(fileUrl);
       }
-      if (usedFallback) {
-        setWarning('Cloud storage isn\'t set up yet, so these photos are embedded directly on the page instead of uploaded. They will still show, but ask your developer to run the storage setup script so future uploads work properly.');
-      }
-      onChange([...value, ...urls]);
+      if (urls.length > 0) onChange([...value, ...urls]);
+      if (failures.length > 0) setError(failures.join(' | '));
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Upload failed');
     } finally {
@@ -340,7 +267,7 @@ export function MultiImageUpload({
       <input
         ref={fileInputRef}
         type="file"
-        accept="image/png,image/jpeg,image/webp,image/gif,image/svg+xml"
+        accept="image/png,image/jpeg,image/webp,image/gif,image/avif"
         multiple
         onChange={(e) => {
           if (e.target.files?.length) uploadFiles(e.target.files);

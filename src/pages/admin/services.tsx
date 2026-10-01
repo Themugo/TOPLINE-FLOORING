@@ -11,6 +11,27 @@ function slugify(text: string): string {
   return text.toLowerCase().trim().replace(/[^\w\s-]/g, '').replace(/[\s_-]+/g, '-').replace(/^-+|-+$/g, '');
 }
 
+/** Unique slug among known services; stable fallback when the name has no latin characters. */
+function uniqueSlug(name: string, existing: Service[], excludeId?: string): string {
+  const base = (slugify(name) || 'service').slice(0, 120);
+  const taken = new Set(existing.filter((s) => s.id !== excludeId).map((s) => s.slug));
+  if (!taken.has(base)) return base;
+  let n = 2;
+  while (taken.has(`${base}-${n}`)) n += 1;
+  return `${base}-${n}`;
+}
+
+function describeError(err: unknown): string {
+  if (err && typeof err === 'object') {
+    const e = err as { message?: string; code?: string };
+    if (e.code === '23505') return 'A service with this name/slug already exists. Use a different name.';
+    if (e.code === '42501' || e.message?.toLowerCase().includes('row-level security'))
+      return 'You do not have permission to manage services.';
+    if (e.message) return e.message;
+  }
+  return 'Unexpected error';
+}
+
 const emptyForm = {
   name: '',
   description: '',
@@ -22,7 +43,7 @@ const emptyForm = {
 };
 
 export default function AdminServices() {
-  const { services, loading, createService, updateService, deleteService } = useServices({ activeOnly: false });
+  const { services, loading, error: loadError, refetch, createService, updateService, deleteService } = useServices({ activeOnly: false });
   const { toast } = useToast();
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState<Service | null>(null);
@@ -51,15 +72,22 @@ export default function AdminServices() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (saving) return;
+    const name = form.name.trim();
+    if (!name) {
+      toast({ title: 'Service name is required', variant: 'destructive' });
+      return;
+    }
     setSaving(true);
     try {
       const payload = {
-        name: form.name,
-        slug: slugify(form.name),
-        description: form.description,
-        short_description: form.short_description || undefined,
-        image_url: form.image_url || getServicePlaceholder(form.name),
-        icon: form.icon || undefined,
+        name,
+        // Existing slugs are kept on edit so public /service/:slug URLs do not break.
+        slug: editing ? editing.slug : uniqueSlug(name, services),
+        description: form.description.trim(),
+        short_description: form.short_description.trim() || null,
+        image_url: form.image_url,
+        icon: form.icon.trim() || null,
         features: form.features.split('\n').map((f) => f.trim()).filter(Boolean),
         is_active: form.is_active,
       };
@@ -68,12 +96,13 @@ export default function AdminServices() {
         await updateService(editing.id, payload);
         toast({ title: 'Service updated' });
       } else {
-        await createService({ ...payload, display_order: services.length });
+        const nextOrder = services.reduce((max, s) => Math.max(max, s.display_order ?? 0), -1) + 1;
+        await createService({ ...payload, display_order: nextOrder });
         toast({ title: 'Service added' });
       }
       setShowForm(false);
-    } catch {
-      toast({ title: 'Failed to save service', variant: 'destructive' });
+    } catch (err) {
+      toast({ title: 'Failed to save service', description: describeError(err), variant: 'destructive' });
     } finally {
       setSaving(false);
     }
@@ -84,16 +113,16 @@ export default function AdminServices() {
     try {
       await deleteService(service.id);
       toast({ title: 'Service deleted' });
-    } catch {
-      toast({ title: 'Failed to delete service', variant: 'destructive' });
+    } catch (err) {
+      toast({ title: 'Failed to delete service', description: describeError(err), variant: 'destructive' });
     }
   };
 
   const toggleActive = async (service: Service) => {
     try {
       await updateService(service.id, { is_active: !service.is_active });
-    } catch {
-      toast({ title: 'Failed to update service', variant: 'destructive' });
+    } catch (err) {
+      toast({ title: 'Failed to update service', description: describeError(err), variant: 'destructive' });
     }
   };
 
@@ -111,6 +140,12 @@ export default function AdminServices() {
 
       {loading ? (
         <div className="text-center py-12 text-gray-500">Loading services...</div>
+      ) : loadError ? (
+        <div className="bg-red-50 border border-red-200 rounded-xl p-6 text-center">
+          <p className="text-sm font-semibold text-red-700 mb-1">Could not load services</p>
+          <p className="text-xs text-red-600 mb-3">{loadError}</p>
+          <button onClick={() => void refetch()} className="btn-secondary text-xs">Retry</button>
+        </div>
       ) : services.length === 0 ? (
         <div className="bg-white rounded-xl p-12 border border-gray-200 text-center">
           <p className="text-gray-500 mb-4">No services yet.</p>

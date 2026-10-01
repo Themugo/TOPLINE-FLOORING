@@ -76,7 +76,7 @@ Never put a service-role or worker secret in a `VITE_*` variable.
 
 ## Current active chain (Phases 30–32 verification baseline)
 
-The current production candidate contains 90 uniquely timestamped active migrations, ending with `20260930180000_project_documents_private_storage.sql`. Run the complete verification suite before any linked database deployment.
+The current production candidate contains 91 uniquely timestamped active migrations, ending with `20260930190000_staff_read_inactive_cms_catalog_rows.sql`. Run the complete verification suite before any linked database deployment.
 
 - `20260912210000_070_customer_service_sla_operations_360.sql` — Phases 80–82 Customer Service SLA & After-Sales Operations 360.
 
@@ -132,3 +132,4 @@ The current production candidate contains 90 uniquely timestamped active migrati
 ## Project Documents
 
 90. `20260930180000_project_documents_private_storage.sql` — `project_documents` metadata table (RLS, audit trigger) and project-scoped policies on the existing `private-documents` bucket; replaces the localStorage/sample-data document manager.
+91. `20260930190000_staff_read_inactive_cms_catalog_rows.sql` — staff SELECT policies so admins can create, see, deactivate and re-activate inactive CMS/catalogue rows (services, products, categories, hero slides, etc.).

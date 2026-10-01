@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import { AdminLayout } from '@/pages/admin/dashboard';
 import { supabase } from '@/lib/supabase';
+import { uploadImageToStorage } from '@/lib/upload';
 import { useToast } from '@/hooks/use-toast';
 import { MediaAssetAuditor } from '@/components/admin/MediaAssetAuditor';
 import {
@@ -826,7 +827,7 @@ function UploadModal({
 
     setUploading(true);
     const filesToInsert: Record<string, unknown>[] = [];
-    let usedFallback = false;
+    const uploadErrors: string[] = [];
 
     for (const rawFile of selectedFiles) {
       try {
@@ -845,34 +846,7 @@ function UploadModal({
           compressionRatio = compResult.savingsPercent;
         }
 
-        const ext = processedFile.name.split('.').pop()?.toLowerCase() || 'webp';
-        const storagePath = `media-library/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
-
-        let fileUrl = '';
-        try {
-          const { error: uploadError } = await supabase.storage
-            .from('images')
-            .upload(storagePath, processedFile, { cacheControl: '3600', upsert: false });
-
-          if (!uploadError) {
-            const { data: urlData } = supabase.storage.from('images').getPublicUrl(storagePath);
-            fileUrl = urlData.publicUrl;
-          } else {
-            console.error('Storage upload failed:', uploadError);
-          }
-        } catch (storageErr) {
-          console.error('Storage unreachable:', storageErr);
-        }
-
-        if (!fileUrl) {
-          usedFallback = true;
-          fileUrl = await new Promise<string>((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onload = () => resolve(reader.result as string);
-            reader.onerror = () => reject(new Error('Failed to read file'));
-            reader.readAsDataURL(processedFile);
-          });
-        }
+        const { url: fileUrl, path: storagePath } = await uploadImageToStorage(processedFile, 'media-library', '3600');
 
         const fileHash = await computeFileHash(rawFile);
         const cleanTitle = rawFile.name
@@ -897,8 +871,8 @@ function UploadModal({
           compression_ratio: compressionRatio,
           is_public: true,
         });
-      } catch {
-        toast({ type: 'error', message: `Failed to process ${rawFile.name}` });
+      } catch (err) {
+        uploadErrors.push(`${rawFile.name}: ${err instanceof Error ? err.message : 'Failed to process file'}`);
       }
     }
 
@@ -906,14 +880,15 @@ function UploadModal({
       const { error } = await supabase.from('media_files').insert(filesToInsert);
 
       if (error) {
-        toast({ type: 'error', message: 'Failed to save asset records' });
-      } else if (usedFallback) {
-        toast({ type: 'error', message: `${filesToInsert.length} asset(s) saved, but cloud storage isn't set up - photos were embedded directly instead of uploaded. Run the storage setup script (see supabase/setup_storage.sql) so this works properly.` });
-        onSuccess();
+        toast({ type: 'error', message: `Files uploaded but saving asset records failed: ${error.message}` });
       } else {
         toast({ type: 'success', message: `${filesToInsert.length} asset(s) uploaded successfully` });
         onSuccess();
       }
+    }
+
+    if (uploadErrors.length > 0) {
+      toast({ type: 'error', message: uploadErrors.join(' | ') });
     }
 
     setUploading(false);

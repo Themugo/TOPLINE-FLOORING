@@ -902,16 +902,14 @@ export function useServices(options?: { activeOnly?: boolean }) {
     setLoading(true);
     setError(null);
     try {
-      let query = supabase.from('services').select('*').order('display_order');
+      let query = supabase.from('services').select('*').order('display_order').order('created_at');
       if (activeOnly) query = query.eq('is_active', true);
       const { data, error: err } = await query;
-      if (err || !data || data.length === 0) {
-        setServices([]);
-      } else {
-        setServices(data);
-      }
-    } catch {
+      if (err) throw err;
+      setServices((data as Service[] | null) ?? []);
+    } catch (err) {
       setServices([]);
+      setError(errorMessage(err, 'Failed to load services'));
     } finally {
       setLoading(false);
     }
