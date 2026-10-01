@@ -27,6 +27,7 @@ const atUsername = Deno.env.get("AT_USERNAME");
 const atApiKey = Deno.env.get("AT_API_KEY");
 const atSenderId = Deno.env.get("AT_SENDER_ID");
 const workerSecret = Deno.env.get("TOPLINE_WORKER_SECRET");
+const PROVIDER_TIMEOUT_MS = 20_000;
 
 if (!supabaseUrl || !serviceRoleKey) throw new Error("Missing Supabase service configuration");
 const admin = createClient(supabaseUrl, serviceRoleKey, { auth: { persistSession: false, autoRefreshToken: false } });
@@ -39,6 +40,7 @@ async function sendEmail(item: OutboxMessage) {
   if (!brevoApiKey || !brevoSenderEmail) throw new Error("Email provider is not configured");
   const response = await fetch("https://api.brevo.com/v3/smtp/email", {
     method: "POST",
+    signal: AbortSignal.timeout(PROVIDER_TIMEOUT_MS),
     headers: { accept: "application/json", "api-key": brevoApiKey, "content-type": "application/json" },
     body: JSON.stringify({
       sender: { email: brevoSenderEmail, name: brevoSenderName },
@@ -63,6 +65,7 @@ async function sendSms(item: OutboxMessage) {
   if (atSenderId) params.set("from", atSenderId);
   const response = await fetch("https://api.africastalking.com/version1/messaging", {
     method: "POST",
+    signal: AbortSignal.timeout(PROVIDER_TIMEOUT_MS),
     headers: { apiKey: atApiKey, Accept: "application/json", "Content-Type": "application/x-www-form-urlencoded" },
     body: params,
   });
@@ -93,6 +96,7 @@ async function sendWhatsApp(item: OutboxMessage) {
   }
   const response = await fetch(`https://graph.facebook.com/v21.0/${whatsappPhoneNumberId}/messages`, {
     method: "POST",
+    signal: AbortSignal.timeout(PROVIDER_TIMEOUT_MS),
     headers: { Authorization: `Bearer ${whatsappAccessToken}`, "Content-Type": "application/json" },
     body: JSON.stringify(body),
   });
@@ -121,12 +125,50 @@ async function recordAttempt(item: OutboxMessage, requestId: string, outcome: st
   if (error) console.error("delivery attempt audit failed", error);
 }
 
+// Permanent provider rejections (bad recipient/payload) must not burn retries.
+// 401/403 (credentials) and 408/425/429/5xx/network/timeouts stay retryable so an operator
+// can fix configuration and queued messages still go out.
+function isPermanentFailure(message: string): boolean {
+  const m = message.match(/\b(?:Brevo|Africa's Talking|Meta WhatsApp) (\d{3}):/);
+  if (!m) return /Invalid WhatsApp recipient number/.test(message);
+  const status = Number(m[1]);
+  return [400, 404, 410, 422].includes(status);
+}
+
+// At-least-once safety: if an earlier attempt for this message was already ACCEPTED by the
+// provider (worker died before completing the outbox row), never send it again.
+async function findAcceptedAttempt(item: OutboxMessage): Promise<{ reference: string | null; provider: string } | null> {
+  if (item.attempt_count <= 1) return null;
+  const { data, error } = await admin
+    .from("communication_delivery_attempts")
+    .select("provider, provider_reference")
+    .eq("outbox_id", item.id)
+    .eq("outcome", "accepted")
+    .order("started_at", { ascending: false })
+    .limit(1);
+  if (error) throw new Error(`Could not verify prior delivery attempts: ${error.message}`);
+  const row = data?.[0] as { provider: string; provider_reference: string | null } | undefined;
+  return row ? { provider: row.provider, reference: row.provider_reference } : null;
+}
+
 async function processItem(item: OutboxMessage) {
   const requestId = crypto.randomUUID();
-  await recordAttempt(item, requestId, "started");
+  let prior: { reference: string | null; provider: string } | null = null;
   try {
-    const result = item.channel === "email" ? await sendEmail(item) : item.channel === "sms" ? await sendSms(item) : await sendWhatsApp(item);
-    await recordAttempt(item, requestId, "accepted", result);
+    prior = await findAcceptedAttempt(item);
+  } catch (error) {
+    // Cannot prove the message was not already sent: requeue instead of risking a duplicate.
+    const message = error instanceof Error ? error.message : String(error);
+    const { error: failError } = await admin.rpc("fail_communication_delivery_worker", { p_outbox_id: item.id, p_error_message: message, p_retry: true });
+    if (failError) throw failError;
+    return { id: item.id, status: "failed_or_requeued", error: message };
+  }
+  if (!prior) await recordAttempt(item, requestId, "started");
+  try {
+    const result = prior
+      ? { provider: prior.provider, reference: prior.reference, httpStatus: 0, raw: { recovered_from_prior_accepted_attempt: true } as JsonRecord }
+      : item.channel === "email" ? await sendEmail(item) : item.channel === "sms" ? await sendSms(item) : await sendWhatsApp(item);
+    if (!prior) await recordAttempt(item, requestId, "accepted", result);
 
     const { error } = await admin.rpc("complete_communication_delivery_worker", {
       p_outbox_id: item.id,
@@ -162,7 +204,7 @@ async function processItem(item: OutboxMessage) {
     const { error: failError } = await admin.rpc("fail_communication_delivery_worker", {
       p_outbox_id: item.id,
       p_error_message: message,
-      p_retry: true,
+      p_retry: !isPermanentFailure(message),
     });
     if (failError) throw failError;
     return { id: item.id, status: "failed_or_requeued", error: message };

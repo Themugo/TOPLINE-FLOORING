@@ -8,7 +8,7 @@ export function WhatsAppButton() {
   const { settings } = useSiteSettings();
   const rawNumber = settings.contact?.whatsapp || settings.contact?.phone || DEFAULT_WHATSAPP;
   const phoneNumber = rawNumber.replace(/\D/g, '');
-  const companyName = settings.site_info?.name || settings.company?.name || "Your Flooring Company";
+  const companyName = settings.site_info?.name || settings.company?.name || "Topline Flooring & Waterproofing";
   const [isOpen, setIsOpen] = useState(false);
   const [customMsg, setCustomMsg] = useState(
     `Hello ${companyName}! I would like to request an instant sales quote.`

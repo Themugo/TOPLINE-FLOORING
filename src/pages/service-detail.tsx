@@ -1,4 +1,4 @@
-import { useParams, Link } from 'wouter';
+import { useLocation, Link } from 'wouter';
 import { useEffect, useState } from 'react';
 import { CustomerLayout } from '@/components/layout/CustomerLayout';
 import { Breadcrumbs } from '@/components/Breadcrumbs';
@@ -22,11 +22,16 @@ interface Service {
 }
 
 export default function ServiceDetail() {
-  const { slug } = useParams();
+  // Routing is location-based (see App.tsx), so wouter route params are always empty here.
+  const [location] = useLocation();
+  const slug = (() => {
+    const raw = location.replace(/^\/service\//, '').split(/[?#]/)[0].replace(/\/+$/, '');
+    try { return decodeURIComponent(raw); } catch { return raw; }
+  })();
   const [service, setService] = useState<Service | null>(null);
   const [loading, setLoading] = useState(true);
   const { settings } = useSiteSettings();
-  const companyName = settings.site_info?.name || settings.company?.name || 'Your Flooring Company';
+  const companyName = settings.site_info?.name || settings.company?.name || 'Topline Flooring & Waterproofing';
 
   useSeoMeta('service', slug, service ? {
     title: `${service.name} | ${companyName}`,
@@ -45,23 +50,29 @@ export default function ServiceDetail() {
   } : undefined);
 
   useEffect(() => {
-    if (!slug) return;
-    loadService();
+    if (!slug) {
+      setLoading(false);
+      return;
+    }
+    void loadService();
   }, [slug]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const loadService = async () => {
     setLoading(true);
-    const { data, error } = await supabase
-      .from('services')
-      .select('*')
-      .eq('slug', slug)
-      .eq('is_active', true)
-      .single();
-
-    if (!error && data) {
-      setService(data);
+    setService(null);
+    try {
+      const { data, error } = await supabase
+        .from('services')
+        .select('*')
+        .eq('slug', slug)
+        .eq('is_active', true)
+        .maybeSingle();
+      if (!error && data) setService(data as Service);
+    } catch {
+      // Falls through to the "not found" state; never leave the page spinning.
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   if (loading) {

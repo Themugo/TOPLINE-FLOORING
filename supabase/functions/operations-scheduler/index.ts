@@ -26,6 +26,7 @@ async function runJob(job: Job) {
     if (job === 'deliver_communications') {
       const response = await fetch(`${supabaseUrl}/functions/v1/deliver-communications`, {
         method: 'POST',
+        signal: AbortSignal.timeout(120_000),
         headers: {
           'content-type': 'application/json',
           'x-topline-worker-secret': workerSecret,

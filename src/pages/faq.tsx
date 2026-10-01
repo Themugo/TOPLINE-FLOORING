@@ -14,7 +14,7 @@ export default function FAQ() {
   usePageVisit("/faq");
   const { items, loading } = useFaqItems();
   const { settings } = useSiteSettings();
-  const companyName = settings.site_info?.name || settings.company?.name || 'Your Flooring Company';
+  const companyName = settings.site_info?.name || settings.company?.name || 'Topline Flooring & Waterproofing';
   const whatsappNumber = (settings.contact?.whatsapp || settings.contact?.phone || '15550000000').replace(/\D/g, '');
 
   useSeoMeta('faq', null, {

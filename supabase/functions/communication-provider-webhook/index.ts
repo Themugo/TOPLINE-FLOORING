@@ -13,7 +13,12 @@ Deno.serve(async (req) => {
   if (!constantTimeEqual(req.headers.get("x-topline-webhook-secret"), secret)) return new Response("Unauthorized", { status: 401 });
   const raw = await req.text();
   if (raw.length > 1_048_576) return new Response("Payload Too Large", { status: 413 });
-  const body = JSON.parse(raw) as Record<string, unknown>;
+  let body: Record<string, unknown>;
+  try {
+    body = JSON.parse(raw) as Record<string, unknown>;
+  } catch {
+    return Response.json({ error: "Invalid JSON payload" }, { status: 400 });
+  }
 
   if (body?.event) {
     const event = String(body.event);
