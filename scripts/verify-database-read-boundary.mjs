@@ -31,5 +31,24 @@ check(!read('src/pages/admin/navigation.tsx').includes('updated_at'), 'navigatio
 const aud = read('src/components/admin/MediaAssetAuditor.tsx');
 check(!/is_compressed|compression_ratio|webp_url/.test(aud), 'Media auditor must not use nonexistent media_files columns or fake compression');
 
+// Margin data and coupon-guessing protection.
+const m95 = '20260930230000_move_product_cost_prices_staff_only.sql';
+const m96 = '20260930240000_coupon_validation_throttle.sql';
+for (const m of [m95, m96]) {
+  check(fs.existsSync(path.join(root, 'supabase/migrations', m)), `Missing migration ${m}`);
+  check(manifest.includes(m), `Manifest missing ${m}`);
+}
+const s95 = read(`supabase/migrations/${m95}`);
+check(s95.includes('DROP COLUMN cost_price') && s95.includes("current_user_has_permission('catalog','select')"), 'cost_price must move to a staff-only table');
+const s96 = read(`supabase/migrations/${m96}`);
+check(s96.includes('coupon_validation_failures') && s96.includes("interval '10 minutes'"), 'validate_coupon must throttle failed lookups');
+check(s96.includes("SET search_path = ''") , 'validate_coupon must keep a fixed search_path');
+for (const f of ['src', 'supabase/functions']) {
+  const walk = (d) => fs.readdirSync(path.join(root, d), { withFileTypes: true }).flatMap((e) => e.isDirectory() ? walk(`${d}/${e.name}`) : [`${d}/${e.name}`]);
+  for (const file of walk(f).filter((x) => /\.(ts|tsx)$/.test(x))) {
+    check(!read(file).includes('cost_price'), `${file} must not reference public cost_price columns`);
+  }
+}
+
 if (failures.length) { console.error('Database read boundary verification FAILED.'); failures.forEach((f) => console.error(`- ${f}`)); process.exit(1); }
 console.log('Database read boundary static verification PASSED.');

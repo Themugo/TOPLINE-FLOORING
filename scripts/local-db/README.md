@@ -11,5 +11,5 @@ for f in $(ls supabase/migrations/*.sql | sort); do
   psql -d topline_check -q -v ON_ERROR_STOP=1 -1 -f "$f" || { echo "FAILED: $f"; break; }
 done
 ```
-Expected: no output (all migrations apply). Last verified: 94/94 migrations apply from an empty database.
+Expected: no output (all migrations apply). Last verified: 96/96 migrations apply from an empty database.
 This does NOT replace validation against the real Supabase project.

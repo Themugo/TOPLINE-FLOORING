@@ -76,7 +76,7 @@ Never put a service-role or worker secret in a `VITE_*` variable.
 
 ## Current active chain (Phases 30–32 verification baseline)
 
-The current production candidate contains 94 uniquely timestamped active migrations, ending with `20260930220000_projects_admin_contract_columns.sql`. Run the complete verification suite before any linked database deployment.
+The current production candidate contains 96 uniquely timestamped active migrations, ending with `20260930240000_coupon_validation_throttle.sql`. Run the complete verification suite before any linked database deployment.
 
 - `20260912210000_070_customer_service_sla_operations_360.sql` — Phases 80–82 Customer Service SLA & After-Sales Operations 360.
 
@@ -136,3 +136,5 @@ The current production candidate contains 94 uniquely timestamped active migrati
 92. `20260930200000_project_templates.sql` — database-backed `project_templates` (RLS, audit) replacing browser localStorage and sample templates.
 93. `20260930210000_close_legacy_public_read_policies.sql` — drops legacy `public_read USING (true)` policies that voided `is_active` restrictions; publishes projects only through the `public_projects` view and makes the base table staff-only.
 94. `20260930220000_projects_admin_contract_columns.sql` — adds `materials_used`, `estimated_budget`, `actual_expenses`, `expense_items` to `projects` (admin screen contract); `materials_used` published via `public_projects`.
+95. `20260930230000_move_product_cost_prices_staff_only.sql` — moves `cost_price` from the public product/variant tables into the staff-only `product_cost_prices` table (existing values preserved).
+96. `20260930240000_coupon_validation_throttle.sql` — per-caller throttle on failed anonymous coupon lookups (10 failures / 10 min); successful validations unaffected.
