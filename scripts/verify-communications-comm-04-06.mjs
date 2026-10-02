@@ -1,0 +1,32 @@
+import fs from 'node:fs';
+import path from 'node:path';
+
+const root = process.cwd();
+const migrations = fs.readdirSync(path.join(root,'supabase','migrations')).filter(f=>f.endsWith('.sql')).sort();
+const latest = fs.readFileSync(path.join(root,'supabase','migrations','20261002150000_communications_comm_04_06_provider_templates_routing_360.sql'),'utf8');
+const worker = fs.readFileSync(path.join(root,'supabase','functions','deliver-communications','index.ts'),'utf8');
+const brevo = fs.readFileSync(path.join(root,'supabase','functions','communication-provider-webhook','index.ts'),'utf8');
+const sms = fs.readFileSync(path.join(root,'supabase','functions','sms-delivery-report','index.ts'),'utf8');
+const wa = fs.readFileSync(path.join(root,'supabase','functions','whatsapp-webhook','index.ts'),'utf8');
+const fail = m => { throw new Error(m); };
+const pass=[];
+const must=(cond,msg)=>{ if(!cond) fail(msg); pass.push(msg); };
+
+const versions=migrations.map(f=>f.slice(0,14));
+must(new Set(versions).size===versions.length,'migration timestamps are unique');
+must(latest.includes('communication_provider_contracts'),'COMM-04 provider contract exists');
+must(latest.includes("'brevo','email'")&&latest.includes("'africastalking','sms'")&&latest.includes("'meta_whatsapp','whatsapp'"),'all three production providers are contracted');
+must(worker.includes('sendEmail')&&worker.includes('sendSms')&&worker.includes('sendWhatsApp'),'delivery worker contains all provider adapters');
+must(worker.includes('BREVO_API_KEY')&&worker.includes('AT_API_KEY')&&worker.includes('WHATSAPP_ACCESS_TOKEN'),'provider credentials are environment-only');
+must(brevo.includes('constantTimeEqual')&&brevo.includes('COMMUNICATION_WEBHOOK_SECRET'),'Brevo callback is secret-authenticated');
+must(sms.includes('constantTimeEqual')&&sms.includes('AT_DLR_SECRET'),'SMS callback is secret-authenticated');
+must(wa.includes('hmacSha256Hex')&&wa.includes('WHATSAPP_APP_SECRET'),'WhatsApp callback is HMAC-authenticated');
+must(latest.includes('template_version')&&latest.includes('template_variables'),'COMM-05 template governance exists');
+for (const e of ['quotation.status','order.status','project.status','invoice.status','payment.received','site_visit.scheduled','delivery.status','installation.status','service_case.status']) must(latest.includes("'"+e+"'"),'template/routing contract covers '+e);
+must(latest.includes('v_match_count')&&latest.includes('IF v_match_count <> 1 THEN cid:=NULL'),'quotation customer matching is strict');
+must(latest.includes('CREATE TRIGGER delivery_customer_notification'),'delivery status is wired');
+must(latest.includes('CREATE TRIGGER installation_customer_notification'),'installation status is wired');
+must(latest.includes('CREATE TRIGGER service_case_customer_notification'),'service-case status is wired');
+must(latest.includes("implementation_status='wired'"),'wired event catalogue is updated');
+console.log(`Communications COMM-04–06 static sweep: ${pass.length}/${pass.length} passed.`);
+for(const p of pass) console.log('PASS',p);

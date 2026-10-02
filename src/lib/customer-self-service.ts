@@ -40,3 +40,15 @@ export async function getCustomerPortalDocuments(): Promise<CustomerPortalDocume
   if (error) throw error;
   return (data || []) as CustomerPortalDocument[];
 }
+
+
+export interface CustomerCommunicationTimelineItem {
+  id: string; channel: string; direction: string; subject: string | null; message: string;
+  status: string; external_reference: string | null; created_at: string;
+}
+
+export async function getCustomerCommunicationsSelfService360(): Promise<{ customer_id: string; timeline: CustomerCommunicationTimelineItem[] }> {
+  const { data, error } = await supabase.rpc('get_customer_communications_self_service_360');
+  if (error) throw error;
+  return (data || { customer_id: '', timeline: [] }) as { customer_id: string; timeline: CustomerCommunicationTimelineItem[] };
+}

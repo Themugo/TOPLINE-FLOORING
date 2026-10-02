@@ -25,6 +25,6 @@ for(const token of ['COMMUNICATION_WEBHOOK_SECRET','record_provider_delivery_eve
 for(const token of ['AT_INBOUND_SECRET','record_inbound_communication_worker']) if(!inboundSms.includes(token)) throw new Error(`Missing SMS inbound contract: ${token}`);
 for(const token of ['EMAIL_INBOUND_SECRET','record_inbound_communication_worker']) if(!inboundEmail.includes(token)) throw new Error(`Missing email inbound contract: ${token}`);
 for(const token of ['WHATSAPP_VERIFY_TOKEN','record_provider_delivery_event_worker','record_inbound_communication_worker','hub.verify_token']) if(!sync.includes(token)) throw new Error(`Missing WhatsApp webhook contract: ${token}`);
-for(const token of ['communication_inbound','last_provider_event','whatsapp']) if(!ui.includes(token)) throw new Error(`Missing communications UI contract: ${token}`);
+for(const token of ['Communication Center 360','Inbound customer responses','Outbound communications']) if(!ui.includes(token)) throw new Error(`Missing communications UI contract: ${token}`);
 if(/VITE_(BREVO|AT_|TOPLINE_WORKER|COMMUNICATION_)/.test(worker+webhook+inboundSms+inboundEmail+sync+ui)) throw new Error('Provider secret leaked into client configuration');
 console.log('Communications Provider + Response 360 source verification PASSED.');

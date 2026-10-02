@@ -110,7 +110,16 @@
     "verify:payment-refund-provider-360": "node scripts/verify-payment-refund-provider-trust-boundary-360.mjs",
     "verify:payment-provider-uat": "node scripts/verify-payment-provider-uat.mjs",
     "verify:brevo-email": "node scripts/verify-brevo-email-integration.mjs",
-    "verify:launch-repair": "node scripts/verify-launch-repair.mjs"
+    "verify:launch-repair": "node scripts/verify-launch-repair.mjs",
+    "verify:communications-comm-01-03": "node scripts/verify-communications-comm-01-03.mjs",
+    "verify:communications-comm-04-06": "node scripts/verify-communications-comm-04-06.mjs",
+    "verify:communications-comm-07-09": "node scripts/verify-communications-comm-07-09.mjs",
+    "verify:communications-comm-10-12": "node scripts/verify-communications-comm-10-12.mjs",
+    "verify:database-source-of-truth-360": "node scripts/verify-database-source-of-truth-360.mjs",
+    "verify:communications-comm-13-17": "node scripts/verify-communications-comm-13-17.mjs",
+    "verify:payment-provider-certification-activation-360": "node scripts/verify-payment-provider-certification-activation-360.mjs",
+    "verify:mpesa-provider-uat": "node scripts/verify-mpesa-provider-uat.mjs",
+    "verify:payment-audit-360": "node scripts/verify-payment-audit-360.mjs"
   },
   "dependencies": {
     "@radix-ui/react-accordion": "^1.2.16",

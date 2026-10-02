@@ -27,6 +27,7 @@ const Compare = lazy(() => import('@/pages/compare'));
 const TrackOrder = lazy(() => import('@/pages/track-order'));
 const Portal = lazy(() => import('@/pages/portal'));
 const CheckoutSuccess = lazy(() => import('@/pages/checkout-success'));
+const PaymentReturn = lazy(() => import('@/pages/payment-return'));
 const Industries = lazy(() => import('@/pages/industries'));
 const Market = lazy(() => import('@/pages/market'));
 
@@ -315,6 +316,14 @@ function Router() {
     return (
       <Suspense fallback={<PublicLoading />}>
         <TrackOrder />
+      </Suspense>
+    );
+  }
+
+  if (location === '/payment-return') {
+    return (
+      <Suspense fallback={<PublicLoading />}>
+        <PaymentReturn />
       </Suspense>
     );
   }

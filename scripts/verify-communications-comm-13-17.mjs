@@ -1,0 +1,14 @@
+import fs from 'node:fs';
+import path from 'node:path';
+const root=process.cwd(); let failed=0;
+const fail=m=>{console.error(`FAIL ${m}`);failed++};
+const read=p=>fs.readFileSync(path.join(root,p),'utf8');
+const migration='supabase/migrations/20261002180000_communications_comm_13_17_certification_observability_release_360.sql';
+if(!fs.existsSync(path.join(root,migration))) fail('COMM-13–17 migration missing');
+const m=read(migration);
+for(const x of ['communication_certification_runs','communication_incident_events','record_communication_certification_360','record_communication_incident_360','get_communications_release_gate_360','two_customer_uat_certified','security_certified','providers_ready']) if(!m.includes(x)) fail(`migration missing ${x}`);
+const inbound=read('supabase/migrations/20261002170000_communications_comm_10_12_conversations_scheduler_activation_360.sql');
+for(const x of ['ON CONFLICT (provider,channel,provider_message_id) DO NOTHING','processed_at','ensure_communication_conversation_worker']) if(!inbound.includes(x)) fail(`COMM-10 idempotency contract missing ${x}`);
+const files=fs.readdirSync(path.join(root,'supabase','functions'));
+for(const f of ['deliver-communications','communication-provider-webhook','sms-delivery-report','whatsapp-webhook']) if(!files.includes(f)) fail(`provider function missing ${f}`);
+if(!failed) console.log('COMM-13–17 static certification/release sweep PASSED'); else process.exitCode=1;

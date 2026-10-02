@@ -1,0 +1,18 @@
+import fs from 'node:fs';
+import path from 'node:path';
+const root=process.cwd();
+const must=(file,patterns)=>{const p=path.join(root,file);if(!fs.existsSync(p))throw new Error(`Missing ${file}`);const t=fs.readFileSync(p,'utf8');for(const x of patterns)if(!t.includes(x))throw new Error(`${file}: missing ${x}`);};
+must('supabase/migrations/20261002200000_payment_initiation_reconciliation_360.sql',['CREATE TABLE IF NOT EXISTS public.payment_attempts','get_customer_payment_status','reconcile_payment_attempt_360','apply_customer_payment_provider_event','get_customer_payment_methods']);
+must('supabase/functions/payment-initiate/index.ts',['MPESA_CONSUMER_KEY','CARD_GATEWAY_SECRET','payment_attempts']);
+must('supabase/functions/payment-callback/index.ts',['stkCallback','apply_customer_payment_provider_event','PAYMENT_CARD_WEBHOOK_SECRET']);
+must('supabase/functions/payment-status/index.ts',['public_token_hash','payment_transactions']);
+must('src/lib/customer-payments.ts',['payment-initiate','payment-status']);
+must('src/pages/payment-return.tsx',['getCustomerPaymentAttemptStatus']);
+must('src/pages/cart.tsx',['initiateCustomerPayment','paymentAttemptId','paymentAccessToken']);
+must('src/pages/portal.tsx',['Pay Now','initiateCustomerPayment']);
+must('src/pages/admin/finance-operations.tsx',['reconcile_payment_attempt_360','Confirm received']);
+must('src/pages/admin/site-control.tsx',['Non-secret payment configuration']);
+const migrationFiles=fs.readdirSync(path.join(root,'supabase/migrations')).filter(x=>x.endsWith('.sql')).sort();
+const prefixes=migrationFiles.map(x=>x.split('_')[0]);
+if(new Set(prefixes).size!==prefixes.length)throw new Error('Duplicate migration timestamps');
+console.log(`Payment Initiation + Reconciliation 360: PASS (${migrationFiles.length} migrations, unique timestamps)`);

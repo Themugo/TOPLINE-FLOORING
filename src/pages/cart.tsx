@@ -10,6 +10,8 @@ import { getProductPlaceholder, withFallback } from '@/lib/placeholders';
 import { createCustomerOrder, validateCoupon } from '@/lib/commerce';
 import { useToast } from '@/hooks/use-toast';
 import { useSeoMeta } from '@/hooks/use-seo';
+import { CustomerPaymentMethods } from '@/components/customer/CustomerPaymentMethods';
+import { initiateCustomerPayment } from '@/lib/customer-payments';
 
 interface FormData {
   name: string;
@@ -49,7 +51,8 @@ export default function Cart() {
   const [errors, setErrors] = useState<FormErrors>({});
   const [submitting, setSubmitting] = useState(false);
   const [checkoutIdempotencyKey] = useState(() => crypto.randomUUID());
-  const [paymentMethod, setPaymentMethod] = useState<'mpesa' | 'bank_transfer' | 'card'>('mpesa');
+  const [paymentMethod, setPaymentMethod] = useState<'mpesa' | 'bank_transfer' | 'card' | null>(null);
+  const [paymentGatewayKey, setPaymentGatewayKey] = useState<string | null>(null);
 
   const [selectedZoneId, setSelectedZoneId] = useState<string>('');
   const [couponCode, setCouponCode] = useState('');
@@ -113,6 +116,7 @@ export default function Cart() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validate()) return;
+    if (!paymentMethod) { toast({ title: 'Choose a payment method', description: 'Select one of the payment options available for this order.', variant: 'destructive' }); return; }
 
     setSubmitting(true);
     try {
@@ -142,6 +146,8 @@ export default function Cart() {
 
       const orderId = result.order_id;
       if (!orderId) throw new Error('Order was created without an order reference');
+      if (!paymentGatewayKey) throw new Error('The selected payment gateway is unavailable. Please choose a payment option again.');
+      const payment = await initiateCustomerPayment({ targetType: 'order', targetId: orderId, email: form.email.trim(), phone: form.phone.trim(), paymentMethod, gatewayKey: paymentGatewayKey, idempotencyKey: `checkout-payment:${checkoutIdempotencyKey}`, returnUrl: `${window.location.origin}/payment-return` });
 
       // Stash a summary for the confirmation page to display. We don't
       // grant anon a SELECT policy on `orders` (it would let anyone read
@@ -166,6 +172,13 @@ export default function Cart() {
             deliveryZoneName: selectedZone?.zone_name || null,
             deliveryAddress: form.deliveryAddress || null,
             orderNumber: result.order_number ?? null,
+            paymentAttemptId: payment.attempt_id,
+            paymentAccessToken: payment.access_token,
+            paymentMethod,
+            paymentGatewayKey,
+            paymentMessage: payment.message ?? null,
+            bankInstructions: payment.instructions ?? null,
+            checkoutUrl: payment.checkout_url ?? null,
             savedAt: Date.now(),
           })
         );
@@ -176,7 +189,7 @@ export default function Cart() {
       }
 
       clearCart();
-      setLocation(`/order-confirmation/${orderId}`);
+      if (payment.checkout_url) { window.location.href = payment.checkout_url; } else { setLocation(`/payment-return?attempt_id=${encodeURIComponent(payment.attempt_id)}&access_token=${encodeURIComponent(payment.access_token)}`); }
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Something went wrong. Please try again.';
       toast({
@@ -458,21 +471,7 @@ export default function Cart() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Payment Method
-                    </label>
-                    <select
-                      value={paymentMethod}
-                      onChange={(e) => setPaymentMethod(e.target.value as 'mpesa' | 'bank_transfer' | 'card')}
-                      className="input"
-                    >
-                      <option value="mpesa">M-Pesa — payment instructions after order</option>
-                      <option value="bank_transfer">Bank Transfer — payment instructions after order</option>
-                      <option value="card">Card — payment gateway integration</option>
-                    </select>
-                    <p className="text-xs text-gray-500 mt-1">
-                      Your order is secured first. Payment is recorded separately so Topline can add or change providers without changing your order history.
-                    </p>
+                    <CustomerPaymentMethods context="checkout" value={paymentMethod} onChange={setPaymentMethod} onGatewayChange={setPaymentGatewayKey} />
                   </div>
 
                   <div>

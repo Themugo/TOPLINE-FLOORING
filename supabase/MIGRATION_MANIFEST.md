@@ -76,7 +76,7 @@ Never put a service-role or worker secret in a `VITE_*` variable.
 
 ## Current active chain (Phases 30–32 verification baseline)
 
-The current production candidate contains 101 uniquely timestamped active migrations, ending with `20261001110000_catalog_product_service_upload_integrity_360.sql`. Run the complete verification suite before any linked database deployment.
+The current production candidate contains 111 uniquely timestamped active migrations, ending with `20261002220000_payment_customer_ux_and_mpesa_hardening_360.sql`. Run the complete verification suite before any linked database deployment.
 
 Current active chain additions: `20260930170000_service_catalog_and_communications_worker_hardening.sql`, `20260930180000_project_documents_private_storage.sql`, `20260930190000_staff_read_inactive_cms_catalog_rows.sql`, `20260930193000_private_document_policy_overlap_hardening.sql`, `20260930200000_project_templates.sql`, `20260930210000_close_legacy_public_read_policies.sql`, `20260930220000_projects_admin_contract_columns.sql`, `20260930230000_move_product_cost_prices_staff_only.sql`, `20260930240000_coupon_validation_throttle.sql`, `20260930250000_finance_permission_resource.sql`, `20261001090000_project_template_persistence_360.sql`, `20261001100000_admin_notification_state_360.sql`, `20261001110000_catalog_product_service_upload_integrity_360.sql`.
 
@@ -141,3 +141,27 @@ Current active chain additions: `20260930170000_service_catalog_and_communicatio
 95. `20260930230000_move_product_cost_prices_staff_only.sql` — moves `cost_price` from the public product/variant tables into the staff-only `product_cost_prices` table (existing values preserved).
 96. `20260930240000_coupon_validation_throttle.sql` — per-caller throttle on failed anonymous coupon lookups (10 failures / 10 min); successful validations unaffected.
 97. `20260930250000_finance_permission_resource.sql` — defines the `finance` permission resource required by payment/refund RPCs and policies, granted to the same roles that hold `payments`.
+
+
+## Communications certification and release gate
+- `20261002130000_customer_registration_and_reconciliation_360.sql` — customer registration/reconciliation 360.
+- `20261002140000_communications_comm_01_03_contract_state_matching_360.sql` — COMM-01–03.
+- `20261002150000_communications_comm_04_06_provider_templates_routing_360.sql` — COMM-04–06.
+- `20261002160000_communications_comm_07_09_customer_admin_360.sql` — COMM-07–09.
+- `20261002170000_communications_comm_10_12_conversations_scheduler_activation_360.sql` — COMM-10–12.
+- `20261002180000_communications_comm_13_17_certification_observability_release_360.sql` — COMM-13–17 certification evidence, incidents, and fail-closed release gate.
+
+## Current active chain — payment and communications hardening (2026-10-02)
+
+The current active chain contains 110 uniquely timestamped active migrations. The latest migrations are:
+
+- `20261001110000_catalog_product_service_upload_integrity_360.sql` — catalogue/product/service upload integrity hardening.
+- `20261002130000_customer_registration_and_reconciliation_360.sql` — customer registration, verified identity binding and dashboard reconciliation.
+- `20261002140000_communications_comm_01_03_contract_state_matching_360.sql` — communications event/state/matching hardening.
+- `20261002150000_communications_comm_04_06_provider_templates_routing_360.sql` — provider contracts, templates and routing.
+- `20261002160000_communications_comm_07_09_customer_admin_360.sql` — customer/admin communications 360.
+- `20261002170000_communications_comm_10_12_conversations_scheduler_activation_360.sql` — inbound conversations, scheduler and provider activation controls.
+- `20261002180000_communications_comm_13_17_certification_observability_release_360.sql` — communications certification, observability and release gates.
+- `20261002190000_payment_gateway_customer_visibility_admin_control_360.sql` — customer-visible payment gateway catalogue and Admin Control boundary.
+- `20261002200000_payment_initiation_reconciliation_360.sql` — payment attempts, Pay Now, provider initiation, callbacks and reconciliation.
+- `20261002210000_payment_provider_certification_activation_360.sql` — provider certification, production release gates and stale-attempt recovery.

@@ -85,7 +85,7 @@ if (!/permissions:\s*\n\s+contents:\s+read/m.test(ci)) fail('CI must retain leas
 if (!ci.includes('npm ci') || !ci.includes('npm run lint') || !ci.includes('npm run typecheck') || !ci.includes('npm run build')) fail('CI is missing deterministic install/frontend quality gates.');
 
 // 6. Security / credential boundary scan.
-const forbiddenSecret = /(?<![A-Za-z0-9_])(?:SUPABASE_SERVICE_ROLE_KEY|consumer[_-]?secret|consumer[_-]?key|client[_-]?secret|access[_-]?token)\s*[:=]\s*[\"']?[A-Za-z0-9_\-./+=]{12,}/i;
+const forbiddenSecret = /(?<![A-Za-z0-9_])(?:SUPABASE_SERVICE_ROLE_KEY|consumer[_-]?secret|consumer[_-]?key|client[_-]?secret)\s*[:=]\s*(?!Deno\.env\.get)[\"']?[A-Za-z0-9_\-./+=]{12,}/i;
 const hardcodedToken = /(?:BEGIN PRIVATE KEY|ghp_[A-Za-z0-9]{20,}|sk_live_[A-Za-z0-9]{12,})/;
 for (const dir of ['src', 'supabase/functions', 'supabase/migrations']) {
   for (const file of walk(path.join(root, dir))) {

@@ -1,0 +1,11 @@
+import fs from 'node:fs'; import path from 'node:path';
+const root=process.cwd(); const fail=m=>{throw new Error(m)}; const ok=m=>console.log(`PASS ${m}`);
+const mig=fs.readdirSync(path.join(root,'supabase/migrations')).filter(f=>f.endsWith('.sql'));
+const latest=mig.find(f=>f.startsWith('20261002160000_communications_comm_07_09_')); if(!latest) fail('COMM-07-09 migration missing');
+const sql=fs.readFileSync(path.join(root,'supabase/migrations',latest),'utf8');
+for(const x of ['get_customer_communications_self_service_360','get_communications_center_360','get_current_customer_id','require_staff_permission']) sql.includes(x)?ok(`${x} contract present`):fail(`${x} contract missing`);
+const portal=fs.readFileSync(path.join(root,'src/pages/portal.tsx'),'utf8');
+for(const x of ['getCustomerCommunicationsSelfService360','Communication history','Only communications belonging to your authenticated customer account']) portal.includes(x)?ok(`Customer portal communication contract: ${x}`):fail(`Customer portal communication contract missing: ${x}`);
+const admin=fs.readFileSync(path.join(root,'src/pages/admin/communications.tsx'),'utf8');
+for(const x of ['get_communications_center_360','Communication Center 360','Inbound customer responses','Outbound communications']) admin.includes(x)?ok(`Admin Communication Center contract: ${x}`):fail(`Admin Communication Center contract missing: ${x}`);
+ok('COMM-07-09 static sweep complete');

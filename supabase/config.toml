@@ -37,3 +37,6 @@ verify_jwt = false
 
 [functions.operations-scheduler]
 verify_jwt = false
+
+[functions.communication-provider-readiness]
+verify_jwt = false
