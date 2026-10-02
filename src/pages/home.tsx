@@ -248,7 +248,7 @@ export default function Home() {
 
       {/* Hero Section - Full viewport slider with dark navy overlay */}
       <section
-        className="relative h-[55vh] md:h-[60vh] lg:h-[65vh] overflow-hidden"
+        className="relative min-h-[31rem] h-[58vh] md:h-[62vh] lg:h-[68vh] overflow-hidden"
         onMouseEnter={() => setIsSliderPaused(true)}
         onMouseLeave={() => setIsSliderPaused(false)}
         onTouchStart={handleTouchStart}
@@ -348,6 +348,24 @@ export default function Home() {
             </div>
           </>
         )}
+      </section>
+
+      {/* Customer intent shortcuts: help first-time visitors choose the right journey immediately. */}
+      <section className="relative z-30 px-4 sm:px-6 lg:px-8 -mt-7 sm:-mt-9">
+        <div className="max-w-6xl mx-auto customer-intent-grid">
+          <Link href="/shop" className="customer-intent-card">
+            <div><strong>Shop materials</strong><span>Browse products and variants</span></div><ArrowRight className="w-4 h-4 text-primary-500 transition-transform group-hover:translate-x-1" />
+          </Link>
+          <Link href="/services" className="customer-intent-card">
+            <div><strong>Find a service</strong><span>Explore flooring and waterproofing</span></div><ArrowRight className="w-4 h-4 text-primary-500 transition-transform group-hover:translate-x-1" />
+          </Link>
+          <Link href="/quotation" className="customer-intent-card">
+            <div><strong>Request a quote</strong><span>Tell us what your project needs</span></div><ArrowRight className="w-4 h-4 text-primary-500 transition-transform group-hover:translate-x-1" />
+          </Link>
+          <Link href="/track-order" className="customer-intent-card">
+            <div><strong>Track your order</strong><span>Check delivery and order progress</span></div><ArrowRight className="w-4 h-4 text-primary-500 transition-transform group-hover:translate-x-1" />
+          </Link>
+        </div>
       </section>
 
       {/* Trust Bar - elevated stats card overlapping the hero, admin-configurable in Homepage Builder */}

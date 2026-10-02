@@ -101,10 +101,10 @@ export default function Shop() {
               Certified Chemical & Material Supplies
             </span>
             <h1 className="font-display text-3xl sm:text-4xl lg:text-5xl font-bold text-navy-950 tracking-tight mb-3">
-              Industrial Materials Shop
+              Find the right material for your project
             </h1>
             <p className="text-navy-600 text-base sm:text-lg max-w-3xl mx-auto leading-relaxed">
-              Premium epoxy resins, polyurethane screeds, liquid waterproofing membranes, and concrete densifiers. Directly delivered to your project site.
+              Shop professional flooring, roofing and waterproofing materials with clear product information, available variants and secure checkout.
             </p>
 
             {/* Value Props Bar */}
@@ -257,6 +257,10 @@ export default function Shop() {
 
             {/* Products Main View */}
             <div className="flex-1">
+              <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
+                <div><p className="text-sm font-bold text-navy-950">{filteredProducts.length} {filteredProducts.length === 1 ? 'material' : 'materials'} available</p><p className="text-xs text-navy-500 mt-0.5">Choose a product, select its variant and add it to your order.</p></div>
+                {(searchQuery || selectedCategory || inStockOnly) && <button type="button" onClick={() => { setSelectedCategory(null); setSearchQuery(''); setInStockOnly(false); }} className="text-xs font-bold text-primary-600 hover:text-primary-700">Clear filters</button>}
+              </div>
               {/* Header Controls Bar */}
               <div className="bg-white rounded-2xl border border-gray-200/80 p-4 mb-6 shadow-2xs flex flex-col sm:flex-row items-center justify-between gap-4">
                 <div className="text-xs text-gray-600 font-medium">

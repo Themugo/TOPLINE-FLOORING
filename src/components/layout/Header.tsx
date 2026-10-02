@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useLocation } from 'wouter';
-import { Menu, X, ShoppingCart, Phone, Mail, MapPin, LogIn, Facebook, Instagram, Linkedin } from 'lucide-react';
+import { Menu, X, ShoppingCart, Phone, Mail, MapPin, LogIn, Facebook, Instagram, Linkedin, UserRound, ClipboardCheck } from 'lucide-react';
 import { useCart } from '@/hooks/use-cart';
 import { useSiteSettings, useNavigationMenus } from '@/hooks/use-data';
 import { telHref } from '@/lib/utils';
@@ -31,6 +31,7 @@ export function Header() {
     { href: '/services', label: 'Services', open_in_new_tab: false },
     { href: '/portfolio', label: 'Portfolio', open_in_new_tab: false },
     { href: '/shop', label: 'Shop', open_in_new_tab: false },
+    { href: '/track-order', label: 'Track Order', open_in_new_tab: false },
     { href: '/contact', label: 'Contact', open_in_new_tab: false },
     { href: '/quotation', label: 'Get Quote', open_in_new_tab: false },
   ]).filter((link) => link.href && link.label);
@@ -123,6 +124,15 @@ export function Header() {
 
             <div className="flex items-center gap-2 lg:gap-3">
               <Link
+                href="/portal"
+                className="hidden sm:flex items-center gap-2 px-3 py-2 text-[13px] font-semibold text-navy-700 hover:text-primary-600 hover:bg-gray-50 rounded-xl transition-colors"
+                aria-label="Customer account"
+              >
+                <UserRound className="w-4 h-4" />
+                <span>My Account</span>
+              </Link>
+
+              <Link
                 href="/cart"
                 className="relative p-2 text-navy-700 hover:text-primary-600 transition-colors"
                 aria-label={`Shopping cart${totalItems > 0 ? `, ${totalItems} items` : ''}`}
@@ -183,6 +193,14 @@ export function Header() {
               </Link>
             ))}
             <div className="pt-4 mt-4 border-t border-gray-200 space-y-1">
+              <Link href="/portal" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-2 px-4 py-3 text-sm font-semibold text-primary-700 bg-primary-50 rounded-xl">
+                <UserRound className="w-4 h-4" />
+                <span>My Customer Account</span>
+              </Link>
+              <Link href="/track-order" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-2 px-4 py-3 text-sm text-navy-700">
+                <ClipboardCheck className="w-4 h-4" />
+                <span>Track an Order</span>
+              </Link>
               {phone && (
                 <a
                   href={telHref(phone)}
