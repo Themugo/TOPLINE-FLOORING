@@ -26,5 +26,12 @@ check(fs.existsSync(path.join(root, 'supabase/migrations/20260930200000_project_
 const hero = read('src/pages/admin/hero-slides.tsx');
 check(!hero.includes('slide-${Date.now()}'), 'Hero slides must not fabricate local records when the database write fails');
 
+// Every routed admin page must declare a permission (otherwise any active staff member can open it).
+const app = read('src/App.tsx');
+const routeBlock = app.slice(app.indexOf('const adminRoutes'), app.indexOf('const AdminComponent'));
+const routed = [...routeBlock.matchAll(/'(\/admin\/[a-z0-9-]+)':/g)].map((m) => m[1]);
+const guard = read('src/components/admin/AdminGuard.tsx');
+for (const route of routed) check(guard.includes(`'${route}':`), `Admin route ${route} has no entry in AdminGuard ROUTE_PERMISSIONS`);
+
 if (failures.length) { console.error('Admin feedback contract FAILED.'); failures.forEach((f) => console.error(`- ${f}`)); process.exit(1); }
 console.log('Admin feedback contract static verification PASSED.');

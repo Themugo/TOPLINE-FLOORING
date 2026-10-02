@@ -55,6 +55,7 @@ const ROUTE_PERMISSIONS: Record<string, { resource: string; action: string }> = 
   '/admin/media-library': { resource: 'media', action: 'select' },
   '/admin/reports': { resource: 'reports', action: 'select' },
   '/admin/seo': { resource: 'content', action: 'select' },
+  '/admin/site-content': { resource: 'content', action: 'select' },
   '/admin/coupons': { resource: 'catalog', action: 'select' },
   '/admin/product-brands': { resource: 'catalog', action: 'select' },
   '/admin/product-images': { resource: 'media', action: 'select' },

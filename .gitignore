@@ -29,3 +29,6 @@ supabase/.temp/
 
 # Keep the safe template versioned
 !.env.example
+
+# Generated at build time by scripts/generate-sitemap.mjs (never commit a build-time snapshot)
+public/sitemap.xml

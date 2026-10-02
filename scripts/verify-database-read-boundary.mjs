@@ -50,5 +50,18 @@ for (const f of ['src', 'supabase/functions']) {
   }
 }
 
+// Production must generate the sitemap during `npm run build` (Vercel's build command), otherwise
+// /sitemap.xml falls through to the SPA rewrite and crawlers get HTML.
+const pkg = JSON.parse(read('package.json'));
+check(pkg.scripts.prebuild === 'node scripts/generate-sitemap.mjs', 'package.json prebuild must generate the sitemap');
+check(JSON.parse(read('vercel.json')).buildCommand === 'npm run build', 'Vercel must build with npm run build');
+check(read('.gitignore').includes('public/sitemap.xml'), 'public/sitemap.xml is a build artifact and must be git-ignored');
+check(read('public/.well-known/security.txt').includes('Expires:'), 'security.txt requires an Expires field (RFC 9116)');
+check(read('public/.well-known/security.txt') === read('public/security.txt'), '/.well-known/security.txt and /security.txt must match');
+
+const m97 = '20260930250000_finance_permission_resource.sql';
+check(fs.existsSync(path.join(root, 'supabase/migrations', m97)) && manifest.includes(m97), 'finance permission migration missing or not in manifest');
+check(read(`supabase/migrations/${m97}`).includes("'finance'") && read(`supabase/migrations/${m97}`).includes("resource = 'payments'"), 'finance permission must mirror payments grants');
+
 if (failures.length) { console.error('Database read boundary verification FAILED.'); failures.forEach((f) => console.error(`- ${f}`)); process.exit(1); }
 console.log('Database read boundary static verification PASSED.');
