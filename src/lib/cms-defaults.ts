@@ -186,12 +186,7 @@ export const DEFAULT_CMS_STORE: CMSContentStore = {
       { title: 'Integrity & Safety', description: 'Transparent scope pricing, adherence to VOC compliance, and certified site protocols.', icon: 'CheckSquare' },
       { title: 'Technical Expertise', description: 'Continuous staff certification in resin formulations and acoustic wood sub-flooring.', icon: 'Layers' },
     ],
-    stats: [
-      { label: 'Completed Projects', value: '500', suffix: '+' },
-      { label: 'Square Feet Installed', value: '2.5M', suffix: '+' },
-      { label: 'Client Satisfaction', value: '99.4', suffix: '%' },
-      { label: 'Years Experience', value: '12', suffix: '+' },
-    ],
+    stats: [],
     team: [
       {
         name: 'Technical Director',
@@ -247,11 +242,7 @@ export const DEFAULT_CMS_STORE: CMSContentStore = {
 
   projects: {
     portfolio: [],
-    map_locations: [
-      { id: '1', title: 'Central Metro Commercial Plaza', lat: 38.8951, lng: -77.0364, region: 'Central District', location_text: 'Central Metro' },
-      { id: '2', title: 'Industrial Logistics Hub', lat: 38.8800, lng: -77.0400, region: 'Industrial Zone', location_text: 'Industrial Zone' },
-      { id: '3', title: 'Westside Residential Complex', lat: 38.9000, lng: -77.0500, region: 'West District', location_text: 'West District' },
-    ],
+    map_locations: [],
     material_specs: [
       'Self-Leveling Epoxy Resin',
       'Polyurethane Cement Screed',
@@ -270,9 +261,9 @@ export const DEFAULT_CMS_STORE: CMSContentStore = {
     reviews: [],
     corporate_partners: [],
     trust_metrics: {
-      rating: 4.9,
-      total_reviews: 128,
-      satisfaction_rate: '99.4%',
+      rating: 0,
+      total_reviews: 0,
+      satisfaction_rate: '',
     },
   },
 
@@ -286,18 +277,7 @@ export const DEFAULT_CMS_STORE: CMSContentStore = {
       title: 'Get In Touch',
       subtitle: 'Have a project in mind? Speak with our surface specialists today.',
     },
-    offices: [
-      {
-        name: 'Headquarters & Showroom',
-        address: '123 Commerce Way, Suite 100, Metropolis',
-        phone: '0720 859 737 / 0755 293 372',
-        email: 'toplineflooringandwaterproofin@gmail.com',
-        working_hours: 'Mon - Fri: 8:00 AM - 6:00 PM',
-        lat: 38.8951,
-        lng: -77.0364,
-        is_primary: true,
-      },
-    ],
+    offices: [],
     map_settings: {
       center_lat: 38.8951,
       center_lng: -77.0364,
@@ -475,3 +455,23 @@ export const DEFAULT_CMS_STORE: CMSContentStore = {
     layout_style: 'classic',
   },
 };
+
+
+/**
+ * Structurally compatible empty CMS state. It deliberately contains no business
+ * claims, sample records, fictional locations or seeded content. Runtime CMS
+ * reads use this only as an empty UI shape; persisted Supabase content remains
+ * the sole source of truth.
+ */
+function emptyCMSValue(value: unknown): unknown {
+  if (Array.isArray(value)) return [];
+  if (typeof value === 'string') return '';
+  if (typeof value === 'number') return 0;
+  if (typeof value === 'boolean') return false;
+  if (value && typeof value === 'object') {
+    return Object.fromEntries(Object.entries(value).map(([key, child]) => [key, emptyCMSValue(child)]));
+  }
+  return value;
+}
+
+export const EMPTY_CMS_STORE = emptyCMSValue(DEFAULT_CMS_STORE) as CMSContentStore;

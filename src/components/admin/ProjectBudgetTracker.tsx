@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import {
   DollarSign,
   TrendingUp,
@@ -15,59 +15,16 @@ import {
   X,
 } from 'lucide-react';
 import type { Project, ProjectExpenseItem } from '@/lib/types';
+import { supabase } from '@/lib/supabase';
+import { addProjectCostEntry, deleteProjectCostEntry, type CostCategory } from '@/lib/project-costs';
 
 interface ProjectBudgetTrackerProps {
   projects: Project[];
   onUpdateProjectBudget?: (
     projectId: string,
-    estimatedBudget: number,
-    actualExpenses: number,
-    expenseItems: ProjectExpenseItem[]
+    estimatedBudget: number
   ) => void;
   onSelectProject?: (project: Project) => void;
-}
-
-// Sample initial expense items for demonstration if project doesn't have custom ones
-function generateDefaultExpenseItems(project: Project): ProjectExpenseItem[] {
-  const baseValue = project.estimated_budget || project.project_value || 250000;
-  return [
-    {
-      id: `${project.id}-exp-1`,
-      project_id: project.id,
-      category: 'materials',
-      description: 'Industrial Epoxy Resin Primer & Hardener',
-      estimated_amount: Math.round(baseValue * 0.35),
-      actual_amount: Math.round(baseValue * 0.33),
-      date: project.project_date || '2025-01-15',
-    },
-    {
-      id: `${project.id}-exp-2`,
-      project_id: project.id,
-      category: 'labor',
-      description: 'Surface Prep & Diamond Grinding Crew',
-      estimated_amount: Math.round(baseValue * 0.25),
-      actual_amount: Math.round(baseValue * 0.26),
-      date: project.project_date || '2025-01-18',
-    },
-    {
-      id: `${project.id}-exp-3`,
-      project_id: project.id,
-      category: 'equipment',
-      description: 'Heavy Duty Dust Extractor & Shotblaster Rental',
-      estimated_amount: Math.round(baseValue * 0.15),
-      actual_amount: Math.round(baseValue * 0.14),
-      date: project.project_date || '2025-01-20',
-    },
-    {
-      id: `${project.id}-exp-4`,
-      project_id: project.id,
-      category: 'permits',
-      description: 'Site Safety Inspection & Quality Certification',
-      estimated_amount: Math.round(baseValue * 0.05),
-      actual_amount: Math.round(baseValue * 0.05),
-      date: project.project_date || '2025-01-22',
-    },
-  ];
 }
 
 export function ProjectBudgetTracker({
@@ -79,10 +36,51 @@ export function ProjectBudgetTracker({
   const [varianceFilter, setVarianceFilter] = useState<'all' | 'under' | 'over'>('all');
   const [activeProjectForExpense, setActiveProjectForExpense] = useState<Project | null>(null);
 
-  // Local storage for custom expense items per project
-  const [projectExpensesMap, setProjectExpensesMap] = useState<
-    Record<string, ProjectExpenseItem[]>
-  >({});
+  // Cost entries are authoritative database records; no browser persistence or sample data.
+  const [projectExpensesMap, setProjectExpensesMap] = useState<Record<string, ProjectExpenseItem[]>>({});
+  const [ledgerLoading, setLedgerLoading] = useState(false);
+  const [ledgerError, setLedgerError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    async function loadLedger() {
+      if (!projects.length) {
+        setProjectExpensesMap({});
+        return;
+      }
+      setLedgerLoading(true);
+      setLedgerError(null);
+      const { data, error } = await supabase
+        .from('project_cost_entries')
+        .select('id,project_id,category,description,estimated_amount,actual_amount,incurred_at,notes')
+        .in('project_id', projects.map((p) => p.id))
+        .order('incurred_at', { ascending: false });
+      if (cancelled) return;
+      if (error) {
+        setProjectExpensesMap({});
+        setLedgerError(error.message || 'Failed to load project cost ledger');
+      } else {
+        const grouped: Record<string, ProjectExpenseItem[]> = {};
+        for (const row of data || []) {
+          const item: ProjectExpenseItem = {
+            id: row.id,
+            project_id: row.project_id,
+            category: row.category as ProjectExpenseItem['category'],
+            description: row.description,
+            estimated_amount: Number(row.estimated_amount || 0),
+            actual_amount: Number(row.actual_amount || 0),
+            date: row.incurred_at,
+            notes: row.notes || undefined,
+          };
+          (grouped[row.project_id] ||= []).push(item);
+        }
+        setProjectExpensesMap(grouped);
+      }
+      setLedgerLoading(false);
+    }
+    void loadLedger();
+    return () => { cancelled = true; };
+  }, [projects]);
 
   // Local state for adding/editing expense modal
   const [showExpenseModal, setShowExpenseModal] = useState(false);
@@ -101,24 +99,13 @@ export function ProjectBudgetTracker({
   // Computed projects with budget and expenses calculations
   const budgetData = useMemo(() => {
     return projects.map((p) => {
-      // 1. Get or generate expense items
-      const items =
-        projectExpensesMap[p.id] ||
-        p.expense_items ||
-        generateDefaultExpenseItems(p);
-
-      // 2. Sum actuals from items or project actual_expenses
-      const calculatedActual = items.reduce((sum, item) => sum + item.actual_amount, 0);
-      const actualExpenses =
-        p.actual_expenses !== undefined && p.actual_expenses !== null
-          ? p.actual_expenses
-          : calculatedActual;
-
-      // 3. Estimated budget from project or project_value
+      // Cost ledger is authoritative for actual expenditure. No fabricated fallback data.
+      const items = projectExpensesMap[p.id] || [];
+      const actualExpenses = items.reduce((sum, item) => sum + Number(item.actual_amount || 0), 0);
       const estimatedBudget =
         p.estimated_budget !== undefined && p.estimated_budget !== null
-          ? p.estimated_budget
-          : p.project_value || 250000;
+          ? Number(p.estimated_budget)
+          : Number(p.project_value || 0);
 
       // 4. Variance calculation
       const variance = estimatedBudget - actualExpenses;
@@ -204,56 +191,45 @@ export function ProjectBudgetTracker({
     if (!existing) return;
 
     if (onUpdateProjectBudget) {
-      onUpdateProjectBudget(
-        projectId,
-        tempBudgetValue,
-        existing.actualExpenses,
-        existing.items
-      );
+      onUpdateProjectBudget(projectId, tempBudgetValue);
     }
   };
 
   // Add new expense line item
-  const handleAddExpense = () => {
+  const handleAddExpense = async () => {
     if (!activeProjectForExpense || !newDescription.trim()) return;
 
-    const newItem: ProjectExpenseItem = {
-      id: `exp-${Date.now()}`,
-      project_id: activeProjectForExpense.id,
-      category: newCategory,
-      description: newDescription.trim(),
-      estimated_amount: Number(newEstimated) || 0,
-      actual_amount: Number(newActual) || 0,
-      date: newDate,
-      notes: newNotes.trim() || undefined,
-    };
-
-    const currentItems =
-      projectExpensesMap[activeProjectForExpense.id] ||
-      activeProjectForExpense.expense_items ||
-      generateDefaultExpenseItems(activeProjectForExpense);
-
-    const updatedItems = [newItem, ...currentItems];
-
-    setProjectExpensesMap((prev) => ({
-      ...prev,
-      [activeProjectForExpense.id]: updatedItems,
-    }));
-
-    // Calculate new total actual
-    const newTotalActual = updatedItems.reduce((acc, i) => acc + i.actual_amount, 0);
-    const currentEstBudget =
-      activeProjectForExpense.estimated_budget ||
-      activeProjectForExpense.project_value ||
-      250000;
-
-    if (onUpdateProjectBudget) {
-      onUpdateProjectBudget(
-        activeProjectForExpense.id,
-        currentEstBudget,
-        newTotalActual,
-        updatedItems
-      );
+    try {
+      const result = await addProjectCostEntry({
+        projectId: activeProjectForExpense.id,
+        category: newCategory as CostCategory,
+        description: newDescription.trim(),
+        estimatedAmount: Number(newEstimated) || 0,
+        actualAmount: Number(newActual) || 0,
+        incurredAt: newDate,
+        notes: newNotes.trim() || null,
+      });
+      const costEntryId = typeof result === 'object' && result && 'cost_entry_id' in result
+        ? String((result as { cost_entry_id: string }).cost_entry_id)
+        : '';
+      const item: ProjectExpenseItem = {
+        id: costEntryId || `pending-${Date.now()}`,
+        project_id: activeProjectForExpense.id,
+        category: newCategory,
+        description: newDescription.trim(),
+        estimated_amount: Number(newEstimated) || 0,
+        actual_amount: Number(newActual) || 0,
+        date: newDate,
+        notes: newNotes.trim() || undefined,
+      };
+      setProjectExpensesMap((prev) => ({
+        ...prev,
+        [activeProjectForExpense.id]: [item, ...(prev[activeProjectForExpense.id] || [])],
+      }));
+      setLedgerError(null);
+    } catch (err) {
+      setLedgerError(err instanceof Error ? err.message : 'Failed to save cost entry');
+      return;
     }
 
     // Reset form
@@ -265,28 +241,16 @@ export function ProjectBudgetTracker({
   };
 
   // Delete expense item
-  const handleDeleteExpense = (projectId: string, itemId: string) => {
-    const currentItems =
-      projectExpensesMap[projectId] ||
-      projects.find((p) => p.id === projectId)?.expense_items ||
-      [];
-
-    const updatedItems = currentItems.filter((i) => i.id !== itemId);
-
-    setProjectExpensesMap((prev) => ({
-      ...prev,
-      [projectId]: updatedItems,
-    }));
-
-    const newTotalActual = updatedItems.reduce((acc, i) => acc + i.actual_amount, 0);
-    const proj = projects.find((p) => p.id === projectId);
-    if (proj && onUpdateProjectBudget) {
-      onUpdateProjectBudget(
-        projectId,
-        proj.estimated_budget || proj.project_value || 250000,
-        newTotalActual,
-        updatedItems
-      );
+  const handleDeleteExpense = async (projectId: string, itemId: string) => {
+    try {
+      await deleteProjectCostEntry(itemId);
+      setProjectExpensesMap((prev) => ({
+        ...prev,
+        [projectId]: (prev[projectId] || []).filter((i) => i.id !== itemId),
+      }));
+      setLedgerError(null);
+    } catch (err) {
+      setLedgerError(err instanceof Error ? err.message : 'Failed to delete cost entry');
     }
   };
 
@@ -446,6 +410,9 @@ export function ProjectBudgetTracker({
           </div>
         </div>
       </div>
+
+      {ledgerLoading && <div className="px-4 py-2 text-xs text-gray-500 border-b border-gray-100">Loading authoritative project cost ledger…</div>}
+      {ledgerError && <div className="px-4 py-2 text-xs text-red-600 bg-red-50 border-b border-red-100">{ledgerError}</div>}
 
       {/* Budget Table */}
       <div className="overflow-x-auto">
@@ -727,11 +694,7 @@ export function ProjectBudgetTracker({
               <div>
                 <h4 className="text-xs font-bold text-gray-800 mb-2">Logged Expenditure Items</h4>
                 <div className="divide-y divide-gray-100 border border-gray-200 rounded-xl overflow-hidden">
-                  {(
-                    projectExpensesMap[activeProjectForExpense.id] ||
-                    activeProjectForExpense.expense_items ||
-                    generateDefaultExpenseItems(activeProjectForExpense)
-                  ).map((item) => (
+                  {(projectExpensesMap[activeProjectForExpense.id] || []).map((item) => (
                     <div
                       key={item.id}
                       className="p-3 bg-white hover:bg-gray-50 flex items-center justify-between gap-3 text-xs"

@@ -922,17 +922,20 @@ export function useServices(options?: { activeOnly?: boolean }) {
   };
 
   const updateService = async (id: string, updates: Partial<Service>) => {
-    const { error: err } = await supabase
+    const { data, error: err } = await supabase
       .from('services')
       .update({ ...updates, updated_at: new Date().toISOString() })
-      .eq('id', id);
+      .eq('id', id)
+      .select('id');
     if (err) throw err;
+    if (!data?.length) throw new Error('Service was not updated. You may not have permission, or the service no longer exists.');
     await refetch();
   };
 
   const deleteService = async (id: string) => {
-    const { error: err } = await supabase.from('services').delete().eq('id', id);
+    const { data, error: err } = await supabase.from('services').delete().eq('id', id).select('id');
     if (err) throw err;
+    if (!data?.length) throw new Error('Service was not deleted. You may not have permission, or the service no longer exists.');
     await refetch();
   };
 

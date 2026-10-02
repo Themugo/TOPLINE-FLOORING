@@ -223,14 +223,32 @@ export function ProjectDocumentManager({
     if (!window.confirm(`Delete "${doc.file_name}"? This permanently removes the file.`)) return;
     setBusyDocId(doc.id);
     try {
-      // Storage first: if the row delete then fails the row remains and delete can be retried
-      // (removing an already-missing object is a no-op), so no invisible orphan is left behind.
-      const { error: storageError } = await supabase.storage.from(DOCUMENT_BUCKET).remove([doc.storage_path]);
-      if (storageError) throw storageError;
+      // Remove metadata first so the row can never continue granting access to a
+      // missing/retained object. Storage cleanup is retried separately and its
+      // failure is reported honestly instead of pretending the file is gone.
       const { error: rowError } = await supabase.from('project_documents').delete().eq('id', doc.id);
       if (rowError) throw rowError;
-      toast({ title: 'Document deleted', description: `"${doc.file_name}" was removed from this project.` });
+
+      let storageError: { message?: string } | null = null;
+      for (let attempt = 0; attempt < 2; attempt += 1) {
+        const { error } = await supabase.storage.from(DOCUMENT_BUCKET).remove([doc.storage_path]);
+        if (!error) {
+          storageError = null;
+          break;
+        }
+        storageError = error;
+      }
+
       await loadDocuments();
+      if (storageError) {
+        toast({
+          title: 'Document metadata deleted',
+          description: `metadata was removed, but stored file could not be cleaned up: ${storageError.message || 'storage cleanup failed'}.`,
+          variant: 'destructive',
+        });
+        return;
+      }
+      toast({ title: 'Document deleted', description: `"${doc.file_name}" was removed from this project.` });
     } catch (err) {
       toast({ title: 'Delete failed', description: errorMessage(err), variant: 'destructive' });
     } finally {

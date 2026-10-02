@@ -14,7 +14,7 @@ import { ProjectTemplateLibrary } from '@/components/admin/ProjectTemplateLibrar
 import { ProjectDocumentManager } from '@/components/admin/ProjectDocumentManager';
 import { AdminNotificationCenter } from '@/components/admin/AdminNotificationCenter';
 import { getProjectPlaceholder, withFallback } from '@/lib/placeholders';
-import type { Project, ProjectImage, ProjectExpenseItem, ProjectTemplate } from '@/lib/types';
+import type { Project, ProjectImage, ProjectTemplate } from '@/lib/types';
 
 export default function AdminProjects() {
   const [projects, setProjects] = useState<Project[]>([]);
@@ -49,7 +49,6 @@ export default function AdminProjects() {
     completion_date: '',
     area_size: '',
     estimated_budget: '',
-    actual_expenses: '',
   });
 
   useEffect(() => { fetchProjects(); }, []);
@@ -62,45 +61,23 @@ export default function AdminProjects() {
   };
 
   const resetForm = () => {
-    setForm({ title: '', client_name: '', service_type: '', category: '', location: '', description: '', materials_used: '', challenge: '', solution: '', results: '', featured: false, is_active: true, project_date: '', completion_date: '', area_size: '', estimated_budget: '', actual_expenses: '' });
+    setForm({ title: '', client_name: '', service_type: '', category: '', location: '', description: '', materials_used: '', challenge: '', solution: '', results: '', featured: false, is_active: true, project_date: '', completion_date: '', area_size: '', estimated_budget: '' });
     setEditing(null);
     setShowForm(false);
   };
 
-  const handleUpdateProjectBudget = async (
-    projectId: string,
-    estimatedBudget: number,
-    actualExpenses: number,
-    expenseItems: ProjectExpenseItem[]
-  ) => {
-    setProjects((prev) =>
-      prev.map((p) =>
-        p.id === projectId
-          ? {
-              ...p,
-              estimated_budget: estimatedBudget,
-              actual_expenses: actualExpenses,
-              expense_items: expenseItems,
-            }
-          : p
-      )
-    );
-
-    const failure0 = await dbFailure(
-      supabase.from('projects').update({
-        estimated_budget: estimatedBudget,
-        actual_expenses: actualExpenses,
-      }).eq('id', projectId).select('id'),
+  const handleUpdateProjectBudget = async (projectId: string, estimatedBudget: number) => {
+    const failure = await dbFailure(
+      supabase.from('projects').update({ estimated_budget: estimatedBudget }).eq('id', projectId).select('id'),
       { requireRows: true }
     );
-    if (failure0) {
-      // The optimistic change above did not persist: reload the real values.
-      toast({ title: 'Budget not saved', description: failure0, variant: 'destructive' });
-      fetchProjects();
+    if (failure) {
+      toast({ title: 'Budget not saved', description: failure, variant: 'destructive' });
+      await fetchProjects();
       return;
     }
-
-    toast({ title: 'Project budget & expenditures updated' });
+    setProjects((prev) => prev.map((p) => p.id === projectId ? { ...p, estimated_budget: estimatedBudget } : p));
+    toast({ title: 'Project budget updated' });
   };
 
   const handleApplyTemplate = (template: ProjectTemplate) => {
@@ -113,7 +90,6 @@ export default function AdminProjects() {
       materials_used: template.default_materials,
       area_size: template.default_area_size,
       estimated_budget: String(template.default_estimated_budget),
-      actual_expenses: prev.actual_expenses || '0',
     }));
     setShowForm(true);
     toast({
@@ -131,7 +107,6 @@ export default function AdminProjects() {
       project_date: form.project_date || null,
       completion_date: form.completion_date || null,
       estimated_budget: form.estimated_budget ? Number(form.estimated_budget) : null,
-      actual_expenses: form.actual_expenses ? Number(form.actual_expenses) : null,
       display_order: editing ? editing.display_order : projects.length + 1,
     };
 
@@ -182,7 +157,6 @@ export default function AdminProjects() {
       completion_date: project.completion_date || '',
       area_size: project.area_size || '',
       estimated_budget: project.estimated_budget ? String(project.estimated_budget) : '',
-      actual_expenses: project.actual_expenses ? String(project.actual_expenses) : '',
     });
     setShowForm(true);
   };
@@ -594,10 +568,6 @@ export default function AdminProjects() {
                 <div>
                   <label className="block text-[11px] font-semibold text-gray-500 mb-1">Estimated Budget (KES)</label>
                   <input type="number" placeholder="e.g. 450000" value={form.estimated_budget} onChange={(e) => setForm({ ...form, estimated_budget: e.target.value })} className="input text-xs font-mono" />
-                </div>
-                <div>
-                  <label className="block text-[11px] font-semibold text-gray-500 mb-1">Actual Expenses (KES)</label>
-                  <input type="number" placeholder="e.g. 420000" value={form.actual_expenses} onChange={(e) => setForm({ ...form, actual_expenses: e.target.value })} className="input text-xs font-mono" />
                 </div>
               </div>
 

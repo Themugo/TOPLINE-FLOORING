@@ -47,7 +47,7 @@ for (const required of ['storage_path: string;', 'mime_type: string;', 'file_siz
 
 const manifest = read('supabase/MIGRATION_MANIFEST.md');
 if (!manifest.includes(migration)) fail.push('Migration manifest missing canonical project document migration.');
-if (!manifest.includes('contains 95 uniquely timestamped active migrations')) fail.push('Migration manifest count is stale.');
+if (!manifest.includes('contains 101 uniquely timestamped active migrations')) fail.push('Migration manifest count is stale.');
 if (fs.existsSync(path.join(root, 'supabase/migrations/20260930190000_project_document_vault_360.sql')))
   fail.push('Redundant duplicate project document vault migration still exists.');
 
