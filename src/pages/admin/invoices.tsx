@@ -98,7 +98,7 @@ export default function AdminInvoices() {
   };
 
   return (
-    <AdminLayout title="Invoices">
+    <AdminLayout title="Invoices" subtitle="Create invoices, track balances and record customer payments." >
       <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="flex gap-6">
           <div>
@@ -111,7 +111,7 @@ export default function AdminInvoices() {
           </div>
         </div>
         <button onClick={() => setShowCreate(true)} className="btn-primary flex items-center gap-2 w-fit">
-          <Plus className="w-4 h-4" /> New Invoice
+          <Plus className="w-4 h-4" /> New invoice
         </button>
       </div>
 
@@ -121,7 +121,7 @@ export default function AdminInvoices() {
         <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
           <FileText className="w-10 h-10 text-gray-300 mx-auto mb-3" />
           <p className="text-navy-500 mb-4">No invoices yet.</p>
-          <button onClick={() => setShowCreate(true)} className="btn-primary">Create Your First Invoice</button>
+          <button onClick={() => setShowCreate(true)} className="btn-primary">Create your first invoice</button>
         </div>
       ) : (
         <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
@@ -163,10 +163,10 @@ export default function AdminInvoices() {
                       </td>
                       <td className="px-6 py-4 text-sm text-navy-400">{formatDateTime(inv.created_at)}</td>
                       <td className="px-6 py-4 flex items-center gap-1">
-                        <button onClick={() => setSelected(inv)} className="p-2 text-navy-500 hover:text-primary-600" title="Manage">
+                        <button onClick={() => setSelected(inv)} className="p-2 text-navy-500 hover:text-primary-600" title="Open invoice">
                           <FileText className="w-4 h-4" />
                         </button>
-                        <button onClick={() => handleDownloadPdf(inv)} className="p-2 text-navy-500 hover:text-primary-600" title="Download PDF">
+                        <button onClick={() => handleDownloadPdf(inv)} className="p-2 text-navy-500 hover:text-primary-600" title="Download invoice PDF">
                           <Download className="w-4 h-4" />
                         </button>
                       </td>
@@ -183,7 +183,7 @@ export default function AdminInvoices() {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50" onClick={() => setShowCreate(false)}>
           <div className="bg-white rounded-xl max-w-lg w-full p-6 max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
             <div className="flex justify-between items-center mb-4">
-              <h2 className="font-semibold text-lg text-navy-900">New Invoice</h2>
+              <h2 className="font-semibold text-lg text-navy-900">New invoice</h2>
               <button onClick={() => setShowCreate(false)}><X className="w-5 h-5 text-navy-400" /></button>
             </div>
             <form onSubmit={handleCreate} className="space-y-3">
@@ -262,6 +262,7 @@ function InvoiceDetail({
   };
 
   const handleRemoveItem = async (itemId: string) => {
+    if (!confirm('Remove this charge from the invoice?')) return;
     try {
       await removeInvoiceItem(current.id, itemId);
     } catch {
@@ -272,14 +273,22 @@ function InvoiceDetail({
   const handleRecordPayment = async (e: React.FormEvent) => {
     e.preventDefault();
     const amount = Number(payment.amount);
-    if (!amount || amount <= 0) {
+    if (!Number.isFinite(amount) || amount <= 0) {
       toast({ title: 'Enter a valid payment amount', variant: 'destructive' });
+      return;
+    }
+    if (balance <= 0) {
+      toast({ title: 'This invoice is already paid', variant: 'destructive' });
+      return;
+    }
+    if (amount > balance) {
+      toast({ title: 'Payment is higher than the amount owing', description: `Maximum payment is ${formatKES(balance)}.`, variant: 'destructive' });
       return;
     }
     setSavingPayment(true);
     try {
       await recordPayment(current.id, amount, payment.method, payment.reference || undefined);
-      toast({ title: 'Payment recorded' });
+      toast({ title: 'Payment recorded', description: 'The invoice balance and status have been refreshed.' });
       setPayment({ amount: '', method: 'cash', reference: '' });
     } catch {
       toast({ title: 'Failed to record payment', variant: 'destructive' });

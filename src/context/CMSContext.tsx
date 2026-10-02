@@ -1,7 +1,7 @@
 /* eslint-disable react-refresh/only-export-components */
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import type { CMSContentStore, CMSGroupKey } from '@/lib/cms-types';
-import { EMPTY_CMS_STORE } from '@/lib/cms-defaults';
+import { DEFAULT_CMS_STORE } from '@/lib/cms-defaults';
 import { fetchCMSContentStore, updateCMSGroup, invalidateCMSCache } from '@/lib/cms-service';
 import { applyPrimaryColorRamp } from '@/lib/theme-engine';
 
@@ -17,7 +17,7 @@ interface CMSContextType {
 const CMSContext = createContext<CMSContextType | undefined>(undefined);
 
 export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [cms, setCms] = useState<CMSContentStore>(EMPTY_CMS_STORE);
+  const [cms, setCms] = useState<CMSContentStore>(DEFAULT_CMS_STORE);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -46,7 +46,7 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const getGroup = useCallback(
     <K extends CMSGroupKey>(key: K): CMSContentStore[K] => {
-      return cms[key] || EMPTY_CMS_STORE[key];
+      return cms[key] || DEFAULT_CMS_STORE[key];
     },
     [cms]
   );
@@ -98,10 +98,10 @@ export function useCMS() {
   if (!context) {
     // Graceful fallback for non-wrapped environments or unit tests
     return {
-      cms: EMPTY_CMS_STORE,
+      cms: DEFAULT_CMS_STORE,
       loading: false,
       error: null,
-      getGroup: <K extends CMSGroupKey>(key: K) => EMPTY_CMS_STORE[key],
+      getGroup: <K extends CMSGroupKey>(key: K) => DEFAULT_CMS_STORE[key],
       updateGroup: async () => {},
       refetch: async () => {},
     };

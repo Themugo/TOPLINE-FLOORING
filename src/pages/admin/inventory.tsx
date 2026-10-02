@@ -82,7 +82,7 @@ export default function AdminInventory() {
   if (loading) return <AdminLayout title="Inventory"><div className="text-center py-12 text-navy-400">Loading inventory...</div></AdminLayout>;
 
   return (
-    <AdminLayout title="Inventory Management">
+    <AdminLayout title="Inventory" subtitle="See stock levels, handle low-stock alerts and record stock changes safely.">
       {/* Stats */}
       <div className="grid sm:grid-cols-4 gap-4 mb-8">
         <div className="bg-white rounded-xl p-4 border border-gray-200 shadow-sm">

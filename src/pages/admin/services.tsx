@@ -109,7 +109,7 @@ export default function AdminServices() {
   };
 
   const handleDelete = async (service: Service) => {
-    if (!confirm(`Delete "${service.name}"? This cannot be undone.`)) return;
+    if (!confirm(`Remove "${service.name}" from the service catalogue?`)) return;
     try {
       await deleteService(service.id);
       toast({ title: 'Service deleted' });
@@ -121,20 +121,24 @@ export default function AdminServices() {
   const toggleActive = async (service: Service) => {
     try {
       await updateService(service.id, { is_active: !service.is_active });
+      toast({
+        title: service.is_active ? 'Service hidden from website' : 'Service published on website',
+        description: service.is_active ? 'Customers will no longer see this service.' : 'Customers can now see this service.',
+      });
     } catch (err) {
       toast({ title: 'Failed to update service', description: describeError(err), variant: 'destructive' });
     }
   };
 
   return (
-    <AdminLayout title="Services">
+    <AdminLayout title="Services" subtitle="Manage the services customers see on the website and use when requesting work.">
       <div className="mb-6 flex items-center justify-between">
         <p className="text-sm text-gray-500">
-          Manage the services shown on your homepage and Services page - photos, descriptions, and feature lists.
+          Manage the services shown on your website. Keep the name, photo, description and customer-facing benefits clear.
         </p>
         <button onClick={openCreate} className="btn-primary flex items-center gap-2 flex-shrink-0">
           <Plus className="w-4 h-4" />
-          Add Service
+          Add service
         </button>
       </div>
 
@@ -149,7 +153,7 @@ export default function AdminServices() {
       ) : services.length === 0 ? (
         <div className="bg-white rounded-xl p-12 border border-gray-200 text-center">
           <p className="text-gray-500 mb-4">No services yet.</p>
-          <button onClick={openCreate} className="btn-primary">Add Your First Service</button>
+          <button onClick={openCreate} className="btn-primary">Add your first service</button>
         </div>
       ) : (
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -190,7 +194,7 @@ export default function AdminServices() {
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={() => setShowForm(false)}>
           <div className="bg-white rounded-xl max-w-lg w-full p-6 max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-4">
-              <h2 className="font-display font-bold text-lg text-navy-900">{editing ? 'Edit Service' : 'Add Service'}</h2>
+              <h2 className="font-display font-bold text-lg text-navy-900">{editing ? 'Edit Service' : 'Add service'}</h2>
               <button onClick={() => setShowForm(false)}><X className="w-5 h-5 text-gray-400" /></button>
             </div>
             <form onSubmit={handleSubmit} className="space-y-3">
@@ -199,7 +203,7 @@ export default function AdminServices() {
               <textarea required placeholder="Full description" className="input min-h-[100px]" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
               <ImageUpload label="Service Photo" value={form.image_url} onChange={(url) => setForm({ ...form, image_url: url })} folder="services" />
               <textarea
-                placeholder={'Features (one per line)\ne.g.\nCertified installers\n10-year warranty'}
+                placeholder={'Features (one per line)\ne.g.\nSite preparation\nProfessional installation'}
                 className="input min-h-[80px]"
                 value={form.features}
                 onChange={(e) => setForm({ ...form, features: e.target.value })}
@@ -209,7 +213,7 @@ export default function AdminServices() {
                 Visible on site
               </label>
               <button type="submit" disabled={saving} className="btn-primary w-full">
-                {saving ? 'Saving...' : editing ? 'Save Changes' : 'Add Service'}
+                {saving ? 'Saving...' : editing ? 'Save Changes' : 'Add service'}
               </button>
             </form>
           </div>

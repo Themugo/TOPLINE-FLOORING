@@ -8,7 +8,15 @@ export function getActiveProductVariants(product: Product): ProductVariant[] {
 
 export function getDefaultProductVariant(product: Product): ProductVariant | undefined {
   const variants = getActiveProductVariants(product);
-  return variants.find((variant) => variant.is_default) || variants[0];
+  // Prefer the configured default only when it can actually be purchased.
+  // If that option is temporarily out of stock, automatically select the
+  // first in-stock active option so catalogue cards remain actionable.
+  return (
+    variants.find((variant) => variant.is_default && variant.stock_quantity > 0) ||
+    variants.find((variant) => variant.stock_quantity > 0) ||
+    variants.find((variant) => variant.is_default) ||
+    variants[0]
+  );
 }
 
 export function getProductUnitPrice(product: Product, variant?: ProductVariant): number {

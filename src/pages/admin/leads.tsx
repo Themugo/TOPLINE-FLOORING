@@ -52,7 +52,7 @@ export default function AdminLeads() {
   };
 
   return (
-    <AdminLayout title="Leads">
+    <AdminLayout title="Sales & Enquiries" subtitle="Keep new customer enquiries moving from first contact to the next action.">
       {showForm ? (
         <LeadForm
           lead={editingLead || undefined}

@@ -275,7 +275,7 @@ export const DEFAULT_CMS_STORE: CMSContentStore = {
   contact: {
     header: {
       title: 'Get In Touch',
-      subtitle: 'Have a project in mind? Speak with our surface specialists today.',
+      subtitle: 'Have a project in mind? Speak with our team today.',
     },
     offices: [],
     map_settings: {
@@ -455,23 +455,3 @@ export const DEFAULT_CMS_STORE: CMSContentStore = {
     layout_style: 'classic',
   },
 };
-
-
-/**
- * Structurally compatible empty CMS state. It deliberately contains no business
- * claims, sample records, fictional locations or seeded content. Runtime CMS
- * reads use this only as an empty UI shape; persisted Supabase content remains
- * the sole source of truth.
- */
-function emptyCMSValue(value: unknown): unknown {
-  if (Array.isArray(value)) return [];
-  if (typeof value === 'string') return '';
-  if (typeof value === 'number') return 0;
-  if (typeof value === 'boolean') return false;
-  if (value && typeof value === 'object') {
-    return Object.fromEntries(Object.entries(value).map(([key, child]) => [key, emptyCMSValue(child)]));
-  }
-  return value;
-}
-
-export const EMPTY_CMS_STORE = emptyCMSValue(DEFAULT_CMS_STORE) as CMSContentStore;

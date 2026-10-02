@@ -1,6 +1,6 @@
 import { supabase } from './supabase';
 import type { CMSContentStore, CMSGroupKey } from './cms-types';
-import { EMPTY_CMS_STORE } from './cms-defaults';
+import { DEFAULT_CMS_STORE } from './cms-defaults';
 
 let cmsStoreCache: CMSContentStore | null = null;
 let cmsFetchPromise: Promise<CMSContentStore> | null = null;
@@ -31,7 +31,7 @@ export async function fetchCMSContentStore(): Promise<CMSContentStore> {
         throw new Error(`CMS content could not be loaded from Supabase: ${error.message}`);
       }
 
-      const mergedStore: CMSContentStore = JSON.parse(JSON.stringify(EMPTY_CMS_STORE));
+      const mergedStore: CMSContentStore = JSON.parse(JSON.stringify(DEFAULT_CMS_STORE));
 
       if (dbSettings && dbSettings.length > 0) {
         dbSettings.forEach((row) => {
@@ -85,7 +85,9 @@ export async function updateCMSGroup<K extends CMSGroupKey>(
   groupKey: K,
   groupData: CMSContentStore[K]
 ): Promise<CMSContentStore[K]> {
-  if (!supabase) throw new Error('CMS database is not configured');
+  if (!supabase) {
+    throw new Error('CMS database is not configured');
+  }
 
   const { error } = await supabase.from('site_settings').upsert(
     {
@@ -95,10 +97,15 @@ export async function updateCMSGroup<K extends CMSGroupKey>(
     },
     { onConflict: 'setting_key' }
   );
-  if (error) throw new Error(`CMS content could not be saved to Supabase: ${error.message}`);
 
-  // Update local cache only after persistence succeeds.
-  if (!cmsStoreCache) cmsStoreCache = JSON.parse(JSON.stringify(EMPTY_CMS_STORE));
+  if (error) {
+    throw new Error(`CMS content could not be saved to Supabase: ${error.message}`);
+  }
+
+  // Update the local cache only after the database confirms persistence.
+  if (!cmsStoreCache) {
+    cmsStoreCache = JSON.parse(JSON.stringify(DEFAULT_CMS_STORE));
+  }
   cmsStoreCache[groupKey] = groupData;
   return groupData;
 }

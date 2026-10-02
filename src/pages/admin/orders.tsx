@@ -15,6 +15,7 @@ export default function AdminOrders() {
   const { page, setPage, limit, total, totalPages, from, to, setTotal } = usePagination(20);
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [order360, setOrder360] = useState<OrderOperations360 | null>(null);
@@ -22,6 +23,7 @@ export default function AdminOrders() {
 
   const fetchOrders = useCallback(async () => {
     setLoading(true);
+    setLoadError(null);
     let query = supabase
       .from('orders')
       .select('*', { count: 'exact' })
@@ -35,6 +37,7 @@ export default function AdminOrders() {
     const { data, count, error } = await query;
     if (error) {
       console.error('Failed to fetch orders:', error);
+      setLoadError(error.message || 'Could not load orders.');
     } else {
       setOrders(data || []);
       setTotal(count || 0);
@@ -62,7 +65,12 @@ export default function AdminOrders() {
 
   const reconcilePayment = async () => {
     if (!selectedOrder) return;
-    try { await reconcileOrderPayment(selectedOrder.id); toast({ title: 'Payment totals reconciled' }); await refreshOrder360(); }
+    try {
+      await reconcileOrderPayment(selectedOrder.id);
+      toast({ title: 'Payment totals reconciled', description: 'The order has been refreshed from the latest financial records.' });
+      await refreshOrder360();
+      await fetchOrders();
+    }
     catch (error) { toast({ title: 'Payment reconciliation unavailable', description: error instanceof Error ? error.message : 'Finance permission is required', variant: 'destructive' }); }
   };
 
@@ -75,8 +83,11 @@ export default function AdminOrders() {
       toast({ title: 'Failed to update order status', variant: 'destructive' });
       return;
     }
-    toast({ title: 'Order status updated' });
-    fetchOrders();
+    toast({ title: 'Order status updated', description: 'The order details have been refreshed.' });
+    await fetchOrders();
+    if (selectedOrder?.id === orderId) {
+      await refreshOrder360();
+    }
   };
 
   const statusColors: Record<string, string> = {
@@ -88,21 +99,30 @@ export default function AdminOrders() {
   };
 
   return (
-    <AdminLayout title="Orders">
+    <AdminLayout title="Orders" subtitle="See what customers ordered, what needs action, and where each order stands.">
       <div className="mb-6 flex items-center gap-4">
         <div className="relative flex-1 max-w-sm">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search by order ID, customer name, or email..."
+            placeholder="Search orders or customers..."
             className="input pl-9"
           />
+          </div>
+          <button onClick={() => void fetchOrders()} disabled={loading} className="btn-secondary p-2" title="Refresh orders" aria-label="Refresh orders">
+            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+          </button>
         </div>
-      </div>
 
       {loading ? (
-        <div className="text-center py-12">Loading...</div>
+        <div className="text-center py-12">Loading orders...</div>
+      ) : loadError ? (
+        <div className="bg-red-50 border border-red-200 rounded-xl p-6 text-center">
+          <p className="text-sm font-semibold text-red-700 mb-1">Could not load orders</p>
+          <p className="text-xs text-red-600 mb-3">{loadError}</p>
+          <button onClick={() => void fetchOrders()} className="btn-secondary text-xs">Retry</button>
+        </div>
       ) : orders.length === 0 ? (
         <div className="bg-white rounded-xl p-12 border border-gray-200 text-center">
           <p className="text-gray-500">{search ? 'No orders match your search' : 'No orders yet'}</p>
@@ -169,10 +189,10 @@ export default function AdminOrders() {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
           <div className="bg-white rounded-2xl max-w-4xl w-full p-6 max-h-[92vh] overflow-y-auto shadow-2xl">
             <div className="flex justify-between items-start gap-4 mb-6">
-              <div><p className="text-xs uppercase tracking-wider text-gray-500">Order operations 360</p><h2 className="font-semibold text-xl">{selectedOrder.id.slice(0, 8).toUpperCase()}</h2><p className="text-sm text-gray-500 mt-1">{selectedOrder.customer_name} · {selectedOrder.customer_phone}</p></div>
+              <div><p className="text-xs uppercase tracking-wider text-gray-500">Order details</p><h2 className="font-semibold text-xl">{selectedOrder.id.slice(0, 8).toUpperCase()}</h2><p className="text-sm text-gray-500 mt-1">{selectedOrder.customer_name} · {selectedOrder.customer_phone}</p></div>
               <div className="flex items-center gap-2"><button onClick={() => void refreshOrder360()} className="p-2 rounded-lg border" title="Refresh"><RefreshCw className={`w-4 h-4 ${detailLoading ? 'animate-spin' : ''}`} /></button><button onClick={() => { setSelectedOrder(null); setOrder360(null); }} className="p-2 rounded-lg border"><X className="w-5 h-5" /></button></div>
             </div>
-            {detailLoading && !order360 ? <div className="py-16 text-center text-gray-500">Loading operational snapshot…</div> : order360 ? <>
+            {detailLoading && !order360 ? <div className="py-16 text-center text-gray-500">Loading order details…</div> : order360 ? <>
               <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-6">
                 <div className="rounded-xl border p-4"><p className="text-xs text-gray-500">Order</p><p className="font-semibold mt-1">{order360.order.order_number || selectedOrder.id.slice(0,8).toUpperCase()}</p></div>
                 <div className="rounded-xl border p-4"><p className="text-xs text-gray-500">Status</p><p className="font-semibold mt-1 capitalize">{order360.order.status}</p></div>
@@ -184,7 +204,7 @@ export default function AdminOrders() {
                 <section className="rounded-xl border p-5"><h3 className="font-semibold flex items-center gap-2"><PackageCheck className="w-4 h-4" /> Items</h3><div className="mt-3 divide-y">{order360.items.map(item => <div key={item.id} className="py-2 flex justify-between gap-4 text-sm"><span>{item.product_name} × {item.quantity}</span><span>{formatKES(item.unit_price * item.quantity)}</span></div>)}</div></section>
                 <section className="rounded-xl border p-5"><h3 className="font-semibold flex items-center gap-2"><Truck className="w-4 h-4" /> Fulfillment</h3><div className="mt-3 space-y-3">{order360.deliveries.length ? order360.deliveries.map(d => <div key={d.id} className="rounded-lg bg-gray-50 p-3 text-sm"><div className="flex justify-between"><span>{d.tracking_number || 'No tracking number'}</span><span className="font-medium capitalize">{d.status.replace(/_/g,' ')}</span></div><p className="text-xs text-gray-500 mt-1">{d.scheduled_date || 'Unscheduled'}{d.driver_name ? ` · ${d.driver_name}` : ''}</p></div>) : <p className="text-sm text-gray-500">No delivery record yet.</p>}</div></section>
                 <section className="rounded-xl border p-5"><h3 className="font-semibold flex items-center gap-2"><ShieldCheck className="w-4 h-4" /> Reservations</h3><div className="mt-3 space-y-2">{order360.inventory_access && order360.reservations.length ? order360.reservations.map(r => <div key={r.id} className="text-sm flex justify-between"><span>{r.variant_id ? 'Variant stock' : 'Product stock'} × {r.quantity}</span><span className="capitalize">{r.status}</span></div>) : <p className="text-sm text-gray-500">{order360.inventory_access ? 'No reservations.' : 'Inventory details restricted.'}</p>}</div></section>
-                <section className="rounded-xl border p-5"><h3 className="font-semibold flex items-center gap-2"><CreditCard className="w-4 h-4" /> Finance</h3>{order360.finance_access ? <><div className="flex gap-2 mt-3"><button onClick={() => void reconcilePayment()} className="btn-secondary">Reconcile totals</button></div><div className="mt-4 space-y-2">{order360.payments.length ? order360.payments.map(p => <div key={p.id} className="text-sm flex justify-between"><span>{p.method} · {p.status}</span><span>{formatKES(p.amount)}</span></div>) : <p className="text-sm text-gray-500">No payment transactions.</p>}{order360.refunds.length > 0 && <p className="text-sm text-amber-700 pt-2">Refund activity: {formatKES(order360.refunded_amount)}</p>}</div></> : <p className="text-sm text-gray-500 mt-3">Payment details are restricted to finance-authorized staff.</p>}</section>
+                <section className="rounded-xl border p-5"><h3 className="font-semibold flex items-center gap-2"><CreditCard className="w-4 h-4" /> Finance</h3>{order360.finance_access ? <><div className="flex gap-2 mt-3"><button onClick={() => void reconcilePayment()} className="btn-secondary">Refresh payment totals</button></div><div className="mt-4 space-y-2">{order360.payments.length ? order360.payments.map(p => <div key={p.id} className="text-sm flex justify-between"><span>{p.method} · {p.status}</span><span>{formatKES(p.amount)}</span></div>) : <p className="text-sm text-gray-500">No payment transactions.</p>}{order360.refunds.length > 0 && <p className="text-sm text-amber-700 pt-2">Refund activity: {formatKES(order360.refunded_amount)}</p>}</div></> : <p className="text-sm text-gray-500 mt-3">Payment details are restricted to finance-authorized staff.</p>}</section>
               </div>
               <div className="mt-6 rounded-xl bg-gray-50 p-4 text-sm"><p className="font-medium">Delivery address</p><p className="text-gray-600 mt-1">{order360.order.delivery_address || 'No delivery address recorded.'}</p></div>
             </> : <div className="py-12 text-center text-gray-500">No operational snapshot available.</div>}

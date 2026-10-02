@@ -25,6 +25,30 @@ export interface CustomerPortalData {
   orders: PortalOrder[];
 }
 
+export async function registerCustomerAccount(input: { name: string; email: string; phone: string; company?: string; password: string }) {
+  const { data, error } = await supabase.auth.signUp({
+    email: input.email.trim().toLowerCase(),
+    password: input.password,
+    options: {
+      emailRedirectTo: `${window.location.origin}/portal`,
+      data: {
+        topline_customer_registration: true,
+        name: input.name.trim(),
+        phone: input.phone.trim(),
+        company: input.company?.trim() || null,
+      },
+    },
+  });
+  if (error) throw error;
+  return data;
+}
+
+export async function signInCustomer(email: string, password: string) {
+  const { data, error } = await supabase.auth.signInWithPassword({ email: email.trim().toLowerCase(), password });
+  if (error) throw error;
+  return data;
+}
+
 export async function requestCustomerMagicLink(email: string) {
   const { error } = await supabase.auth.signInWithOtp({
     email: email.trim().toLowerCase(),

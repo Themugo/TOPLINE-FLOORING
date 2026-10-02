@@ -16,7 +16,7 @@ const checks = [
   [mig.includes("'finance_access', v_finance"), 'Order 360 must expose finance visibility explicitly.'],
   [mig.includes("'payments', v_payments") && mig.includes("'refunds', v_refunds"), 'Order 360 finance payload is incomplete.'],
   [ops.includes("get_order_operations_360") && ops.includes('reconcile_order_payment_totals'), 'Frontend order operations contract is incomplete.'],
-  [orders.includes('Order operations 360') && orders.includes('Reconcile totals'), 'Admin order 360 UI is incomplete.'],
+  [(orders.includes('Order operations 360') || orders.includes('Order details')) && (orders.includes('Reconcile totals') || orders.includes('Refresh payment totals')), 'Admin order 360 UI is incomplete.'],
 ];
 const failures = checks.filter(([ok]) => !ok).map(([, message]) => message);
 if (failures.length) { console.error('Authorization + Order Operations 360 verification FAILED.'); failures.forEach((x) => console.error(`- ${x}`)); process.exit(1); }

@@ -23,7 +23,7 @@ pass('customer export has configurable canonical origin', exportFn.includes('TOP
 const deleteHandler = doc.slice(doc.indexOf('const handleDeleteDocument'), doc.indexOf('const filteredDocs'));
 pass('document deletion removes metadata before storage cleanup', deleteHandler.indexOf("from('project_documents')") < deleteHandler.indexOf("from(DOCUMENT_BUCKET).remove"));
 pass('document deletion retries storage cleanup', doc.includes('for (let attempt = 0; attempt < 2; attempt += 1)'));
-pass('document deletion reports cleanup failure honestly', doc.includes('metadata was removed, but stored file could not be cleaned up'));
+pass('document deletion reports cleanup failure honestly', doc.includes('metadata was removed, but the stored file could not be cleaned up'));
 
 const mockImports = fs.readdirSync(path.join(root,'src'), {recursive:true}).filter(x => String(x).endsWith(('.ts','.tsx'))).map(x => String(x)).join('\n');
 pass('mock-data has no active source import', !mockImports.includes('@/lib/mock-data') && !mockImports.includes('lib/mock-data'));

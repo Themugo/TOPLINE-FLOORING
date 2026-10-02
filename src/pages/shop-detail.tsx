@@ -117,7 +117,7 @@ export default function ShopDetail() {
   );
 
   const handleAddToCart = () => {
-    if (!product) return;
+    if (!product || !isProductPurchasable(product, selectedVariant)) return;
     addItem(product, selectedVariant);
     if (qty > 1) {
       for (let i = 1; i < qty; i++) addItem(product, selectedVariant);

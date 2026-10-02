@@ -61,7 +61,7 @@ export default function AdminQuotations() {
 
   const handleConvertToOrder = async (q: Quotation) => {
     if (!q.items || q.items.length === 0) {
-      toast({ title: 'Add line items before converting to an order', variant: 'destructive' });
+      toast({ title: 'Add at least one item before converting this quotation to an order', variant: 'destructive' });
       return;
     }
     if (!confirm(`Convert quotation ${q.quotation_number || ''} into an order and project?`)) return;
@@ -73,7 +73,7 @@ export default function AdminQuotations() {
         title: 'Quotation converted',
         description: `Order and project created for ${q.name}`,
       });
-      refetch();
+      await refetch();
       setSelected(null);
     } catch (error) {
       toast({ title: 'Failed to convert quotation', description: error instanceof Error ? error.message : undefined, variant: 'destructive' });
@@ -84,15 +84,15 @@ export default function AdminQuotations() {
     try {
       const result = await createLeadFromQuotation(q.id);
       if (!result.success) throw new Error(result.error || 'Could not create lead');
-      toast({ title: 'Lead created', description: 'Now tracked in CRM / Leads' });
-      refetch();
+      toast({ title: 'Follow-up created', description: 'The customer is now in your follow-up list.' });
+      await refetch();
     } catch {
       toast({ title: 'Failed to create lead', variant: 'destructive' });
     }
   };
 
   return (
-    <AdminLayout title="Quotations">
+    <AdminLayout title="Quotations" subtitle="Prepare clear quotes, follow up with customers, and turn accepted quotes into orders.">
       {loading ? (
         <div className="text-center py-12">Loading...</div>
       ) : quotations.length === 0 ? (
@@ -139,14 +139,14 @@ export default function AdminQuotations() {
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-500">{formatDateTime(q.created_at)}</td>
                   <td className="px-6 py-4 flex items-center gap-1">
-                    <button onClick={() => setSelected(q)} className="p-2 text-gray-600 hover:text-gray-900" title="View / edit">
+                    <button onClick={() => setSelected(q)} className="p-2 text-gray-600 hover:text-gray-900" title="Open quotation">
                       <Eye className="w-4 h-4" />
                     </button>
                     <button onClick={() => handleDownloadPdf(q)} className="p-2 text-gray-600 hover:text-primary-600" title="Download PDF">
                       <Download className="w-4 h-4" />
                     </button>
                     {!q.lead_id && (
-                      <button onClick={() => handleCreateLead(q)} className="p-2 text-gray-600 hover:text-primary-600" title="Create CRM Lead">
+                      <button onClick={() => handleCreateLead(q)} className="p-2 text-gray-600 hover:text-primary-600" title="Create follow-up record">
                         <UserPlus className="w-4 h-4" />
                       </button>
                     )}
@@ -205,11 +205,18 @@ function QuotationDetail({
   };
 
   const handleAddItem = async () => {
-    if (!newItem.description.trim()) return;
+    if (!newItem.description.trim()) {
+      toast({ title: 'Item description is required', variant: 'destructive' });
+      return;
+    }
+    const quantity = Number(newItem.quantity);
+    const unit_price = Number(newItem.unit_price);
+    if (!Number.isFinite(quantity) || quantity <= 0 || !Number.isFinite(unit_price) || unit_price < 0) {
+      toast({ title: 'Check the item quantity and price', variant: 'destructive' });
+      return;
+    }
     setSaving(true);
     try {
-      const quantity = Number(newItem.quantity) || 0;
-      const unit_price = Number(newItem.unit_price) || 0;
       const result = await upsertQuotationItem({
         quotationId: quotation.id, description: newItem.description, quantity, unit: newItem.unit, unitPrice: unit_price,
       });
@@ -228,6 +235,7 @@ function QuotationDetail({
   };
 
   const handleRemoveItem = async (id: string) => {
+    if (!confirm('Remove this item from the quotation?')) return;
     const result = await removeQuotationItem(id);
     if (!result.success) {
       toast({ title: 'Failed to remove item', description: result.error, variant: 'destructive' });
@@ -313,7 +321,7 @@ function QuotationDetail({
           </button>
           {!quotation.lead_id && (
             <button onClick={() => onCreateLead(quotation)} className="btn-secondary flex items-center gap-2 text-sm">
-              <UserPlus className="w-4 h-4" /> Create CRM Lead
+              <UserPlus className="w-4 h-4" /> Create follow-up
             </button>
           )}
           {quotation.status === 'accepted' && (

@@ -1,8 +1,6 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   DollarSign,
-  TrendingUp,
-  TrendingDown,
   Plus,
   Trash2,
   Edit2,
@@ -14,744 +12,160 @@ import {
   Building2,
   X,
 } from 'lucide-react';
-import type { Project, ProjectExpenseItem } from '@/lib/types';
+import type { Project } from '@/lib/types';
 import { supabase } from '@/lib/supabase';
 import { addProjectCostEntry, deleteProjectCostEntry, type CostCategory } from '@/lib/project-costs';
 
 interface ProjectBudgetTrackerProps {
   projects: Project[];
-  onUpdateProjectBudget?: (
-    projectId: string,
-    estimatedBudget: number
-  ) => void;
+  onUpdateProjectBudget?: (projectId: string, estimatedBudget: number) => Promise<void> | void;
   onSelectProject?: (project: Project) => void;
 }
 
-export function ProjectBudgetTracker({
-  projects,
-  onUpdateProjectBudget,
-  onSelectProject,
-}: ProjectBudgetTrackerProps) {
+type CostEntry = {
+  id: string;
+  project_id: string;
+  category: string;
+  description: string;
+  estimated_amount: number | null;
+  actual_amount: number | null;
+  incurred_at: string;
+};
+
+const formatCurrency = (value: number) => new Intl.NumberFormat('en-KE', {
+  style: 'currency', currency: 'KES', maximumFractionDigits: 0,
+}).format(value);
+
+export function ProjectBudgetTracker({ projects, onUpdateProjectBudget, onSelectProject }: ProjectBudgetTrackerProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [varianceFilter, setVarianceFilter] = useState<'all' | 'under' | 'over'>('all');
-  const [activeProjectForExpense, setActiveProjectForExpense] = useState<Project | null>(null);
-
-  // Cost entries are authoritative database records; no browser persistence or sample data.
-  const [projectExpensesMap, setProjectExpensesMap] = useState<Record<string, ProjectExpenseItem[]>>({});
-  const [ledgerLoading, setLedgerLoading] = useState(false);
-  const [ledgerError, setLedgerError] = useState<string | null>(null);
-
-  useEffect(() => {
-    let cancelled = false;
-    async function loadLedger() {
-      if (!projects.length) {
-        setProjectExpensesMap({});
-        return;
-      }
-      setLedgerLoading(true);
-      setLedgerError(null);
-      const { data, error } = await supabase
-        .from('project_cost_entries')
-        .select('id,project_id,category,description,estimated_amount,actual_amount,incurred_at,notes')
-        .in('project_id', projects.map((p) => p.id))
-        .order('incurred_at', { ascending: false });
-      if (cancelled) return;
-      if (error) {
-        setProjectExpensesMap({});
-        setLedgerError(error.message || 'Failed to load project cost ledger');
-      } else {
-        const grouped: Record<string, ProjectExpenseItem[]> = {};
-        for (const row of data || []) {
-          const item: ProjectExpenseItem = {
-            id: row.id,
-            project_id: row.project_id,
-            category: row.category as ProjectExpenseItem['category'],
-            description: row.description,
-            estimated_amount: Number(row.estimated_amount || 0),
-            actual_amount: Number(row.actual_amount || 0),
-            date: row.incurred_at,
-            notes: row.notes || undefined,
-          };
-          (grouped[row.project_id] ||= []).push(item);
-        }
-        setProjectExpensesMap(grouped);
-      }
-      setLedgerLoading(false);
-    }
-    void loadLedger();
-    return () => { cancelled = true; };
-  }, [projects]);
-
-  // Local state for adding/editing expense modal
+  const [entries, setEntries] = useState<CostEntry[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [activeProject, setActiveProject] = useState<Project | null>(null);
   const [showExpenseModal, setShowExpenseModal] = useState(false);
-  const [newCategory, setNewCategory] =
-    useState<ProjectExpenseItem['category']>('materials');
-  const [newDescription, setNewDescription] = useState('');
-  const [newEstimated, setNewEstimated] = useState<number>(0);
-  const [newActual, setNewActual] = useState<number>(0);
-  const [newDate, setNewDate] = useState<string>(new Date().toISOString().split('T')[0]);
-  const [newNotes, setNewNotes] = useState('');
-
-  // Quick edit for estimated total budget
+  const [category, setCategory] = useState<CostCategory>('materials');
+  const [description, setDescription] = useState('');
+  const [estimated, setEstimated] = useState('');
+  const [actual, setActual] = useState('');
+  const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
+  const [saving, setSaving] = useState(false);
   const [editingBudgetId, setEditingBudgetId] = useState<string | null>(null);
-  const [tempBudgetValue, setTempBudgetValue] = useState<number>(0);
+  const [tempBudgetValue, setTempBudgetValue] = useState(0);
 
-  // Computed projects with budget and expenses calculations
-  const budgetData = useMemo(() => {
-    return projects.map((p) => {
-      // Cost ledger is authoritative for actual expenditure. No fabricated fallback data.
-      const items = projectExpensesMap[p.id] || [];
-      const actualExpenses = items.reduce((sum, item) => sum + Number(item.actual_amount || 0), 0);
-      const estimatedBudget =
-        p.estimated_budget !== undefined && p.estimated_budget !== null
-          ? Number(p.estimated_budget)
-          : Number(p.project_value || 0);
+  const loadEntries = useCallback(async () => {
+    if (!projects.length) { setEntries([]); return; }
+    setLoading(true);
+    const { data, error } = await supabase.from('project_cost_entries').select('id,project_id,category,description,estimated_amount,actual_amount,incurred_at').order('incurred_at', { ascending: false });
+    if (!error) setEntries((data || []) as CostEntry[]);
+    setLoading(false);
+  }, [projects.length]);
 
-      // 4. Variance calculation
-      const variance = estimatedBudget - actualExpenses;
-      const isOverBudget = variance < 0;
-      const variancePercentage =
-        estimatedBudget > 0 ? ((variance / estimatedBudget) * 100).toFixed(1) : '0';
-      const utilization =
-        estimatedBudget > 0 ? Math.min(150, Math.round((actualExpenses / estimatedBudget) * 100)) : 0;
+  useEffect(() => { void loadEntries(); }, [loadEntries]);
 
-      return {
-        project: p,
-        items,
-        estimatedBudget,
-        actualExpenses,
-        variance,
-        isOverBudget,
-        variancePercentage,
-        utilization,
-      };
-    });
-  }, [projects, projectExpensesMap]);
-
-  // Overall Financial Summary Totals
-  const totals = useMemo(() => {
-    let totalBudget = 0;
-    let totalActual = 0;
-    let overBudgetCount = 0;
-    let underBudgetCount = 0;
-
-    budgetData.forEach((b) => {
-      totalBudget += b.estimatedBudget;
-      totalActual += b.actualExpenses;
-      if (b.isOverBudget) overBudgetCount++;
-      else underBudgetCount++;
-    });
-
-    const netVariance = totalBudget - totalActual;
-    const overallUtilization =
-      totalBudget > 0 ? Math.round((totalActual / totalBudget) * 100) : 0;
-
+  const budgetData = useMemo(() => projects.map((project) => {
+    const projectEntries = entries.filter((entry) => entry.project_id === project.id);
+    const estimatedBudget = Number(project.estimated_budget ?? project.project_value ?? 0);
+    const actualExpenses = projectEntries.reduce((sum, entry) => sum + Number(entry.actual_amount || 0), 0);
+    const variance = estimatedBudget - actualExpenses;
     return {
-      totalBudget,
-      totalActual,
-      netVariance,
-      overallUtilization,
-      overBudgetCount,
-      underBudgetCount,
+      project,
+      entries: projectEntries,
+      estimatedBudget,
+      actualExpenses,
+      variance,
+      isOverBudget: variance < 0,
+      variancePercentage: estimatedBudget > 0 ? (variance / estimatedBudget) * 100 : 0,
+      utilization: estimatedBudget > 0 ? Math.round((actualExpenses / estimatedBudget) * 100) : 0,
     };
-  }, [budgetData]);
+  }), [projects, entries]);
 
-  // Filtered List
-  const filteredData = useMemo(() => {
-    return budgetData.filter((b) => {
-      const p = b.project;
-      const matchesSearch =
-        !searchQuery ||
-        p.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (p.client_name || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (p.service_type || '').toLowerCase().includes(searchQuery.toLowerCase());
+  const filteredData = budgetData.filter((item) => {
+    const term = searchQuery.toLowerCase();
+    const matchesSearch = !term || [item.project.title, item.project.client_name, item.project.service_type].filter(Boolean).some((value) => String(value).toLowerCase().includes(term));
+    const matchesVariance = varianceFilter === 'all' || (varianceFilter === 'over' ? item.isOverBudget : !item.isOverBudget);
+    return matchesSearch && matchesVariance;
+  });
 
-      const matchesFilter =
-        varianceFilter === 'all' ||
-        (varianceFilter === 'under' && !b.isOverBudget) ||
-        (varianceFilter === 'over' && b.isOverBudget);
+  const totals = budgetData.reduce((sum, item) => ({
+    budget: sum.budget + item.estimatedBudget,
+    actual: sum.actual + item.actualExpenses,
+    over: sum.over + (item.isOverBudget ? 1 : 0),
+  }), { budget: 0, actual: 0, over: 0 });
+  const netVariance = totals.budget - totals.actual;
 
-      return matchesSearch && matchesFilter;
-    });
-  }, [budgetData, searchQuery, varianceFilter]);
-
-  // Format currency helper (KSh / USD)
-  const formatCurrency = (val: number) => {
-    return new Intl.NumberFormat('en-KE', {
-      style: 'currency',
-      currency: 'KES',
-      maximumFractionDigits: 0,
-    }).format(val);
-  };
-
-  // Save budget value edit
-  const handleSaveBudget = (projectId: string) => {
-    setEditingBudgetId(null);
-    const existing = budgetData.find((b) => b.project.id === projectId);
-    if (!existing) return;
-
-    if (onUpdateProjectBudget) {
-      onUpdateProjectBudget(projectId, tempBudgetValue);
-    }
-  };
-
-  // Add new expense line item
-  const handleAddExpense = async () => {
-    if (!activeProjectForExpense || !newDescription.trim()) return;
-
+  const saveBudget = async (projectId: string) => {
+    const value = Math.max(0, tempBudgetValue);
     try {
-      const result = await addProjectCostEntry({
-        projectId: activeProjectForExpense.id,
-        category: newCategory as CostCategory,
-        description: newDescription.trim(),
-        estimatedAmount: Number(newEstimated) || 0,
-        actualAmount: Number(newActual) || 0,
-        incurredAt: newDate,
-        notes: newNotes.trim() || null,
+      await onUpdateProjectBudget?.(projectId, value);
+      setEditingBudgetId(null);
+    } catch { /* parent reports persistence errors */ }
+  };
+
+  const addExpense = async () => {
+    if (!activeProject || !description.trim()) return;
+    setSaving(true);
+    try {
+      await addProjectCostEntry({
+        projectId: activeProject.id,
+        category,
+        description: description.trim(),
+        estimatedAmount: Math.max(0, Number(estimated) || 0),
+        actualAmount: Math.max(0, Number(actual) || 0),
+        incurredAt: date || undefined,
       });
-      const costEntryId = typeof result === 'object' && result && 'cost_entry_id' in result
-        ? String((result as { cost_entry_id: string }).cost_entry_id)
-        : '';
-      const item: ProjectExpenseItem = {
-        id: costEntryId || `pending-${Date.now()}`,
-        project_id: activeProjectForExpense.id,
-        category: newCategory,
-        description: newDescription.trim(),
-        estimated_amount: Number(newEstimated) || 0,
-        actual_amount: Number(newActual) || 0,
-        date: newDate,
-        notes: newNotes.trim() || undefined,
-      };
-      setProjectExpensesMap((prev) => ({
-        ...prev,
-        [activeProjectForExpense.id]: [item, ...(prev[activeProjectForExpense.id] || [])],
-      }));
-      setLedgerError(null);
-    } catch (err) {
-      setLedgerError(err instanceof Error ? err.message : 'Failed to save cost entry');
-      return;
+      setDescription(''); setEstimated(''); setActual('');
+      setShowExpenseModal(false);
+      await loadEntries();
+    } finally {
+      setSaving(false);
     }
-
-    // Reset form
-    setNewDescription('');
-    setNewEstimated(0);
-    setNewActual(0);
-    setNewNotes('');
-    setShowExpenseModal(false);
   };
 
-  // Delete expense item
-  const handleDeleteExpense = async (projectId: string, itemId: string) => {
+  const removeExpense = async (entryId: string) => {
+    if (!confirm('Remove this cost entry?')) return;
     try {
-      await deleteProjectCostEntry(itemId);
-      setProjectExpensesMap((prev) => ({
-        ...prev,
-        [projectId]: (prev[projectId] || []).filter((i) => i.id !== itemId),
-      }));
-      setLedgerError(null);
-    } catch (err) {
-      setLedgerError(err instanceof Error ? err.message : 'Failed to delete cost entry');
-    }
+      await deleteProjectCostEntry(entryId);
+      await loadEntries();
+    } catch { /* database error is handled by the RPC boundary */ }
   };
 
   return (
     <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden flex flex-col mb-6">
-      {/* Module Title Header */}
       <div className="p-4 bg-gray-50/90 border-b border-gray-200 flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <div className="p-2.5 bg-emerald-100 text-emerald-800 rounded-xl">
-            <DollarSign className="w-5 h-5 text-emerald-600" />
-          </div>
+          <div className="p-2.5 bg-emerald-100 text-emerald-800 rounded-xl"><DollarSign className="w-5 h-5 text-emerald-600" /></div>
           <div>
-            <h3 className="font-bold text-sm text-gray-900 flex items-center gap-2">
-              Project Cost & Budget Variance Tracking
-              <span className="text-[10px] bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded-full">
-                {projects.length} Tracked Accounts
-              </span>
-            </h3>
-            <p className="text-xs text-gray-500">
-              Record actual site expenditures vs estimated project budgets and track cost variances.
-            </p>
+            <h3 className="font-bold text-sm text-gray-900">Project budgets & costs</h3>
+            <p className="text-xs text-gray-500">Actual costs come from the project cost ledger. Nothing is estimated or invented.</p>
           </div>
         </div>
-
-        {/* Financial Overview Cards */}
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => {
-              if (projects.length > 0) {
-                setActiveProjectForExpense(projects[0]);
-                setShowExpenseModal(true);
-              }
-            }}
-            className="px-3.5 py-1.5 bg-primary-600 hover:bg-primary-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-2xs transition-colors"
-          >
-            <Plus className="w-4 h-4" /> Log Expense
-          </button>
-        </div>
+        <button onClick={() => { if (projects[0]) { setActiveProject(projects[0]); setShowExpenseModal(true); } }} className="btn-primary text-xs flex items-center gap-1.5">
+          <Plus className="w-4 h-4" /> Log a cost
+        </button>
       </div>
 
-      {/* 4 Overview Stat Widgets */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 p-4 bg-gray-50/40 border-b border-gray-200">
-        {/* Total Budget */}
-        <div className="bg-white p-3.5 rounded-xl border border-gray-200 shadow-2xs">
-          <div className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1">
-            Total Estimated Budget
-          </div>
-          <div className="text-xl font-black text-gray-900">
-            {formatCurrency(totals.totalBudget)}
-          </div>
-          <div className="text-[10px] text-gray-400 mt-1">Sum of allocated budgets</div>
-        </div>
-
-        {/* Total Actual Expenses */}
-        <div className="bg-white p-3.5 rounded-xl border border-gray-200 shadow-2xs">
-          <div className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1">
-            Total Actual Expenses
-          </div>
-          <div className="text-xl font-black text-slate-800">
-            {formatCurrency(totals.totalActual)}
-          </div>
-          <div className="text-[10px] text-gray-400 mt-1">
-            Utilization: <strong className="text-gray-700">{totals.overallUtilization}%</strong>
-          </div>
-        </div>
-
-        {/* Net Variance */}
-        <div className="bg-white p-3.5 rounded-xl border border-gray-200 shadow-2xs">
-          <div className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1">
-            Net Budget Variance
-          </div>
-          <div
-            className={`text-xl font-black flex items-center gap-1 ${
-              totals.netVariance >= 0 ? 'text-emerald-600' : 'text-rose-600'
-            }`}
-          >
-            {totals.netVariance >= 0 ? (
-              <TrendingDown className="w-5 h-5 text-emerald-500" />
-            ) : (
-              <TrendingUp className="w-5 h-5 text-rose-500" />
-            )}
-            {formatCurrency(Math.abs(totals.netVariance))}
-          </div>
-          <div className="text-[10px] text-gray-500 mt-1">
-            {totals.netVariance >= 0 ? 'Under Allocated Budget' : 'Over Allocated Budget'}
-          </div>
-        </div>
-
-        {/* Health Ratio */}
-        <div className="bg-white p-3.5 rounded-xl border border-gray-200 shadow-2xs">
-          <div className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1">
-            Budget Health Breakdown
-          </div>
-          <div className="flex items-center gap-2 mt-1">
-            <span className="px-2 py-0.5 bg-emerald-100 text-emerald-800 text-xs font-bold rounded-md">
-              {totals.underBudgetCount} Under Budget
-            </span>
-            {totals.overBudgetCount > 0 && (
-              <span className="px-2 py-0.5 bg-rose-100 text-rose-800 text-xs font-bold rounded-md">
-                {totals.overBudgetCount} Over Budget
-              </span>
-            )}
-          </div>
-          <div className="text-[10px] text-gray-400 mt-2 truncate">
-            {totals.overBudgetCount === 0
-              ? 'All projects operating within budget bounds'
-              : 'Requires cost audit & review'}
-          </div>
-        </div>
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 p-4 bg-gray-50/40 border-b border-gray-200">
+        <div className="bg-white p-3.5 rounded-xl border border-gray-200"><div className="text-[11px] font-bold text-gray-500 uppercase tracking-wider">Total budget</div><div className="text-xl font-black text-gray-900 mt-1">{formatCurrency(totals.budget)}</div></div>
+        <div className="bg-white p-3.5 rounded-xl border border-gray-200"><div className="text-[11px] font-bold text-gray-500 uppercase tracking-wider">Recorded costs</div><div className="text-xl font-black text-slate-800 mt-1">{formatCurrency(totals.actual)}</div></div>
+        <div className="bg-white p-3.5 rounded-xl border border-gray-200"><div className="text-[11px] font-bold text-gray-500 uppercase tracking-wider">Budget position</div><div className={`text-xl font-black mt-1 ${netVariance >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>{formatCurrency(Math.abs(netVariance))}</div><div className="text-[10px] text-gray-500 mt-1">{netVariance >= 0 ? 'remaining' : 'over budget'} · {totals.over} project(s) over</div></div>
       </div>
 
-      {/* Filter Toolbar */}
-      <div className="p-3 bg-white border-b border-gray-100 flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-2">
-          <div className="relative w-48 sm:w-64">
-            <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-            <input
-              type="text"
-              placeholder="Filter by project title or client..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full text-xs pl-8 pr-3 py-1.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:bg-white focus:outline-none"
-            />
-          </div>
-
-          <div className="flex items-center gap-1 bg-gray-100 p-1 rounded-xl text-xs font-semibold">
-            <button
-              onClick={() => setVarianceFilter('all')}
-              className={`px-2.5 py-1 rounded-lg transition-colors ${
-                varianceFilter === 'all'
-                  ? 'bg-white text-gray-900 shadow-2xs'
-                  : 'text-gray-600 hover:text-gray-900'
-              }`}
-            >
-              All Projects ({projects.length})
-            </button>
-            <button
-              onClick={() => setVarianceFilter('under')}
-              className={`px-2.5 py-1 rounded-lg transition-colors ${
-                varianceFilter === 'under'
-                  ? 'bg-white text-emerald-700 shadow-2xs'
-                  : 'text-gray-600 hover:text-gray-900'
-              }`}
-            >
-              Under Budget
-            </button>
-            <button
-              onClick={() => setVarianceFilter('over')}
-              className={`px-2.5 py-1 rounded-lg transition-colors ${
-                varianceFilter === 'over'
-                  ? 'bg-white text-rose-700 shadow-2xs'
-                  : 'text-gray-600 hover:text-gray-900'
-              }`}
-            >
-              Over Budget
-            </button>
-          </div>
-        </div>
+      <div className="p-3 bg-white border-b border-gray-100 flex flex-wrap items-center gap-2">
+        <div className="relative w-full sm:w-64"><Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" /><input type="text" placeholder="Find a project..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full text-xs pl-8 pr-3 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:bg-white focus:outline-none" /></div>
+        <div className="flex items-center gap-1 bg-gray-100 p-1 rounded-xl text-xs font-semibold"><button onClick={() => setVarianceFilter('all')} className={`px-2.5 py-1 rounded-lg ${varianceFilter === 'all' ? 'bg-white text-gray-900 shadow-2xs' : 'text-gray-600'}`}>All</button><button onClick={() => setVarianceFilter('under')} className={`px-2.5 py-1 rounded-lg ${varianceFilter === 'under' ? 'bg-white text-emerald-700 shadow-2xs' : 'text-gray-600'}`}>On budget</button><button onClick={() => setVarianceFilter('over')} className={`px-2.5 py-1 rounded-lg ${varianceFilter === 'over' ? 'bg-white text-rose-700 shadow-2xs' : 'text-gray-600'}`}>Over budget</button></div>
       </div>
 
-      {ledgerLoading && <div className="px-4 py-2 text-xs text-gray-500 border-b border-gray-100">Loading authoritative project cost ledger…</div>}
-      {ledgerError && <div className="px-4 py-2 text-xs text-red-600 bg-red-50 border-b border-red-100">{ledgerError}</div>}
-
-      {/* Budget Table */}
       <div className="overflow-x-auto">
-        <table className="w-full text-left text-xs">
-          <thead className="bg-gray-50 border-b border-gray-200 font-bold text-gray-600 uppercase tracking-wider text-[10px]">
-            <tr>
-              <th className="p-3">Project & Client</th>
-              <th className="p-3 text-right">Estimated Budget</th>
-              <th className="p-3 text-right">Actual Expenses</th>
-              <th className="p-3 text-right">Cost Variance</th>
-              <th className="p-3">Budget Utilization</th>
-              <th className="p-3 text-center">Expense Items</th>
-              <th className="p-3 text-right">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-100">
-            {filteredData.length === 0 ? (
-              <tr>
-                <td colSpan={7} className="p-8 text-center text-gray-400 italic">
-                  No project budgets match current filters.
-                </td>
-              </tr>
-            ) : (
-              filteredData.map((b) => {
-                const p = b.project;
-                const isEditingBudget = editingBudgetId === p.id;
-
-                return (
-                  <tr key={p.id} className="hover:bg-gray-50/80 transition-colors">
-                    {/* Project & Client */}
-                    <td className="p-3">
-                      <div
-                        onClick={() => onSelectProject && onSelectProject(p)}
-                        className="font-bold text-gray-900 truncate max-w-xs cursor-pointer hover:text-primary-600 transition-colors"
-                        title={p.title}
-                      >
-                        {p.title}
-                      </div>
-                      <div className="text-[11px] text-gray-500 flex items-center gap-1.5 mt-0.5">
-                        <Building2 className="w-3 h-3 text-gray-400" />
-                        <span>{p.client_name || p.location || 'Project Site'}</span>
-                      </div>
-                    </td>
-
-                    {/* Estimated Budget */}
-                    <td className="p-3 text-right font-mono font-semibold text-gray-900">
-                      {isEditingBudget ? (
-                        <div className="flex items-center justify-end gap-1">
-                          <input
-                            type="number"
-                            value={tempBudgetValue}
-                            onChange={(e) => setTempBudgetValue(Number(e.target.value))}
-                            className="w-24 text-xs p-1 border border-primary-500 rounded font-mono text-right"
-                          />
-                          <button
-                            onClick={() => handleSaveBudget(p.id)}
-                            className="p-1 bg-emerald-600 text-white rounded hover:bg-emerald-700"
-                          >
-                            <Check className="w-3 h-3" />
-                          </button>
-                          <button
-                            onClick={() => setEditingBudgetId(null)}
-                            className="p-1 bg-gray-200 text-gray-700 rounded hover:bg-gray-300"
-                          >
-                            <X className="w-3 h-3" />
-                          </button>
-                        </div>
-                      ) : (
-                        <div className="group flex items-center justify-end gap-1.5">
-                          <span>{formatCurrency(b.estimatedBudget)}</span>
-                          <button
-                            onClick={() => {
-                              setEditingBudgetId(p.id);
-                              setTempBudgetValue(b.estimatedBudget);
-                            }}
-                            className="text-gray-400 opacity-0 group-hover:opacity-100 hover:text-primary-600 transition-opacity"
-                            title="Edit Budget"
-                          >
-                            <Edit2 className="w-3 h-3" />
-                          </button>
-                        </div>
-                      )}
-                    </td>
-
-                    {/* Actual Expenses */}
-                    <td className="p-3 text-right font-mono font-bold text-slate-800">
-                      {formatCurrency(b.actualExpenses)}
-                    </td>
-
-                    {/* Variance */}
-                    <td className="p-3 text-right font-mono font-bold">
-                      <div
-                        className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md ${
-                          b.isOverBudget
-                            ? 'bg-rose-50 text-rose-700'
-                            : 'bg-emerald-50 text-emerald-700'
-                        }`}
-                      >
-                        {b.isOverBudget ? (
-                          <AlertTriangle className="w-3 h-3 text-rose-600" />
-                        ) : (
-                          <CheckCircle2 className="w-3 h-3 text-emerald-600" />
-                        )}
-                        <span>
-                          {b.variance >= 0 ? '+' : ''}
-                          {formatCurrency(b.variance)}
-                        </span>
-                        <span className="text-[10px] opacity-75">
-                          ({b.variancePercentage}%)
-                        </span>
-                      </div>
-                    </td>
-
-                    {/* Utilization Bar */}
-                    <td className="p-3">
-                      <div className="w-32">
-                        <div className="flex items-center justify-between text-[10px] font-bold text-gray-600 mb-1">
-                          <span>{b.utilization}%</span>
-                          <span>
-                            {b.isOverBudget ? 'Over Budget' : 'On Track'}
-                          </span>
-                        </div>
-                        <div className="w-full bg-gray-200 h-2 rounded-full overflow-hidden">
-                          <div
-                            className={`h-full transition-all ${
-                              b.isOverBudget ? 'bg-rose-500' : 'bg-emerald-500'
-                            }`}
-                            style={{ width: `${Math.min(100, b.utilization)}%` }}
-                          />
-                        </div>
-                      </div>
-                    </td>
-
-                    {/* Item Count */}
-                    <td className="p-3 text-center">
-                      <span className="px-2 py-0.5 bg-gray-100 text-gray-700 font-bold rounded-full text-[10px]">
-                        {b.items.length} line items
-                      </span>
-                    </td>
-
-                    {/* Actions */}
-                    <td className="p-3 text-right">
-                      <button
-                        onClick={() => {
-                          setActiveProjectForExpense(p);
-                          setShowExpenseModal(true);
-                        }}
-                        className="px-2.5 py-1 bg-gray-100 hover:bg-gray-200 text-gray-800 rounded-lg font-bold text-[11px] flex items-center gap-1 ml-auto transition-colors"
-                      >
-                        <Receipt className="w-3.5 h-3.5 text-primary-600" />
-                        Manage Costs
-                      </button>
-                    </td>
-                  </tr>
-                );
-              })
-            )}
-          </tbody>
-        </table>
+        <table className="w-full text-left text-xs"><thead className="bg-gray-50 border-b border-gray-200 font-bold text-gray-600 uppercase tracking-wider text-[10px]"><tr><th className="p-3">Project</th><th className="p-3 text-right">Budget</th><th className="p-3 text-right">Recorded cost</th><th className="p-3 text-right">Position</th><th className="p-3">Use</th><th className="p-3 text-right">Actions</th></tr></thead>
+          <tbody className="divide-y divide-gray-100">{filteredData.map((item) => {
+            const { project } = item; const editing = editingBudgetId === project.id;
+            return <tr key={project.id} className="hover:bg-gray-50/80"><td className="p-3"><button onClick={() => onSelectProject?.(project)} className="font-bold text-gray-900 hover:text-primary-600 text-left">{project.title}</button><div className="text-[11px] text-gray-500 flex items-center gap-1.5 mt-0.5"><Building2 className="w-3 h-3" />{project.client_name || project.location || 'Project site'}</div></td><td className="p-3 text-right font-mono font-semibold">{editing ? <div className="flex justify-end gap-1"><input type="number" min="0" value={tempBudgetValue} onChange={(e) => setTempBudgetValue(Number(e.target.value))} className="w-24 text-xs p-1 border border-primary-500 rounded text-right" /><button onClick={() => void saveBudget(project.id)} className="p-1 bg-emerald-600 text-white rounded"><Check className="w-3 h-3" /></button><button onClick={() => setEditingBudgetId(null)} className="p-1 bg-gray-200 rounded"><X className="w-3 h-3" /></button></div> : <div className="group flex items-center justify-end gap-1.5"><span>{formatCurrency(item.estimatedBudget)}</span><button onClick={() => { setEditingBudgetId(project.id); setTempBudgetValue(item.estimatedBudget); }} className="text-gray-400 opacity-0 group-hover:opacity-100 hover:text-primary-600" title="Edit budget"><Edit2 className="w-3 h-3" /></button></div>}</td><td className="p-3 text-right font-mono font-bold">{formatCurrency(item.actualExpenses)}</td><td className="p-3 text-right font-mono font-bold"><span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md ${item.isOverBudget ? 'bg-rose-50 text-rose-700' : 'bg-emerald-50 text-emerald-700'}`}>{item.isOverBudget ? <AlertTriangle className="w-3 h-3" /> : <CheckCircle2 className="w-3 h-3" />}{formatCurrency(Math.abs(item.variance))}</span></td><td className="p-3"><div className="w-28"><div className="flex justify-between text-[10px] font-bold text-gray-600 mb-1"><span>{item.utilization}%</span><span>{item.isOverBudget ? 'Over' : 'On track'}</span></div><div className="w-full bg-gray-200 h-2 rounded-full overflow-hidden"><div className={`h-full ${item.isOverBudget ? 'bg-rose-500' : 'bg-emerald-500'}`} style={{ width: `${Math.min(100, item.utilization)}%` }} /></div></div></td><td className="p-3 text-right"><button onClick={() => { setActiveProject(project); setShowExpenseModal(true); }} className="btn-secondary text-[11px] flex items-center gap-1 ml-auto"><Receipt className="w-3.5 h-3.5 text-primary-600" /> Manage costs</button></td></tr>;
+          })}</tbody></table>
+        {loading && <div className="p-4 text-center text-xs text-gray-500">Refreshing cost records…</div>}
+        {!loading && filteredData.length === 0 && <div className="p-8 text-center text-gray-500 text-sm">No project budgets match this view.</div>}
       </div>
 
-      {/* Expense Items Modal */}
-      {showExpenseModal && activeProjectForExpense && (
-        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-2xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] flex flex-col shadow-2xl overflow-hidden border border-gray-200">
-            {/* Modal Header */}
-            <div className="p-4 bg-gray-50 border-b border-gray-200 flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Receipt className="w-5 h-5 text-primary-600" />
-                <div>
-                  <h3 className="font-bold text-sm text-gray-900">
-                    Project Cost Breakdown: {activeProjectForExpense.title}
-                  </h3>
-                  <p className="text-xs text-gray-500">
-                    Client: {activeProjectForExpense.client_name || 'N/A'}
-                  </p>
-                </div>
-              </div>
-              <button
-                onClick={() => setShowExpenseModal(false)}
-                className="p-1 text-gray-400 hover:text-gray-600 rounded-lg"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            {/* Modal Body */}
-            <div className="p-4 flex-1 overflow-y-auto space-y-4">
-              {/* Add New Expense Form */}
-              <div className="p-3.5 bg-gray-50 rounded-xl border border-gray-200 space-y-3">
-                <div className="text-xs font-bold text-gray-800 flex items-center gap-1.5">
-                  <Plus className="w-4 h-4 text-primary-600" /> Add New Site Expenditure Line Item
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs">
-                  <div>
-                    <label className="block text-[11px] font-semibold text-gray-600 mb-1">
-                      Category
-                    </label>
-                    <select
-                      value={newCategory}
-                      onChange={(e) =>
-                        setNewCategory(e.target.value as ProjectExpenseItem['category'])
-                      }
-                      className="w-full p-2 bg-white border border-gray-300 rounded-lg font-medium focus:ring-2 focus:ring-primary-500"
-                    >
-                      <option value="materials">Materials & Resin</option>
-                      <option value="labor">Labor & Surface Prep Crew</option>
-                      <option value="equipment">Machinery & Tooling Rental</option>
-                      <option value="subcontractor">Specialist Subcontractor</option>
-                      <option value="permits">Site Permits & Quality Checks</option>
-                      <option value="other">Transport & Misc Overhead</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-[11px] font-semibold text-gray-600 mb-1">
-                      Description / Item Name
-                    </label>
-                    <input
-                      type="text"
-                      placeholder="e.g. Self-leveling Epoxy Primer 100L"
-                      value={newDescription}
-                      onChange={(e) => setNewDescription(e.target.value)}
-                      className="w-full p-2 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-[11px] font-semibold text-gray-600 mb-1">
-                      Expense Date
-                    </label>
-                    <input
-                      type="date"
-                      value={newDate}
-                      onChange={(e) => setNewDate(e.target.value)}
-                      className="w-full p-2 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 font-mono"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-[11px] font-semibold text-gray-600 mb-1">
-                      Estimated Cost (KES)
-                    </label>
-                    <input
-                      type="number"
-                      placeholder="0"
-                      value={newEstimated || ''}
-                      onChange={(e) => setNewEstimated(Number(e.target.value))}
-                      className="w-full p-2 bg-white border border-gray-300 rounded-lg font-mono focus:ring-2 focus:ring-primary-500"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-[11px] font-semibold text-gray-600 mb-1">
-                      Actual Expense (KES)
-                    </label>
-                    <input
-                      type="number"
-                      placeholder="0"
-                      value={newActual || ''}
-                      onChange={(e) => setNewActual(Number(e.target.value))}
-                      className="w-full p-2 bg-white border border-gray-300 rounded-lg font-mono focus:ring-2 focus:ring-primary-500"
-                    />
-                  </div>
-                </div>
-
-                <div className="flex justify-end">
-                  <button
-                    onClick={handleAddExpense}
-                    disabled={!newDescription.trim()}
-                    className="px-4 py-2 bg-primary-600 hover:bg-primary-700 disabled:opacity-50 text-white rounded-xl text-xs font-bold transition-colors"
-                  >
-                    Save Expense Line Item
-                  </button>
-                </div>
-              </div>
-
-              {/* Expense List */}
-              <div>
-                <h4 className="text-xs font-bold text-gray-800 mb-2">Logged Expenditure Items</h4>
-                <div className="divide-y divide-gray-100 border border-gray-200 rounded-xl overflow-hidden">
-                  {(projectExpensesMap[activeProjectForExpense.id] || []).map((item) => (
-                    <div
-                      key={item.id}
-                      className="p-3 bg-white hover:bg-gray-50 flex items-center justify-between gap-3 text-xs"
-                    >
-                      <div className="min-w-0 flex-1">
-                        <div className="flex items-center gap-2 mb-0.5">
-                          <span className="px-2 py-0.5 bg-gray-100 text-gray-700 uppercase text-[9px] font-extrabold rounded">
-                            {item.category}
-                          </span>
-                          <span className="font-bold text-gray-900 truncate">
-                            {item.description}
-                          </span>
-                        </div>
-                        {item.date && (
-                          <span className="text-[10px] text-gray-400 font-mono">
-                            Date: {item.date}
-                          </span>
-                        )}
-                      </div>
-
-                      <div className="text-right font-mono min-w-32">
-                        <div className="font-bold text-slate-800">
-                          Actual: {formatCurrency(item.actual_amount)}
-                        </div>
-                        <div className="text-[10px] text-gray-400">
-                          Est: {formatCurrency(item.estimated_amount)}
-                        </div>
-                      </div>
-
-                      <button
-                        onClick={() =>
-                          item.id &&
-                          handleDeleteExpense(activeProjectForExpense.id, item.id)
-                        }
-                        className="p-1.5 text-gray-400 hover:text-rose-600 rounded-lg transition-colors"
-                        title="Delete expense"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            {/* Modal Footer */}
-            <div className="p-3 bg-gray-50 border-t border-gray-200 flex justify-end">
-              <button
-                onClick={() => setShowExpenseModal(false)}
-                className="px-4 py-1.5 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-xl text-xs font-bold transition-colors"
-              >
-                Close Window
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      {showExpenseModal && activeProject && <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4"><div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] flex flex-col shadow-2xl overflow-hidden"><div className="p-4 bg-gray-50 border-b flex items-center justify-between"><div><h3 className="font-bold text-sm text-gray-900">Costs · {activeProject.title}</h3><p className="text-xs text-gray-500 mt-1">These entries are saved to the shared project cost ledger.</p></div><button onClick={() => setShowExpenseModal(false)} className="p-1.5 rounded-lg hover:bg-gray-200"><X className="w-4 h-4" /></button></div><div className="p-4 overflow-y-auto"><div className="grid sm:grid-cols-2 gap-3"><select className="input" value={category} onChange={(e) => setCategory(e.target.value as CostCategory)}><option value="materials">Materials</option><option value="labor">Labour</option><option value="equipment">Equipment</option><option value="transport">Transport</option><option value="subcontractor">Subcontractor</option><option value="permits">Permits</option><option value="other">Other</option></select><input className="input" type="date" value={date} onChange={(e) => setDate(e.target.value)} /><input className="input sm:col-span-2" placeholder="What was the cost for?" value={description} onChange={(e) => setDescription(e.target.value)} /><input className="input" type="number" min="0" placeholder="Estimated KES" value={estimated} onChange={(e) => setEstimated(e.target.value)} /><input className="input" type="number" min="0" placeholder="Actual KES" value={actual} onChange={(e) => setActual(e.target.value)} /></div><button disabled={saving || !description.trim()} onClick={() => void addExpense()} className="btn-primary w-full mt-4">{saving ? 'Saving cost…' : 'Save cost'}</button><div className="mt-6"><h4 className="font-semibold text-sm">Recorded costs</h4><div className="mt-2 divide-y border rounded-xl">{entries.filter(e => e.project_id === activeProject.id).map(e => <div key={e.id} className="p-3 flex items-center justify-between gap-3 text-sm"><div><p className="font-medium">{e.description}</p><p className="text-xs text-gray-500">{e.category} · {e.incurred_at}</p></div><div className="flex items-center gap-3"><span className="font-semibold">{formatCurrency(Number(e.actual_amount || 0))}</span><button onClick={() => void removeExpense(e.id)} className="text-red-600 p-1" title="Remove cost"><Trash2 className="w-4 h-4" /></button></div></div>)}{!entries.some(e => e.project_id === activeProject.id) && <div className="p-6 text-center text-sm text-gray-500">No costs recorded yet.</div>}</div></div></div></div></div>}
     </div>
   );
 }

@@ -223,32 +223,33 @@ export function ProjectDocumentManager({
     if (!window.confirm(`Delete "${doc.file_name}"? This permanently removes the file.`)) return;
     setBusyDocId(doc.id);
     try {
-      // Remove metadata first so the row can never continue granting access to a
-      // missing/retained object. Storage cleanup is retried separately and its
-      // failure is reported honestly instead of pretending the file is gone.
-      const { error: rowError } = await supabase.from('project_documents').delete().eq('id', doc.id);
+      // Delete the authoritative metadata row first. If RLS blocks the row deletion,
+      // keep the storage object so the record remains recoverable and retryable.
+      const { error: rowError, count } = await supabase
+        .from('project_documents')
+        .delete({ count: 'exact' })
+        .eq('id', doc.id);
       if (rowError) throw rowError;
+      if (count !== 1) throw new Error('Document record was not deleted. Check your project permission or refresh the page.');
 
-      let storageError: { message?: string } | null = null;
+      let storageError: Error | null = null;
       for (let attempt = 0; attempt < 2; attempt += 1) {
         const { error } = await supabase.storage.from(DOCUMENT_BUCKET).remove([doc.storage_path]);
-        if (!error) {
-          storageError = null;
-          break;
-        }
+        if (!error) { storageError = null; break; }
         storageError = error;
+        await new Promise((resolve) => setTimeout(resolve, 250));
       }
 
-      await loadDocuments();
       if (storageError) {
         toast({
-          title: 'Document metadata deleted',
-          description: `metadata was removed, but stored file could not be cleaned up: ${storageError.message || 'storage cleanup failed'}.`,
+          title: 'Document record deleted',
+          description: 'The metadata was removed, but the stored file could not be cleaned up. Please contact support for cleanup.',
           variant: 'destructive',
         });
-        return;
+      } else {
+        toast({ title: 'Document deleted', description: `"${doc.file_name}" was removed from this project.` });
       }
-      toast({ title: 'Document deleted', description: `"${doc.file_name}" was removed from this project.` });
+      await loadDocuments();
     } catch (err) {
       toast({ title: 'Delete failed', description: errorMessage(err), variant: 'destructive' });
     } finally {

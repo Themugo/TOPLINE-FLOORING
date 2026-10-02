@@ -78,6 +78,8 @@ Never put a service-role or worker secret in a `VITE_*` variable.
 
 The current production candidate contains 101 uniquely timestamped active migrations, ending with `20261001110000_catalog_product_service_upload_integrity_360.sql`. Run the complete verification suite before any linked database deployment.
 
+Current active chain additions: `20260930170000_service_catalog_and_communications_worker_hardening.sql`, `20260930180000_project_documents_private_storage.sql`, `20260930190000_staff_read_inactive_cms_catalog_rows.sql`, `20260930193000_private_document_policy_overlap_hardening.sql`, `20260930200000_project_templates.sql`, `20260930210000_close_legacy_public_read_policies.sql`, `20260930220000_projects_admin_contract_columns.sql`, `20260930230000_move_product_cost_prices_staff_only.sql`, `20260930240000_coupon_validation_throttle.sql`, `20260930250000_finance_permission_resource.sql`, `20261001090000_project_template_persistence_360.sql`, `20261001100000_admin_notification_state_360.sql`, `20261001110000_catalog_product_service_upload_integrity_360.sql`.
+
 - `20260912210000_070_customer_service_sla_operations_360.sql` — Phases 80–82 Customer Service SLA & After-Sales Operations 360.
 
 - `20260912230000_072_maintenance_retention_360.sql` — Phases 86–88 maintenance, renewal and retention operations 360.
@@ -139,6 +141,3 @@ The current production candidate contains 101 uniquely timestamped active migrat
 95. `20260930230000_move_product_cost_prices_staff_only.sql` — moves `cost_price` from the public product/variant tables into the staff-only `product_cost_prices` table (existing values preserved).
 96. `20260930240000_coupon_validation_throttle.sql` — per-caller throttle on failed anonymous coupon lookups (10 failures / 10 min); successful validations unaffected.
 97. `20260930250000_finance_permission_resource.sql` — defines the `finance` permission resource required by payment/refund RPCs and policies, granted to the same roles that hold `payments`.
-98. `20261001090000_project_template_persistence_360.sql` — completes persistence hardening for the canonical `project_templates` table with uniqueness, indexes, RBAC policies and audit-safe timestamps without recreating the table.
-99. `20261001100000_admin_notification_state_360.sql` — persists admin notification read/dismiss state in the canonical database.
-100. `20261001110000_catalog_product_service_upload_integrity_360.sql` — hardens catalogue/product/service media and upload integrity constraints.

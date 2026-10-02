@@ -71,6 +71,12 @@ export default function AdminProducts() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    if (saving) return;
+    if (!form.name.trim()) {
+      toast({ title: 'Product name is required', variant: 'destructive' });
+      return;
+    }
+
     const price = parseFloat(form.price);
     if (isNaN(price) || price < 0) {
       toast({ title: 'Enter a valid price', variant: 'destructive' });
@@ -105,18 +111,18 @@ export default function AdminProducts() {
       await fetchProducts();
       resetForm();
     } catch {
-      toast({ title: 'Failed to save product', description: 'That slug or SKU may already be in use.', variant: 'destructive' });
+      toast({ title: 'Could not save product', description: 'Check the product details and try again. A product code or web address may already be in use.', variant: 'destructive' });
     } finally {
       setSaving(false);
     }
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Delete this product? This cannot be undone.')) return;
+    if (!confirm('Archive this product? It will no longer be available for normal selling.')) return;
     try {
       await archiveProductAdmin(id);
       await fetchProducts();
-      toast({ title: 'Product deleted' });
+      toast({ title: 'Product archived' });
     } catch {
       toast({ title: 'Failed to delete product', variant: 'destructive' });
     }
@@ -141,18 +147,18 @@ export default function AdminProducts() {
   };
 
   return (
-    <AdminLayout title="Products">
+    <AdminLayout title="Products" subtitle="Add, update and organise the products customers can buy.">
       <div className="mb-4 flex items-center justify-between">
         <div className="flex items-center gap-4">
           <button onClick={() => setShowForm(true)} className="btn-primary flex items-center gap-2">
-            <Plus className="w-4 h-4" /> Add Product
+            <Plus className="w-4 h-4" /> Add product
           </button>
           <div className="relative max-w-xs">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search products..."
+              placeholder="Search by product name or SKU..."
               className="input pl-9"
             />
           </div>
@@ -215,13 +221,13 @@ export default function AdminProducts() {
                       )}
                     </td>
                     <td className="px-6 py-4">
-                      <button onClick={() => setGalleryProduct(product)} className="p-2 text-navy-500 hover:text-primary-600" title="Manage Photos">
+                      <button onClick={() => setGalleryProduct(product)} className="p-2 text-navy-500 hover:text-primary-600" title="Manage product photos">
                         <Images className="w-4 h-4" />
                       </button>
-                      <button onClick={() => editProduct(product)} className="p-2 text-navy-500 hover:text-primary-600" title="Edit">
+                      <button onClick={() => editProduct(product)} className="p-2 text-navy-500 hover:text-primary-600" title="Edit product">
                         <Pencil className="w-4 h-4" />
                       </button>
-                      <button onClick={() => handleDelete(product.id)} className="p-2 text-navy-500 hover:text-red-600" title="Delete">
+                      <button onClick={() => handleDelete(product.id)} className="p-2 text-navy-500 hover:text-red-600" title="Archive product">
                         <Trash2 className="w-4 h-4" />
                       </button>
                     </td>
@@ -372,13 +378,18 @@ function ProductGalleryModal({ product, onClose, onChanged }: { product: Product
   };
 
   const handleSetPrimary = async (imageId: string) => {
-    await setPrimaryProductImage(product.id, imageId);
-    await fetchImages();
-    onChanged();
-    toast({ title: 'Primary photo updated' });
+    try {
+      await setPrimaryProductImage(product.id, imageId);
+      await fetchImages();
+      onChanged();
+      toast({ title: 'Primary photo updated', description: 'The product gallery has been refreshed.' });
+    } catch {
+      toast({ title: 'Could not update primary photo', variant: 'destructive' });
+    }
   };
 
   const handleRemove = async (id: string) => {
+    if (!confirm('Remove this photo from the product gallery?')) return;
     const { error } = await supabase.from('product_images').delete().eq('id', id);
     if (error) {
       toast({ title: 'Failed to remove photo', variant: 'destructive' });

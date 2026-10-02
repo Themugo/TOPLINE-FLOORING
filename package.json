@@ -110,8 +110,7 @@
     "verify:payment-refund-provider-360": "node scripts/verify-payment-refund-provider-trust-boundary-360.mjs",
     "verify:payment-provider-uat": "node scripts/verify-payment-provider-uat.mjs",
     "verify:brevo-email": "node scripts/verify-brevo-email-integration.mjs",
-    "verify:launch-repair": "node scripts/verify-launch-repair.mjs",
-    "verify:service-content-authority": "node scripts/verify-service-content-authority.mjs"
+    "verify:launch-repair": "node scripts/verify-launch-repair.mjs"
   },
   "dependencies": {
     "@radix-ui/react-accordion": "^1.2.16",

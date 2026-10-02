@@ -21,6 +21,7 @@ export default function AdminProjects() {
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState<Project | null>(null);
   const [showForm, setShowForm] = useState(false);
+  const [savingProject, setSavingProject] = useState(false);
   const [showCsvModal, setShowCsvModal] = useState(false);
   const [showTemplateModal, setShowTemplateModal] = useState(false);
   const [selectedDocProject, setSelectedDocProject] = useState<Project | null>(null);
@@ -73,10 +74,9 @@ export default function AdminProjects() {
     );
     if (failure) {
       toast({ title: 'Budget not saved', description: failure, variant: 'destructive' });
-      await fetchProjects();
       return;
     }
-    setProjects((prev) => prev.map((p) => p.id === projectId ? { ...p, estimated_budget: estimatedBudget } : p));
+    await fetchProjects();
     toast({ title: 'Project budget updated' });
   };
 
@@ -94,12 +94,18 @@ export default function AdminProjects() {
     setShowForm(true);
     toast({
       title: `Applied "${template.name}" template`,
-      description: 'Standard phases, materials list, and budget baseline loaded.',
+      description: 'Project starting information loaded.',
     });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (savingProject) return;
+    if (!form.title.trim()) {
+      toast({ title: 'Project name is required', variant: 'destructive' });
+      return;
+    }
+    setSavingProject(true);
     const slug = form.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/-+/g, '-');
     const data = {
       ...form,
@@ -114,28 +120,32 @@ export default function AdminProjects() {
       const failure1 = await dbFailure(supabase.from('projects').update(data).eq('id', editing.id).select('id'), { requireRows: true });
       if (failure1) {
         toast({ title: 'Save failed', description: failure1, variant: 'destructive' });
+        setSavingProject(false);
         return;
       }
     } else {
       const failure2 = await dbFailure(supabase.from('projects').insert(data));
       if (failure2) {
         toast({ title: 'Save failed', description: failure2, variant: 'destructive' });
+        setSavingProject(false);
         return;
       }
     }
+    await fetchProjects();
     resetForm();
-    fetchProjects();
-    toast({ title: editing ? 'Project updated' : 'Project created' });
+    toast({ title: editing ? 'Project updated' : 'Project created', description: 'The project list now shows the saved record.' });
+    setSavingProject(false);
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Are you sure?')) return;
+    if (!confirm('Delete this project? This removes the project record and may affect related project information.')) return;
     const failure3 = await dbFailure(supabase.from('projects').delete().eq('id', id).select('id'), { requireRows: true });
     if (failure3) {
       toast({ title: 'Delete failed', description: failure3, variant: 'destructive' });
       return;
     }
-    fetchProjects();
+    await fetchProjects();
+    toast({ title: 'Project deleted' });
   };
 
   const editProject = (project: Project) => {
@@ -222,7 +232,7 @@ export default function AdminProjects() {
     });
   };
 
-  if (loading) return <AdminLayout title="Projects"><div className="text-center py-12">Loading projects...</div></AdminLayout>;
+  if (loading) return <AdminLayout title="Projects" subtitle="Keep project work, budgets and delivery details in one simple workspace."><div className="text-center py-12">Loading projects...</div></AdminLayout>;
 
   const displayedProjects = selectedCategory
     ? projects.filter((p) => (p.category?.trim() || 'Uncategorized') === selectedCategory)
@@ -525,13 +535,13 @@ export default function AdminProjects() {
           <div className="bg-white rounded-2xl max-w-2xl w-full p-6 my-8 shadow-2xl border border-gray-100">
             <div className="flex justify-between items-center mb-4 pb-3 border-b border-gray-100">
               <div className="flex items-center gap-3">
-                <h2 className="font-bold text-lg text-gray-900">{editing ? 'Edit Portfolio Project' : 'Add New Portfolio Project'}</h2>
+                <h2 className="font-bold text-lg text-gray-900">{editing ? 'Edit project' : 'Add new project'}</h2>
                 <button
                   type="button"
                   onClick={() => setShowTemplateModal(true)}
                   className="px-2.5 py-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-colors"
                 >
-                  <Layers className="w-3.5 h-3.5 text-indigo-600" /> Apply Template
+                  <Layers className="w-3.5 h-3.5 text-indigo-600" /> Use project template
                 </button>
               </div>
               <button onClick={resetForm} className="p-1.5 rounded-full hover:bg-gray-100 text-gray-400 hover:text-gray-700"><X className="w-5 h-5" /></button>
@@ -564,11 +574,10 @@ export default function AdminProjects() {
                 </div>
               </div>
 
-              <div className="grid sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-[11px] font-semibold text-gray-500 mb-1">Estimated Budget (KES)</label>
-                  <input type="number" placeholder="e.g. 450000" value={form.estimated_budget} onChange={(e) => setForm({ ...form, estimated_budget: e.target.value })} className="input text-xs font-mono" />
-                </div>
+              <div>
+                <label className="block text-[11px] font-semibold text-gray-500 mb-1">Project Budget (KES)</label>
+                <input type="number" min="0" placeholder="e.g. 450000" value={form.estimated_budget} onChange={(e) => setForm({ ...form, estimated_budget: e.target.value })} className="input text-xs font-mono" />
+                <p className="text-[11px] text-gray-400 mt-1">Actual costs are recorded separately in the project cost ledger.</p>
               </div>
 
               <div>

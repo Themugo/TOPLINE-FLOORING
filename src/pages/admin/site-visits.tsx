@@ -54,7 +54,7 @@ export default function AdminSiteVisits() {
   };
 
   return (
-    <AdminLayout title="Site Visits">
+    <AdminLayout title="Site Visits" subtitle="Schedule measurements, surveys and field appointments without the technical detail.">
       <div className="grid lg:grid-cols-[360px_1fr] gap-6">
         <form onSubmit={schedule} className="bg-white border border-gray-200 rounded-xl p-5 space-y-4 h-fit">
           <div><h2 className="font-display font-bold text-lg text-navy-900">Schedule Site Survey</h2><p className="text-sm text-gray-500 mt-1">Create the field-work appointment that follows a qualified enquiry.</p></div>

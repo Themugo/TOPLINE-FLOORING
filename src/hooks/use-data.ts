@@ -219,7 +219,7 @@ export function useProducts(options?: { categoryId?: string; featured?: boolean;
     try {
       let query = supabase
         .from('products')
-        .select('*, category:categories(*), brand:product_brands(*)')
+        .select('*, category:categories(*), brand:product_brands(*), variants:product_variants(*)')
         .eq('is_active', true)
         .order('display_order', { ascending: true });
 
@@ -922,20 +922,17 @@ export function useServices(options?: { activeOnly?: boolean }) {
   };
 
   const updateService = async (id: string, updates: Partial<Service>) => {
-    const { data, error: err } = await supabase
+    const { error: err } = await supabase
       .from('services')
       .update({ ...updates, updated_at: new Date().toISOString() })
-      .eq('id', id)
-      .select('id');
+      .eq('id', id);
     if (err) throw err;
-    if (!data?.length) throw new Error('Service was not updated. You may not have permission, or the service no longer exists.');
     await refetch();
   };
 
   const deleteService = async (id: string) => {
-    const { data, error: err } = await supabase.from('services').delete().eq('id', id).select('id');
+    const { error: err } = await supabase.from('services').delete().eq('id', id);
     if (err) throw err;
-    if (!data?.length) throw new Error('Service was not deleted. You may not have permission, or the service no longer exists.');
     await refetch();
   };
 
