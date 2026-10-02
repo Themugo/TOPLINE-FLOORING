@@ -30,7 +30,6 @@ ALTER TABLE public.payment_provider_events ENABLE ROW LEVEL SECURITY;
 REVOKE ALL ON public.payment_provider_events FROM anon, authenticated;
 
 -- Only the service-role webhook boundary may mutate/read the raw provider ledger.
-REVOKE ALL ON FUNCTION public.apply_payment_provider_event(text,text,text,text,numeric,text,text,text,text,jsonb) FROM PUBLIC, anon, authenticated;
 
 CREATE OR REPLACE FUNCTION public.apply_payment_provider_event(
   p_provider text,
@@ -202,6 +201,8 @@ EXCEPTION WHEN others THEN
 END;
 $function$;
 
+-- (moved after CREATE: revoking before the function exists fails on a fresh database)
+REVOKE ALL ON FUNCTION public.apply_payment_provider_event(text,text,text,text,numeric,text,text,text,text,jsonb) FROM PUBLIC, anon, authenticated;
 GRANT EXECUTE ON FUNCTION public.apply_payment_provider_event(text,text,text,text,numeric,text,text,text,text,jsonb) TO service_role;
 
 CREATE OR REPLACE FUNCTION public.reconcile_payment_provider_events(p_since timestamptz DEFAULT now()-interval '24 hours')

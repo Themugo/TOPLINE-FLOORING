@@ -13,7 +13,7 @@ interface Partner {
   website?: string;
   description?: string;
   is_active: boolean;
-  sort_order: number;
+  display_order: number;
 }
 
 
@@ -33,7 +33,7 @@ export default function Market() {
       .from('partners')
       .select('*')
       .eq('is_active', true)
-      .order('sort_order');
+      .order('display_order');
     if (data) setPartners(data as Partner[]);
     setLoading(false);
   };

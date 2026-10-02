@@ -79,10 +79,9 @@ async function fetchSlugs(table, slugCol = 'slug', activeCol = 'is_active') {
   }
 
   try {
-    const { data, error } = await supabase
-      .from(table)
-      .select(slugCol)
-      .eq(activeCol, true);
+    let query = supabase.from(table).select(slugCol);
+    if (activeCol) query = query.eq(activeCol, true);
+    const { data, error } = await query;
     if (error) throw error;
     return (data || []).map((r) => r[slugCol]).filter(Boolean);
   } catch (err) {
@@ -98,7 +97,7 @@ async function main() {
   const [productSlugs, serviceSlugs, projectSlugs] = await Promise.all([
     fetchSlugs('products'),
     fetchSlugs('services'),
-    fetchSlugs('projects'),
+    fetchSlugs('public_projects', 'slug', null), // view: active projects only; base table is staff-only
   ]);
 
   console.log(`  Products: ${productSlugs.length}, Services: ${serviceSlugs.length}, Projects: ${projectSlugs.length}`);

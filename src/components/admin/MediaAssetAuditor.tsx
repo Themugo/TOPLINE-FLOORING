@@ -7,14 +7,13 @@ import {
   Sparkles,
   Trash2,
   Zap,
-  RefreshCw,
   Sliders,
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { useCMS } from '@/context/CMSContext';
 import { useMediaFiles } from '@/hooks/use-data';
 import { useToast } from '@/hooks/use-toast';
-import { formatBytes, optimizeImageUrl } from '@/lib/image-compressor';
+import { formatBytes } from '@/lib/image-compressor';
 import type { MediaFile } from '@/lib/types';
 
 export interface AuditIssue {
@@ -203,7 +202,7 @@ export function MediaAssetAuditor({ onClose }: { onClose?: () => void }) {
       }
 
       // Check 5: Optimization Opportunities (Uncompressed JPEGs/PNGs, missing WebP/AVIF)
-      if (!f.is_compressed && f.file_type !== 'image/svg+xml') {
+      if (f.file_type && ['image/jpeg', 'image/jpg', 'image/png'].includes(f.file_type)) {
         issues.push({
           id: `opt-${f.id}`,
           type: 'optimization',
@@ -319,38 +318,6 @@ export function MediaAssetAuditor({ onClose }: { onClose?: () => void }) {
 
     setProcessing(false);
     toast({ type: 'success', message: `Auto-filled alt text for ${updated} media item(s)` });
-    refetchMediaFiles();
-  };
-
-  // Action 3: Optimize heavy oversized images
-  const handleOptimizeOversized = async () => {
-    const oversizedIssues = auditReport.issues.filter((i) => i.type === 'oversized' && i.mediaFileId);
-    if (oversizedIssues.length === 0) {
-      toast({ type: 'default', message: 'No oversized images found.' });
-      return;
-    }
-
-    setProcessing(true);
-    let count = 0;
-
-    for (const issue of oversizedIssues) {
-      const file = mediaFiles.find((f) => f.id === issue.mediaFileId);
-      if (!file) continue;
-
-      const { error } = await supabase
-        .from('media_files')
-        .update({
-          is_compressed: true,
-          compression_ratio: 65,
-          webp_url: optimizeImageUrl(file.file_url, 1200, 80),
-        })
-        .eq('id', file.id);
-
-      if (!error) count++;
-    }
-
-    setProcessing(false);
-    toast({ type: 'success', message: `Optimized and marked ${count} heavy image(s)` });
     refetchMediaFiles();
   };
 
@@ -543,15 +510,6 @@ END OF REPORT
               >
                 <Sparkles className="w-3.5 h-3.5" />
                 Auto-Fill {auditReport.missingAltCount} Missing Alt Text(s)
-              </button>
-
-              <button
-                onClick={handleOptimizeOversized}
-                disabled={processing || auditReport.oversizedCount === 0}
-                className="px-4 py-2 bg-red-600 hover:bg-red-700 disabled:opacity-50 text-white text-xs font-semibold rounded-lg flex items-center gap-2 transition-colors shadow-sm"
-              >
-                <RefreshCw className="w-3.5 h-3.5" />
-                Compress {auditReport.oversizedCount} Oversized Image(s)
               </button>
             </div>
           </div>

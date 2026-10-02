@@ -100,6 +100,7 @@
     "verify:admin-management-uploads": "node scripts/verify-admin-management-uploads.mjs",
     "verify:delivery-worker-hardening": "node scripts/verify-delivery-worker-hardening.mjs",
     "verify:admin-feedback-contract": "node scripts/verify-admin-feedback-contract.mjs",
+    "verify:database-read-boundary": "node scripts/verify-database-read-boundary.mjs",
     "verify:all": "node scripts/verify-all.mjs",
     "verify:db-9-11": "node scripts/verify-db-9-11.mjs",
     "verify:admin-auth-360": "node scripts/verify-admin-authentication-authorization-360.mjs",

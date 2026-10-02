@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { isSupabaseConfigured, supabase } from '@/lib/supabase';
+import { loadPublicProjects } from '@/lib/public-projects';
 import { useCMS } from '@/context/CMSContext';
 import { getCurrentStaffProfile, type StaffProfile } from '@/lib/staff-rbac';
 import { convertLeadToCustomer, createLeadTransaction, updateLeadTransaction, deleteLeadTransaction } from '@/lib/lifecycle';
@@ -640,17 +641,19 @@ export function useProjects(options?: { featured?: boolean; activeOnly?: boolean
     setLoading(true);
     setError(null);
     try {
-      let query = supabase.from('projects').select('*').order('display_order');
-      if (activeOnly) query = query.eq('is_active', true);
-      if (options?.featured) query = query.eq('featured', true);
-      const { data, error: err } = await query;
-      if (err || !data || data.length === 0) {
-        setProjects([]);
+      if (activeOnly) {
+        setProjects(await loadPublicProjects({ featured: options?.featured }));
       } else {
-        setProjects(data);
+        // Staff-only path: the base table is not readable by the public.
+        let query = supabase.from('projects').select('*').order('display_order');
+        if (options?.featured) query = query.eq('featured', true);
+        const { data, error: err } = await query;
+        if (err) throw err;
+        setProjects(data ?? []);
       }
-    } catch {
+    } catch (err) {
       setProjects([]);
+      setError(errorMessage(err, 'Failed to load projects'));
     } finally {
       setLoading(false);
     }
@@ -671,14 +674,8 @@ export function useProject(slug: string) {
     setLoading(true);
     setError(null);
     try {
-      const { data, error: err } = await supabase
-        .from('projects')
-        .select('*, images:project_images(*)')
-        .eq('slug', slug)
-        .eq('is_active', true)
-        .maybeSingle();
-      if (err) throw err;
-      setProject(data);
+      const [match] = await loadPublicProjects({ slug });
+      setProject(match ?? null);
     } catch (err) {
       setError(errorMessage(err, 'Failed to load project'));
     } finally {

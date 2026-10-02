@@ -53,7 +53,7 @@ export default function AdminNavigation() {
     if (editing) {
       const { error } = await supabase
         .from("navigation_menus")
-        .update({ ...form, updated_at: new Date().toISOString() })
+        .update({ ...form })
         .eq("id", editing.id);
       if (error) { toast({ title: "Error", description: error.message, variant: "destructive" }); return; }
     } else {

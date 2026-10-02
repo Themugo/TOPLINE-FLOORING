@@ -4,7 +4,7 @@ import { CustomerLayout } from '@/components/layout/CustomerLayout';
 import { Breadcrumbs } from '@/components/Breadcrumbs';
 import { useSeoMeta } from '@/hooks/use-seo';
 import { Link } from 'wouter';
-import { supabase } from '@/lib/supabase';
+import { loadPublicProjects } from '@/lib/public-projects';
 import { useImagePreloader } from '@/hooks/use-image-preloader';
 import type { Project, ProjectImage } from '@/lib/types';
 
@@ -39,18 +39,7 @@ export default function Portfolio() {
   useEffect(() => {
     async function fetchProjects() {
       try {
-        const { data, error } = await supabase
-          .from('projects')
-          .select('*, images:project_images(*)')
-          .eq('is_active', true)
-          .order('display_order', { ascending: true })
-          .order('display_order', { foreignTable: 'project_images', ascending: true });
-
-        if (!error && data && data.length > 0) {
-          setProjects(data as ProjectWithImages[]);
-        } else {
-          setProjects([]);
-        }
+        setProjects(await loadPublicProjects());
       } catch (err) {
         console.warn('Portfolio project query failed; showing the empty state.', err);
         setProjects([]);
