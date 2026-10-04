@@ -353,16 +353,16 @@ export default function Home() {
       {/* Customer intent shortcuts: help first-time visitors choose the right journey immediately. */}
       <section className="relative z-30 px-4 sm:px-6 lg:px-8 -mt-7 sm:-mt-9">
         <div className="max-w-6xl mx-auto customer-intent-grid">
-          <Link href="/shop" className="customer-intent-card">
+          <Link href="/shop" className="group customer-intent-card">
             <div><strong>Shop materials</strong><span>Browse products and variants</span></div><ArrowRight className="w-4 h-4 text-primary-500 transition-transform group-hover:translate-x-1" />
           </Link>
-          <Link href="/services" className="customer-intent-card">
+          <Link href="/services" className="group customer-intent-card">
             <div><strong>Find a service</strong><span>Explore flooring and waterproofing</span></div><ArrowRight className="w-4 h-4 text-primary-500 transition-transform group-hover:translate-x-1" />
           </Link>
-          <Link href="/quotation" className="customer-intent-card">
+          <Link href="/quotation" className="group customer-intent-card">
             <div><strong>Request a quote</strong><span>Tell us what your project needs</span></div><ArrowRight className="w-4 h-4 text-primary-500 transition-transform group-hover:translate-x-1" />
           </Link>
-          <Link href="/track-order" className="customer-intent-card">
+          <Link href="/track-order" className="group customer-intent-card">
             <div><strong>Track your order</strong><span>Check delivery and order progress</span></div><ArrowRight className="w-4 h-4 text-primary-500 transition-transform group-hover:translate-x-1" />
           </Link>
         </div>

@@ -94,13 +94,15 @@ async function main() {
   console.log('Generating sitemap.xml...');
   if (!hasSupabase) console.log('  Supabase not configured; generating static sitemap routes only.');
 
-  const [productSlugs, serviceSlugs, projectSlugs] = await Promise.all([
+  // Only list URLs the application can actually render. Products are served at /product/:slug and
+  // services at /service/:slug. There is no project detail route (the portfolio is a single page,
+  // /portfolio), so project URLs are deliberately not listed: they would be soft-404s for crawlers.
+  const [productSlugs, serviceSlugs] = await Promise.all([
     fetchSlugs('products'),
     fetchSlugs('services'),
-    fetchSlugs('public_projects', 'slug', null), // view: active projects only; base table is staff-only
   ]);
 
-  console.log(`  Products: ${productSlugs.length}, Services: ${serviceSlugs.length}, Projects: ${projectSlugs.length}`);
+  console.log(`  Products: ${productSlugs.length}, Services: ${serviceSlugs.length}`);
 
   const urls = [...staticUrls];
 
@@ -109,9 +111,6 @@ async function main() {
   }
   for (const slug of serviceSlugs) {
     urls.push({ loc: `/service/${slug}`, changefreq: 'monthly', priority: '0.7' });
-  }
-  for (const slug of projectSlugs) {
-    urls.push({ loc: `/portfolio/${slug}`, changefreq: 'monthly', priority: '0.6' });
   }
 
   const xml = `<?xml version="1.0" encoding="UTF-8"?>

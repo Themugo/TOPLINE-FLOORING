@@ -484,14 +484,6 @@ interface RecentOrder {
   created_at: string;
 }
 
-interface RecentQuotation {
-  id: string;
-  name: string;
-  project_type: string | null;
-  status: string;
-  created_at: string;
-}
-
 function DashboardContent() {
   const [stats, setStats] = useState([
     { label: 'Orders', value: '0', helper: 'All orders', href: '/admin/orders', icon: ShoppingCart },

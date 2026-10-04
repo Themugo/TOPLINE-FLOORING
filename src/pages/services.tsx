@@ -16,44 +16,7 @@ export default function Services() {
     useMemo(() => services.map(s => s.image_url || getServicePlaceholder(s.slug || s.name)), [services])
   );
 
-  const defaultFeatures: Record<string, string[]> = {
-    'industrial-epoxy-flooring': [
-      'Heavy-duty chemical & impact resistance',
-      'Seamless, hygienic anti-microbial finish',
-      'Anti-slip texture options for wet processing',
-      'High mechanical abrasion endurance',
-      'Fast-curing industrial grade epoxy formulas',
-    ],
-    'roof-basement-waterproofing': [
-      'Elastomeric liquid polyurethane membrane',
-      'High thermal movement expansion tolerance',
-      'Zero-permeability crystalline foundation coating',
-      'UV-resistant puddle-proof roof sealing',
-      '10-Year leak-free structural warranty',
-    ],
-    'concrete-polishing-dustproofing': [
-      'Multi-stage diamond pad mechanical grinding',
-      'Lithium silicate hardener densification',
-      'Eliminates concrete surface dusting permanently',
-      'High-gloss light reflectivity reducing energy costs',
-      'Ultra low-maintenance commercial finish',
-    ],
-    'industrial-flooring': [
-      'Epoxy flooring systems & PU screeds',
-      'Polyurethane anti-microbial coatings',
-      'Anti-static ESD safety flooring',
-      'Chemical-resistant battery room surfaces',
-      'Heavy forklifts load-bearing capacity',
-    ],
-    'waterproofing': [
-      'Flat roof & inverted deck waterproofing',
-      'Retaining wall & basement tanking',
-      'Bathroom, balcony, and wet area sealing',
-      'Concrete water tank potable lining',
-      'Structural movement joint waterproofing',
-    ],
-  };
-
+  
   return (
     <CustomerLayout>
       <Breadcrumbs items={[{ label: 'Services' }]} />
@@ -78,7 +41,7 @@ export default function Services() {
             </div>
             <div className="flex items-center gap-2">
               <Award className="w-4 h-4 text-primary-500" />
-              <span>10-Year Warranty</span>
+              <span>Written Handover Documentation</span>
             </div>
             <div className="flex items-center gap-2">
               <Clock className="w-4 h-4 text-primary-500" />
@@ -113,9 +76,8 @@ export default function Services() {
           ) : (
             <div className="space-y-16 lg:space-y-24">
               {services.map((service, index) => {
-                const featuresList = service.features?.length
-                  ? service.features
-                  : defaultFeatures[service.slug] || defaultFeatures['industrial-flooring'] || [];
+                // Features come only from the service record. Nothing is invented for services that have none.
+                const featuresList = service.features || [];
 
                 return (
                   <div
@@ -159,17 +121,19 @@ export default function Services() {
                           {service.description || service.short_description}
                         </p>
 
-                        <div className="mb-8">
-                          <h4 className="text-xs font-bold uppercase tracking-wider text-navy-900 mb-3">Key Performance Features:</h4>
-                          <div className="grid sm:grid-cols-2 gap-2.5">
-                            {featuresList.map((feature) => (
-                              <div key={feature} className="flex items-start gap-2.5 text-xs sm:text-sm text-navy-800">
-                                <CheckCircle2 className="w-4 h-4 text-emerald-500 flex-shrink-0 mt-0.5" />
-                                <span>{feature}</span>
-                              </div>
-                            ))}
+                        {featuresList.length > 0 && (
+                          <div className="mb-8">
+                            <h4 className="text-xs font-bold uppercase tracking-wider text-navy-900 mb-3">Key Performance Features:</h4>
+                            <div className="grid sm:grid-cols-2 gap-2.5">
+                              {featuresList.map((feature) => (
+                                <div key={feature} className="flex items-start gap-2.5 text-xs sm:text-sm text-navy-800">
+                                  <CheckCircle2 className="w-4 h-4 text-emerald-500 flex-shrink-0 mt-0.5" />
+                                  <span>{feature}</span>
+                                </div>
+                              ))}
+                            </div>
                           </div>
-                        </div>
+                        )}
                       </div>
 
                       <div className="flex flex-wrap items-center gap-3 pt-4 border-t border-gray-100">
@@ -236,7 +200,7 @@ export default function Services() {
               {
                 step: '04',
                 title: 'Quality Check & Handover',
-                description: 'Comprehensive dry-film thickness audit, adhesion testing, and issuing of written 10-Year structural warranty certificate.',
+                description: 'Dry-film thickness and adhesion checks on completion, followed by a written handover with the applicable product and workmanship warranty terms.',
                 icon: Award,
               },
             ].map((item) => {

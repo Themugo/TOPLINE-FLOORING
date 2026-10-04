@@ -40,6 +40,19 @@ jobs:
       - name: Vercel deployment contract
         run: npm run verify:vercel
 
+      - name: Vercel/CLI production contract and edge function deploy configuration
+        run: |
+          npm run verify:vercel-production-contract
+          npm run verify:edge-function-deploy-config
+
+      - name: Database read boundary, admin feedback and upload contracts
+        run: |
+          npm run verify:database-read-boundary
+          npm run verify:admin-feedback-contract
+          npm run verify:admin-management-uploads
+          npm run verify:project-documents
+          npm run verify:delivery-worker-hardening
+
       - name: Local Supabase replay
         run: npm run validate:local-db
 

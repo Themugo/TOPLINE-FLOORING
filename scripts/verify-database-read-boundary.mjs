@@ -23,7 +23,15 @@ check(!/estimated_budget|actual_expenses|expense_items/.test(s94.split('CREATE O
 // Public code paths must read the safe view, never the base projects table.
 check(!read('src/pages/portfolio.tsx').includes(".from('projects')"), 'portfolio.tsx must not query the base projects table');
 check(read('src/lib/public-projects.ts').includes(".from('public_projects')"), 'Public projects loader must use the public_projects view');
-check(read('scripts/generate-sitemap.mjs').includes("'public_projects'"), 'Sitemap must read project slugs from public_projects');
+{
+  const sitemapSrc = read('scripts/generate-sitemap.mjs');
+  const appSrc = read('src/App.tsx');
+  check(!sitemapSrc.includes("fetchSlugs('projects'"), 'Sitemap must not read the staff-only projects table');
+  // Every dynamic sitemap URL pattern must have a matching route in the app.
+  for (const [pattern, routePrefix] of [['/product/', "location.startsWith('/product/')"], ['/service/', "location.startsWith('/service/')"], ['/portfolio/', "location.startsWith('/portfolio/')"]]) {
+    if (sitemapSrc.includes('`' + pattern)) check(appSrc.includes(routePrefix), `Sitemap lists ${pattern}<slug> URLs but the app has no such route`);
+  }
+}
 
 // Known schema/code contract fixes.
 check(!read('src/pages/market.tsx').includes('sort_order'), 'partners has display_order, not sort_order');
@@ -45,7 +53,7 @@ check(s96.includes('coupon_validation_failures') && s96.includes("interval '10 m
 check(s96.includes("SET search_path = ''") , 'validate_coupon must keep a fixed search_path');
 for (const f of ['src', 'supabase/functions']) {
   const walk = (d) => fs.readdirSync(path.join(root, d), { withFileTypes: true }).flatMap((e) => e.isDirectory() ? walk(`${d}/${e.name}`) : [`${d}/${e.name}`]);
-  for (const file of walk(f).filter((x) => /\.(ts|tsx)$/.test(x))) {
+  for (const file of walk(f).filter((x) => /\.(ts|tsx)$/.test(x) && x !== 'src/types/database.ts')) {
     check(!read(file).includes('cost_price'), `${file} must not reference public cost_price columns`);
   }
 }
@@ -62,6 +70,17 @@ check(read('public/.well-known/security.txt') === read('public/security.txt'), '
 const m97 = '20260930250000_finance_permission_resource.sql';
 check(fs.existsSync(path.join(root, 'supabase/migrations', m97)) && manifest.includes(m97), 'finance permission migration missing or not in manifest');
 check(read(`supabase/migrations/${m97}`).includes("'finance'") && read(`supabase/migrations/${m97}`).includes("resource = 'payments'"), 'finance permission must mirror payments grants');
+
+// The generated types must reflect the move: no cost_price on the public products/variants rows.
+if (fs.existsSync(path.join(root, 'src/types/database.ts'))) {
+  const types = read('src/types/database.ts');
+  const rowOf = (table) => { const i = types.indexOf(`      ${table}: {\n        Row: {`); return i < 0 ? '' : types.slice(i, types.indexOf('        Insert: {', i)); };
+  for (const table of ['products', 'product_variants']) {
+    check(rowOf(table).length > 0, `src/types/database.ts has no ${table} row type (regenerate with npm run db:types)`);
+    check(!rowOf(table).includes('cost_price'), `src/types/database.ts still shows cost_price on public.${table}: regenerate after applying migration 20260930230000`);
+  }
+  check(types.includes('product_cost_prices: {'), 'src/types/database.ts is missing the staff-only product_cost_prices table');
+}
 
 if (failures.length) { console.error('Database read boundary verification FAILED.'); failures.forEach((f) => console.error(`- ${f}`)); process.exit(1); }
 console.log('Database read boundary static verification PASSED.');

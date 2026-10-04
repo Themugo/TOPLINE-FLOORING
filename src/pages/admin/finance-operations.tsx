@@ -5,23 +5,34 @@ import { formatKES } from '@/lib/utils';
 import { getFinanceOperations360, refreshInvoiceLifecycleStatuses } from '@/lib/finance-operations';
 import { getFinanceControl360, reconcileFinanceControl360 } from '@/lib/finance-control-360';
 import { useToast } from '@/hooks/use-toast';
-import { publicSupabase } from '@/lib/supabase';
+import { supabase } from '@/lib/supabase';
 
 type Snapshot = Record<string, unknown>;
 const money = (v: unknown) => formatKES(Number(v || 0));
 const count = (v: unknown) => Number(v || 0).toLocaleString();
+
+interface PendingPayment {
+  id: string;
+  payment_transaction_id: string;
+  target_type: string;
+  target_id: string;
+  payment_method: string;
+  status: string;
+  created_at: string;
+  tx?: { id: string; amount: number | null; currency: string | null; provider_reference: string | null; provider: string | null };
+}
 
 export default function FinanceOperations() {
   const [data, setData] = useState<Snapshot>({});
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [reconciling, setReconciling] = useState(false);
-  const [pendingPayments, setPendingPayments] = useState<any[]>([]);
+  const [pendingPayments, setPendingPayments] = useState<PendingPayment[]>([]);
   const [paymentAction, setPaymentAction] = useState<string | null>(null);
   const { toast } = useToast();
   const load = useCallback(async () => { setLoading(true); try { const [legacy, control] = await Promise.all([getFinanceOperations360(30), getFinanceControl360(30)]); setData({ ...legacy, control }); } catch (e) { toast({ title: 'Finance snapshot failed', description: e instanceof Error ? e.message : 'Unable to load finance data', variant: 'destructive' }); } finally { setLoading(false); } }, [toast]);
   useEffect(() => { void load(); }, [load]);
-  const loadPendingPayments = useCallback(async () => { const { data: attempts } = await publicSupabase.from('payment_attempts').select('id,payment_transaction_id,target_type,target_id,payment_method,status,created_at').eq('status','pending').order('created_at',{ ascending: false }).limit(50); if (!attempts?.length) { setPendingPayments([]); return; } const ids = attempts.map(a => a.payment_transaction_id); const { data: txs } = await publicSupabase.from('payment_transactions').select('id,amount,currency,provider_reference,provider').in('id', ids); const byId = new Map((txs || []).map(tx => [tx.id, tx])); setPendingPayments(attempts.map(a => ({ ...a, tx: byId.get(a.payment_transaction_id) })) ); }, []);
+  const loadPendingPayments = useCallback(async () => { const { data: attempts, error: attemptsError } = await supabase.from('payment_attempts').select('id,payment_transaction_id,target_type,target_id,payment_method,status,created_at').eq('status','pending').order('created_at',{ ascending: false }).limit(50); if (attemptsError) { toast({ title: 'Could not load pending payments', description: attemptsError.message, variant: 'destructive' }); setPendingPayments([]); return; } if (!attempts?.length) { setPendingPayments([]); return; } const ids = (attempts as PendingPayment[]).map(a => a.payment_transaction_id); const { data: txs } = await supabase.from('payment_transactions').select('id,amount,currency,provider_reference,provider').in('id', ids); const byId = new Map(((txs || []) as NonNullable<PendingPayment['tx']>[]).map(tx => [tx.id, tx])); setPendingPayments((attempts as PendingPayment[]).map(a => ({ ...a, tx: byId.get(a.payment_transaction_id) }))); }, [toast]);
   useEffect(() => { void loadPendingPayments(); }, [loadPendingPayments]);
   const refresh = async () => { setRefreshing(true); try { const r = await refreshInvoiceLifecycleStatuses(); toast({ title: 'Invoice lifecycle refreshed', description: `${Number(r.updated_count || 0)} invoice(s) updated.` }); await load(); } catch (e) { toast({ title: 'Refresh failed', description: e instanceof Error ? e.message : 'Unable to refresh', variant: 'destructive' }); } finally { setRefreshing(false); } };
   const control = (data.control || {}) as Record<string, unknown>;
@@ -29,7 +40,7 @@ export default function FinanceOperations() {
   const controlRefunds = (control.refunds || {}) as Record<string, unknown>;
   const reconciliation = (control.reconciliation || {}) as Record<string, unknown>;
   const reconcile = async () => { setReconciling(true); try { const result = await reconcileFinanceControl360(); toast({ title: 'Finance reconciled', description: `${Number(result.invoice_fixes || 0)} invoice and ${Number(result.order_fixes || 0)} order correction(s).` }); await load(); } catch (e) { toast({ title: 'Reconciliation failed', description: e instanceof Error ? e.message : 'Unable to reconcile finance', variant: 'destructive' }); } finally { setReconciling(false); } };
-  const reconcileBankPayment = async (attemptId: string, success: boolean) => { setPaymentAction(attemptId); try { const reference = window.prompt(success ? 'Enter bank transfer reference (optional):' : 'Reason for rejection (optional):') || null; const notes = window.prompt(success ? 'Reconciliation notes (optional):' : 'Rejection notes (optional):') || null; const { data: result, error } = await publicSupabase.rpc('reconcile_payment_attempt_360', { p_attempt_id: attemptId, p_success: success, p_reference: reference, p_notes: notes }); if (error) throw error; toast({ title: success ? 'Bank payment reconciled' : 'Payment rejected', description: result?.status || 'Updated.' }); await loadPendingPayments(); await load(); } catch (e) { toast({ title: 'Payment reconciliation failed', description: e instanceof Error ? e.message : 'Unable to reconcile payment.', variant: 'destructive' }); } finally { setPaymentAction(null); } };
+  const reconcileBankPayment = async (attemptId: string, success: boolean) => { setPaymentAction(attemptId); try { const reference = window.prompt(success ? 'Enter bank transfer reference (optional):' : 'Reason for rejection (optional):') || null; const notes = window.prompt(success ? 'Reconciliation notes (optional):' : 'Rejection notes (optional):') || null; const { data: result, error } = await supabase.rpc('reconcile_payment_attempt_360', { p_attempt_id: attemptId, p_success: success, p_reference: reference, p_notes: notes }); if (error) throw error; toast({ title: success ? 'Bank payment reconciled' : 'Payment rejected', description: result?.status || 'Updated.' }); await loadPendingPayments(); await load(); } catch (e) { toast({ title: 'Payment reconciliation failed', description: e instanceof Error ? e.message : 'Unable to reconcile payment.', variant: 'destructive' }); } finally { setPaymentAction(null); } };
   const aging = (data.aging || {}) as Record<string, unknown>;
   const cards = [
     ['Invoiced', money(data.invoiced), Receipt], ['Collected', money(data.collected), WalletCards], ['Outstanding', money(data.outstanding), Clock3], ['Overdue', money(data.overdue_value), AlertTriangle],

@@ -452,7 +452,7 @@ export default function Portfolio() {
                 <div className="pt-4 border-t border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-3">
                   <div className="text-xs text-gray-500 flex items-center gap-1.5">
                     <Award className="w-4 h-4 text-primary-500" />
-                    <span>Includes 10-Year Installation Warranty</span>
+                    <span>Warranty terms are stated in your written quotation</span>
                   </div>
                   <Link
                     href="/quotation"

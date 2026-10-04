@@ -47,4 +47,4 @@ Provider credentials remain Edge environment secrets. They are intentionally not
 The project previously encountered a Supabase pooler TLS timeout. If the standard connection continues to time out, the current Supabase CLI documentation supports `--skip-pooler` on the beta CLI for direct database connection, subject to IPv6/network support. citeturn0search1turn0search0
 
 ## Migration integrity manifest
-The complete per-file SHA-256 manifest is in `docs/DATABASE-MIGRATION-SHA256-2026-10-02.txt`.
+The complete per-file SHA-256 manifest is in `docs/DATABASE-MIGRATION-SHA256-2026-10-03.txt`.

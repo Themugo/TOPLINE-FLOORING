@@ -922,17 +922,21 @@ export function useServices(options?: { activeOnly?: boolean }) {
   };
 
   const updateService = async (id: string, updates: Partial<Service>) => {
-    const { error: err } = await supabase
+    const { data, error: err } = await supabase
       .from('services')
       .update({ ...updates, updated_at: new Date().toISOString() })
-      .eq('id', id);
+      .eq('id', id)
+      .select('id');
     if (err) throw err;
+    // Row-level security filters forbidden writes silently: zero affected rows is a failure.
+    if (!data || data.length === 0) throw new Error('Service was not updated. It may no longer exist or you may lack permission.');
     await refetch();
   };
 
   const deleteService = async (id: string) => {
-    const { error: err } = await supabase.from('services').delete().eq('id', id);
+    const { data, error: err } = await supabase.from('services').delete().eq('id', id).select('id');
     if (err) throw err;
+    if (!data || data.length === 0) throw new Error('Service was not deleted. It may no longer exist or you may lack permission.');
     await refetch();
   };
 

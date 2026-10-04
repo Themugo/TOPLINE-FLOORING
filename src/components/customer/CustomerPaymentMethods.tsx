@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { CreditCard, Landmark, Smartphone, ShieldCheck } from 'lucide-react';
 import { getCustomerPaymentMethods, type CustomerPaymentContext, type CustomerPaymentGateway } from '@/lib/payment-gateways';
 
@@ -8,8 +8,11 @@ export function CustomerPaymentMethods({ context, value, onChange, onGatewayChan
   const [methods, setMethods] = useState<CustomerPaymentGateway[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  // Latest props for the load effect, which must re-run only when the payment context changes.
+  const latest = useRef({ value, onChange, onGatewayChange });
+  latest.current = { value, onChange, onGatewayChange };
 
-  useEffect(() => { let active = true; setLoading(true); setError(''); getCustomerPaymentMethods(context).then(rows => { if (!active) return; setMethods(rows); if (!value && rows[0]) { onChange(rows[0].payment_method); onGatewayChange?.(rows[0].gateway_key); } }).catch(() => { if (active) setError('Payment options are temporarily unavailable. Please try again.'); }).finally(() => active && setLoading(false)); return () => { active = false; }; }, [context]);
+  useEffect(() => { let active = true; setLoading(true); setError(''); getCustomerPaymentMethods(context).then(rows => { if (!active) return; setMethods(rows); const current = latest.current; if (!current.value && rows[0]) { current.onChange(rows[0].payment_method); current.onGatewayChange?.(rows[0].gateway_key); } }).catch(() => { if (active) setError('Payment options are temporarily unavailable. Please try again.'); }).finally(() => active && setLoading(false)); return () => { active = false; }; }, [context]);
 
   if (loading) return <div className="rounded-xl border p-4 text-sm text-muted-foreground">Loading secure payment options…</div>;
   if (error) return <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">{error}</div>;

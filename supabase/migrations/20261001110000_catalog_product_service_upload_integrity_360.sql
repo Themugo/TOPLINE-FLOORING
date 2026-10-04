@@ -46,41 +46,14 @@ SET public = false,
 -- -----------------------------------------------------------------------------
 -- 2. Product integrity.
 -- -----------------------------------------------------------------------------
-ALTER TABLE public.products
-  ADD CONSTRAINT products_sale_price_not_above_price_chk
-  CHECK (sale_price IS NULL OR sale_price <= price) NOT VALID;
 
-ALTER TABLE public.products
-  ADD CONSTRAINT products_display_order_nonnegative_chk
-  CHECK (display_order >= 0) NOT VALID;
 
-ALTER TABLE public.products
-  ADD CONSTRAINT products_low_stock_threshold_nonnegative_chk
-  CHECK (low_stock_threshold >= 0) NOT VALID;
 
-ALTER TABLE public.product_variants
-  ADD CONSTRAINT product_variants_sale_price_nonnegative_chk
-  CHECK (sale_price IS NULL OR sale_price >= 0) NOT VALID;
 
-ALTER TABLE public.product_variants
-  ADD CONSTRAINT product_variants_cost_price_nonnegative_chk
-  CHECK (cost_price IS NULL OR cost_price >= 0) NOT VALID;
 
-ALTER TABLE public.product_variants
-  ADD CONSTRAINT product_variants_display_order_nonnegative_chk
-  CHECK (display_order >= 0) NOT VALID;
 
-ALTER TABLE public.product_images
-  ADD CONSTRAINT product_images_display_order_nonnegative_chk
-  CHECK (display_order >= 0) NOT VALID;
 
-ALTER TABLE public.product_specifications
-  ADD CONSTRAINT product_specifications_display_order_nonnegative_chk
-  CHECK (display_order >= 0) NOT VALID;
 
-ALTER TABLE public.product_documents
-  ADD CONSTRAINT product_documents_display_order_nonnegative_chk
-  CHECK (display_order >= 0) NOT VALID;
 
 -- At most one primary image per product. The existing application RPC remains
 -- the authoritative way to change the primary image.
@@ -100,17 +73,8 @@ CREATE INDEX IF NOT EXISTS product_specifications_product_order_idx
 -- -----------------------------------------------------------------------------
 -- 3. Service catalogue integrity.
 -- -----------------------------------------------------------------------------
-ALTER TABLE public.services
-  ADD CONSTRAINT services_base_price_nonnegative_chk
-  CHECK (base_price IS NULL OR base_price >= 0) NOT VALID;
 
-ALTER TABLE public.services
-  ADD CONSTRAINT services_duration_nonnegative_chk
-  CHECK (duration_hours IS NULL OR duration_hours >= 0) NOT VALID;
 
-ALTER TABLE public.services
-  ADD CONSTRAINT services_display_order_nonnegative_chk
-  CHECK (display_order >= 0) NOT VALID;
 
 CREATE INDEX IF NOT EXISTS services_service_code_idx
   ON public.services(service_code)
@@ -129,21 +93,9 @@ ALTER TABLE public.media_files
   ALTER COLUMN is_public SET DEFAULT true,
   ALTER COLUMN is_public SET NOT NULL;
 
-ALTER TABLE public.media_files
-  ADD CONSTRAINT media_files_filename_nonblank_chk
-  CHECK (btrim(filename) <> '') NOT VALID;
 
-ALTER TABLE public.media_files
-  ADD CONSTRAINT media_files_file_size_nonnegative_chk
-  CHECK (file_size IS NULL OR file_size > 0) NOT VALID;
 
-ALTER TABLE public.media_files
-  ADD CONSTRAINT media_files_file_size_ceiling_chk
-  CHECK (file_size IS NULL OR file_size <= 10485760) NOT VALID;
 
-ALTER TABLE public.media_files
-  ADD CONSTRAINT media_files_dimensions_nonnegative_chk
-  CHECK ((width IS NULL OR width > 0) AND (height IS NULL OR height > 0)) NOT VALID;
 
 CREATE INDEX IF NOT EXISTS media_files_folder_created_idx
   ON public.media_files(folder_id, created_at DESC);
@@ -164,24 +116,55 @@ CREATE INDEX IF NOT EXISTS services_image_url_idx
   WHERE image_url IS NOT NULL;
 
 -- -----------------------------------------------------------------------------
--- 6. Validate the new constraints after they have been installed.
+-- 6. Install and validate the integrity constraints (idempotent, tolerant of existing data).
 -- -----------------------------------------------------------------------------
-ALTER TABLE public.products VALIDATE CONSTRAINT products_sale_price_not_above_price_chk;
-ALTER TABLE public.products VALIDATE CONSTRAINT products_display_order_nonnegative_chk;
-ALTER TABLE public.products VALIDATE CONSTRAINT products_low_stock_threshold_nonnegative_chk;
-ALTER TABLE public.product_variants VALIDATE CONSTRAINT product_variants_sale_price_nonnegative_chk;
-ALTER TABLE public.product_variants VALIDATE CONSTRAINT product_variants_cost_price_nonnegative_chk;
-ALTER TABLE public.product_variants VALIDATE CONSTRAINT product_variants_display_order_nonnegative_chk;
-ALTER TABLE public.product_images VALIDATE CONSTRAINT product_images_display_order_nonnegative_chk;
-ALTER TABLE public.product_specifications VALIDATE CONSTRAINT product_specifications_display_order_nonnegative_chk;
-ALTER TABLE public.product_documents VALIDATE CONSTRAINT product_documents_display_order_nonnegative_chk;
-ALTER TABLE public.services VALIDATE CONSTRAINT services_base_price_nonnegative_chk;
-ALTER TABLE public.services VALIDATE CONSTRAINT services_duration_nonnegative_chk;
-ALTER TABLE public.services VALIDATE CONSTRAINT services_display_order_nonnegative_chk;
-ALTER TABLE public.media_files VALIDATE CONSTRAINT media_files_filename_nonblank_chk;
-ALTER TABLE public.media_files VALIDATE CONSTRAINT media_files_file_size_nonnegative_chk;
-ALTER TABLE public.media_files VALIDATE CONSTRAINT media_files_file_size_ceiling_chk;
-ALTER TABLE public.media_files VALIDATE CONSTRAINT media_files_dimensions_nonnegative_chk;
+DO $$
+DECLARE
+  c record;
+BEGIN
+  FOR c IN
+    SELECT * FROM (VALUES
+    ('products', 'products_sale_price_not_above_price_chk', 'CHECK (sale_price IS NULL OR sale_price <= price)'),
+    ('products', 'products_display_order_nonnegative_chk', 'CHECK (display_order >= 0)'),
+    ('products', 'products_low_stock_threshold_nonnegative_chk', 'CHECK (low_stock_threshold >= 0)'),
+    ('product_variants', 'product_variants_sale_price_nonnegative_chk', 'CHECK (sale_price IS NULL OR sale_price >= 0)'),
+    ('product_variants', 'product_variants_cost_price_nonnegative_chk', 'CHECK (cost_price IS NULL OR cost_price >= 0)'),
+    ('product_variants', 'product_variants_display_order_nonnegative_chk', 'CHECK (display_order >= 0)'),
+    ('product_images', 'product_images_display_order_nonnegative_chk', 'CHECK (display_order >= 0)'),
+    ('product_specifications', 'product_specifications_display_order_nonnegative_chk', 'CHECK (display_order >= 0)'),
+    ('product_documents', 'product_documents_display_order_nonnegative_chk', 'CHECK (display_order >= 0)'),
+    ('services', 'services_base_price_nonnegative_chk', 'CHECK (base_price IS NULL OR base_price >= 0)'),
+    ('services', 'services_duration_nonnegative_chk', 'CHECK (duration_hours IS NULL OR duration_hours >= 0)'),
+    ('services', 'services_display_order_nonnegative_chk', 'CHECK (display_order >= 0)'),
+    ('media_files', 'media_files_filename_nonblank_chk', 'CHECK (btrim(filename) <> '''')'),
+    ('media_files', 'media_files_file_size_nonnegative_chk', 'CHECK (file_size IS NULL OR file_size > 0)'),
+    ('media_files', 'media_files_file_size_ceiling_chk', 'CHECK (file_size IS NULL OR file_size <= 10485760)'),
+    ('media_files', 'media_files_dimensions_nonnegative_chk', 'CHECK ((width IS NULL OR width > 0) AND (height IS NULL OR height > 0))')
+    ) AS v(tbl, cname, def)
+  LOOP
+    IF NOT EXISTS (
+      SELECT 1 FROM pg_constraint
+      WHERE conname = c.cname AND conrelid = format('public.%I', c.tbl)::regclass
+    ) THEN
+      BEGIN
+        EXECUTE format('ALTER TABLE public.%I ADD CONSTRAINT %I %s NOT VALID', c.tbl, c.cname, c.def);
+      EXCEPTION WHEN undefined_column THEN
+        -- e.g. product_variants.cost_price, which moved to the staff-only product_cost_prices table
+        RAISE NOTICE 'constraint % skipped: referenced column no longer exists', c.cname;
+        CONTINUE;
+      END;
+    END IF;
+    BEGIN
+      EXECUTE format('ALTER TABLE public.%I VALIDATE CONSTRAINT %I', c.tbl, c.cname);
+    EXCEPTION WHEN check_violation THEN
+      -- Existing production rows break the rule: keep it enforced for new and changed rows and
+      -- leave it NOT VALID instead of failing the whole deployment. Clean the data, then run
+      -- ALTER TABLE ... VALIDATE CONSTRAINT.
+      RAISE NOTICE 'constraint % left NOT VALID: existing rows violate it', c.cname;
+    END;
+  END LOOP;
+END $$;
+
 
 COMMENT ON TABLE public.products IS 'Canonical Topline product catalogue with database-enforced commercial and inventory integrity.';
 COMMENT ON TABLE public.services IS 'Canonical Topline service catalogue with database-enforced pricing, duration and ordering integrity.';

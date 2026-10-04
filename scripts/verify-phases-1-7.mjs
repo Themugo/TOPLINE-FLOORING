@@ -16,7 +16,13 @@ const phase1 = read('docs/PHASE_1_LAUNCH_GAP_AUDIT.md');
 pass('Phase 1 launch-gap runbook exists', phase1.includes('Phase 1 — Topline Launch Gap Audit'));
 pass('CMS fails closed when Supabase is unavailable', cms.includes("throw new Error('CMS database is not configured"));
 pass('CMS query errors are not replaced by demo defaults', cms.includes('CMS content could not be loaded from Supabase'));
-pass('CMS mutations persist before updating local cache', cms.indexOf("supabase.from('site_settings').upsert") >= 0 && cms.indexOf('cmsStoreCache[groupKey] = groupData') > cms.indexOf("supabase.from('site_settings').upsert"));
+{
+  // The cache may only change after the upsert succeeded: the save error is thrown before any cache assignment.
+  const upsertAt = cms.indexOf("supabase.from('site_settings').upsert");
+  const failAt = cms.indexOf('CMS content could not be saved to Supabase');
+  const cacheAt = cms.search(/store\[groupKey\]\s*=\s*groupData|cmsStoreCache\[groupKey\]\s*=\s*groupData/);
+  pass('CMS mutations persist before updating local cache', upsertAt >= 0 && failAt > upsertAt && cacheAt > failAt);
+}
 pass('unsupported public CMS statistics are not embedded', !/500\s*\+|2\.5M|99\.4%/.test(defaults));
 pass('fictional public project map records are not embedded', !defaults.includes('Central Metro Commercial Plaza') && !defaults.includes('Metropolis'));
 pass('project templates no longer use browser persistence', !templates.includes('project_templates_cache') && !templates.includes('localStorage'));

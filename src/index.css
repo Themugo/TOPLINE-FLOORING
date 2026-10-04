@@ -231,7 +231,7 @@
   .form-section label { @apply text-xs font-semibold uppercase tracking-[.08em] text-navy-600; }
   .prose-copy { @apply text-navy-600 leading-8; }
   .customer-intent-grid { @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3; }
-  .customer-intent-card { @apply group flex items-center justify-between gap-4 rounded-2xl border border-navy-100/80 bg-white px-5 py-4 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-primary-200 hover:shadow-premium; }
+  .customer-intent-card { @apply flex items-center justify-between gap-4 rounded-2xl border border-navy-100/80 bg-white px-5 py-4 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-primary-200 hover:shadow-premium; }
   .customer-intent-card strong { @apply block text-sm font-bold text-navy-950; }
   .customer-intent-card span { @apply block mt-0.5 text-xs text-navy-500; }
   .customer-section-head { @apply flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-8; }

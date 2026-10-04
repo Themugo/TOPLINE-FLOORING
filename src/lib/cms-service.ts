@@ -103,10 +103,9 @@ export async function updateCMSGroup<K extends CMSGroupKey>(
   }
 
   // Update the local cache only after the database confirms persistence.
-  if (!cmsStoreCache) {
-    cmsStoreCache = JSON.parse(JSON.stringify(DEFAULT_CMS_STORE));
-  }
-  cmsStoreCache[groupKey] = groupData;
+  const store = cmsStoreCache ?? (JSON.parse(JSON.stringify(DEFAULT_CMS_STORE)) as typeof DEFAULT_CMS_STORE);
+  store[groupKey] = groupData;
+  cmsStoreCache = store;
   return groupData;
 }
 

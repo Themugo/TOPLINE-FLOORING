@@ -40,3 +40,28 @@ verify_jwt = false
 
 [functions.communication-provider-readiness]
 verify_jwt = false
+
+# --- Payments -----------------------------------------------------------------------------------
+# These functions authenticate callers themselves, so the gateway JWT check must be OFF:
+#  * payment-initiate / payment-status are called from the customer's browser with the publishable
+#    key (not a user JWT) and are authorised by a one-time access token (stored only as a hash).
+#  * payment-callback / payment-webhook are called by M-Pesa and card providers, which cannot send a
+#    Supabase JWT; they verify a shared secret or an HMAC signature.
+# With the CLI default (verify_jwt = true) every one of these calls is rejected with 401 before the
+# function runs, so checkout, payment status and provider callbacks all fail in production.
+[functions.payment-initiate]
+verify_jwt = false
+
+[functions.payment-status]
+verify_jwt = false
+
+[functions.payment-callback]
+verify_jwt = false
+
+[functions.payment-webhook]
+verify_jwt = false
+
+# Staff-only: invoked from the admin app with the signed-in user's JWT; the function also checks the
+# caller's permissions itself.
+[functions.brevo-test-email]
+verify_jwt = true

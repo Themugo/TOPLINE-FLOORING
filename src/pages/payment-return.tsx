@@ -12,17 +12,15 @@ export default function PaymentReturn() {
   const [status, setStatus] = useState<'loading'|'pending'|'successful'|'failed'>('loading');
   const [message, setMessage] = useState('Checking your payment status…');
   const [instructions, setInstructions] = useState<Record<string, unknown> | null>(null);
-  const [pollCount, setPollCount] = useState(0);
   useEffect(() => {
     const attemptId = params.get('attempt_id');
     const token = params.get('access_token');
     if (!attemptId || !token) { setStatus('failed'); setMessage('This payment return link is incomplete.'); return; }
     let active = true;
-    setPollCount(0);
+    let polls = 0; // local counter: state captured by this closure would never advance, so polling never stopped
     let timer: number | undefined;
     const poll = async () => {
-      const nextPoll = pollCount + 1;
-      setPollCount(nextPoll);
+      const nextPoll = ++polls;
       try {
         const result = await getCustomerPaymentAttemptStatus(attemptId, token);
         if (!active) return;

@@ -15,9 +15,17 @@ pass('legacy broad private-document read policy is explicitly removed', policy.i
 pass('legacy broad private-document upload policy is explicitly removed', policy.includes('DROP POLICY IF EXISTS "Topline private documents upload"'));
 pass('legacy broad private-document update policy is explicitly removed', policy.includes('DROP POLICY IF EXISTS "Topline private documents update"'));
 pass('legacy broad private-document delete policy is explicitly removed', policy.includes('DROP POLICY IF EXISTS "Topline private documents delete"'));
-pass('project document reads require metadata row', policy.includes('EXISTS (') && policy.includes('FROM public.project_documents pd') && policy.includes('pd.storage_path = storage.objects.name'));
-pass('project document update is metadata scoped', policy.includes('FOR UPDATE') && policy.includes("private.current_user_has_permission('projects','update')"));
-pass('project document delete is metadata scoped', policy.includes('FOR DELETE') && policy.includes("private.current_user_has_permission('projects','delete')"));
+const norm = policy.replace(/\s+/g, ' ');
+const policyBody = (name) => { const i = norm.indexOf(`CREATE POLICY "${name}"`); return i < 0 ? '' : norm.slice(i, norm.indexOf(';', i)); };
+const hasPerm = (body, action) => new RegExp(`current_user_has_permission\\('projects',\\s*'${action}'\\)`).test(body);
+const meta = 'FROM public.project_documents pd WHERE pd.storage_path = storage.objects.name';
+// Read is gated by projects.select inside the projects/ namespace but NOT by a metadata row: Storage evaluates
+// the SELECT policy on the row it just inserted, and the metadata row is written after the upload.
+pass('project document reads are scoped to projects.select inside the projects/ namespace', hasPerm(policyBody('Topline project documents read'), 'select') && policyBody('Topline project documents read').includes("split_part(name, '/', 1) = 'projects'") && !policyBody('Topline project documents read').includes(meta));
+pass('project document upload requires an existing project folder', hasPerm(policyBody('Topline project documents upload'), 'insert') && policyBody('Topline project documents upload').includes('FROM public.projects'));
+pass('project document update is metadata scoped', hasPerm(policyBody('Topline project documents update'), 'update') && policyBody('Topline project documents update').includes(meta));
+pass('project document delete is metadata scoped', hasPerm(policyBody('Topline project documents delete'), 'delete') && policyBody('Topline project documents delete').includes(meta));
+pass('legacy media/customer document policies exclude the projects/ namespace', ['read','upload','update','delete'].every((k) => policyBody(`Topline private documents ${k}`).includes("split_part(name, '/', 1) <> 'projects'")));
 pass('customer export no longer uses wildcard CORS', !exportFn.includes("'Access-Control-Allow-Origin': '*'"));
 pass('customer export has configurable canonical origin', exportFn.includes('TOPLINE_WEB_ORIGIN') && exportFn.includes('https://toplineflooringandwaterproofing.co.ke'));
 const deleteHandler = doc.slice(doc.indexOf('const handleDeleteDocument'), doc.indexOf('const filteredDocs'));
