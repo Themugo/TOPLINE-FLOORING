@@ -171,15 +171,17 @@ export default function HeroSlider({
                 </Button>
               </Link>
             )}
-            <a href={telHref(settings?.phone || '+1 (555) 000-0000')}>
-              <Button
-                variant="outline"
-                className="border-white/40 text-white hover:bg-white/10 font-sans font-medium px-4 sm:px-6 h-10 sm:h-11 rounded-sm tracking-wide backdrop-blur-sm text-xs sm:text-sm shadow-lg"
-              >
-                <Phone className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary" />
-                {settings?.phone || '+1 (555) 000-0000'}
-              </Button>
-            </a>
+            {settings?.phone && (
+              <a href={telHref(settings.phone)}>
+                <Button
+                  variant="outline"
+                  className="border-white/40 text-white hover:bg-white/10 font-sans font-medium px-4 sm:px-6 h-10 sm:h-11 rounded-sm tracking-wide backdrop-blur-sm text-xs sm:text-sm shadow-lg"
+                >
+                  <Phone className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary" />
+                  {settings.phone}
+                </Button>
+              </a>
+            )}
           </div>
         </div>
       </div>

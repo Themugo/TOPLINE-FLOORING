@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { describeDbError } from '@/lib/db';
 import { AlertTriangle, Package, TrendingDown, History } from 'lucide-react';
 import { AdminLayout } from './dashboard';
 import { supabase } from '@/lib/supabase';
@@ -72,8 +73,8 @@ export default function AdminInventory() {
     try {
       await resolveInventoryAlert(id);
       await fetchData();
-    } catch {
-      toast({ title: 'Failed to resolve alert', variant: 'destructive' });
+    } catch (err) {
+      toast({ title: 'Failed to resolve alert', description: describeDbError(err as { message?: string; code?: string }), variant: 'destructive' });
     }
   };
 

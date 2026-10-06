@@ -33,5 +33,13 @@ for (const m of config.matchAll(/\[functions\.([a-z0-9-]+)\]/g)) {
   if (!functions.includes(m[1])) failures.push(`config.toml configures unknown function ${m[1]}`);
 }
 
+// Every outbound provider call must be bounded, otherwise a provider outage hangs the function until the platform kills it.
+for (const name of functions) {
+  const src = read(`supabase/functions/${name}/index.ts`);
+  const fetches = [...src.matchAll(/await fetch\(/g)].length;
+  const timeouts = [...src.matchAll(/AbortSignal\.timeout\(/g)].length;
+  if (fetches > timeouts) failures.push(`${name}: ${fetches} outbound fetch call(s) but only ${timeouts} timeout(s)`);
+}
+
 if (failures.length) { console.error('Edge function deploy configuration FAILED.'); failures.forEach((f) => console.error(`- ${f}`)); process.exit(1); }
 console.log(`Edge function deploy configuration verified for ${functions.length} functions.`);

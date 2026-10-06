@@ -226,43 +226,17 @@ export function useProducts(options?: { categoryId?: string; featured?: boolean;
       if (options?.categoryId) query = query.eq('category_id', options.categoryId);
       if (options?.featured) query = query.eq('featured', true);
       if (options?.brandId) query = query.eq('brand_id', options.brandId);
-      if (options?.search) query = query.or(`name.ilike.%${options.search}%,slug.ilike.%${options.search}%,sku.ilike.%${options.search}%`);
+      // Strip characters that carry meaning in PostgREST filters / LIKE patterns.
+      const term = (options?.search ?? '').replace(/[%_,()*\\]/g, ' ').replace(/\s+/g, ' ').trim();
+      if (term) query = query.or(`name.ilike.%${term}%,slug.ilike.%${term}%,sku.ilike.%${term}%`);
       if (options?.limit) query = query.limit(options.limit);
 
       const { data, error: err } = await query;
-      if (err || !data || data.length === 0) {
-        let filtered: Product[] = []
-        if (options?.categoryId) filtered = filtered.filter((p) => p.category_id === options.categoryId);
-        if (options?.featured) filtered = filtered.filter((p) => p.featured);
-        if (options?.search) {
-          const q = options.search.toLowerCase();
-          filtered = filtered.filter(
-            (p) =>
-              p.name.toLowerCase().includes(q) ||
-              p.slug.toLowerCase().includes(q) ||
-              (p.sku || '').toLowerCase().includes(q)
-          );
-        }
-        if (options?.limit) filtered = filtered.slice(0, options.limit);
-        setProducts(filtered);
-      } else {
-        setProducts(data);
-      }
-    } catch {
-      let filtered: Product[] = []
-      if (options?.categoryId) filtered = filtered.filter((p) => p.category_id === options.categoryId);
-      if (options?.featured) filtered = filtered.filter((p) => p.featured);
-      if (options?.search) {
-        const q = options.search.toLowerCase();
-        filtered = filtered.filter(
-          (p) =>
-            p.name.toLowerCase().includes(q) ||
-            p.slug.toLowerCase().includes(q) ||
-            (p.sku || '').toLowerCase().includes(q)
-        );
-      }
-      if (options?.limit) filtered = filtered.slice(0, options.limit);
-      setProducts(filtered);
+      if (err) throw err;
+      setProducts((data as Product[] | null) ?? []);
+    } catch (err) {
+      setProducts([]);
+      setError(errorMessage(err, 'Failed to load products'));
     } finally {
       setLoading(false);
     }
@@ -291,15 +265,11 @@ export function useProduct(slug: string) {
         .eq('slug', slug)
         .eq('is_active', true)
         .maybeSingle();
-      if (err || !data) {
-        const found = null;
-        setProduct(found || null);
-      } else {
-        setProduct(data);
-      }
-    } catch {
-      const found = null;
-      setProduct(found || null);
+      if (err) throw err;
+      setProduct(data ?? null);
+    } catch (err) {
+      setProduct(null);
+      setError(errorMessage(err, 'Failed to load product'));
     } finally {
       setLoading(false);
     }
@@ -321,13 +291,11 @@ export function useCategories() {
     setError(null);
     try {
       const { data, error: err } = await supabase.from('categories').select('*').eq('is_active', true).order('display_order');
-      if (err || !data || data.length === 0) {
+      if (err) throw err;
+        setCategories(data ?? []);
+    } catch (err) {
         setCategories([]);
-      } else {
-        setCategories(data);
-      }
-    } catch {
-      setCategories([]);
+        setError(errorMessage(err, 'Failed to load data'));
     } finally {
       setLoading(false);
     }
@@ -404,13 +372,11 @@ export function useHeroSlides(options?: { activeOnly?: boolean }) {
       let query = supabase.from('hero_slides').select('*').order('display_order');
       if (activeOnly) query = query.eq('is_active', true);
       const { data, error: err } = await query;
-      if (err || !data || data.length === 0) {
+      if (err) throw err;
+        setSlides(data ?? []);
+    } catch (err) {
         setSlides([]);
-      } else {
-        setSlides(data);
-      }
-    } catch {
-      setSlides([]);
+        setError(errorMessage(err, 'Failed to load data'));
     } finally {
       setLoading(false);
     }
@@ -435,13 +401,11 @@ export function useTestimonials(options?: { activeOnly?: boolean }) {
       let query = supabase.from('testimonials').select('*').order('display_order');
       if (activeOnly) query = query.eq('is_active', true);
       const { data, error: err } = await query;
-      if (err || !data || data.length === 0) {
+      if (err) throw err;
+        setTestimonials(data ?? []);
+    } catch (err) {
         setTestimonials([]);
-      } else {
-        setTestimonials(data);
-      }
-    } catch {
-      setTestimonials([]);
+        setError(errorMessage(err, 'Failed to load data'));
     } finally {
       setLoading(false);
     }
@@ -466,13 +430,11 @@ export function usePartners(options?: { activeOnly?: boolean }) {
       let query = supabase.from('partners').select('*').order('display_order');
       if (activeOnly) query = query.eq('is_active', true);
       const { data, error: err } = await query;
-      if (err || !data || data.length === 0) {
+      if (err) throw err;
+        setPartners(data ?? []);
+    } catch (err) {
         setPartners([]);
-      } else {
-        setPartners(data);
-      }
-    } catch {
-      setPartners([]);
+        setError(errorMessage(err, 'Failed to load data'));
     } finally {
       setLoading(false);
     }
@@ -576,13 +538,11 @@ export function useDeliveryZones(options?: { activeOnly?: boolean }) {
       let query = supabase.from('delivery_zones').select('*').order('display_order');
       if (activeOnly) query = query.eq('is_active', true);
       const { data, error: err } = await query;
-      if (err || !data || data.length === 0) {
+      if (err) throw err;
+        setZones(data ?? []);
+    } catch (err) {
         setZones([]);
-      } else {
-        setZones(data);
-      }
-    } catch {
-      setZones([]);
+        setError(errorMessage(err, 'Failed to load data'));
     } finally {
       setLoading(false);
     }

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { describeDbError } from '@/lib/db';
 import { Plus, Pencil, Trash2, X, Handshake } from 'lucide-react';
 import { AdminLayout } from './dashboard';
 import { supabase } from '@/lib/supabase';
@@ -45,8 +46,8 @@ export default function AdminPartners() {
       }
       resetForm();
       await fetchPartners();
-    } catch {
-      toast({ title: 'Failed to save partner', variant: 'destructive' });
+    } catch (err) {
+      toast({ title: 'Failed to save partner', description: describeDbError(err as { message?: string; code?: string }), variant: 'destructive' });
     } finally {
       setSaving(false);
     }
@@ -59,8 +60,8 @@ export default function AdminPartners() {
       if (error) throw error;
       await fetchPartners();
       toast({ title: 'Partner deleted' });
-    } catch {
-      toast({ title: 'Failed to delete partner', variant: 'destructive' });
+    } catch (err) {
+      toast({ title: 'Failed to delete partner', description: describeDbError(err as { message?: string; code?: string }), variant: 'destructive' });
     }
   };
 

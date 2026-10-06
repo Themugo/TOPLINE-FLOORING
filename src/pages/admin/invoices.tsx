@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { describeDbError } from '@/lib/db';
 import { Plus, X, Trash2, Download, DollarSign, FileText } from 'lucide-react';
 import { AdminLayout } from './dashboard';
 import { useInvoices, useCustomers, useSiteSettings } from '@/hooks/use-data';
@@ -80,8 +81,8 @@ export default function AdminInvoices() {
       setShowCreate(false);
       setForm({ customer_id: '', customer_name: '', customer_email: '', customer_phone: '', billing_address: '', tax_rate: '16', due_date: '', notes: '' });
       setSelected(invoice);
-    } catch {
-      toast({ title: 'Failed to create invoice', variant: 'destructive' });
+    } catch (err) {
+      toast({ title: 'Failed to create invoice', description: describeDbError(err as { message?: string; code?: string }), variant: 'destructive' });
     } finally {
       setSaving(false);
     }
@@ -254,8 +255,8 @@ function InvoiceDetail({
         unit_price: Number(newItem.unit_price) || 0,
       });
       setNewItem({ description: '', quantity: '1', unit_price: '0' });
-    } catch {
-      toast({ title: 'Failed to add item', variant: 'destructive' });
+    } catch (err) {
+      toast({ title: 'Failed to add item', description: describeDbError(err as { message?: string; code?: string }), variant: 'destructive' });
     } finally {
       setSavingItem(false);
     }
@@ -265,8 +266,8 @@ function InvoiceDetail({
     if (!confirm('Remove this charge from the invoice?')) return;
     try {
       await removeInvoiceItem(current.id, itemId);
-    } catch {
-      toast({ title: 'Failed to remove item', variant: 'destructive' });
+    } catch (err) {
+      toast({ title: 'Failed to remove item', description: describeDbError(err as { message?: string; code?: string }), variant: 'destructive' });
     }
   };
 
@@ -290,8 +291,8 @@ function InvoiceDetail({
       await recordPayment(current.id, amount, payment.method, payment.reference || undefined);
       toast({ title: 'Payment recorded', description: 'The invoice balance and status have been refreshed.' });
       setPayment({ amount: '', method: 'cash', reference: '' });
-    } catch {
-      toast({ title: 'Failed to record payment', variant: 'destructive' });
+    } catch (err) {
+      toast({ title: 'Failed to record payment', description: describeDbError(err as { message?: string; code?: string }), variant: 'destructive' });
     } finally {
       setSavingPayment(false);
     }

@@ -23,7 +23,7 @@ export default function Shop() {
   const [selectedVariants, setSelectedVariants] = useState<Record<string, string>>({});
 
   const { categories } = useCategories();
-  const { products, loading } = useProducts(
+  const { products, loading, error: loadError, refetch } = useProducts(
     selectedCategory ? { categoryId: selectedCategory } : undefined
   );
   const { addItem } = useCart();
@@ -306,6 +306,12 @@ export default function Shop() {
                       </div>
                     </div>
                   ))}
+                </div>
+              ) : loadError ? (
+                <div className="rounded-2xl border border-red-200 bg-red-50 p-8 text-center">
+                  <p className="font-semibold text-red-700">We could not load the shop right now.</p>
+                  <p className="mt-1 text-sm text-red-600">Please check your connection and try again.</p>
+                  <button onClick={() => void refetch()} className="btn-primary mt-4">Try again</button>
                 </div>
               ) : filteredProducts.length > 0 ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { describeDbError } from '@/lib/db';
 import { Plus, Pencil, Trash2, X, MessageSquareQuote, Star } from 'lucide-react';
 import { AdminLayout } from './dashboard';
 import { supabase } from '@/lib/supabase';
@@ -45,8 +46,8 @@ export default function AdminTestimonials() {
       }
       resetForm();
       await fetchTestimonials();
-    } catch {
-      toast({ title: 'Failed to save testimonial', variant: 'destructive' });
+    } catch (err) {
+      toast({ title: 'Failed to save testimonial', description: describeDbError(err as { message?: string; code?: string }), variant: 'destructive' });
     } finally {
       setSaving(false);
     }
@@ -59,8 +60,8 @@ export default function AdminTestimonials() {
       if (error) throw error;
       await fetchTestimonials();
       toast({ title: 'Testimonial deleted' });
-    } catch {
-      toast({ title: 'Failed to delete testimonial', variant: 'destructive' });
+    } catch (err) {
+      toast({ title: 'Failed to delete testimonial', description: describeDbError(err as { message?: string; code?: string }), variant: 'destructive' });
     }
   };
 

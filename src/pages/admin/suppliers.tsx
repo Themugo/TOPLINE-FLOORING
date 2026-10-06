@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { describeDbError } from '@/lib/db';
 import { Plus, X, Trash2, Truck, Pencil, PackageCheck } from 'lucide-react';
 import { AdminLayout } from './dashboard';
 import { useSuppliers, usePurchaseOrders, useProducts, useWarehouses } from '@/hooks/use-data';
@@ -65,8 +66,8 @@ function SuppliersTab() {
         toast({ title: 'Supplier added' });
       }
       resetForm();
-    } catch {
-      toast({ title: 'Failed to save supplier', variant: 'destructive' });
+    } catch (err) {
+      toast({ title: 'Failed to save supplier', description: describeDbError(err as { message?: string; code?: string }), variant: 'destructive' });
     } finally {
       setSaving(false);
     }
@@ -77,8 +78,8 @@ function SuppliersTab() {
     try {
       await deleteSupplier(id);
       toast({ title: 'Supplier deleted' });
-    } catch {
-      toast({ title: 'Failed to delete supplier', variant: 'destructive' });
+    } catch (err) {
+      toast({ title: 'Failed to delete supplier', description: describeDbError(err as { message?: string; code?: string }), variant: 'destructive' });
     }
   };
 
@@ -178,8 +179,8 @@ function PurchaseOrdersTab() {
       setShowForm(false);
       setForm({ supplier_id: '', warehouse_id: '', expected_date: '', notes: '' });
       setSelected(po);
-    } catch {
-      toast({ title: 'Failed to create purchase order', variant: 'destructive' });
+    } catch (err) {
+      toast({ title: 'Failed to create purchase order', description: describeDbError(err as { message?: string; code?: string }), variant: 'destructive' });
     } finally {
       setSaving(false);
     }
@@ -300,8 +301,8 @@ function PurchaseOrderDetail({ po, onClose }: { po: PurchaseOrder; onClose: () =
         unit_cost: Number(newItem.unit_cost) || 0,
       });
       setNewItem({ product_id: '', description: '', quantity_ordered: '1', unit_cost: '0' });
-    } catch {
-      toast({ title: 'Failed to add item', variant: 'destructive' });
+    } catch (err) {
+      toast({ title: 'Failed to add item', description: describeDbError(err as { message?: string; code?: string }), variant: 'destructive' });
     } finally {
       setSaving(false);
     }
@@ -320,8 +321,8 @@ function PurchaseOrderDetail({ po, onClose }: { po: PurchaseOrder; onClose: () =
       if (qty > currentReceived) {
         toast({ title: 'Goods received', description: 'Stock updated automatically.' });
       }
-    } catch {
-      toast({ title: 'Failed to record receipt', variant: 'destructive' });
+    } catch (err) {
+      toast({ title: 'Failed to record receipt', description: describeDbError(err as { message?: string; code?: string }), variant: 'destructive' });
     }
   };
 

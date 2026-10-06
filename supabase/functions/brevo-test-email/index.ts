@@ -127,22 +127,36 @@ Deno.serve(async (req) => {
   const subject = "Topline Flooring & Waterproofing — Brevo test";
   const textContent = "This is a provider connectivity test from the Topline Flooring & Waterproofing control plane. No customer notification was generated.";
 
-  const providerResponse = await fetch("https://api.brevo.com/v3/smtp/email", {
-    method: "POST",
-    headers: {
-      accept: "application/json",
-      "api-key": brevoApiKey,
-      "content-type": "application/json",
-    },
-    body: JSON.stringify({
-      sender: { email: senderEmail, name: senderName },
-      to: [{ email: normalizedRecipient }],
-      replyTo: { email: replyTo },
-      subject,
-      textContent,
-      htmlContent: `<div style="font-family:Arial,sans-serif;line-height:1.6"><p>${htmlEscape(textContent)}</p></div>`,
-    }),
-  });
+  let providerResponse: Response;
+  try {
+    providerResponse = await fetch("https://api.brevo.com/v3/smtp/email", {
+      method: "POST",
+      signal: AbortSignal.timeout(20_000),
+      headers: {
+        accept: "application/json",
+        "api-key": brevoApiKey,
+        "content-type": "application/json",
+      },
+      body: JSON.stringify({
+        sender: { email: senderEmail, name: senderName },
+        to: [{ email: normalizedRecipient }],
+        replyTo: { email: replyTo },
+        subject,
+        textContent,
+        htmlContent: `<div style="font-family:Arial,sans-serif;line-height:1.6"><p>${htmlEscape(textContent)}</p></div>`,
+      }),
+    });
+  } catch (error) {
+    // Network failure or timeout: record it so the admin sees a real status instead of a hung request.
+    const message = `Brevo API could not be reached: ${error instanceof Error ? error.message : String(error)}`;
+    await recordTest({
+      status: "degraded",
+      secret_configured: true,
+      last_tested_at: testedAt,
+      last_test_message: message,
+    });
+    return json(req, 504, { ok: false, error: message });
+  }
 
   const raw = await providerResponse.text();
   if (!providerResponse.ok) {

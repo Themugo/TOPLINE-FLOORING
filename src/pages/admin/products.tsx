@@ -9,12 +9,14 @@ import { Pagination } from '@/components/admin/Pagination';
 import { ImageUpload } from '@/components/ui/image-upload';
 import { getProductPlaceholder, withFallback } from '@/lib/placeholders';
 import { createProductAdmin, updateProductAdmin, archiveProductAdmin, setPrimaryProductImage } from '@/lib/admin-operations';
-import { useCategories } from '@/hooks/use-data';
+import { useBrands, useCategories } from '@/hooks/use-data';
+import { describeDbError } from '@/lib/db';
 import type { Product, ProductImage } from '@/lib/types';
 
 export default function AdminProducts() {
   const { toast } = useToast();
   const { categories } = useCategories();
+  const { brands } = useBrands();
   const { page, setPage, limit, total, totalPages, from, to, setTotal } = usePagination(20);
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
@@ -27,6 +29,7 @@ export default function AdminProducts() {
     name: '',
     slug: '',
     category_id: '',
+    brand_id: '',
     description: '',
     short_description: '',
     sku: '',
@@ -45,23 +48,30 @@ export default function AdminProducts() {
       .order('display_order', { ascending: true })
       .range(from, to);
 
-    if (search.trim()) {
-      query = query.or(`name.ilike.%${search}%,sku.ilike.%${search}%,slug.ilike.%${search}%`);
+    // Strip characters that carry meaning in PostgREST filters / LIKE patterns.
+    const term = search.trim().replace(/[%_,()*\\]/g, ' ').replace(/\s+/g, ' ').trim();
+    if (term) {
+      query = query.or(`name.ilike.%${term}%,sku.ilike.%${term}%,slug.ilike.%${term}%`);
     }
 
     const { data, count, error } = await query;
-    if (!error) {
+    if (error) {
+      setProducts([]);
+      setTotal(0);
+      toast({ title: 'Could not load products', description: describeDbError(error), variant: 'destructive' });
+    } else {
       setProducts(data || []);
       setTotal(count || 0);
     }
     setLoading(false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [from, to, search, setTotal]);
 
   useEffect(() => { fetchProducts(); }, [fetchProducts]);
 
   const resetForm = () => {
     setForm({
-      name: '', slug: '', category_id: '', description: '', short_description: '',
+      name: '', slug: '', category_id: '', brand_id: '', description: '', short_description: '',
       sku: '', price: '', unit: 'sqm', image_url: '', featured: false, in_stock: true,
     });
     setEditing(null);
@@ -84,12 +94,18 @@ export default function AdminProducts() {
     }
 
     setSaving(true);
-    const slug = form.slug || form.name.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, '');
+    const slug = (form.slug || form.name).toLowerCase().trim().replace(/[^\w\s-]/g, '').replace(/[\s_-]+/g, '-').replace(/^-+|-+$/g, '');
+    if (!slug) {
+      toast({ title: 'Enter a product name or slug', variant: 'destructive' });
+      setSaving(false);
+      return;
+    }
 
     const data = {
       name: form.name,
       slug,
       categoryId: form.category_id || null,
+      brandId: form.brand_id || null,
       description: form.description,
       shortDescription: form.short_description || null,
       sku: form.sku || null,
@@ -110,8 +126,8 @@ export default function AdminProducts() {
       }
       await fetchProducts();
       resetForm();
-    } catch {
-      toast({ title: 'Could not save product', description: 'Check the product details and try again. A product code or web address may already be in use.', variant: 'destructive' });
+    } catch (err) {
+      toast({ title: 'Could not save product', description: describeDbError(err as { message?: string; code?: string }), variant: 'destructive' });
     } finally {
       setSaving(false);
     }
@@ -123,8 +139,8 @@ export default function AdminProducts() {
       await archiveProductAdmin(id);
       await fetchProducts();
       toast({ title: 'Product archived' });
-    } catch {
-      toast({ title: 'Failed to delete product', variant: 'destructive' });
+    } catch (err) {
+      toast({ title: 'Failed to archive product', description: describeDbError(err as { message?: string; code?: string }), variant: 'destructive' });
     }
   };
 
@@ -134,6 +150,7 @@ export default function AdminProducts() {
       name: product.name,
       slug: product.slug,
       category_id: product.category_id || '',
+      brand_id: product.brand_id || '',
       description: product.description || '',
       short_description: product.short_description || '',
       sku: product.sku || '',
@@ -262,6 +279,15 @@ export default function AdminProducts() {
                   </select>
                 </div>
                 <div>
+                  <label className="block text-sm font-medium text-navy-700 mb-1">Brand</label>
+                  <select value={form.brand_id} onChange={(e) => setForm({ ...form, brand_id: e.target.value })} className="input">
+                    <option value="">No brand</option>
+                    {brands.map((b) => (
+                      <option key={b.id} value={b.id}>{b.name}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
                   <label className="block text-sm font-medium text-navy-700 mb-1">SKU (optional)</label>
                   <input type="text" value={form.sku} onChange={(e) => setForm({ ...form, sku: e.target.value })} className="input" placeholder="e.g. TOP-107" />
                 </div>
@@ -383,8 +409,8 @@ function ProductGalleryModal({ product, onClose, onChanged }: { product: Product
       await fetchImages();
       onChanged();
       toast({ title: 'Primary photo updated', description: 'The product gallery has been refreshed.' });
-    } catch {
-      toast({ title: 'Could not update primary photo', variant: 'destructive' });
+    } catch (err) {
+      toast({ title: 'Could not update primary photo', description: describeDbError(err as { message?: string; code?: string }), variant: 'destructive' });
     }
   };
 

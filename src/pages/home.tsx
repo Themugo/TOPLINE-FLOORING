@@ -50,7 +50,7 @@ export default function Home() {
   const { promotions } = usePromotions('top');
   const { services } = useServices();
   const { settings } = useSiteSettings();
-  const phone = settings.contact?.phone || '+1 (555) 000-0000';
+  const phone = settings.contact?.phone || '';
   const { theme } = useThemeSettings();
   const layoutStyle = theme?.layout_style || 'classic';
   const { addItem } = useCart();
@@ -696,10 +696,10 @@ export default function Home() {
             <Link href={ctaContent.cta_link || '/quotation'} className="w-full sm:w-auto bg-primary-500 hover:bg-primary-600 text-white px-8 py-3.5 rounded-xl font-bold text-sm shadow-lg shadow-primary-500/25 transition-all">
               {ctaContent.cta_text || 'Request Free Consultation'}
             </Link>
-            <a href={telHref(phone)} className="w-full sm:w-auto bg-navy-800/80 hover:bg-navy-800 border border-navy-700 text-white px-8 py-3.5 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2">
+            {phone && <a href={telHref(phone)} className="w-full sm:w-auto bg-navy-800/80 hover:bg-navy-800 border border-navy-700 text-white px-8 py-3.5 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2">
               <Phone className="w-4 h-4 text-primary-400" />
               <span>{phoneButtonText}</span>
-            </a>
+            </a>}
           </div>
         </div>
       </section>

@@ -41,7 +41,7 @@ export default function Quotation() {
   useSeoMeta('quotation', null, { breadcrumbs: [{ label: 'Request Quotation' }] });
   const { toast } = useToast();
   const { settings } = useSiteSettings();
-  const phone = settings.contact?.phone || '+1 (555) 000-0000';
+  const phone = settings.contact?.phone || '';
   const companyName = settings.site_info?.name || settings.company?.name || 'Topline Flooring & Waterproofing';
 
   useImagePreloader(useMemo(() => [QUOTATION_HERO_IMAGE], []));
@@ -325,7 +325,7 @@ export default function Quotation() {
                   </div>
                 </div>
 
-                <div className="pt-3 border-t border-gray-100 flex items-center justify-between">
+                {phone && <div className="pt-3 border-t border-gray-100 flex items-center justify-between">
                   <span className="text-xs text-gray-500 font-semibold">Prefer speaking over phone?</span>
                   <a
                     href={telHref(phone)}
@@ -334,7 +334,7 @@ export default function Quotation() {
                     <Phone className="w-3.5 h-3.5" />
                     <span>Call Desk</span>
                   </a>
-                </div>
+                </div>}
               </div>
             </div>
 

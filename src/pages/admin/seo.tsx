@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { describeDbError } from '@/lib/db';
 import { Search, Globe, Save, AlertCircle, Plus, X, Trash2 } from 'lucide-react';
 import { AdminLayout } from '@/pages/admin/dashboard';
 import { supabase } from '@/lib/supabase';
@@ -62,8 +63,8 @@ function SeoContent() {
       setNewPageForm({ page_type: 'product', page_id: '' });
       await fetchSeoPages();
       setSelectedPage(data);
-    } catch {
-      toast({ type: 'error', message: 'Failed to create entry - it may already exist' });
+    } catch (err) {
+      toast({ type: 'error', message: `Failed to create entry: ${describeDbError(err as { message?: string; code?: string })}` });
     }
   };
 
@@ -75,8 +76,8 @@ function SeoContent() {
       toast({ type: 'success', message: 'SEO entry deleted' });
       if (selectedPage?.id === page.id) setSelectedPage(null);
       await fetchSeoPages();
-    } catch {
-      toast({ type: 'error', message: 'Failed to delete entry' });
+    } catch (err) {
+      toast({ type: 'error', message: `Failed to delete entry: ${describeDbError(err as { message?: string; code?: string })}` });
     }
   };
 

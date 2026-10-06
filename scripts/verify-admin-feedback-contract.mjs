@@ -33,5 +33,23 @@ const routed = [...routeBlock.matchAll(/'(\/admin\/[a-z0-9-]+)':/g)].map((m) => 
 const guard = read('src/components/admin/AdminGuard.tsx');
 for (const route of routed) check(guard.includes(`'${route}':`), `Admin route ${route} has no entry in AdminGuard ROUTE_PERMISSIONS`);
 
+// ---- Round: catalogue admin, load-failure visibility and no fabricated public contact data ----
+const prod = read('src/pages/admin/products.tsx');
+check(prod.includes('brandId: form.brand_id') && prod.includes('brand_id: product.brand_id'), 'Admin product edit must send and preload the brand (update_product_admin overwrites brand_id)');
+check(!prod.includes('A product code or web address may already be in use'), 'Admin product errors must show the real reason');
+const hooks = read('src/hooks/use-data.ts');
+check(!/if \(err \|\| !data \|\| data\.length === 0\)/.test(hooks), 'Data hooks must not treat a failed query as an empty result');
+check(!/const found = null;/.test(hooks), 'useProduct must report errors instead of returning "not found"');
+check(read('src/pages/shop.tsx').includes('loadError') && read('src/pages/shop-detail.tsx').includes('loadError'), 'Shop pages must show a retryable error state');
+for (const f of ['src/pages/contact.tsx', 'src/pages/home.tsx', 'src/pages/quotation.tsx', 'src/components/home/HeroSlider.tsx']) {
+  const src = read(f).split('\n').filter((l) => !l.includes('placeholder=')).join('\n');
+  check(!/555\) 000-0000|contact@example\.com|123 Industrial/.test(src), `${f} must not fabricate contact details`);
+}
+for (const f of fs.readdirSync(path.join(root, 'src/pages/admin')).filter((x) => x.endsWith('.tsx'))) {
+  const src = read(`src/pages/admin/${f}`);
+  const generic = [...src.matchAll(/\} catch \{\n\s*toast\(\{ (?:title|type)[^\n]*\}\);/g)];
+  if (generic.length) failures.push(`src/pages/admin/${f}: ${generic.length} catch block(s) show a generic failure without the real reason (use describeDbError)`);
+}
+
 if (failures.length) { console.error('Admin feedback contract FAILED.'); failures.forEach((f) => console.error(`- ${f}`)); process.exit(1); }
 console.log('Admin feedback contract static verification PASSED.');

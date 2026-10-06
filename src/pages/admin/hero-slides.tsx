@@ -89,8 +89,8 @@ export default function AdminHeroSlides() {
       if (error) throw error;
       await fetchSlides();
       toast({ title: 'Slide deleted' });
-    } catch {
-      toast({ title: 'Failed to delete slide', variant: 'destructive' });
+    } catch (err) {
+      toast({ title: 'Failed to delete slide', description: describeDbError(err as { message?: string; code?: string }), variant: 'destructive' });
     }
   };
 

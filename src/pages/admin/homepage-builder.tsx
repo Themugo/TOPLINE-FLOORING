@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { describeDbError } from '@/lib/db';
 import { Eye, EyeOff, Settings2, Save, Plus, Trash2, ChevronUp, ChevronDown, Loader2 } from 'lucide-react';
 import { AdminLayout } from './dashboard';
 import { useHomepageSections } from '@/hooks/use-data';
@@ -40,8 +41,8 @@ export default function AdminHomepageBuilder() {
     try {
       await updateSection(id, { is_active: !isActive });
       toast({ title: isActive ? 'Section hidden from homepage' : 'Section now visible on homepage' });
-    } catch {
-      toast({ title: 'Failed to update visibility', variant: 'destructive' });
+    } catch (err) {
+      toast({ title: 'Failed to update visibility', description: describeDbError(err as { message?: string; code?: string }), variant: 'destructive' });
     } finally {
       setSaving(null);
     }
@@ -61,8 +62,8 @@ export default function AdminHomepageBuilder() {
       await updateSection(current.id, { display_order: swap.display_order });
       await updateSection(swap.id, { display_order: current.display_order });
       await refetch();
-    } catch {
-      toast({ title: 'Failed to reorder sections', variant: 'destructive' });
+    } catch (err) {
+      toast({ title: 'Failed to reorder sections', description: describeDbError(err as { message?: string; code?: string }), variant: 'destructive' });
     } finally {
       setSaving(null);
     }
@@ -74,8 +75,8 @@ export default function AdminHomepageBuilder() {
       await updateSection(id, updates);
       toast({ title: 'Section updated - changes are live on your homepage now' });
       setEditing(null);
-    } catch {
-      toast({ title: 'Failed to save section', variant: 'destructive' });
+    } catch (err) {
+      toast({ title: 'Failed to save section', description: describeDbError(err as { message?: string; code?: string }), variant: 'destructive' });
     } finally {
       setSaving(null);
     }
@@ -99,8 +100,8 @@ export default function AdminHomepageBuilder() {
       });
       toast({ title: `${SECTION_TYPES.find(t => t.value === sectionType)?.label || sectionType} section added` });
       setShowAddMenu(false);
-    } catch {
-      toast({ title: 'Failed to add section', variant: 'destructive' });
+    } catch (err) {
+      toast({ title: 'Failed to add section', description: describeDbError(err as { message?: string; code?: string }), variant: 'destructive' });
     }
   };
 
@@ -110,8 +111,8 @@ export default function AdminHomepageBuilder() {
       await deleteSection(id);
       toast({ title: 'Section deleted' });
       if (editing === id) setEditing(null);
-    } catch {
-      toast({ title: 'Failed to delete section', variant: 'destructive' });
+    } catch (err) {
+      toast({ title: 'Failed to delete section', description: describeDbError(err as { message?: string; code?: string }), variant: 'destructive' });
     }
   };
 

@@ -74,16 +74,16 @@ export default function Contact() {
     }
   };
 
-  const phone = settings.contact?.phone || '+1 (555) 000-0000';
-  const email = settings.contact?.email || 'contact@example.com';
-  const address = settings.contact?.address || '123 Industrial Parkway, Commerce City, ST 12345';
+  const phone = settings.contact?.phone || '';
+  const email = settings.contact?.email || '';
+  const address = settings.contact?.address || '';
   const weekdays = settings.business_hours?.weekdays;
   const saturday = settings.business_hours?.saturday;
   const hours = weekdays && saturday
     ? `Mon-Fri: ${weekdays.open}-${weekdays.close}, Sat: ${saturday.open}-${saturday.close}`
     : 'Mon-Fri: 8:00 AM - 5:00 PM, Sat: 9:00 AM - 1:00 PM';
 
-  const contactInfo = [
+  const contactInfoAll = [
     {
       icon: Phone,
       title: 'Phone Consultation',
@@ -117,6 +117,8 @@ export default function Contact() {
       actionText: null,
     },
   ];
+  // Only show channels that are configured in Site Settings; nothing is invented.
+  const contactInfo = contactInfoAll.filter((info) => Boolean(info.value));
 
   return (
     <CustomerLayout>
@@ -175,13 +177,13 @@ export default function Contact() {
                   <p className="text-xs text-gray-200 leading-relaxed">
                     Request a field engineer to inspect your substrate slab, perform pull-off adhesion tests, or recommend appropriate primer systems.
                   </p>
-                  <a
+                  {phone && <a
                     href={telHref(phone)}
                     className="inline-flex items-center justify-center gap-2 w-full py-3 bg-primary-500 hover:bg-primary-600 text-white rounded-xl text-xs font-bold transition-all shadow-md active:scale-98"
                   >
                     <Phone className="w-4 h-4" />
                     <span>Speak to On-Call Engineer Now ({phone})</span>
-                  </a>
+                  </a>}
                 </div>
               </div>
             </div>

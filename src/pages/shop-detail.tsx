@@ -37,7 +37,7 @@ export default function ShopDetail() {
   const [selectedVariant, setSelectedVariant] = useState<ProductVariant | undefined>(undefined);
   const [selectedRelatedVariantIds, setSelectedRelatedVariantIds] = useState<Record<string, string>>({});
 
-  const { product, loading } = useProduct(slug);
+  const { product, loading, error: loadError, refetch } = useProduct(slug);
 
   useSeoMeta('product', slug, product ? {
     title: `${product.name} | ${product.category?.name || 'Industrial Materials'}`,
@@ -142,6 +142,18 @@ export default function ShopDetail() {
           </div>
         </div>
       </CustomerLayout>
+    );
+  }
+
+  if (!product && loadError) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-6">
+        <div className="max-w-md text-center">
+          <h2 className="font-display text-2xl font-bold text-navy-950 mb-3">We could not load this product</h2>
+          <p className="text-navy-600 mb-6">Please check your connection and try again.</p>
+          <button onClick={() => void refetch()} className="btn-primary">Try again</button>
+        </div>
+      </div>
     );
   }
 

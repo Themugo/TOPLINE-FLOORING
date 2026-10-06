@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { describeDbError } from '@/lib/db';
 import { Plus, X, Trash2, Building2, Pencil, ArrowLeftRight, PackageSearch } from 'lucide-react';
 import { AdminLayout } from './dashboard';
 import { useWarehouses, useWarehouseStock, useStockTransfers, useProducts } from '@/hooks/use-data';
@@ -66,8 +67,8 @@ function WarehousesTab() {
         toast({ title: 'Warehouse added' });
       }
       resetForm();
-    } catch {
-      toast({ title: 'Failed to save warehouse', variant: 'destructive' });
+    } catch (err) {
+      toast({ title: 'Failed to save warehouse', description: describeDbError(err as { message?: string; code?: string }), variant: 'destructive' });
     } finally {
       setSaving(false);
     }
@@ -78,8 +79,8 @@ function WarehousesTab() {
     try {
       await deleteWarehouse(id);
       toast({ title: 'Warehouse deleted' });
-    } catch {
-      toast({ title: 'Failed to delete warehouse', variant: 'destructive' });
+    } catch (err) {
+      toast({ title: 'Failed to delete warehouse', description: describeDbError(err as { message?: string; code?: string }), variant: 'destructive' });
     }
   };
 
@@ -209,8 +210,8 @@ function StockTab() {
       setShowForm(false);
       setForm({ warehouse_id: '', product_id: '', quantity: 0, notes: '' });
       await refetch();
-    } catch {
-      toast({ title: 'Failed to update stock', variant: 'destructive' });
+    } catch (err) {
+      toast({ title: 'Failed to update stock', description: describeDbError(err as { message?: string; code?: string }), variant: 'destructive' });
     } finally {
       setSaving(false);
     }

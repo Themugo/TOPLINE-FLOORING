@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { describeDbError } from '@/lib/db';
 import { Plus, X, Phone, Mail, Building2, Clock, CheckCircle2, ArrowRight, Trash2 } from 'lucide-react';
 import { AdminLayout } from './dashboard';
 import { useLeads, useLeadNotes, useLeadReminders } from '@/hooks/use-data';
@@ -41,8 +42,8 @@ export default function AdminCRM() {
       toast({ title: 'Lead added' });
       setForm(emptyForm);
       setShowForm(false);
-    } catch {
-      toast({ title: 'Failed to add lead', variant: 'destructive' });
+    } catch (err) {
+      toast({ title: 'Failed to add lead', description: describeDbError(err as { message?: string; code?: string }), variant: 'destructive' });
     } finally {
       setSaving(false);
     }
@@ -51,8 +52,8 @@ export default function AdminCRM() {
   const moveLead = async (lead: Lead, status: LeadStatus) => {
     try {
       await updateLead(lead.id, { status });
-    } catch {
-      toast({ title: 'Failed to update lead', variant: 'destructive' });
+    } catch (err) {
+      toast({ title: 'Failed to update lead', description: describeDbError(err as { message?: string; code?: string }), variant: 'destructive' });
     }
   };
 
@@ -62,8 +63,8 @@ export default function AdminCRM() {
       await convertLead(lead.id);
       toast({ title: 'Lead converted to customer' });
       setSelectedLead(null);
-    } catch {
-      toast({ title: 'Failed to convert lead', variant: 'destructive' });
+    } catch (err) {
+      toast({ title: 'Failed to convert lead', description: describeDbError(err as { message?: string; code?: string }), variant: 'destructive' });
     }
   };
 
@@ -72,8 +73,8 @@ export default function AdminCRM() {
     try {
       await deleteLead(lead.id);
       setSelectedLead(null);
-    } catch {
-      toast({ title: 'Failed to delete lead', variant: 'destructive' });
+    } catch (err) {
+      toast({ title: 'Failed to delete lead', description: describeDbError(err as { message?: string; code?: string }), variant: 'destructive' });
     }
   };
 

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { describeDbError } from '@/lib/db';
 import { Eye, X, Plus, Trash2, Download, ArrowRightCircle, UserPlus } from 'lucide-react';
 import { AdminLayout } from './dashboard';
 import { useQuotations, useSiteSettings } from '@/hooks/use-data';
@@ -86,8 +87,8 @@ export default function AdminQuotations() {
       if (!result.success) throw new Error(result.error || 'Could not create lead');
       toast({ title: 'Follow-up created', description: 'The customer is now in your follow-up list.' });
       await refetch();
-    } catch {
-      toast({ title: 'Failed to create lead', variant: 'destructive' });
+    } catch (err) {
+      toast({ title: 'Failed to create lead', description: describeDbError(err as { message?: string; code?: string }), variant: 'destructive' });
     }
   };
 
@@ -227,8 +228,8 @@ function QuotationDetail({
       setItems(updated);
       await persistTotals(updated);
       setNewItem({ description: '', quantity: '1', unit: 'sqm', unit_price: '0' });
-    } catch {
-      toast({ title: 'Failed to add item', variant: 'destructive' });
+    } catch (err) {
+      toast({ title: 'Failed to add item', description: describeDbError(err as { message?: string; code?: string }), variant: 'destructive' });
     } finally {
       setSaving(false);
     }

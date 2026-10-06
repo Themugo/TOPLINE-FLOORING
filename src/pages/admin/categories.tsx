@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { describeDbError } from '@/lib/db';
 import { Plus, Pencil, Trash2, X, FolderOpen, Search, Loader2 } from 'lucide-react';
 import { AdminLayout } from './dashboard';
 import { useCategories } from '@/hooks/use-data';
@@ -53,8 +54,8 @@ export default function AdminCategories() {
       }
       await refetch();
       resetForm();
-    } catch {
-      toast({ title: 'Failed to save category', description: 'That slug or name may already be in use.', variant: 'destructive' });
+    } catch (err) {
+      toast({ title: 'Failed to save category', description: describeDbError(err as { message?: string; code?: string }), variant: 'destructive' });
     } finally {
       setSaving(false);
     }
@@ -67,8 +68,8 @@ export default function AdminCategories() {
       if (error) throw error;
       await refetch();
       toast({ title: 'Category deleted' });
-    } catch {
-      toast({ title: 'Failed to delete category', variant: 'destructive' });
+    } catch (err) {
+      toast({ title: 'Failed to delete category', description: describeDbError(err as { message?: string; code?: string }), variant: 'destructive' });
     }
   };
 

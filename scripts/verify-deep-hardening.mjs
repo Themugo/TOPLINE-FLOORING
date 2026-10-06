@@ -33,8 +33,10 @@ pass('document deletion removes metadata before storage cleanup', deleteHandler.
 pass('document deletion retries storage cleanup', doc.includes('for (let attempt = 0; attempt < 2; attempt += 1)'));
 pass('document deletion reports cleanup failure honestly', doc.includes('metadata was removed, but the stored file could not be cleaned up'));
 
-const mockImports = fs.readdirSync(path.join(root,'src'), {recursive:true}).filter(x => String(x).endsWith(('.ts','.tsx'))).map(x => String(x)).join('\n');
-pass('mock-data has no active source import', !mockImports.includes('@/lib/mock-data') && !mockImports.includes('lib/mock-data'));
+const sourceFiles = fs.readdirSync(path.join(root,'src'), {recursive:true}).map(String).filter((x) => /\.(ts|tsx)$/.test(x));
+const importsMock = sourceFiles.some((x) => /lib\/mock-data/.test(fs.readFileSync(path.join(root,'src',x),'utf8')));
+pass('mock-data has no active source import', !importsMock);
+pass('mock-data module is not shipped', !fs.existsSync(path.join(root,'src','lib','mock-data.ts')));
 
 if (failures.length) { console.error(`FAILED ${failures.length}`); failures.forEach(x => console.error(`- ${x}`)); process.exit(1); }
 console.log('Deep hardening static gate passed.');
