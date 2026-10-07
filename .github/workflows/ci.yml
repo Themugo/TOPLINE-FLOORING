@@ -44,6 +44,7 @@ jobs:
         run: |
           npm run verify:vercel-production-contract
           npm run verify:edge-function-deploy-config
+          npm run verify:sql-runtime-safety
 
       - name: Database read boundary, admin feedback and upload contracts
         run: |

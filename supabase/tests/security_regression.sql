@@ -2,6 +2,8 @@
 -- Run against a disposable/local Supabase database after migrations are applied.
 -- These assertions intentionally fail loudly if sensitive business data is exposed.
 
+SELECT '1..1';
+
 DO $$
 DECLARE
   protected_tables text[] := ARRAY[
@@ -40,3 +42,6 @@ BEGIN
     RAISE EXCEPTION 'Anon must not have write privileges on sensitive tables';
   END IF;
 END $$;
+
+-- TAP result for `supabase test db`: reached only if every assertion above passed.
+SELECT 'ok 1 - security regression assertions passed';
