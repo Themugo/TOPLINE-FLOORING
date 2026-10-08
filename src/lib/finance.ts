@@ -17,8 +17,11 @@ export async function recordInvoicePaymentTransaction(invoiceId:string,amount:nu
   const {data,error}=await supabase.rpc('record_invoice_payment_transaction',{p_invoice_id:invoiceId,p_amount:amount,p_method:method,p_reference:reference||null,p_notes:notes||null});
   if(error)throw error; return (data ?? {}) as InvoicePaymentTransactionResult;
 }
-export async function updateInvoiceStatusTransaction(invoiceId:string,status:string): Promise<InvoiceTransactionResult> {
-  const {data,error}=await supabase.rpc('update_invoice_status_transaction',{p_invoice_id:invoiceId,p_status:status});
+// The legacy update_invoice_status_transaction RPC was revoked from the browser role (migration 068).
+// transition_invoice_lifecycle is the canonical path: it validates the transition, requires line items
+// before sending, blocks marking paid while a balance remains, and writes an invoice_events row.
+export async function updateInvoiceStatusTransaction(invoiceId:string,status:string,note?:string): Promise<InvoiceTransactionResult> {
+  const {data,error}=await supabase.rpc('transition_invoice_lifecycle',{p_invoice_id:invoiceId,p_status:status,p_note:note??null});
   if(error)throw error; return (data ?? {}) as InvoiceTransactionResult;
 }
 

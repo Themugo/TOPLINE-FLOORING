@@ -56,5 +56,19 @@ for (const needle of ['apply_payment_provider_event', 'get_customer_portal_data'
   check(t.includes(needle), `runtime_contracts.sql must exercise ${needle}`);
 }
 
+// 5. The browser-RPC grant test must list exactly the RPCs the source calls.
+{
+  const { browserRpcNames } = await import('./rpc-names.mjs');
+  const expected = browserRpcNames(root);
+  const sqlPath = 'supabase/tests/browser_rpc_grants.sql';
+  check(fs.existsSync(path.join(root, sqlPath)), `${sqlPath} is missing (run node scripts/generate-rpc-grant-test.mjs)`);
+  if (fs.existsSync(path.join(root, sqlPath))) {
+    const listed = [...read(sqlPath).matchAll(/^\s*\('([a-z_0-9]+)'\)[,;]?$/gm)].map((m) => m[1]).sort();
+    const missing = expected.filter((n) => !listed.includes(n));
+    const extra = listed.filter((n) => !expected.includes(n));
+    check(missing.length === 0 && extra.length === 0, `${sqlPath} is out of date (missing: ${missing.join(', ') || 'none'}; extra: ${extra.join(', ') || 'none'}). Run node scripts/generate-rpc-grant-test.mjs`);
+  }
+}
+
 if (failures.length) { console.error('SQL runtime safety verification FAILED.'); failures.forEach((f) => console.error(`- ${f}`)); process.exit(1); }
 console.log('SQL runtime safety static verification PASSED.');
