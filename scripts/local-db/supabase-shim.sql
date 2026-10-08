@@ -11,6 +11,13 @@ CREATE TABLE storage.objects (id uuid PRIMARY KEY DEFAULT gen_random_uuid(), buc
 ALTER TABLE storage.objects ENABLE ROW LEVEL SECURITY;
 CREATE FUNCTION storage.foldername(name text) RETURNS text[] LANGUAGE sql IMMUTABLE AS $$ SELECT string_to_array(name,'/') $$;
 GRANT USAGE ON SCHEMA auth, storage, extensions TO anon, authenticated, service_role;
+-- Supabase gives the API roles privileges on everything created in `public` by default; migrations then
+-- REVOKE what must stay private and RLS does the rest. Without this the replay is more restrictive than
+-- production and can hide exposed tables/functions.
+GRANT USAGE ON SCHEMA public TO anon, authenticated, service_role;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO anon, authenticated, service_role;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO anon, authenticated, service_role;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON FUNCTIONS TO anon, authenticated, service_role;
 GRANT ALL ON ALL TABLES IN SCHEMA storage TO service_role;
 CREATE PUBLICATION supabase_realtime;
 

@@ -52,7 +52,7 @@ for (const testFile of ['supabase/tests/runtime_contracts.sql', 'supabase/tests/
 // 4. The runtime test must exist and be TAP-compliant so `supabase test db --local` runs it.
 const t = read('supabase/tests/runtime_contracts.sql');
 check(/SELECT plan\(\d+\)/.test(t) && /finish\(\)/.test(t) && /ROLLBACK;/.test(t), 'runtime_contracts.sql must be a rolled-back pgTAP test (plan + finish)');
-for (const needle of ['apply_payment_provider_event', 'get_customer_portal_data', 'create_secure_customer_order', "'finance'"]) {
+for (const needle of ['apply_payment_provider_event', 'get_customer_portal_data', 'create_secure_customer_order', "'finance'", 'queue_customer_message', 'claim_communication_outbox_worker', 'complete_communication_delivery_worker']) {
   check(t.includes(needle), `runtime_contracts.sql must exercise ${needle}`);
 }
 

@@ -16,6 +16,7 @@ DO $body$
 DECLARE
   v_user    uuid := gen_random_uuid();
   v_staff   uuid := gen_random_uuid();
+  v_outbox  uuid;
   v_cust    uuid := gen_random_uuid();
   v_product uuid;
   v_order   uuid;
@@ -105,9 +106,28 @@ BEGIN
   PERFORM public.get_quality_assurance_360();
   RESET ROLE;
 
+  -- 8. Staff message -> outbox -> worker -> provider callback ---------------------------------------
+  PERFORM set_config('request.jwt.claim.sub', v_staff::text, true);
+  PERFORM set_config('request.jwt.claim.role', 'authenticated', true);
+  SET LOCAL ROLE authenticated;
+  v_outbox := public.queue_customer_message(v_cust, 'email', 'runtime-contract-' || v_cust || '@test.invalid', 'runtime body', 'runtime subject');
+  RESET ROLE;
+  IF v_outbox IS NULL THEN RAISE EXCEPTION 'queue_customer_message returned no outbox id'; END IF;
+  PERFORM set_config('request.jwt.claim.role', 'service_role', true);
+  SET LOCAL ROLE service_role;
+  SELECT count(*) INTO v_count FROM public.claim_communication_outbox_worker(50) WHERE id = v_outbox;
+  IF v_count <> 1 THEN RAISE EXCEPTION 'worker must claim the queued message, claimed %', v_count; END IF;
+  PERFORM public.record_communication_delivery_attempt_worker(v_outbox, 1, 'brevo', 'email', gen_random_uuid(), 'accepted', 201, 'rt-msg-' || v_user, NULL, '{}'::jsonb);
+  PERFORM public.complete_communication_delivery_worker(v_outbox, 'brevo', 'rt-msg-' || v_user);
+  PERFORM public.record_provider_delivery_event_worker('brevo', 'email', 'delivered', 'rt-msg-' || v_user, 'rt-msg-' || v_user, NULL, '{}'::jsonb);
+  PERFORM public.record_inbound_communication_worker('brevo_inbound', 'email', 'runtime-contract-' || v_cust || '@test.invalid', NULL, 'Re: runtime', 'reply', NULL, NULL, NULL, '{}'::jsonb);
+  RESET ROLE;
+  SELECT status INTO v_status FROM public.communication_outbox WHERE id = v_outbox;
+  IF v_status <> 'sent' THEN RAISE EXCEPTION 'completed message must be sent, got %', v_status; END IF;
+
   RAISE NOTICE 'runtime contracts passed';
 END $body$;
-$runtime$, 'checkout, provider payment events, quotations, customer sign-up, portal and staff dashboard RPCs behave at runtime');
+$runtime$, 'checkout, provider payment events, quotations, customer sign-up, staff messaging worker pipeline, portal and staff dashboard RPCs behave at runtime');
 
 SELECT * FROM finish();
 ROLLBACK;

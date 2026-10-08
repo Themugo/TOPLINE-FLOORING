@@ -113,3 +113,4 @@
 20261004100000_fix_customer_portal_data_volatility.sql
 20261004110000_fix_payment_event_payload_hash.sql
 20261004120000_fix_runtime_sql_errors.sql
+20261004130000_allow_queued_customer_communications.sql

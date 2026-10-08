@@ -8842,24 +8842,15 @@ export type Database = {
         }
         Returns: boolean
       }
-      complete_communication_delivery_worker:
-        | {
-            Args: {
-              p_outbox_id: string
-              p_provider: string
-              p_provider_reference?: string
-            }
-            Returns: boolean
-          }
-        | {
-            Args: {
-              p_outbox_id: string
-              p_provider: string
-              p_provider_message_id?: string
-              p_provider_reference?: string
-            }
-            Returns: boolean
-          }
+      complete_communication_delivery_worker: {
+        Args: {
+          p_outbox_id: string
+          p_provider: string
+          p_provider_message_id?: string
+          p_provider_reference?: string
+        }
+        Returns: boolean
+      }
       complete_data_subject_request: {
         Args: {
           p_evidence_reference?: string
