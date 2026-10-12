@@ -51,5 +51,24 @@ for (const f of fs.readdirSync(path.join(root, 'src/pages/admin')).filter((x) =>
   if (generic.length) failures.push(`src/pages/admin/${f}: ${generic.length} catch block(s) show a generic failure without the real reason (use describeDbError)`);
 }
 
+// A loader with try/finally and no catch rejects on a database failure: the list silently stays empty and the
+// browser logs an unhandled rejection. Every data-hook loader must catch and expose an error.
+{
+  const src = read('src/hooks/use-data.ts');
+  const bad = [];
+  for (const m of src.matchAll(/\} finally \{\n\s*setLoading\(false\);/g)) {
+    const before = src.slice(Math.max(0, m.index - 900), m.index);
+    const tryAt = before.lastIndexOf('try {');
+    if (tryAt >= 0 && !before.slice(tryAt).includes('catch')) bad.push(src.slice(0, m.index).split('\n').length);
+  }
+  if (bad.length) failures.push(`src/hooks/use-data.ts: loader without catch near line(s) ${bad.join(', ')}`);
+}
+check(JSON.parse(read('package.json')).scripts['test:smoke'] === 'vitest run --config vitest.config.ts', 'package.json must define test:smoke');
+for (const f of ['routes', 'admin-routes', 'admin-services.interaction', 'quotation.interaction', 'admin-products.interaction']) {
+  check(fs.existsSync(path.join(root, `tests/smoke/${f}.test.tsx`)), `tests/smoke/${f}.test.tsx is missing`);
+}
+// The customer-facing quotation reference must come from the saved record, never from Math.random().
+check(!/RFQ-\$\{new Date/.test(read('src/pages/quotation.tsx')) && !read('src/pages/quotation.tsx').includes('Math.random'), 'quotation reference must not be generated in the browser');
+
 if (failures.length) { console.error('Admin feedback contract FAILED.'); failures.forEach((f) => console.error(`- ${f}`)); process.exit(1); }
 console.log('Admin feedback contract static verification PASSED.');

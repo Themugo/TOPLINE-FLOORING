@@ -41,5 +41,15 @@ for (const name of functions) {
   if (fetches > timeouts) failures.push(`${name}: ${fetches} outbound fetch call(s) but only ${timeouts} timeout(s)`);
 }
 
+// M-Pesa callbacks are unsigned. The receiving function must fail closed without a secret, and the
+// initiating function must refuse to send a prompt whose callback would be rejected.
+{
+  const callback = read('supabase/functions/payment-callback/index.ts');
+  const initiate = read('supabase/functions/payment-initiate/index.ts');
+  if (!/if\(!callbackSecret\)return json\(501/.test(callback)) failures.push('payment-callback must answer 501 when MPESA_CALLBACK_SECRET is not set (fail closed)');
+  if (/callbackSecret&&!constantTimeEqual/.test(callback)) failures.push('payment-callback must not make the callback secret optional');
+  if (!/MPESA_CALLBACK_SECRET/.test(initiate) || !/constantTimeEqual\(callbackSecretInUrl/.test(initiate)) failures.push('payment-initiate must verify that MPESA_CALLBACK_URL carries ?secret= matching MPESA_CALLBACK_SECRET before sending a prompt');
+}
+
 if (failures.length) { console.error('Edge function deploy configuration FAILED.'); failures.forEach((f) => console.error(`- ${f}`)); process.exit(1); }
 console.log(`Edge function deploy configuration verified for ${functions.length} functions.`);

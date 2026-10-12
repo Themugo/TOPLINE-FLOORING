@@ -37,6 +37,9 @@ jobs:
       - name: Phase 14 CI / release-gate contract
         run: npm run verify:phase-14-ci-release-gate
 
+      - name: Render smoke test (every public route, empty and failing data)
+        run: npm run test:smoke
+
       - name: Vercel deployment contract
         run: npm run verify:vercel
 

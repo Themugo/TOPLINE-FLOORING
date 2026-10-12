@@ -3,7 +3,7 @@ import { FileText, Send, CheckCircle2, ShieldCheck, Calculator, Sparkles, ArrowR
 import { CustomerLayout } from '@/components/layout/CustomerLayout';
 import { Breadcrumbs } from '@/components/Breadcrumbs';
 import { useToast } from '@/hooks/use-toast';
-import { submitQuotationRequest } from '@/lib/commerce';
+import { submitQuotationRequest, quotationRequestReference } from '@/lib/commerce';
 import { useSeoMeta } from '@/hooks/use-seo';
 import { useImagePreloader } from '@/hooks/use-image-preloader';
 import { useSiteSettings } from '@/hooks/use-data';
@@ -84,7 +84,7 @@ export default function Quotation() {
     setSubmitting(true);
 
     try {
-      await submitQuotationRequest({
+      const result = await submitQuotationRequest({
         name: form.name,
         email: form.email,
         phone: form.phone,
@@ -95,13 +95,14 @@ export default function Quotation() {
         timeline: form.timeline,
       });
 
-      const refCode = `RFQ-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`;
+      // The reference comes from the saved request. It is never invented in the browser.
+      const refCode = result.quotation_id ? quotationRequestReference(result.quotation_id) : '';
       setRfqReference(refCode);
       setSubmitted(true);
 
       toast({
         title: 'Quotation Request Received',
-        description: `Reference Code: ${refCode}. An engineer will deliver a formal submittal within 24 hours.`,
+        description: `${refCode ? `Reference Code: ${refCode}. ` : ''}An engineer will deliver a formal submittal within 24 hours.`,
       });
     } catch {
       toast({
@@ -127,9 +128,11 @@ export default function Quotation() {
               </div>
 
               <div>
-                <span className="inline-block px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 text-[11px] font-mono font-bold tracking-wider uppercase mb-2">
-                  Reference ID: {rfqReference}
-                </span>
+                {rfqReference && (
+                  <span className="inline-block px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 text-[11px] font-mono font-bold tracking-wider uppercase mb-2">
+                    Reference ID: {rfqReference}
+                  </span>
+                )}
                 <h1 className="font-display text-3xl font-bold text-navy-950">
                   Quotation Request Received!
                 </h1>
@@ -398,7 +401,7 @@ export default function Quotation() {
                           value={form.phone}
                           onChange={(e) => setForm({ ...form, phone: e.target.value })}
                           className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:bg-white text-xs font-medium text-navy-950 transition-all placeholder:text-gray-400"
-                          placeholder="+1 (555) 000-0000"
+                          placeholder="+254 7XX XXX XXX"
                         />
                       </div>
                       <div>

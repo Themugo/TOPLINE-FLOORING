@@ -1,5 +1,6 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { handlePreflight, jsonResponse } from "../_shared/cors.ts";
+import { constantTimeEqual } from "../_shared/security.ts";
 
 type TargetType = "order" | "invoice";
 type PaymentMethod = "mpesa" | "card" | "bank_transfer";
@@ -311,6 +312,14 @@ Deno.serve(async (req: Request) => {
       const callbackUrl = Deno.env.get("MPESA_CALLBACK_URL");
       if (!consumerKey || !consumerSecret || !shortcode || !passkey || !callbackUrl) {
         throw new Error("M-Pesa is enabled but server credentials/configuration are incomplete");
+      }
+      // payment-callback rejects callbacks without ?secret=<MPESA_CALLBACK_SECRET>. Refuse to send a prompt whose
+      // callback would be rejected: the customer would pay and the payment would never be recorded.
+      const mpesaCallbackSecret = Deno.env.get("MPESA_CALLBACK_SECRET");
+      let callbackSecretInUrl: string | null = null;
+      try { callbackSecretInUrl = new URL(callbackUrl).searchParams.get("secret"); } catch { /* invalid URL handled below */ }
+      if (!mpesaCallbackSecret || !constantTimeEqual(callbackSecretInUrl, mpesaCallbackSecret)) {
+        throw new Error("M-Pesa callback URL must include ?secret= matching MPESA_CALLBACK_SECRET");
       }
       const mpesaPhone = normalizeMpesaPhone(String(customerPhone ?? ""));
       if (!mpesaPhone) throw new Error("Enter a valid Kenyan M-Pesa phone number (07xx, 01xx or 254xx)");

@@ -123,5 +123,6 @@ export function removeQuotationItem(itemId: string) {
 export async function getCommercialLifecycle360() {
   const { data, error } = await supabase.rpc('get_commercial_lifecycle_360');
   if (error) throw error;
-  return data as Record<string, unknown>;
+  // A null result must not become component state: every consumer reads fields from the object.
+  return (data ?? {}) as Record<string, unknown>;
 }

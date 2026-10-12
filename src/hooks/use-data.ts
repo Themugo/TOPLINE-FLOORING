@@ -971,10 +971,12 @@ export function useLeads(options?: { status?: string }) {
 export function useLeadNotes(leadId: string | null) {
   const [notes, setNotes] = useState<LeadNote[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const refetch = useCallback(async () => {
     if (!leadId) { setNotes([]); setLoading(false); return; }
     setLoading(true);
+    setError(null);
     try {
       const { data, error: err } = await supabase
         .from('lead_notes')
@@ -983,6 +985,8 @@ export function useLeadNotes(leadId: string | null) {
         .order('created_at', { ascending: false });
       if (err) throw err;
       setNotes(data || []);
+    } catch (err) {
+      setError(errorMessage(err, 'Failed to load data'));
     } finally {
       setLoading(false);
     }
@@ -1000,16 +1004,19 @@ export function useLeadNotes(leadId: string | null) {
     await refetch();
   };
 
-  return { notes, loading, addNote, refetch };
+  return {
+    error, notes, loading, addNote, refetch };
 }
 
 export function useLeadReminders(leadId: string | null) {
   const [reminders, setReminders] = useState<LeadReminder[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const refetch = useCallback(async () => {
     if (!leadId) { setReminders([]); setLoading(false); return; }
     setLoading(true);
+    setError(null);
     try {
       const { data, error: err } = await supabase
         .from('lead_reminders')
@@ -1018,6 +1025,8 @@ export function useLeadReminders(leadId: string | null) {
         .order('due_at', { ascending: true });
       if (err) throw err;
       setReminders(data || []);
+    } catch (err) {
+      setError(errorMessage(err, 'Failed to load data'));
     } finally {
       setLoading(false);
     }
@@ -1044,7 +1053,8 @@ export function useLeadReminders(leadId: string | null) {
     await refetch();
   };
 
-  return { reminders, loading, addReminder, completeReminder, refetch };
+  return {
+    error, reminders, loading, addReminder, completeReminder, refetch };
 }
 
 // Reminders due within the next 48h (or overdue), across all leads -
@@ -1052,9 +1062,11 @@ export function useLeadReminders(leadId: string | null) {
 export function useUpcomingReminders() {
   const [reminders, setReminders] = useState<(LeadReminder & { lead?: Lead })[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const refetch = useCallback(async () => {
     setLoading(true);
+    setError(null);
     try {
       const cutoff = new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString();
       const { data, error: err } = await supabase
@@ -1065,6 +1077,8 @@ export function useUpcomingReminders() {
         .order('due_at', { ascending: true });
       if (err) throw err;
       setReminders(data || []);
+    } catch (err) {
+      setError(errorMessage(err, 'Failed to load data'));
     } finally {
       setLoading(false);
     }
@@ -1072,7 +1086,8 @@ export function useUpcomingReminders() {
 
   useEffect(() => { refetch(); }, [refetch]);
 
-  return { reminders, loading, refetch };
+  return {
+    error, reminders, loading, refetch };
 }
 
 // ============================================================
@@ -1134,13 +1149,17 @@ export function useInvoices(options?: { status?: string }) {
 export function useSuppliers() {
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const refetch = useCallback(async () => {
     setLoading(true);
+    setError(null);
     try {
       const { data, error: err } = await supabase.from('suppliers').select('*').order('name');
       if (err) throw err;
       setSuppliers(data || []);
+    } catch (err) {
+      setError(errorMessage(err, 'Failed to load data'));
     } finally {
       setLoading(false);
     }
@@ -1196,15 +1215,18 @@ export function useSuppliers() {
     await refetch();
   };
 
-  return { suppliers, loading, refetch, createSupplier, updateSupplier, deleteSupplier };
+  return {
+    error, suppliers, loading, refetch, createSupplier, updateSupplier, deleteSupplier };
 }
 
 export function usePurchaseOrders() {
   const [purchaseOrders, setPurchaseOrders] = useState<PurchaseOrder[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const refetch = useCallback(async () => {
     setLoading(true);
+    setError(null);
     try {
       const { data, error: err } = await supabase
         .from('purchase_orders')
@@ -1212,6 +1234,8 @@ export function usePurchaseOrders() {
         .order('created_at', { ascending: false });
       if (err) throw err;
       setPurchaseOrders(data || []);
+    } catch (err) {
+      setError(errorMessage(err, 'Failed to load data'));
     } finally {
       setLoading(false);
     }
@@ -1281,6 +1305,7 @@ export function usePurchaseOrders() {
   };
 
   return {
+    error,
     purchaseOrders,
     loading,
     refetch,
@@ -1296,13 +1321,17 @@ export function usePurchaseOrders() {
 export function useWarehouses() {
   const [warehouses, setWarehouses] = useState<Warehouse[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const refetch = useCallback(async () => {
     setLoading(true);
+    setError(null);
     try {
       const { data, error: err } = await supabase.from('warehouses').select('*').order('is_default', { ascending: false }).order('name');
       if (err) throw err;
       setWarehouses(data || []);
+    } catch (err) {
+      setError(errorMessage(err, 'Failed to load data'));
     } finally {
       setLoading(false);
     }
@@ -1329,15 +1358,18 @@ export function useWarehouses() {
     await refetch();
   };
 
-  return { warehouses, loading, refetch, createWarehouse, updateWarehouse, deleteWarehouse };
+  return {
+    error, warehouses, loading, refetch, createWarehouse, updateWarehouse, deleteWarehouse };
 }
 
 export function useWarehouseStock(warehouseId?: string) {
   const [stock, setStock] = useState<WarehouseStock[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const refetch = useCallback(async () => {
     setLoading(true);
+    setError(null);
     try {
       let query = supabase
         .from('warehouse_stock')
@@ -1347,6 +1379,8 @@ export function useWarehouseStock(warehouseId?: string) {
       const { data, error: err } = await query;
       if (err) throw err;
       setStock(data || []);
+    } catch (err) {
+      setError(errorMessage(err, 'Failed to load data'));
     } finally {
       setLoading(false);
     }
@@ -1354,15 +1388,18 @@ export function useWarehouseStock(warehouseId?: string) {
 
   useEffect(() => { refetch(); }, [refetch]);
 
-  return { stock, loading, refetch };
+  return {
+    error, stock, loading, refetch };
 }
 
 export function useStockTransfers() {
   const [transfers, setTransfers] = useState<StockTransfer[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const refetch = useCallback(async () => {
     setLoading(true);
+    setError(null);
     try {
       const { data, error: err } = await supabase
         .from('stock_transfers')
@@ -1371,6 +1408,8 @@ export function useStockTransfers() {
         .limit(100);
       if (err) throw err;
       setTransfers(data || []);
+    } catch (err) {
+      setError(errorMessage(err, 'Failed to load data'));
     } finally {
       setLoading(false);
     }
@@ -1387,7 +1426,8 @@ export function useStockTransfers() {
     return data as StockTransfer;
   };
 
-  return { transfers, loading, refetch, createTransfer };
+  return {
+    error, transfers, loading, refetch, createTransfer };
 }
 
 const COMPARISON_STORAGE_KEY = 'flooring_product_comparison';

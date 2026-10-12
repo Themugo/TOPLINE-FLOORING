@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { describeDbError } from '@/lib/db';
+import { quotationRequestReference } from '@/lib/commerce';
 import { Eye, X, Plus, Trash2, Download, ArrowRightCircle, UserPlus } from 'lucide-react';
 import { AdminLayout } from './dashboard';
 import { useQuotations, useSiteSettings } from '@/hooks/use-data';
@@ -117,7 +118,7 @@ export default function AdminQuotations() {
             <tbody className="divide-y">
               {quotations.map((q) => (
                 <tr key={q.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 text-sm font-mono text-gray-500">{q.quotation_number || '-'}</td>
+                  <td className="px-6 py-4 text-sm font-mono text-gray-500">{q.quotation_number || quotationRequestReference(q.id)}</td>
                   <td className="px-6 py-4">
                     <p className="font-medium">{q.name}</p>
                     <p className="text-xs text-gray-500">{q.email}</p>
@@ -253,7 +254,7 @@ function QuotationDetail({
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50" onClick={onClose}>
       <div className="bg-white rounded-xl max-w-2xl w-full p-6 max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
         <div className="flex justify-between items-center mb-4">
-          <h2 className="font-semibold text-lg">Quotation {quotation.quotation_number || ''}</h2>
+          <h2 className="font-semibold text-lg">Quotation {quotation.quotation_number || quotationRequestReference(quotation.id)}</h2>
           <button onClick={onClose}><X className="w-5 h-5" /></button>
         </div>
 

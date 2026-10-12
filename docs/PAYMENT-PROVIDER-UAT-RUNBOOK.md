@@ -13,6 +13,17 @@ Certify the real provider -> Topline payment webhook path without allowing brows
 - `SUPABASE_SERVICE_ROLE_KEY` is configured only as an Edge Function secret; never in `VITE_*` variables.
 - Provider callback URL points to `/functions/v1/payment-webhook`.
 
+## M-Pesa (Daraja STK Push) callback secret
+
+Safaricom does not sign callbacks, so the callback URL itself carries a shared secret. Both the initiating and the receiving function now require it (fail closed):
+
+1. Generate a long random value and store it as an Edge Function secret:
+   `supabase secrets set MPESA_CALLBACK_SECRET=<random-value>`
+2. Register the callback URL with the same value in the query string:
+   `supabase secrets set MPESA_CALLBACK_URL=https://zmbsskvnzjdaxuxlauyx.supabase.co/functions/v1/payment-callback?secret=<random-value>`
+3. Without `MPESA_CALLBACK_SECRET`, `payment-callback` answers 501 and `payment-initiate` refuses to send an STK prompt, so a customer is never asked to pay when the payment could not be recorded. If the secret in the URL does not match, callbacks are rejected with 401.
+4. Rotating the secret: set both secrets, then redeploy `payment-initiate` and `payment-callback`. In-flight prompts created with the old URL will be rejected, so rotate outside trading hours.
+
 ## Environment variables on the operator machine
 
 ```cmd

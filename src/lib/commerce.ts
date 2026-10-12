@@ -19,6 +19,14 @@ export interface QuotationRequestResult {
   error?: string;
 }
 
+/**
+ * Customer-facing reference for a website quotation request, derived from the stored record's id so staff see the
+ * same code in the admin list. (No formal quotation number exists until staff issue one.)
+ */
+export function quotationRequestReference(quotationId: string): string {
+  return `RFQ-${quotationId.replace(/-/g, '').slice(0, 8).toUpperCase()}`;
+}
+
 export async function submitQuotationRequest(input: QuotationRequestInput): Promise<QuotationRequestResult> {
   const { data, error } = await supabase.rpc('submit_quotation_request', {
     p_name: input.name.trim(),

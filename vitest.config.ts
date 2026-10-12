@@ -1,17 +1,16 @@
 import { defineConfig } from 'vitest/config';
 import react from '@vitejs/plugin-react';
-import path from 'path';
+import { resolve } from 'node:path';
 
+// Render smoke tests only (npm run test:smoke). Kept separate from vite.config.ts so the production build is untouched.
 export default defineConfig({
   plugins: [react()],
+  resolve: { alias: { '@': resolve(process.cwd(), './src') } },
   test: {
-    globals: true,
     environment: 'jsdom',
-    setupFiles: './src/test/setup.ts',
-  },
-  resolve: {
-    alias: {
-      '@': path.resolve(__dirname, './src'),
-    },
+    include: ['tests/smoke/**/*.test.tsx'],
+    setupFiles: ['tests/smoke/setup.ts'],
+    css: false,
+    testTimeout: 20000,
   },
 });
