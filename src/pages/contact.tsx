@@ -331,7 +331,7 @@ export default function Contact() {
                           value={form.phone}
                           onChange={(e) => setForm({ ...form, phone: e.target.value })}
                           className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:bg-white text-xs font-medium text-navy-950 transition-all placeholder:text-gray-400"
-                          placeholder="+1 (555) 000-0000"
+                          placeholder="+254 7XX XXX XXX"
                         />
                       </div>
                       <div>

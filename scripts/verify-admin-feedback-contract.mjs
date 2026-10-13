@@ -64,9 +64,11 @@ for (const f of fs.readdirSync(path.join(root, 'src/pages/admin')).filter((x) =>
   if (bad.length) failures.push(`src/hooks/use-data.ts: loader without catch near line(s) ${bad.join(', ')}`);
 }
 check(JSON.parse(read('package.json')).scripts['test:smoke'] === 'vitest run --config vitest.config.ts', 'package.json must define test:smoke');
-for (const f of ['routes', 'admin-routes', 'admin-services.interaction', 'quotation.interaction', 'admin-products.interaction']) {
+for (const f of ['routes', 'admin-routes', 'admin-services.interaction', 'quotation.interaction', 'admin-products.interaction', 'checkout.interaction']) {
   check(fs.existsSync(path.join(root, `tests/smoke/${f}.test.tsx`)), `tests/smoke/${f}.test.tsx is missing`);
 }
+// Edge Function failures must surface the function's own message, not supabase-js's generic non-2xx text.
+check(read('src/lib/customer-payments.ts').includes('functionErrorMessage'), 'customer-payments must read the Edge Function error body');
 // The customer-facing quotation reference must come from the saved record, never from Math.random().
 check(!/RFQ-\$\{new Date/.test(read('src/pages/quotation.tsx')) && !read('src/pages/quotation.tsx').includes('Math.random'), 'quotation reference must not be generated in the browser');
 

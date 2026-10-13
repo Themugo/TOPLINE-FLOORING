@@ -171,7 +171,7 @@ export default function AdminSiteSettings() {
                     value={settings.contact.phone}
                     onChange={(e) => updateSetting('contact', { ...settings.contact, phone: e.target.value })}
                     className="input"
-                    placeholder="+1 (555) 000-0000"
+                    placeholder="+254 7XX XXX XXX"
                   />
                 </div>
                 <div>
@@ -181,7 +181,7 @@ export default function AdminSiteSettings() {
                     value={settings.contact.phone_alt}
                     onChange={(e) => updateSetting('contact', { ...settings.contact, phone_alt: e.target.value })}
                     className="input"
-                    placeholder="+1 (555) 000-0001"
+                    placeholder="+254 7XX XXX XXX"
                   />
                 </div>
                 <div>
