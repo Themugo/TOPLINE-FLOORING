@@ -78,8 +78,8 @@ export default function ServiceDetail() {
   if (loading) {
     return (
       <CustomerLayout>
-        <div className="min-h-[60vh] flex items-center justify-center">
-          <Loader2 className="w-8 h-8 text-[#607D98] animate-spin" />
+        <div className="flex min-h-[60vh] items-center justify-center bg-[#F7F8FA]">
+          <div role="status" className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white px-5 py-4 text-sm font-medium text-slate-600 shadow-sm"><Loader2 className="h-5 w-5 animate-spin text-[#607D98]" />Loading service details…</div>
         </div>
       </CustomerLayout>
     );
@@ -88,11 +88,11 @@ export default function ServiceDetail() {
   if (!service) {
     return (
       <CustomerLayout>
-        <div className="min-h-[60vh] flex items-center justify-center">
-          <div className="text-center px-4">
-            <h1 className="font-display text-2xl font-bold text-navy-950 mb-2">Service Specification Not Found</h1>
-            <p className="text-gray-500 mb-6 text-sm">The requested service spec is unavailable or may have been updated.</p>
-            <Link href="/services" className="inline-flex items-center gap-2 px-6 py-3 bg-[#142C46] hover:bg-[#203F60] text-white rounded-xl font-bold text-sm shadow-sm transition-all">
+        <div className="flex min-h-[60vh] items-center justify-center bg-[#F7F8FA] px-4 py-12">
+          <div className="max-w-lg rounded-2xl border border-slate-200 bg-white p-8 text-center shadow-sm sm:p-10">
+            <h1 className="mb-2 font-display text-2xl font-semibold text-[#142C46]">Service details unavailable</h1>
+            <p className="mb-6 text-sm leading-6 text-slate-600">This service may have been updated or is no longer listed. Browse our current services or contact the team for assistance.</p>
+            <Link href="/services" className="inline-flex items-center gap-2 rounded-xl bg-[#142C46] px-6 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-[#203F60]">
               <span>Browse All Services</span>
               <ArrowRight className="w-4 h-4" />
             </Link>
@@ -110,45 +110,48 @@ export default function ServiceDetail() {
       ]} />
 
       {/* Hero Header */}
-      <section className="bg-gradient-to-b from-gray-50 via-white to-gray-50 border-b border-gray-200/80 py-12 lg:py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid lg:grid-cols-12 gap-8 lg:gap-12 items-center">
+      <section className="relative isolate overflow-hidden border-b border-slate-200 bg-[#10283F] py-12 text-white sm:py-14 lg:py-16">
+        <div aria-hidden="true" className="pointer-events-none absolute -right-20 -top-24 h-80 w-80 rounded-full border border-white/10" />
+        <div aria-hidden="true" className="pointer-events-none absolute -right-8 -top-12 h-56 w-56 rounded-full border border-white/10" />
+        <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="grid items-center gap-8 lg:grid-cols-12 lg:gap-12">
             <div className="lg:col-span-7">
-              <span className="inline-block px-3.5 py-1 rounded-full bg-primary-50 text-primary-600 border border-primary-100 text-xs font-semibold uppercase tracking-wider mb-3">
+              <span className="mb-4 inline-flex items-center rounded-full border border-[#D8C9A7]/30 bg-white/[0.06] px-3.5 py-2 text-[11px] font-bold uppercase tracking-[.18em] text-[#E7D9B9]">
                 Technical Specification
               </span>
-              <h1 className="font-display text-3xl sm:text-4xl lg:text-5xl font-bold text-navy-950 tracking-tight mb-4">
+              <h1 className="mb-4 font-display text-3xl font-semibold leading-[1.1] tracking-tight text-white sm:text-4xl lg:text-5xl">
                 {service.name}
               </h1>
-              <p className="text-gray-600 text-base lg:text-lg leading-relaxed mb-8">
+              <p className="mb-8 max-w-2xl text-base leading-7 text-slate-200 lg:text-lg">
                 {service.short_description || service.description}
               </p>
               <div className="flex flex-wrap items-center gap-4">
-                <Link href="/quotation" className="px-6 py-3 bg-[#142C46] hover:bg-[#203F60] text-white rounded-xl font-bold text-sm transition-all shadow-sm inline-flex items-center gap-2">
+                <Link href="/quotation" className="inline-flex items-center gap-2 rounded-xl bg-[#D8C9A7] px-6 py-3 text-sm font-bold text-[#142C46] shadow-sm transition hover:bg-[#E7DCC4] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white">
                   <span>Get Quotation</span>
                   <ArrowRight className="w-4 h-4" />
                 </Link>
-                <Link href="/contact" className="px-6 py-3 bg-white border border-gray-200 text-navy-800 hover:bg-gray-50 rounded-xl font-bold text-sm transition-colors inline-flex items-center gap-2">
-                  <PhoneCall className="w-4 h-4 text-[#607D98]" />
+                <Link href="/contact" className="inline-flex items-center gap-2 rounded-xl border border-white/20 bg-white/[0.06] px-6 py-3 text-sm font-semibold text-white transition hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white">
+                  <PhoneCall className="w-4 h-4 text-[#D8C9A7]" />
                   <span>Request Site Visit</span>
                 </Link>
               </div>
             </div>
             <div className="lg:col-span-5">
-              <div className="relative rounded-2xl overflow-hidden bg-navy-950 shadow-lg aspect-[4/3]">
+              <div className="relative aspect-[4/3] overflow-hidden rounded-2xl border border-white/10 bg-[#0B2034] shadow-2xl shadow-black/20">
                 <img
                   src={withFallback(service.image_url, getServicePlaceholder(service.slug || service.name))}
                   alt={service.name}
                   loading="lazy"
-                  className="w-full h-full object-cover"
+                  className="h-full w-full object-cover"
                   onError={(e) => {
+                    e.currentTarget.onerror = null;
                     e.currentTarget.src = getServicePlaceholder(service.slug || service.name);
                   }}
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-navy-950/50 via-transparent to-transparent" />
-                <div className="absolute bottom-4 left-4 right-4 flex items-center justify-between text-white text-xs font-semibold bg-navy-950/80 backdrop-blur-md px-4 py-2.5 rounded-xl border border-white/10">
+                <div className="absolute bottom-4 left-4 right-4 flex items-center gap-2 rounded-xl border border-white/15 bg-[#10283F]/85 px-4 py-3 text-xs font-semibold text-white backdrop-blur-md">
                   <span className="flex items-center gap-1.5">
-                    <ShieldCheck className="w-4 h-4 text-emerald-400" />
+                    <ShieldCheck className="h-4 w-4 text-[#D8C9A7]" />
                     Technical service information
                   </span>
 
@@ -161,10 +164,10 @@ export default function ServiceDetail() {
 
       {/* Description Detail */}
       {service.description && (
-        <section className="py-12 lg:py-16 bg-white">
-          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-            <h2 className="font-display text-2xl font-bold text-navy-950 mb-4 pb-2 border-b border-gray-100">Scope & Engineering Overview</h2>
-            <div className="prose prose-navy max-w-none text-gray-600 text-sm sm:text-base leading-relaxed">
+        <section className="bg-white py-12 sm:py-14 lg:py-16">
+          <div className="mx-auto max-w-4xl rounded-2xl border border-slate-200 bg-white px-5 py-6 sm:px-8 sm:py-8 lg:px-10">
+            <p className="text-xs font-bold uppercase tracking-[.18em] text-[#8A7956]">Service overview</p><h2 className="mb-5 mt-2 border-b border-slate-100 pb-4 font-display text-2xl font-semibold tracking-tight text-[#142C46]">Scope & technical details</h2>
+            <div className="prose prose-navy max-w-none whitespace-normal text-sm leading-7 text-slate-600 sm:text-base sm:leading-8">
               <p className="whitespace-pre-line">{service.description}</p>
             </div>
           </div>
@@ -173,12 +176,12 @@ export default function ServiceDetail() {
 
       {/* Features */}
       {service.features && service.features.length > 0 && (
-        <section className="py-12 lg:py-16 bg-gray-50/80 border-t border-gray-200/60">
+        <section className="border-t border-slate-200/80 bg-[#F6F8FA] py-12 sm:py-14 lg:py-16">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-            <h2 className="font-display text-2xl font-bold text-navy-950 mb-6">Key System Attributes</h2>
+            <p className="text-xs font-bold uppercase tracking-[.18em] text-[#8A7956]">At a glance</p><h2 className="mb-6 mt-2 font-display text-2xl font-semibold tracking-tight text-[#142C46]">Key system attributes</h2>
             <div className="grid sm:grid-cols-2 gap-3.5">
               {service.features.map((feature) => (
-                <div key={feature} className="flex items-start gap-3 bg-white p-4 rounded-xl border border-gray-200/80 shadow-2xs">
+                <div key={feature} className="flex items-start gap-3 rounded-xl border border-slate-200/80 bg-white p-4 shadow-[0_3px_12px_rgba(20,44,70,.03)]">
                   <CheckCircle2 className="w-5 h-5 text-emerald-500 flex-shrink-0 mt-0.5" />
                   <span className="text-navy-900 font-medium text-sm sm:text-base">{feature}</span>
                 </div>
@@ -189,17 +192,17 @@ export default function ServiceDetail() {
       )}
 
       {/* CTA */}
-      <section className="py-16 lg:py-20 bg-gradient-to-br from-navy-950 via-navy-900 to-navy-950 text-white relative overflow-hidden">
+      <section className="relative isolate overflow-hidden bg-[#10283F] py-14 text-white sm:py-16 lg:py-20">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
-          <h2 className="font-display text-3xl font-bold mb-3">Ready to Begin Your Project?</h2>
+          <p className="text-xs font-bold uppercase tracking-[.18em] text-[#D8C9A7]">Next step</p><h2 className="mb-3 mt-3 font-display text-3xl font-semibold tracking-tight sm:text-4xl">Ready to begin your project?</h2>
           <p className="text-navy-100/90 text-base mb-8 max-w-xl mx-auto">
             Contact us today for a free technical consultation and formal quote for your {service.name.toLowerCase()} project.
           </p>
           <div className="flex flex-col sm:flex-row justify-center items-center gap-4">
-            <Link href="/quotation" className="w-full sm:w-auto bg-[#142C46] hover:bg-[#203F60] text-white px-8 py-3 rounded-xl font-bold text-sm shadow-md transition-all">
+            <Link href="/quotation" className="w-full rounded-xl bg-[#D8C9A7] px-8 py-3 text-sm font-bold text-[#142C46] shadow-md transition hover:bg-[#E7DCC4] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white sm:w-auto">
               Request Project Quotation
             </Link>
-            <Link href="/services" className="w-full sm:w-auto bg-navy-800 border border-navy-700 text-white hover:bg-navy-700 px-8 py-3 rounded-xl font-bold text-sm transition-all">
+            <Link href="/services" className="w-full rounded-xl border border-white/20 px-8 py-3 text-sm font-semibold text-white transition hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white sm:w-auto">
               View All Services
             </Link>
           </div>

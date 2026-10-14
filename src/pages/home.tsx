@@ -112,11 +112,11 @@ export default function Home() {
   const addToCartText = productsSection?.content?.add_to_cart_text || 'Add to Cart';
   const testimonialsBadgeText = testimonialsSection?.content?.badge_text || 'Client Feedback';
 
-  // The homepage hero is curated, not assembled from randomly shuffled catalogue
-  // records. Service and product discovery belongs in their own sections. This keeps
-  // the headline, image and call to action stable between visits while preserving CMS slides.
+  // Build one hero carousel from configured CMS slides plus real catalogue records.
+  // Catalogue entries are capped so the hero remains curated and useful rather than
+  // becoming an endless list. Existing detail routes remain the source of truth.
   const allSlides: HeroSlideData[] = useMemo(() => {
-    const configuredSlides = slides.map((slide, idx) => ({
+    const configuredSlides: HeroSlideData[] = slides.map((slide, idx) => ({
       id: slide.id,
       title: slide.title,
       subtitle: slide.subtitle,
@@ -124,12 +124,32 @@ export default function Home() {
       image_url: ensureRealImage(slide.image_url, 'hero', slide.id || idx),
       button_text: slide.button_text,
       button_link: slide.button_link,
-      source_type: 'hero_slide' as const,
+      source_type: 'hero_slide',
     }));
 
-    if (configuredSlides.length > 0) return configuredSlides;
+    const productSlides: HeroSlideData[] = products.slice(0, 3).map((product) => ({
+      id: `featured-product-${product.id}`,
+      title: product.name,
+      subtitle: 'FEATURED PRODUCT',
+      description: product.short_description || product.description || 'Explore product details, available variants, and ordering options.',
+      image_url: product.image_url || getProductPlaceholder(product.name),
+      button_text: 'View Product',
+      button_link: `/product/${product.slug}`,
+      source_type: 'product',
+    }));
 
-    return [{
+    const serviceSlides: HeroSlideData[] = services.filter((service) => service.is_active !== false).slice(0, 3).map((service, index) => ({
+      id: `featured-service-${service.id}`,
+      title: service.name,
+      subtitle: 'FEATURED SERVICE',
+      description: service.short_description || service.description || 'Explore this service and discuss the right solution for your project.',
+      image_url: ensureRealImage(service.image_url, 'service', service.id || index),
+      button_text: 'Explore Service',
+      button_link: `/service/${service.slug}`,
+      source_type: 'service',
+    }));
+
+    const defaultSlide: HeroSlideData = {
       id: 'topline-homepage-default',
       title: 'Floors and waterproofing built to perform.',
       subtitle: 'FLOORING & WATERPROOFING CONTRACTOR',
@@ -137,9 +157,15 @@ export default function Home() {
       image_url: getRandomRealImage('flooring', 0),
       button_text: 'Discuss Your Project',
       button_link: '/quotation',
-      source_type: 'hero_slide' as const,
-    }];
-  }, [slides]);
+      source_type: 'hero_slide',
+    };
+
+    return [
+      ...(configuredSlides.length > 0 ? configuredSlides : [defaultSlide]),
+      ...productSlides,
+      ...serviceSlides,
+    ];
+  }, [slides, products, services]);
 
   // Preload hero slide, service, product, project, and partner images for smooth transitions
   useImagePreloader(
@@ -156,10 +182,12 @@ export default function Home() {
   );
 
   useEffect(() => {
-    if (allSlides.length === 0 || isSliderPaused) return;
+    if (allSlides.length < 2 || isSliderPaused) return;
+    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    if (mediaQuery.matches) return;
     const interval = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % allSlides.length);
-    }, slideInterval);
+    }, Math.max(4500, Number(slideInterval) || 6000));
     return () => clearInterval(interval);
   }, [allSlides.length, slideInterval, isSliderPaused]);
 
@@ -205,15 +233,22 @@ export default function Home() {
 
       {/* Hero Section - Full viewport slider with dark navy overlay */}
       <section
-        className="relative h-[27rem] min-h-[27rem] sm:h-[29rem] lg:h-[31rem] overflow-hidden bg-[#142C46]"
+        className="topline-home-hero relative h-[30rem] min-h-[30rem] sm:h-[32rem] lg:h-[35rem] overflow-hidden bg-[#142C46] touch-pan-y"
+        aria-roledescription="carousel"
+        aria-label="Featured products, services and company highlights"
         onMouseEnter={() => setIsSliderPaused(true)}
         onMouseLeave={() => setIsSliderPaused(false)}
+        onFocusCapture={() => setIsSliderPaused(true)}
+        onBlurCapture={(event) => {
+          if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setIsSliderPaused(false);
+        }}
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
       >
         {allSlides.map((slide, index) => (
           <div
             key={slide.id}
+            aria-hidden={index !== currentSlide}
             className={`absolute inset-0 transition-opacity duration-1000 ${
               index === currentSlide ? 'opacity-100' : 'opacity-0'
             }`}
@@ -235,6 +270,11 @@ export default function Home() {
             <div className="absolute inset-0 z-20 flex items-center">
               <div className="max-w-7xl mx-auto px-5 sm:px-8 lg:px-10 w-full">
                 <div className="max-w-2xl py-10">
+                  {slide.source_type !== 'hero_slide' && (
+                    <p className="inline-flex items-center rounded-full border border-white/30 bg-white/10 px-3 py-1 mb-4 text-[11px] font-bold uppercase tracking-[0.16em] text-[#F0E4C9] backdrop-blur-sm">
+                      {slide.source_type === 'product' ? 'Featured product' : 'Featured service'}
+                    </p>
+                  )}
                   {slide.subtitle && (
                     <p
                       className={`text-[#E6D7B5] font-semibold mb-4 text-xs sm:text-sm uppercase tracking-[0.18em] transition-all duration-500 delay-100 ${
@@ -263,6 +303,7 @@ export default function Home() {
                   {slide.button_text && slide.button_link && (
                     <Link
                       href={slide.button_link}
+                      tabIndex={index === currentSlide ? 0 : -1}
                       className={`inline-flex items-center gap-2 bg-[#F7F5EF] hover:bg-white text-[#142C46] px-6 py-3 rounded-lg text-sm font-semibold transition-all duration-500 delay-400 shadow-sm hover:shadow-md ${
                         index === currentSlide ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2'
                       }`}
@@ -281,14 +322,18 @@ export default function Home() {
         {allSlides.length > 1 && (
           <>
             <button
+              type="button"
+              aria-label="Show previous featured slide"
               onClick={() => setCurrentSlide((prev) => (prev - 1 + allSlides.length) % allSlides.length)}
-              className="absolute left-4 top-1/2 -translate-y-1/2 z-30 p-2 rounded-full bg-white/10 backdrop-blur text-white hover:bg-primary-500 transition-colors"
+              className="absolute left-3 sm:left-5 top-1/2 -translate-y-1/2 z-30 p-2 rounded-full bg-white/10 backdrop-blur text-white hover:bg-primary-500 transition-colors"
             >
               <ChevronLeft className="w-5 h-5" />
             </button>
             <button
+              type="button"
+              aria-label="Show next featured slide"
               onClick={() => setCurrentSlide((prev) => (prev + 1) % allSlides.length)}
-              className="absolute right-4 top-1/2 -translate-y-1/2 z-30 p-2 rounded-full bg-white/10 backdrop-blur text-white hover:bg-primary-500 transition-colors"
+              className="absolute right-3 sm:right-5 top-1/2 -translate-y-1/2 z-30 p-2 rounded-full bg-white/10 backdrop-blur text-white hover:bg-primary-500 transition-colors"
             >
               <ChevronRight className="w-5 h-5" />
             </button>
@@ -296,8 +341,11 @@ export default function Home() {
               {allSlides.map((_, index) => (
                 <button
                   key={index}
+                  type="button"
+                  aria-label={`Show featured slide ${index + 1}: ${allSlides[index].title}`}
+                  aria-current={index === currentSlide ? 'true' : undefined}
                   onClick={() => setCurrentSlide(index)}
-                  className={`w-2 h-2 rounded-full transition-all ${
+                  className={`w-2.5 h-2.5 rounded-full transition-all focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white ${
                     index === currentSlide ? 'w-6 bg-primary-500' : 'bg-white/40 hover:bg-white/60'
                   }`}
                 />

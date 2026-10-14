@@ -331,3 +331,24 @@ button:disabled, input:disabled, textarea:disabled, select:disabled { cursor: no
   outline: 3px solid var(--topline-focus, #153f69);
   outline-offset: 3px;
 }
+
+
+/* Homepage hero: restrained premium brand treatment and predictable touch behaviour. */
+.topline-home-hero {
+  isolation: isolate;
+  background: linear-gradient(115deg, #142c46 0%, #243f5c 58%, #607d98 100%);
+}
+.topline-home-hero img {
+  object-position: center 52%;
+}
+.topline-home-hero a:focus-visible,
+.topline-home-hero button:focus-visible {
+  outline-color: #f0e4c9;
+  outline-offset: 4px;
+}
+@media (max-width: 639px) {
+  .topline-home-hero h1 {
+    overflow-wrap: anywhere;
+    text-wrap: balance;
+  }
+}
