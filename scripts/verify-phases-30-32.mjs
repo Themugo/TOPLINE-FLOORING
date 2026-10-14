@@ -1,5 +1,6 @@
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import path from 'node:path';
+import { checkReleaseEnvironmentFiles } from './lib-release-environment-check.mjs';
 
 const fail = (message) => { throw new Error(message); };
 const migrationsDir = 'supabase/migrations';
@@ -67,7 +68,9 @@ if (!/roles\s*@>\s*ARRAY\['anon'\]/.test(security)) fail('Security regression te
 const envExample = readFileSync('.env.example', 'utf8');
 for (const key of ['VITE_SUPABASE_URL','VITE_SUPABASE_PUBLISHABLE_KEY']) if (!envExample.includes(key)) fail(`.env.example is missing ${key}`);
 if (!envExample.includes('zmbsskvnzjdaxuxlauyx.supabase.co')) fail('Topline Supabase URL missing from environment contract.');
-for (const secretFile of ['.env','.env.local','.env.production']) if (existsSync(secretFile)) fail(`${secretFile} must not be committed or packaged.`);
+const envCheck = checkReleaseEnvironmentFiles(process.cwd());
+for (const note of envCheck.notes) console.warn(`NOTE ${note}`);
+if (envCheck.failures.length) fail(envCheck.failures.join('\n'));
 const gitignore = readFileSync('.gitignore','utf8');
 if (!gitignore.includes('.env*')) fail('.gitignore must exclude environment files.');
 if (!gitignore.includes('node_modules')) fail('.gitignore must exclude node_modules.');

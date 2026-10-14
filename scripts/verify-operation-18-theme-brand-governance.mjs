@@ -14,11 +14,13 @@ for(const t of ['theme_setting_versions','get_theme_brand_governance_360','save_
 const page=read('src/pages/admin/theme.tsx');
 for(const t of ['Theme & Brand Governance','Theme Version History','Rollback','Save Theme Version','Change note','get_theme_brand_governance_360','save_theme_brand_version','rollback_theme_brand_version']) if(!page.includes(t)) fail.push(`UI missing required contract: ${t}`);
 const applier=read('src/components/ThemeApplier.tsx');
-for(const t of ['applyTheme','secondary_color','accent_color']) if(!applier.includes(t)) fail.push(`ThemeApplier missing governed token: ${t}`);
+for(const t of ['applyTheme','DEFAULT_APPLIED_THEME','validateCustomCss','isSafeDesignTokenValue']) if(!applier.includes(t)) fail.push(`ThemeApplier missing governed token: ${t}`);
 const engine=read('src/lib/theme-engine.ts');
-for(const t of ['--theme-secondary','--theme-accent','--theme-heading-font','--theme-body-font','--theme-border-radius','--theme-spacing-scale']) if(!engine.includes(t)) fail.push(`Theme engine missing CSS token: ${t}`);
+for(const t of ['--theme-secondary','--theme-accent','--theme-heading-font','--theme-body-font','--theme-border-radius','--theme-spacing-scale','applyAccentColorRamp','normalizeAppliedTheme','validateAppliedTheme']) if(!engine.includes(t)) fail.push(`Theme engine missing CSS token: ${t}`);
 const css=read('src/index.css');
 for(const t of ['--theme-secondary','--theme-accent','--theme-heading-font','--theme-body-font','--theme-border-radius','--theme-spacing-scale']) if(!css.includes(t)) fail.push(`CSS root token missing: ${t}`);
+if(!/body\s*\{[^}]*font-family:\s*var\(--theme-body-font/s.test(css)) fail.push('Body typography does not consume the governed --theme-body-font token.');
+if(!/h1,\s*h2,\s*h3,\s*h4,\s*h5,\s*h6\s*\{[^}]*font-family:\s*var\(--theme-heading-font/s.test(css)) fail.push('Heading typography does not consume the governed --theme-heading-font token.');
 const manifest=read('supabase/MIGRATION_MANIFEST.md');
 if(!manifest.includes(migration)) fail.push('Migration manifest missing Operation 18 migration.');
 if(!manifest.includes(`contains ${migrations.length} uniquely timestamped active migrations`)) fail.push(`Migration manifest count is stale; expected ${migrations.length}.`);

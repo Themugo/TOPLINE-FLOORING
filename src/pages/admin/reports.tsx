@@ -181,21 +181,21 @@ function ReportsContent() {
         <>
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <StatCard title="Revenue" value={formatKES(stats.totalRevenue)} change={revenueChange} icon={<DollarSign className="w-5 h-5" />} color="bg-green-500" />
-            <StatCard title="Orders" value={stats.totalOrders} icon={<ShoppingCart className="w-5 h-5" />} color="bg-blue-500" />
-            <StatCard title="Quotations" value={stats.totalQuotations} icon={<FileText className="w-5 h-5" />} color="bg-purple-500" />
-            <StatCard title="New Customers" value={stats.newCustomers} icon={<Users className="w-5 h-5" />} color="bg-indigo-500" />
+            <StatCard title="Orders" value={stats.totalOrders} icon={<ShoppingCart className="w-5 h-5" />} color="bg-primary-500" />
+            <StatCard title="Quotations" value={stats.totalQuotations} icon={<FileText className="w-5 h-5" />} color="bg-accent-600" />
+            <StatCard title="New Customers" value={stats.newCustomers} icon={<Users className="w-5 h-5" />} color="bg-navy-700" />
           </div>
 
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <StatCard title="Pending Orders" value={stats.pendingOrders} icon={<ShoppingCart className="w-5 h-5" />} color="bg-yellow-500" />
+            <StatCard title="Pending Orders" value={stats.pendingOrders} icon={<ShoppingCart className="w-5 h-5" />} color="bg-yellow-700" />
             <StatCard title="Low Stock Items" value={stats.lowStockCount} icon={<AlertTriangle className="w-5 h-5" />} color="bg-red-500" />
-            <StatCard title="Quote Conversion" value={`${stats.conversionRate}%`} icon={<TrendingUp className="w-5 h-5" />} color="bg-pink-500" />
-            <StatCard title="Avg Order Value" value={formatKES(stats.avgOrderValue)} icon={<BarChart3 className="w-5 h-5" />} color="bg-orange-500" />
+            <StatCard title="Quote Conversion" value={`${stats.conversionRate}%`} icon={<TrendingUp className="w-5 h-5" />} color="bg-green-600" />
+            <StatCard title="Avg Order Value" value={formatKES(stats.avgOrderValue)} icon={<BarChart3 className="w-5 h-5" />} color="bg-gold-600" />
           </div>
 
           <div className="grid sm:grid-cols-2 gap-4">
-            <StatCard title="Inventory Valuation" value={formatKES(stats.inventoryValuation)} icon={<Package className="w-5 h-5" />} color="bg-teal-500" />
-            <StatCard title="Outstanding Invoices" value={formatKES(stats.outstandingBalance)} icon={<Wallet className="w-5 h-5" />} color="bg-cyan-600" />
+            <StatCard title="Inventory Valuation" value={formatKES(stats.inventoryValuation)} icon={<Package className="w-5 h-5" />} color="bg-accent-700" />
+            <StatCard title="Outstanding Invoices" value={formatKES(stats.outstandingBalance)} icon={<Wallet className="w-5 h-5" />} color="bg-yellow-700" />
           </div>
 
           {/* Revenue Trend */}
@@ -209,11 +209,11 @@ function ReportsContent() {
             ) : (
               <ResponsiveContainer width="100%" height={240}>
                 <LineChart data={revenueTrend}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                  <XAxis dataKey="date" tick={{ fontSize: 11 }} interval="preserveStartEnd" />
-                  <YAxis tick={{ fontSize: 11 }} tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`} />
-                  <Tooltip formatter={tooltipFormatter} />
-                  <Line type="monotone" dataKey="revenue" stroke="#c9971f" strokeWidth={2} dot={false} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="var(--topline-border, #dbe3ec)" />
+                  <XAxis dataKey="date" tick={{ fontSize: 11, fill: "var(--topline-muted, #64748b)" }} stroke="var(--topline-muted, #64748b)" interval="preserveStartEnd" />
+                  <YAxis tick={{ fontSize: 11, fill: "var(--topline-muted, #64748b)" }} stroke="var(--topline-muted, #64748b)" tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`} />
+                  <Tooltip formatter={tooltipFormatter} contentStyle={{ borderRadius: "8px", border: "1px solid var(--topline-border, #dbe3ec)" }} />
+                  <Line type="monotone" dataKey="revenue" stroke="var(--topline-chart-2, #c9971f)" strokeWidth={2} dot={false} />
                 </LineChart>
               </ResponsiveContainer>
             )}

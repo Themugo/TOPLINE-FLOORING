@@ -1,5 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import { checkReleaseEnvironmentFiles } from './lib-release-environment-check.mjs';
 
 const root = process.cwd();
 const failures = [];
@@ -43,7 +44,9 @@ const vercelConfig = JSON.parse(read('vercel.json'));
 if (vercelConfig.env?.VITE_SITE_URL !== expectedSiteUrl) fail('Canonical site URL is missing from Vercel configuration.');
 const supabaseClient = read('src/lib/supabase.ts');
 if (!supabaseClient.includes(expectedSupabaseUrl)) fail('Browser Supabase client is missing the dedicated Topline target guard.');
-for (const secretFile of ['.env', '.env.local', '.env.production']) if (exists(secretFile)) fail(`Secret-bearing file exists in release tree: ${secretFile}`);
+const envCheck = checkReleaseEnvironmentFiles(root);
+for (const note of envCheck.notes) warn(note);
+for (const failure of envCheck.failures) fail(failure);
 
 // 3. Migration integrity and current-chain truth.
 const migrationsDir = path.join(root, 'supabase', 'migrations');

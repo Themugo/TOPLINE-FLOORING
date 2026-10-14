@@ -1,0 +1,4995 @@
+============================================================
+TOPLINE END-TO-END DIAGNOSTIC REPORT
+============================================================
+
+===== DATE AND ENVIRONMENT =====
+Wed 10/14/2026
+09:27 AM
+v22.22.2
+10.9.7
+
+===== GIT STATUS =====
+ M docs/PHASES_36_38_DATABASE_RECONCILIATION.md
+ M package.json
+ M public/sitemap.xml
+ M scripts/verify-admin-feedback-contract.mjs
+ M scripts/verify-environment.mjs
+ M scripts/verify-operation-18-theme-brand-governance.mjs
+ M scripts/verify-operation-9-production-certification.mjs
+ M scripts/verify-phase-14-ci-release-gate.mjs
+ M scripts/verify-phase-5-hosting.mjs
+ M scripts/verify-phases-30-32.mjs
+ M scripts/verify-phases-36-38.mjs
+ M src/components/ThemeApplier.tsx
+ M src/components/admin/RevenueTrendChart.tsx
+ M src/index.css
+ M src/lib/theme-engine.ts
+ M src/pages/admin/reports.tsx
+ M src/pages/admin/site-control.tsx
+ M src/pages/admin/theme.tsx
+ M tailwind.config.js
+?? TOPLINE-END-TO-END-DIAGNOSTIC.txt
+?? TOPLINE-MASTER-PROMPT-1-AUDIT-AND-RELEASE-READINESS-2026-10-14.md
+?? TOPLINE-MASTER-PROMPT-2-UNIFIED-BRAND-IDENTITY-COLOR-GOVERNANCE-UI-UX-CONSISTENCY.md
+?? TOPLINE-PRECOMMIT-CLEANUP-STATUS-2026-10-14.md
+?? TOPLINE-THEME-COMPONENT-STYLE-INVENTORY-2026-10-14.csv
+?? TOPLINE-THEME-ROUTE-VERIFICATION-CHECKLIST-2026-10-14.csv
+?? TOPLINE-THEME-ROUTE-VERIFICATION-MATRIX-2026-10-14.csv
+?? TOPLINE-THEME-UNIFICATION-AUDIT-AND-FIX-2026-10-14.md
+?? TOPLINE-UNIFIED-DESIGN-TOKEN-SPECIFICATION-2026-10-14.md
+?? TOPLINE-WORKFLOW-CERTIFICATION-MATRIX-2026-10-14.csv
+?? npm-audit-fix-plan.json
+?? npm-audit-report.json
+?? scripts/lib-release-environment-check.mjs
+?? scripts/test-release-environment-check.mjs
+?? scripts/test-theme-engine.mjs
+?? scripts/verify-theme-unification.mjs
+main
+
+===== PACKAGE MANIFEST =====
+{
+  "name": "topline-flooring",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "node ./node_modules/vite/bin/vite.js",
+    "build": "node ./node_modules/vite/bin/vite.js build",
+    "build:sitemap": "node scripts/generate-sitemap.mjs",
+    "prebuild": "node scripts/generate-sitemap.mjs",
+    "build:all": "npm run build",
+    "lint": "node ./node_modules/eslint/bin/eslint.js .",
+    "preview": "node ./node_modules/vite/bin/vite.js preview",
+    "typecheck": "node ./node_modules/typescript/bin/tsc -p tsconfig.app.json --noEmit",
+    "verify:supabase": "node scripts/verify-supabase-target.mjs",
+    "verify:phases-6-8": "node scripts/verify-phase-6-8.mjs",
+    "verify:phases-9-11": "node scripts/verify-phase-9-11.mjs",
+    "verify:phases-12-14": "node scripts/verify-phase-12-14.mjs",
+    "verify:phases-15-17": "node scripts/verify-phases-15-17.mjs",
+    "verify:phases-21-23": "node scripts/verify-phases-21-23.mjs",
+    "verify:phases-24-26": "node scripts/verify-phases-24-26.mjs",
+    "verify:phases-30-32": "node scripts/verify-phases-30-32.mjs",
+    "validate:local-db": "node scripts/validate-local-supabase.mjs",
+    "verify:schema-contract": "node scripts/verify-schema-contract.mjs",
+    "verify:production-readiness": "node scripts/production-readiness-gate.mjs",
+    "verify:phases-33-35": "node scripts/verify-phase-33-35.mjs",
+    "verify:production-db-preflight": "node scripts/production-db-preflight.mjs",
+    "verify:database-dependencies": "node scripts/verify-database-dependencies.mjs",
+    "verify:generated-types": "node scripts/verify-generated-types.mjs",
+    "verify:remote-deploy-gate": "node scripts/verify-remote-deploy-gate.mjs",
+    "verify:phases-36-38": "node scripts/verify-phases-36-38.mjs",
+    "db:types": "node scripts/generate-db-types.mjs",
+    "verify:phases-39-41": "node scripts/verify-phases-39-41.mjs",
+    "verify:phases-42-44": "node scripts/verify-phases-42-44.mjs",
+    "verify:phases-45-47": "node scripts/verify-phases-45-47.mjs",
+    "verify:ecommerce-stability": "node scripts/verify-ecommerce-stability.mjs",
+    "verify:migration-integrity": "node scripts/verify-migration-integrity.mjs",
+    "verify:payment-inventory-lifecycle": "node scripts/verify-payment-inventory-lifecycle.mjs",
+    "verify:payment-refund-expiry": "node scripts/verify-payment-refund-expiry.mjs",
+    "verify:payment-provider-boundary": "node scripts/verify-payment-provider-boundary.mjs",
+    "verify:release-candidate": "node scripts/verify-release-candidate.mjs",
+    "verify:doctor": "node scripts/verify-toolchain.mjs",
+    "verify:vercel": "node scripts/verify-vercel-deployment.mjs",
+    "verify:invoice-hook-contract": "node scripts/verify-invoice-hook-contract.mjs",
+    "verify:public-tracking-contract": "node scripts/verify-public-tracking-contract.mjs",
+    "verify:public-order-tracking-privacy": "node scripts/verify-public-order-tracking-privacy.mjs",
+    "verify:commerce-fulfillment-360": "node scripts/verify-commerce-fulfillment-360.mjs",
+    "verify:order-operations-360": "node scripts/verify-order-operations-360.mjs",
+    "verify:authorization-order-360": "node scripts/verify-authorization-order-360.mjs",
+    "verify:phase-2-supabase": "node scripts/verify-phase-2-supabase.mjs",
+    "verify:phase-3-email": "node scripts/verify-phase-3-email.mjs",
+    "verify:phase-4-sms": "node scripts/verify-phase-4-sms.mjs",
+    "verify:phase-5-hosting": "node scripts/verify-phase-5-hosting.mjs",
+    "verify:phase-6-launch": "node scripts/verify-phase-6-launch-readiness.mjs",
+    "launch:check": "node scripts/production-launch-check.mjs",
+    "verify:phase-7-operations": "node scripts/verify-phase-7-operations.mjs",
+    "verify:phase-8-field-operations": "node scripts/verify-phase-8-field-operations.mjs",
+    "verify:commerce-entrypoints-360": "node scripts/verify-commerce-entrypoints-360.mjs",
+    "verify:launch-gap": "node scripts/verify-launch-gap.mjs",
+    "verify:fulfillment-operations-360": "node scripts/verify-fulfillment-operations-360.mjs",
+    "verify:phase-10-finance-billing-360": "node scripts/verify-phase-10-finance-billing-360.mjs",
+    "verify:phase-11-inventory-procurement-360": "node scripts/verify-phase-11-inventory-procurement-360.mjs",
+    "verify:phase-12-customer-portal-360": "node scripts/verify-phase-12-customer-portal-360.mjs",
+    "verify:phase-13-backup-export-360": "node scripts/verify-phase-13-backup-export-360.mjs",
+    "verify:phase-14-ci-release-gate": "node scripts/verify-phase-14-ci-release-gate.mjs",
+    "verify:phase-15-17-lifecycle-360": "node scripts/verify-phases-15-17.mjs",
+    "verify:phase-18-20-communications-provider-response": "node scripts/verify-phase-18-20-communications-provider-response.mjs",
+    "verify:phases-21-23-finance-communications-analytics-360": "node scripts/verify-phases-21-23-finance-communications-analytics-360.mjs",
+    "verify:phases-24-26-reporting-intelligence-360": "node scripts/verify-phases-24-26-reporting-intelligence-360.mjs",
+    "verify:phases-27-29-public-accessibility-seo-360": "node scripts/verify-phases-27-29.mjs",
+    "verify:phases-80-82": "node scripts/verify-phases-80-82.mjs",
+    "verify:phases-83-85": "node scripts/verify-phases-83-85.mjs",
+    "verify:phases-86-88": "node scripts/verify-phases-86-88.mjs",
+    "verify:phases-89-91": "node scripts/verify-phases-89-91.mjs",
+    "verify:operation-1-commercial-lifecycle": "node scripts/verify-operation-1-commercial-lifecycle.mjs",
+    "verify:operation-2-project-delivery": "node scripts/verify-operation-2-project-delivery.mjs",
+    "verify:operation-3-supply-chain": "node scripts/verify-operation-3-supply-chain.mjs",
+    "verify:operation-4-finance": "node scripts/verify-operation-4-finance.mjs",
+    "verify:operation-5-fulfillment-delivery": "node scripts/verify-operation-5-fulfillment-delivery.mjs",
+    "verify:operation-6-customer-lifecycle": "node scripts/verify-operation-6-customer-lifecycle.mjs",
+    "verify:operation-7-communications-journey": "node scripts/verify-operation-7-communications-journey.mjs",
+    "verify:operation-8-executive-operations": "node scripts/verify-operation-8-executive-operations.mjs",
+    "verify:operation-9-production-certification": "node scripts/verify-operation-9-production-certification.mjs",
+    "verify:operation-10-reliability-incident-response": "node scripts/verify-operation-10-reliability-incident-response.mjs",
+    "verify:operation-11-business-continuity": "node scripts/verify-operation-11-business-continuity.mjs",
+    "verify:operation-12-data-governance": "node scripts/verify-operation-12-data-governance.mjs",
+    "verify:operation-13-identity-access": "node scripts/verify-operation-13-identity-access.mjs",
+    "verify:operation-14-quality-assurance": "node scripts/verify-operation-14-quality-assurance.mjs",
+    "verify:operation-15-hse-site-compliance": "node scripts/verify-operation-15-hse-site-compliance.mjs",
+    "verify:operation-16-client-owned-supabase": "node scripts/verify-operation-16-client-owned-supabase.mjs",
+    "verify:migration-deployment-static": "node scripts/verify-migration-deployment-static.mjs",
+    "verify-application-security-trust-boundary": "node scripts/verify-application-security-trust-boundary.mjs",
+    "verify:application-security-trust-boundary": "node scripts/verify-application-security-trust-boundary.mjs",
+    "verify:rpc-authorization-certification": "node scripts/verify-rpc-authorization-certification.mjs",
+    "verify:production-communications-integration-360": "node scripts/verify-production-communications-integration-360.mjs",
+    "verify:payment-webhook-reconciliation-360": "node scripts/verify-payment-webhook-reconciliation-360.mjs",
+    "verify:customer-self-service-360": "node scripts/verify-customer-self-service-360.mjs",
+    "verify:operation-17-production-automation": "node scripts/verify-operation-17-production-automation.mjs",
+    "verify:operation-18-theme-brand-governance": "node scripts/verify-operation-18-theme-brand-governance.mjs",
+    "verify:project-documents": "node scripts/verify-project-documents.mjs",
+    "verify:admin-management-uploads": "node scripts/verify-admin-management-uploads.mjs",
+    "verify:delivery-worker-hardening": "node scripts/verify-delivery-worker-hardening.mjs",
+    "verify:admin-feedback-contract": "node scripts/verify-admin-feedback-contract.mjs",
+    "verify:database-read-boundary": "node scripts/verify-database-read-boundary.mjs",
+    "verify:edge-function-deploy-config": "node scripts/verify-edge-function-deploy-config.mjs",
+    "verify:vercel-production-contract": "node scripts/verify-vercel-production-contract.mjs",
+    "verify:sql-runtime-safety": "node scripts/verify-sql-runtime-safety.mjs",
+    "verify:all": "node scripts/verify-all.mjs",
+    "verify:db-9-11": "node scripts/verify-db-9-11.mjs",
+    "verify:admin-auth-360": "node scripts/verify-admin-authentication-authorization-360.mjs",
+    "verify:admin-control-plane-360": "node scripts/verify-admin-control-plane-privileged-operations-360.mjs",
+    "verify:customer-self-service-rpc-360": "node scripts/verify-customer-self-service-rpc-trust-boundary-360.mjs",
+    "verify:payment-refund-provider-360": "node scripts/verify-payment-refund-provider-trust-boundary-360.mjs",
+    "verify:payment-provider-uat": "node scripts/verify-payment-provider-uat.mjs",
+    "verify:brevo-email": "node scripts/verify-brevo-email-integration.mjs",
+    "verify:launch-repair": "node scripts/verify-launch-repair.mjs",
+    "verify:communications-comm-01-03": "node scripts/verify-communications-comm-01-03.mjs",
+    "verify:communications-comm-04-06": "node scripts/verify-communications-comm-04-06.mjs",
+    "verify:communications-comm-07-09": "node scripts/verify-communications-comm-07-09.mjs",
+    "verify:communications-comm-10-12": "node scripts/verify-communications-comm-10-12.mjs",
+    "verify:database-source-of-truth-360": "node scripts/verify-database-source-of-truth-360.mjs",
+    "verify:communications-comm-13-17": "node scripts/verify-communications-comm-13-17.mjs",
+    "verify:payment-provider-certification-activation-360": "node scripts/verify-payment-provider-certification-activation-360.mjs",
+    "verify:mpesa-provider-uat": "node scripts/verify-mpesa-provider-uat.mjs",
+    "verify:payment-audit-360": "node scripts/verify-payment-audit-360.mjs",
+    "test:smoke": "node ./node_modules/vitest/vitest.mjs run --config vitest.config.ts",
+    "test:release-env-check": "node scripts/test-release-environment-check.mjs",
+    "verify:theme-unification": "node scripts/verify-theme-unification.mjs",
+    "test:theme-engine": "node --experimental-strip-types scripts/test-theme-engine.mjs"
+  },
+  "dependencies": {
+    "@radix-ui/react-accordion": "^1.2.16",
+    "@radix-ui/react-alert-dialog": "^1.1.19",
+    "@radix-ui/react-checkbox": "^1.3.7",
+    "@radix-ui/react-collapsible": "^1.1.16",
+    "@radix-ui/react-context-menu": "^2.3.3",
+    "@radix-ui/react-dialog": "^1.1.19",
+    "@radix-ui/react-dropdown-menu": "^2.1.20",
+    "@radix-ui/react-hover-card": "^1.1.19",
+    "@radix-ui/react-label": "^2.1.11",
+    "@radix-ui/react-menubar": "^1.1.20",
+    "@radix-ui/react-navigation-menu": "^1.2.18",
+    "@radix-ui/react-popover": "^1.1.19",
+    "@radix-ui/react-progress": "^1.1.12",
+    "@radix-ui/react-scroll-area": "^1.2.14",
+    "@radix-ui/react-select": "^2.3.3",
+    "@radix-ui/react-separator": "^1.1.11",
+    "@radix-ui/react-slot": "^1.3.0",
+    "@radix-ui/react-switch": "^1.3.3",
+    "@radix-ui/react-tabs": "^1.1.17",
+    "@radix-ui/react-toggle": "^1.1.14",
+    "@radix-ui/react-toggle-group": "^1.1.15",
+    "@radix-ui/react-tooltip": "^1.2.12",
+    "@supabase/supabase-js": "^2.57.4",
+    "@tanstack/react-query": "^5.101.2",
+    "@types/leaflet": "^1.9.21",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "jspdf": "^4.2.1",
+    "jspdf-autotable": "^5.0.8",
+    "leaflet": "^1.9.4",
+    "lucide-react": "^0.344.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-is": "^19.2.8",
+    "recharts": "^3.9.2",
+    "tailwind-merge": "^3.6.0",
+    "wouter": "^3.3.1"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.9.1",
+    "@testing-library/dom": "^10.4.2",
+    "@testing-library/react": "^16.3.3",
+    "@types/react": "^18.3.5",
+    "@types/react-dom": "^18.3.0",
+    "@vitejs/plugin-react": "^4.3.1",
+    "autoprefixer": "^10.4.18",
+    "eslint": "^9.9.1",
+    "eslint-plugin-react-hooks": "^5.1.0-rc.0",
+    "eslint-plugin-react-refresh": "^0.4.11",
+    "globals": "^15.9.0",
+    "jsdom": "^25.0.1",
+    "postcss": "^8.4.35",
+    "tailwindcss": "^3.4.1",
+    "typescript": "^5.5.3",
+    "typescript-eslint": "^8.3.0",
+    "vite": "^5.4.2",
+    "vitest": "^2.1.9"
+  },
+  "description": "Topline Flooring & Waterproofing business website and operations portal",
+  "engines": {
+    "node": "22.x",
+    "npm": ">=10"
+  }
+}
+
+===== LOCKFILE STATUS =====
+
+===== INSTALLED DEPENDENCY TREE =====
+topline-flooring@1.0.0 C:\Users\hp\Desktop\TOPLINE FLOORING & ROOFING
++-- @eslint/js@9.12.0
++-- @radix-ui/react-accordion@1.2.16
++-- @radix-ui/react-alert-dialog@1.1.19
++-- @radix-ui/react-checkbox@1.3.7
++-- @radix-ui/react-collapsible@1.1.16
++-- @radix-ui/react-context-menu@2.3.3
++-- @radix-ui/react-dialog@1.1.19
++-- @radix-ui/react-dropdown-menu@2.1.20
++-- @radix-ui/react-hover-card@1.1.19
++-- @radix-ui/react-label@2.1.11
++-- @radix-ui/react-menubar@1.1.20
++-- @radix-ui/react-navigation-menu@1.2.18
++-- @radix-ui/react-popover@1.1.19
++-- @radix-ui/react-progress@1.1.12
++-- @radix-ui/react-scroll-area@1.2.14
++-- @radix-ui/react-select@2.3.3
++-- @radix-ui/react-separator@1.1.11
++-- @radix-ui/react-slot@1.3.0
++-- @radix-ui/react-switch@1.3.3
++-- @radix-ui/react-tabs@1.1.17
++-- @radix-ui/react-toggle-group@1.1.15
++-- @radix-ui/react-toggle@1.1.14
++-- @radix-ui/react-tooltip@1.2.12
++-- @supabase/supabase-js@2.57.4
++-- @tanstack/react-query@5.101.2
++-- @testing-library/dom@10.4.2
++-- @testing-library/react@16.3.3
++-- @types/leaflet@1.9.21
++-- @types/react-dom@18.3.0
++-- @types/react@18.3.11
++-- @vitejs/plugin-react@4.3.2
++-- autoprefixer@10.4.20
++-- class-variance-authority@0.7.1
++-- clsx@2.1.1
++-- eslint-plugin-react-hooks@5.1.0-rc-fb9a90fa48-20240614
++-- eslint-plugin-react-refresh@0.4.12
++-- eslint@9.12.0
++-- globals@15.11.0
++-- jsdom@25.0.1
++-- jspdf-autotable@5.0.8
++-- jspdf@4.2.1
++-- leaflet@1.9.4
++-- lucide-react@0.344.0
++-- postcss@8.4.47
++-- react-dom@18.3.1
++-- react-is@19.2.8
++-- react@18.3.1
++-- recharts@3.9.2
++-- tailwind-merge@3.6.0
++-- tailwindcss@3.4.17
++-- typescript-eslint@8.8.1
++-- typescript@5.5.3
++-- vite@5.4.8
++-- vitest@2.1.9
+`-- wouter@3.10.0
+
+
+===== SECURITY AUDIT =====
+{
+  "auditReportVersion": 2,
+  "vulnerabilities": {
+    "@babel/core": {
+      "name": "@babel/core",
+      "severity": "low",
+      "isDirect": false,
+      "via": [
+        {
+          "source": 1123528,
+          "name": "@babel/core",
+          "dependency": "@babel/core",
+          "title": "@babel/core: Arbitrary File Read via sourceMappingURL Comment",
+          "url": "https://github.com/advisories/GHSA-4x5r-pxfx-6jf8",
+          "severity": "low",
+          "cwe": [
+            "CWE-22",
+            "CWE-200"
+          ],
+          "cvss": {
+            "score": 3.2,
+            "vectorString": "CVSS:3.1/AV:L/AC:H/PR:N/UI:N/S:C/C:L/I:N/A:N"
+          },
+          "range": "<=7.29.0"
+        }
+      ],
+      "effects": [],
+      "range": "<=7.29.0",
+      "nodes": [
+        "node_modules/@babel/core"
+      ],
+      "fixAvailable": true
+    },
+    "@babel/helpers": {
+      "name": "@babel/helpers",
+      "severity": "moderate",
+      "isDirect": false,
+      "via": [
+        {
+          "source": 1104001,
+          "name": "@babel/helpers",
+          "dependency": "@babel/helpers",
+          "title": "Babel has inefficient RegExp complexity in generated code with .replace when transpiling named capturing groups",
+          "url": "https://github.com/advisories/GHSA-968p-4wvh-cqc8",
+          "severity": "moderate",
+          "cwe": [
+            "CWE-1333"
+          ],
+          "cvss": {
+            "score": 6.2,
+            "vectorString": "CVSS:3.1/AV:L/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+          },
+          "range": "<7.26.10"
+        }
+      ],
+      "effects": [],
+      "range": "<7.26.10",
+      "nodes": [
+        "node_modules/@babel/helpers"
+      ],
+      "fixAvailable": true
+    },
+    "@eslint/plugin-kit": {
+      "name": "@eslint/plugin-kit",
+      "severity": "low",
+      "isDirect": false,
+      "via": [
+        {
+          "source": 1100564,
+          "name": "@eslint/plugin-kit",
+          "dependency": "@eslint/plugin-kit",
+          "title": "Regular Expression Denial of Service (ReDoS) in @eslint/plugin-kit",
+          "url": "https://github.com/advisories/GHSA-7q7g-4xm8-89cq",
+          "severity": "low",
+          "cwe": [
+            "CWE-770",
+            "CWE-1333"
+          ],
+          "cvss": {
+            "score": 3.5,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:L/UI:R/S:U/C:N/I:N/A:L"
+          },
+          "range": "<0.2.3"
+        },
+        {
+          "source": 1106734,
+          "name": "@eslint/plugin-kit",
+          "dependency": "@eslint/plugin-kit",
+          "title": "@eslint/plugin-kit is vulnerable to Regular Expression Denial of Service attacks through ConfigCommentParser",
+          "url": "https://github.com/advisories/GHSA-xffm-g5w8-qvg7",
+          "severity": "low",
+          "cwe": [
+            "CWE-1333"
+          ],
+          "cvss": {
+            "score": 0,
+            "vectorString": null
+          },
+          "range": "<0.3.4"
+        }
+      ],
+      "effects": [],
+      "range": "<=0.3.3",
+      "nodes": [
+        "node_modules/@eslint/plugin-kit"
+      ],
+      "fixAvailable": true
+    },
+    "@humanfs/node": {
+      "name": "@humanfs/node",
+      "severity": "moderate",
+      "isDirect": false,
+      "via": [
+        {
+          "source": 1158499,
+          "name": "@humanfs/node",
+          "dependency": "@humanfs/node",
+          "title": "humanfs: Recursive copy follows symlinked files and copies data from outside the source tree",
+          "url": "https://github.com/advisories/GHSA-p498-v437-472g",
+          "severity": "moderate",
+          "cwe": [
+            "CWE-22"
+          ],
+          "cvss": {
+            "score": 0,
+            "vectorString": null
+          },
+          "range": "<0.16.8"
+        }
+      ],
+      "effects": [],
+      "range": "<0.16.8",
+      "nodes": [
+        "node_modules/@humanfs/node"
+      ],
+      "fixAvailable": true
+    },
+    "@typescript-eslint/eslint-plugin": {
+      "name": "@typescript-eslint/eslint-plugin",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        "@typescript-eslint/type-utils",
+        "@typescript-eslint/utils"
+      ],
+      "effects": [],
+      "range": "8.2.1-alpha.0 - 8.47.1-alpha.9",
+      "nodes": [
+        "node_modules/@typescript-eslint/eslint-plugin"
+      ],
+      "fixAvailable": true
+    },
+    "@typescript-eslint/parser": {
+      "name": "@typescript-eslint/parser",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        "@typescript-eslint/typescript-estree"
+      ],
+      "effects": [
+        "typescript-eslint"
+      ],
+      "range": "8.2.1-alpha.0 - 8.47.1-alpha.9",
+      "nodes": [
+        "node_modules/@typescript-eslint/parser"
+      ],
+      "fixAvailable": true
+    },
+    "@typescript-eslint/type-utils": {
+      "name": "@typescript-eslint/type-utils",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        "@typescript-eslint/typescript-estree",
+        "@typescript-eslint/utils"
+      ],
+      "effects": [
+        "@typescript-eslint/eslint-plugin"
+      ],
+      "range": "8.2.1-alpha.0 - 8.47.1-alpha.9",
+      "nodes": [
+        "node_modules/@typescript-eslint/type-utils"
+      ],
+      "fixAvailable": true
+    },
+    "@typescript-eslint/typescript-estree": {
+      "name": "@typescript-eslint/typescript-estree",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        "fast-glob"
+      ],
+      "effects": [
+        "@typescript-eslint/parser",
+        "@typescript-eslint/type-utils",
+        "@typescript-eslint/utils"
+      ],
+      "range": "8.2.1-alpha.0 - 8.47.1-alpha.9",
+      "nodes": [
+        "node_modules/@typescript-eslint/typescript-estree"
+      ],
+      "fixAvailable": true
+    },
+    "@typescript-eslint/utils": {
+      "name": "@typescript-eslint/utils",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        "@typescript-eslint/typescript-estree"
+      ],
+      "effects": [],
+      "range": "8.2.1-alpha.0 - 8.47.1-alpha.9",
+      "nodes": [
+        "node_modules/@typescript-eslint/utils"
+      ],
+      "fixAvailable": true
+    },
+    "@vitest/mocker": {
+      "name": "@vitest/mocker",
+      "severity": "moderate",
+      "isDirect": false,
+      "via": [
+        {
+          "source": 1193684,
+          "name": "@vitest/mocker",
+          "dependency": "@vitest/mocker",
+          "title": "Vitest: Path Traversal / Arbitrary File Read via @vitest/mocker Redirect Mock",
+          "url": "https://github.com/advisories/GHSA-82fw-gwwq-j7x9",
+          "severity": "moderate",
+          "cwe": [
+            "CWE-22"
+          ],
+          "cvss": {
+            "score": 5.9,
+            "vectorString": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:H/I:N/A:N"
+          },
+          "range": ">=2.1.0 <4.1.11"
+        }
+      ],
+      "effects": [
+        "vitest"
+      ],
+      "range": "2.1.0 - 4.1.10",
+      "nodes": [
+        "node_modules/@vitest/mocker"
+      ],
+      "fixAvailable": {
+        "name": "vitest",
+        "version": "5.0.4",
+        "isSemVerMajor": true
+      }
+    },
+    "ajv": {
+      "name": "ajv",
+      "severity": "moderate",
+      "isDirect": false,
+      "via": [
+        {
+          "source": 1113714,
+          "name": "ajv",
+          "dependency": "ajv",
+          "title": "ajv has ReDoS when using `$data` option",
+          "url": "https://github.com/advisories/GHSA-2g4f-4pwh-qvx6",
+          "severity": "moderate",
+          "cwe": [
+            "CWE-400",
+            "CWE-1333"
+          ],
+          "cvss": {
+            "score": 0,
+            "vectorString": null
+          },
+          "range": "<6.14.0"
+        }
+      ],
+      "effects": [],
+      "range": "<6.14.0",
+      "nodes": [
+        "node_modules/ajv"
+      ],
+      "fixAvailable": true
+    },
+    "brace-expansion": {
+      "name": "brace-expansion",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        {
+          "source": 1105443,
+          "name": "brace-expansion",
+          "dependency": "brace-expansion",
+          "title": "brace-expansion Regular Expression Denial of Service vulnerability",
+          "url": "https://github.com/advisories/GHSA-v6h2-p8h4-qcjw",
+          "severity": "low",
+          "cwe": [
+            "CWE-400"
+          ],
+          "cvss": {
+            "score": 3.1,
+            "vectorString": "CVSS:3.1/AV:N/AC:H/PR:L/UI:N/S:U/C:N/I:N/A:L"
+          },
+          "range": ">=1.0.0 <=1.1.11"
+        },
+        {
+          "source": 1105444,
+          "name": "brace-expansion",
+          "dependency": "brace-expansion",
+          "title": "brace-expansion Regular Expression Denial of Service vulnerability",
+          "url": "https://github.com/advisories/GHSA-v6h2-p8h4-qcjw",
+          "severity": "low",
+          "cwe": [
+            "CWE-400"
+          ],
+          "cvss": {
+            "score": 3.1,
+            "vectorString": "CVSS:3.1/AV:N/AC:H/PR:L/UI:N/S:U/C:N/I:N/A:L"
+          },
+          "range": ">=2.0.0 <=2.0.1"
+        },
+        {
+          "source": 1115540,
+          "name": "brace-expansion",
+          "dependency": "brace-expansion",
+          "title": "brace-expansion: Zero-step sequence causes process hang and memory exhaustion",
+          "url": "https://github.com/advisories/GHSA-f886-m6hf-6m8v",
+          "severity": "moderate",
+          "cwe": [
+            "CWE-400"
+          ],
+          "cvss": {
+            "score": 6.5,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:U/C:N/I:N/A:H"
+          },
+          "range": "<1.1.13"
+        },
+        {
+          "source": 1115541,
+          "name": "brace-expansion",
+          "dependency": "brace-expansion",
+          "title": "brace-expansion: Zero-step sequence causes process hang and memory exhaustion",
+          "url": "https://github.com/advisories/GHSA-f886-m6hf-6m8v",
+          "severity": "moderate",
+          "cwe": [
+            "CWE-400"
+          ],
+          "cvss": {
+            "score": 6.5,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:U/C:N/I:N/A:H"
+          },
+          "range": ">=2.0.0 <2.0.3"
+        },
+        {
+          "source": 1123896,
+          "name": "brace-expansion",
+          "dependency": "brace-expansion",
+          "title": "brace-expansion: DoS via exponential-time expansion of consecutive non-expanding {} groups",
+          "url": "https://github.com/advisories/GHSA-3jxr-9vmj-r5cp",
+          "severity": "high",
+          "cwe": [
+            "CWE-400",
+            "CWE-407"
+          ],
+          "cvss": {
+            "score": 5.3,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:L"
+          },
+          "range": ">=2.0.0 <2.1.2"
+        },
+        {
+          "source": 1123897,
+          "name": "brace-expansion",
+          "dependency": "brace-expansion",
+          "title": "brace-expansion: DoS via exponential-time expansion of consecutive non-expanding {} groups",
+          "url": "https://github.com/advisories/GHSA-3jxr-9vmj-r5cp",
+          "severity": "high",
+          "cwe": [
+            "CWE-400",
+            "CWE-407"
+          ],
+          "cvss": {
+            "score": 5.3,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:L"
+          },
+          "range": "<1.1.16"
+        },
+        {
+          "source": 1130588,
+          "name": "brace-expansion",
+          "dependency": "brace-expansion",
+          "title": "brace-expansion: DoS via unbounded expansion length causing an out-of-memory process crash",
+          "url": "https://github.com/advisories/GHSA-mh99-v99m-4gvg",
+          "severity": "high",
+          "cwe": [
+            "CWE-400",
+            "CWE-770"
+          ],
+          "cvss": {
+            "score": 7.5,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+          },
+          "range": "<1.1.17"
+        },
+        {
+          "source": 1130589,
+          "name": "brace-expansion",
+          "dependency": "brace-expansion",
+          "title": "brace-expansion: DoS via unbounded expansion length causing an out-of-memory process crash",
+          "url": "https://github.com/advisories/GHSA-mh99-v99m-4gvg",
+          "severity": "high",
+          "cwe": [
+            "CWE-400",
+            "CWE-770"
+          ],
+          "cvss": {
+            "score": 7.5,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+          },
+          "range": ">=2.0.0 <2.1.3"
+        },
+        {
+          "source": 1130736,
+          "name": "brace-expansion",
+          "dependency": "brace-expansion",
+          "title": "brace-expansion: DoS via unbounded intermediate arrays, bypassing the CVE-2026-14257 mitigation",
+          "url": "https://github.com/advisories/GHSA-rgw5-rvv9-x895",
+          "severity": "high",
+          "cwe": [
+            "CWE-400",
+            "CWE-770"
+          ],
+          "cvss": {
+            "score": 7.5,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+          },
+          "range": ">=2.0.0 <2.1.4"
+        },
+        {
+          "source": 1130737,
+          "name": "brace-expansion",
+          "dependency": "brace-expansion",
+          "title": "brace-expansion: DoS via unbounded intermediate arrays, bypassing the CVE-2026-14257 mitigation",
+          "url": "https://github.com/advisories/GHSA-rgw5-rvv9-x895",
+          "severity": "high",
+          "cwe": [
+            "CWE-400",
+            "CWE-770"
+          ],
+          "cvss": {
+            "score": 7.5,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+          },
+          "range": "<1.1.18"
+        },
+        {
+          "source": 1240100,
+          "name": "brace-expansion",
+          "dependency": "brace-expansion",
+          "title": "brace-expansion: Quadratic-time expansion of the `{a},b}` rewrite causes CPU denial of service",
+          "url": "https://github.com/advisories/GHSA-q2hr-2g5m-vwhr",
+          "severity": "moderate",
+          "cwe": [
+            "CWE-400",
+            "CWE-407"
+          ],
+          "cvss": {
+            "score": 5.3,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:L"
+          },
+          "range": "<1.1.21"
+        },
+        {
+          "source": 1240101,
+          "name": "brace-expansion",
+          "dependency": "brace-expansion",
+          "title": "brace-expansion: Quadratic-time expansion of the `{a},b}` rewrite causes CPU denial of service",
+          "url": "https://github.com/advisories/GHSA-q2hr-2g5m-vwhr",
+          "severity": "moderate",
+          "cwe": [
+            "CWE-400",
+            "CWE-407"
+          ],
+          "cvss": {
+            "score": 5.3,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:L"
+          },
+          "range": ">=2.0.0 <2.1.7"
+        },
+        {
+          "source": 1240104,
+          "name": "brace-expansion",
+          "dependency": "brace-expansion",
+          "title": "brace-expansion: DoS via uncontrolled recursion on nested brace groups causing stack exhaustion",
+          "url": "https://github.com/advisories/GHSA-qhr7-859c-m2p7",
+          "severity": "high",
+          "cwe": [
+            "CWE-400",
+            "CWE-674"
+          ],
+          "cvss": {
+            "score": 7.5,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+          },
+          "range": "<1.1.20"
+        },
+        {
+          "source": 1240105,
+          "name": "brace-expansion",
+          "dependency": "brace-expansion",
+          "title": "brace-expansion: DoS via uncontrolled recursion on nested brace groups causing stack exhaustion",
+          "url": "https://github.com/advisories/GHSA-qhr7-859c-m2p7",
+          "severity": "high",
+          "cwe": [
+            "CWE-400",
+            "CWE-674"
+          ],
+          "cvss": {
+            "score": 7.5,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+          },
+          "range": ">=2.0.0 <2.1.6"
+        },
+        {
+          "source": 1240108,
+          "name": "brace-expansion",
+          "dependency": "brace-expansion",
+          "title": "brace-expansion: DoS via uncontrolled recursion in parseCommaParts causing stack exhaustion",
+          "url": "https://github.com/advisories/GHSA-6j4f-fj2g-mc7p",
+          "severity": "high",
+          "cwe": [
+            "CWE-400",
+            "CWE-674"
+          ],
+          "cvss": {
+            "score": 7.5,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+          },
+          "range": "<1.1.19"
+        },
+        {
+          "source": 1240109,
+          "name": "brace-expansion",
+          "dependency": "brace-expansion",
+          "title": "brace-expansion: DoS via uncontrolled recursion in parseCommaParts causing stack exhaustion",
+          "url": "https://github.com/advisories/GHSA-6j4f-fj2g-mc7p",
+          "severity": "high",
+          "cwe": [
+            "CWE-400",
+            "CWE-674"
+          ],
+          "cvss": {
+            "score": 7.5,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+          },
+          "range": ">=2.0.0 <2.1.5"
+        }
+      ],
+      "effects": [],
+      "range": "<=1.1.20 || 2.0.0 - 2.1.6",
+      "nodes": [
+        "node_modules/@typescript-eslint/typescript-estree/node_modules/brace-expansion",
+        "node_modules/brace-expansion",
+        "node_modules/glob/node_modules/brace-expansion"
+      ],
+      "fixAvailable": true
+    },
+    "braces": {
+      "name": "braces",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        {
+          "source": 1240992,
+          "name": "braces",
+          "dependency": "braces",
+          "title": "braces vulnerable to stack-exhaustion denial of service through deeply nested patterns",
+          "url": "https://github.com/advisories/GHSA-vfj7-8cjw-p6xm",
+          "severity": "high",
+          "cwe": [
+            "CWE-674"
+          ],
+          "cvss": {
+            "score": 7.5,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+          },
+          "range": "<=3.0.3"
+        }
+      ],
+      "effects": [
+        "chokidar",
+        "micromatch"
+      ],
+      "range": "*",
+      "nodes": [
+        "node_modules/braces"
+      ],
+      "fixAvailable": {
+        "name": "tailwindcss",
+        "version": "4.3.3",
+        "isSemVerMajor": true
+      }
+    },
+    "browserslist": {
+      "name": "browserslist",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        {
+          "source": 1153171,
+          "name": "browserslist",
+          "dependency": "browserslist",
+          "title": "Browserslist: Unbounded memory growth (no cache eviction) via distinct query results, leading to eventual OOM",
+          "url": "https://github.com/advisories/GHSA-c83g-rgw3-j3cx",
+          "severity": "high",
+          "cwe": [
+            "CWE-770"
+          ],
+          "cvss": {
+            "score": 7.5,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+          },
+          "range": "<=4.28.6"
+        },
+        {
+          "source": 1153172,
+          "name": "browserslist",
+          "dependency": "browserslist",
+          "title": "Browserslist: Uncaught crash / prototype write via untrusted browserslist-stats.json custom stats (normalizeStats)",
+          "url": "https://github.com/advisories/GHSA-73wf-gq98-2v4g",
+          "severity": "high",
+          "cwe": [
+            "CWE-248",
+            "CWE-1321"
+          ],
+          "cvss": {
+            "score": 7.5,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+          },
+          "range": "<=4.28.6"
+        }
+      ],
+      "effects": [],
+      "range": "<=4.28.6",
+      "nodes": [
+        "node_modules/browserslist"
+      ],
+      "fixAvailable": true
+    },
+    "chokidar": {
+      "name": "chokidar",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        "braces"
+      ],
+      "effects": [
+        "tailwindcss"
+      ],
+      "range": "2.0.0 - 3.6.0",
+      "nodes": [
+        "node_modules/chokidar"
+      ],
+      "fixAvailable": {
+        "name": "tailwindcss",
+        "version": "4.3.3",
+        "isSemVerMajor": true
+      }
+    },
+    "cross-spawn": {
+      "name": "cross-spawn",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        {
+          "source": 1104664,
+          "name": "cross-spawn",
+          "dependency": "cross-spawn",
+          "title": "Regular Expression Denial of Service (ReDoS) in cross-spawn",
+          "url": "https://github.com/advisories/GHSA-3xgq-45jj-v275",
+          "severity": "high",
+          "cwe": [
+            "CWE-1333"
+          ],
+          "cvss": {
+            "score": 7.5,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+          },
+          "range": ">=7.0.0 <7.0.5"
+        }
+      ],
+      "effects": [],
+      "range": "7.0.0 - 7.0.4",
+      "nodes": [
+        "node_modules/cross-spawn"
+      ],
+      "fixAvailable": true
+    },
+    "dompurify": {
+      "name": "dompurify",
+      "severity": "moderate",
+      "isDirect": false,
+      "via": [
+        {
+          "source": 1138538,
+          "name": "dompurify",
+          "dependency": "dompurify",
+          "title": "DOMPurify: IN_PLACE hook removal leaves a detached subtree executable, causing XSS",
+          "url": "https://github.com/advisories/GHSA-55q2-fjhq-7xh7",
+          "severity": "moderate",
+          "cwe": [
+            "CWE-79"
+          ],
+          "cvss": {
+            "score": 0,
+            "vectorString": null
+          },
+          "range": "<=3.4.12"
+        },
+        {
+          "source": 1240978,
+          "name": "dompurify",
+          "dependency": "dompurify",
+          "title": "DOMPurify: `CUSTOM_ELEMENT_HANDLING` bypasses `afterSanitizeElements` for allowed custom elements.",
+          "url": "https://github.com/advisories/GHSA-c2j3-45gr-mqc4",
+          "severity": "low",
+          "cwe": [
+            "CWE-79",
+            "CWE-184",
+            "CWE-693"
+          ],
+          "cvss": {
+            "score": 0,
+            "vectorString": null
+          },
+          "range": "<=3.4.11"
+        },
+        {
+          "source": 1241204,
+          "name": "dompurify",
+          "dependency": "dompurify",
+          "title": "DOMPurify: IN_PLACE returns a force-removed rawtext root whose text carries attacker markup — pure HTML reparse executes",
+          "url": "https://github.com/advisories/GHSA-6688-9rhm-gjv2",
+          "severity": "low",
+          "cwe": [
+            "CWE-79"
+          ],
+          "cvss": {
+            "score": 0,
+            "vectorString": null
+          },
+          "range": "<=3.4.15"
+        }
+      ],
+      "effects": [],
+      "range": "<=3.4.15",
+      "nodes": [
+        "node_modules/dompurify"
+      ],
+      "fixAvailable": true
+    },
+    "esbuild": {
+      "name": "esbuild",
+      "severity": "moderate",
+      "isDirect": false,
+      "via": [
+        {
+          "source": 1102341,
+          "name": "esbuild",
+          "dependency": "esbuild",
+          "title": "esbuild enables any website to send any requests to the development server and read the response",
+          "url": "https://github.com/advisories/GHSA-67mh-4wv8-2f99",
+          "severity": "moderate",
+          "cwe": [
+            "CWE-346"
+          ],
+          "cvss": {
+            "score": 5.3,
+            "vectorString": "CVSS:3.1/AV:N/AC:H/PR:N/UI:R/S:U/C:H/I:N/A:N"
+          },
+          "range": "<=0.24.2"
+        }
+      ],
+      "effects": [
+        "vite"
+      ],
+      "range": "<=0.24.2",
+      "nodes": [
+        "node_modules/esbuild"
+      ],
+      "fixAvailable": true
+    },
+    "fast-glob": {
+      "name": "fast-glob",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        "micromatch"
+      ],
+      "effects": [
+        "@typescript-eslint/typescript-estree"
+      ],
+      "range": "*",
+      "nodes": [
+        "node_modules/fast-glob"
+      ],
+      "fixAvailable": true
+    },
+    "flatted": {
+      "name": "flatted",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        {
+          "source": 1114526,
+          "name": "flatted",
+          "dependency": "flatted",
+          "title": "flatted vulnerable to unbounded recursion DoS in parse() revive phase",
+          "url": "https://github.com/advisories/GHSA-25h7-pfq9-p65f",
+          "severity": "high",
+          "cwe": [
+            "CWE-674"
+          ],
+          "cvss": {
+            "score": 7.5,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+          },
+          "range": "<3.4.0"
+        },
+        {
+          "source": 1241196,
+          "name": "flatted",
+          "dependency": "flatted",
+          "title": "Prototype Pollution via parse() in NodeJS flatted",
+          "url": "https://github.com/advisories/GHSA-rf6f-7fwh-wjgh",
+          "severity": "high",
+          "cwe": [
+            "CWE-915",
+            "CWE-1321"
+          ],
+          "cvss": {
+            "score": 0,
+            "vectorString": null
+          },
+          "range": "<=3.4.1"
+        }
+      ],
+      "effects": [],
+      "range": "<=3.4.1",
+      "nodes": [
+        "node_modules/flatted"
+      ],
+      "fixAvailable": true
+    },
+    "glob": {
+      "name": "glob",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        {
+          "source": 1109842,
+          "name": "glob",
+          "dependency": "glob",
+          "title": "glob CLI: Command injection via -c/--cmd executes matches with shell:true",
+          "url": "https://github.com/advisories/GHSA-5j98-mcp5-4vw2",
+          "severity": "high",
+          "cwe": [
+            "CWE-78"
+          ],
+          "cvss": {
+            "score": 7.5,
+            "vectorString": "CVSS:3.1/AV:N/AC:H/PR:L/UI:N/S:U/C:H/I:H/A:H"
+          },
+          "range": ">=10.2.0 <10.5.0"
+        }
+      ],
+      "effects": [],
+      "range": "10.2.0 - 10.4.5",
+      "nodes": [
+        "node_modules/glob"
+      ],
+      "fixAvailable": true
+    },
+    "js-yaml": {
+      "name": "js-yaml",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        {
+          "source": 1112715,
+          "name": "js-yaml",
+          "dependency": "js-yaml",
+          "title": "js-yaml has prototype pollution in merge (<<)",
+          "url": "https://github.com/advisories/GHSA-mh29-5h37-fv8m",
+          "severity": "moderate",
+          "cwe": [
+            "CWE-1321"
+          ],
+          "cvss": {
+            "score": 5.3,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N"
+          },
+          "range": ">=4.0.0 <4.1.1"
+        },
+        {
+          "source": 1121860,
+          "name": "js-yaml",
+          "dependency": "js-yaml",
+          "title": "JS-YAML: Quadratic-complexity DoS in merge key handling via repeated aliases",
+          "url": "https://github.com/advisories/GHSA-h67p-54hq-rp68",
+          "severity": "moderate",
+          "cwe": [
+            "CWE-407"
+          ],
+          "cvss": {
+            "score": 5.3,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:L"
+          },
+          "range": ">=4.0.0 <=4.1.1"
+        },
+        {
+          "source": 1123911,
+          "name": "js-yaml",
+          "dependency": "js-yaml",
+          "title": "js-yaml: YAML merge-key chains can force quadratic CPU consumption",
+          "url": "https://github.com/advisories/GHSA-52cp-r559-cp3m",
+          "severity": "high",
+          "cwe": [
+            "CWE-400",
+            "CWE-407"
+          ],
+          "cvss": {
+            "score": 7.5,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+          },
+          "range": ">=4.0.0 <4.3.0"
+        },
+        {
+          "source": 1138115,
+          "name": "js-yaml",
+          "dependency": "js-yaml",
+          "title": "JS-YAML: Quadratic CPU consumption in !!omap resolution (3.x and 4.x) — CVE-2026-59870 fix not backported",
+          "url": "https://github.com/advisories/GHSA-5p4m-2wfm-xmqj",
+          "severity": "high",
+          "cwe": [
+            "CWE-407"
+          ],
+          "cvss": {
+            "score": 7.5,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+          },
+          "range": ">=4.0.0 <4.3.1"
+        },
+        {
+          "source": 1193727,
+          "name": "js-yaml",
+          "dependency": "js-yaml",
+          "title": "js-yaml: maxTotalMergeKeys does not limit CPU use for empty merge sources",
+          "url": "https://github.com/advisories/GHSA-2883-xcg3-v3hh",
+          "severity": "high",
+          "cwe": [
+            "CWE-400",
+            "CWE-407"
+          ],
+          "cvss": {
+            "score": 7.5,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+          },
+          "range": ">=4.0.0 <4.3.2"
+        }
+      ],
+      "effects": [],
+      "range": "4.0.0 - 4.3.1",
+      "nodes": [
+        "node_modules/js-yaml"
+      ],
+      "fixAvailable": true
+    },
+    "micromatch": {
+      "name": "micromatch",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        "braces"
+      ],
+      "effects": [
+        "fast-glob",
+        "tailwindcss"
+      ],
+      "range": ">=0.2.0",
+      "nodes": [
+        "node_modules/micromatch"
+      ],
+      "fixAvailable": {
+        "name": "tailwindcss",
+        "version": "4.3.3",
+        "isSemVerMajor": true
+      }
+    },
+    "minimatch": {
+      "name": "minimatch",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        {
+          "source": 1113459,
+          "name": "minimatch",
+          "dependency": "minimatch",
+          "title": "minimatch has a ReDoS via repeated wildcards with non-matching literal in pattern",
+          "url": "https://github.com/advisories/GHSA-3ppc-4f35-3m26",
+          "severity": "high",
+          "cwe": [
+            "CWE-1333"
+          ],
+          "cvss": {
+            "score": 0,
+            "vectorString": null
+          },
+          "range": "<3.1.3"
+        },
+        {
+          "source": 1113465,
+          "name": "minimatch",
+          "dependency": "minimatch",
+          "title": "minimatch has a ReDoS via repeated wildcards with non-matching literal in pattern",
+          "url": "https://github.com/advisories/GHSA-3ppc-4f35-3m26",
+          "severity": "high",
+          "cwe": [
+            "CWE-1333"
+          ],
+          "cvss": {
+            "score": 0,
+            "vectorString": null
+          },
+          "range": ">=9.0.0 <9.0.6"
+        },
+        {
+          "source": 1113538,
+          "name": "minimatch",
+          "dependency": "minimatch",
+          "title": "minimatch has ReDoS: matchOne() combinatorial backtracking via multiple non-adjacent GLOBSTAR segments",
+          "url": "https://github.com/advisories/GHSA-7r86-cg39-jmmj",
+          "severity": "high",
+          "cwe": [
+            "CWE-407"
+          ],
+          "cvss": {
+            "score": 7.5,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+          },
+          "range": "<3.1.3"
+        },
+        {
+          "source": 1113544,
+          "name": "minimatch",
+          "dependency": "minimatch",
+          "title": "minimatch has ReDoS: matchOne() combinatorial backtracking via multiple non-adjacent GLOBSTAR segments",
+          "url": "https://github.com/advisories/GHSA-7r86-cg39-jmmj",
+          "severity": "high",
+          "cwe": [
+            "CWE-407"
+          ],
+          "cvss": {
+            "score": 7.5,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+          },
+          "range": ">=9.0.0 <9.0.7"
+        },
+        {
+          "source": 1113546,
+          "name": "minimatch",
+          "dependency": "minimatch",
+          "title": "minimatch ReDoS: nested *() extglobs generate catastrophically backtracking regular expressions",
+          "url": "https://github.com/advisories/GHSA-23c5-xmqv-rm74",
+          "severity": "high",
+          "cwe": [
+            "CWE-1333"
+          ],
+          "cvss": {
+            "score": 7.5,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+          },
+          "range": "<3.1.4"
+        },
+        {
+          "source": 1113552,
+          "name": "minimatch",
+          "dependency": "minimatch",
+          "title": "minimatch ReDoS: nested *() extglobs generate catastrophically backtracking regular expressions",
+          "url": "https://github.com/advisories/GHSA-23c5-xmqv-rm74",
+          "severity": "high",
+          "cwe": [
+            "CWE-1333"
+          ],
+          "cvss": {
+            "score": 7.5,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+          },
+          "range": ">=9.0.0 <9.0.7"
+        }
+      ],
+      "effects": [],
+      "range": "<=3.1.3 || 9.0.0 - 9.0.6",
+      "nodes": [
+        "node_modules/@typescript-eslint/typescript-estree/node_modules/minimatch",
+        "node_modules/glob/node_modules/minimatch",
+        "node_modules/minimatch"
+      ],
+      "fixAvailable": true
+    },
+    "nanoid": {
+      "name": "nanoid",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        {
+          "source": 1109563,
+          "name": "nanoid",
+          "dependency": "nanoid",
+          "title": "Predictable results in nanoid generation when given non-integer values",
+          "url": "https://github.com/advisories/GHSA-mwcw-c2x4-8c55",
+          "severity": "moderate",
+          "cwe": [
+            "CWE-835"
+          ],
+          "cvss": {
+            "score": 4.3,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:L/UI:N/S:U/C:N/I:L/A:N"
+          },
+          "range": "<3.3.8"
+        },
+        {
+          "source": 1138811,
+          "name": "nanoid",
+          "dependency": "nanoid",
+          "title": "nanoid: non-secure generators can loop indefinitely with negative size",
+          "url": "https://github.com/advisories/GHSA-28wg-ghj8-5hjv",
+          "severity": "high",
+          "cwe": [
+            "CWE-835"
+          ],
+          "cvss": {
+            "score": 5.9,
+            "vectorString": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:N/I:N/A:H"
+          },
+          "range": "<3.3.16"
+        },
+        {
+          "source": 1139427,
+          "name": "nanoid",
+          "dependency": "nanoid",
+          "title": "nanoid: custom generators can loop indefinitely when size is zero",
+          "url": "https://github.com/advisories/GHSA-2v37-7h3g-55p8",
+          "severity": "high",
+          "cwe": [
+            "CWE-835"
+          ],
+          "cvss": {
+            "score": 5.9,
+            "vectorString": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:N/I:N/A:H"
+          },
+          "range": "<3.3.18"
+        },
+        {
+          "source": 1153189,
+          "name": "nanoid",
+          "dependency": "nanoid",
+          "title": "nanoid: Integer Overflow or Wraparound",
+          "url": "https://github.com/advisories/GHSA-xwg4-73v4-xw9w",
+          "severity": "high",
+          "cwe": [
+            "CWE-190"
+          ],
+          "cvss": {
+            "score": 7.4,
+            "vectorString": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:H/I:H/A:N"
+          },
+          "range": "<3.3.12"
+        }
+      ],
+      "effects": [],
+      "range": "<=3.3.17",
+      "nodes": [
+        "node_modules/nanoid"
+      ],
+      "fixAvailable": true
+    },
+    "picomatch": {
+      "name": "picomatch",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        {
+          "source": 1115549,
+          "name": "picomatch",
+          "dependency": "picomatch",
+          "title": "Picomatch: Method Injection in POSIX Character Classes causes incorrect Glob Matching",
+          "url": "https://github.com/advisories/GHSA-3v7f-55p6-f55p",
+          "severity": "moderate",
+          "cwe": [
+            "CWE-1321"
+          ],
+          "cvss": {
+            "score": 5.3,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N"
+          },
+          "range": "<2.3.2"
+        },
+        {
+          "source": 1115552,
+          "name": "picomatch",
+          "dependency": "picomatch",
+          "title": "Picomatch has a ReDoS vulnerability via extglob quantifiers",
+          "url": "https://github.com/advisories/GHSA-c2c7-rcm5-vvqj",
+          "severity": "high",
+          "cwe": [
+            "CWE-1333"
+          ],
+          "cvss": {
+            "score": 7.5,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+          },
+          "range": "<2.3.2"
+        }
+      ],
+      "effects": [],
+      "range": "<=2.3.1",
+      "nodes": [
+        "node_modules/picomatch"
+      ],
+      "fixAvailable": true
+    },
+    "postcss": {
+      "name": "postcss",
+      "severity": "high",
+      "isDirect": true,
+      "via": [
+        {
+          "source": 1117015,
+          "name": "postcss",
+          "dependency": "postcss",
+          "title": "PostCSS has XSS via Unescaped </style> in its CSS Stringify Output",
+          "url": "https://github.com/advisories/GHSA-qx2v-qp2m-jg93",
+          "severity": "moderate",
+          "cwe": [
+            "CWE-79"
+          ],
+          "cvss": {
+            "score": 6.1,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:C/C:L/I:L/A:N"
+          },
+          "range": "<8.5.10"
+        },
+        {
+          "source": 1124252,
+          "name": "postcss",
+          "dependency": "postcss",
+          "title": "PostCSS: Arbitrary file read and information disclosure via attacker-controlled sourceMappingURL in CSS comments",
+          "url": "https://github.com/advisories/GHSA-6g55-p6wh-862q",
+          "severity": "high",
+          "cwe": [
+            "CWE-22",
+            "CWE-200"
+          ],
+          "cvss": {
+            "score": 7.5,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N"
+          },
+          "range": "<=8.5.11"
+        },
+        {
+          "source": 1130709,
+          "name": "postcss",
+          "dependency": "postcss",
+          "title": "PostCSS: incomplete fix of GHSA-6g55-p6wh-862q — attacker-controlled sourceMappingURL reads arbitrary .map files when `from` is unset",
+          "url": "https://github.com/advisories/GHSA-fxqj-rqcc-2cmp",
+          "severity": "moderate",
+          "cwe": [
+            "CWE-22",
+            "CWE-200"
+          ],
+          "cvss": {
+            "score": 0,
+            "vectorString": null
+          },
+          "range": "<=8.5.22"
+        },
+        {
+          "source": 1139510,
+          "name": "postcss",
+          "dependency": "postcss",
+          "title": "PostCSS: Path Traversal in Previous Source Map Auto-Loading (sourceMappingURL) leads to Arbitrary .map File Disclosure",
+          "url": "https://github.com/advisories/GHSA-r28c-9q8g-f849",
+          "severity": "high",
+          "cwe": [
+            "CWE-22"
+          ],
+          "cvss": {
+            "score": 7.5,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N"
+          },
+          "range": "<=8.5.17"
+        }
+      ],
+      "effects": [],
+      "range": "<=8.5.22",
+      "nodes": [
+        "node_modules/postcss"
+      ],
+      "fixAvailable": true
+    },
+    "postcss-selector-parser": {
+      "name": "postcss-selector-parser",
+      "severity": "moderate",
+      "isDirect": false,
+      "via": [
+        {
+          "source": 1153170,
+          "name": "postcss-selector-parser",
+          "dependency": "postcss-selector-parser",
+          "title": "postcss-selector-parser allows denial of service through uncontrolled AST recursion",
+          "url": "https://github.com/advisories/GHSA-w9m9-85wc-3x92",
+          "severity": "low",
+          "cwe": [
+            "CWE-404"
+          ],
+          "cvss": {
+            "score": 4.3,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:U/C:N/I:N/A:L"
+          },
+          "range": ">=6.1.0 <6.1.3"
+        },
+        {
+          "source": 1241232,
+          "name": "postcss-selector-parser",
+          "dependency": "postcss-selector-parser",
+          "title": "PostCSS: Quadratic complexity in flat selector parsing allows CPU exhaustion",
+          "url": "https://github.com/advisories/GHSA-rj75-hqrm-r3gf",
+          "severity": "moderate",
+          "cwe": [
+            "CWE-400",
+            "CWE-407"
+          ],
+          "cvss": {
+            "score": 5.9,
+            "vectorString": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:N/I:N/A:H"
+          },
+          "range": "<7.1.6"
+        }
+      ],
+      "effects": [],
+      "range": "<=7.1.5",
+      "nodes": [
+        "node_modules/postcss-selector-parser"
+      ],
+      "fixAvailable": true
+    },
+    "rollup": {
+      "name": "rollup",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        {
+          "source": 1113515,
+          "name": "rollup",
+          "dependency": "rollup",
+          "title": "Rollup 4 has Arbitrary File Write via Path Traversal",
+          "url": "https://github.com/advisories/GHSA-mw96-cpmx-2vgc",
+          "severity": "high",
+          "cwe": [
+            "CWE-22"
+          ],
+          "cvss": {
+            "score": 0,
+            "vectorString": null
+          },
+          "range": ">=4.0.0 <4.59.0"
+        }
+      ],
+      "effects": [],
+      "range": "4.0.0 - 4.58.0",
+      "nodes": [
+        "node_modules/rollup"
+      ],
+      "fixAvailable": true
+    },
+    "source-map-js": {
+      "name": "source-map-js",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        {
+          "source": 1241209,
+          "name": "source-map-js",
+          "dependency": "source-map-js",
+          "title": "source-map-js allows event-loop denial of service through indexed source-map section offsets",
+          "url": "https://github.com/advisories/GHSA-68fv-2mgg-jv7q",
+          "severity": "high",
+          "cwe": [
+            "CWE-1284"
+          ],
+          "cvss": {
+            "score": 7.5,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+          },
+          "range": ">=1.0.0 <1.2.2"
+        }
+      ],
+      "effects": [],
+      "range": "1.0.0 - 1.2.1",
+      "nodes": [
+        "node_modules/source-map-js"
+      ],
+      "fixAvailable": true
+    },
+    "tailwindcss": {
+      "name": "tailwindcss",
+      "severity": "high",
+      "isDirect": true,
+      "via": [
+        "chokidar",
+        "fast-glob",
+        "micromatch"
+      ],
+      "effects": [],
+      "range": "<=0.0.0-oxide-insiders.ff2c25f || 2.1.0-canary.1 - 3.4.19",
+      "nodes": [
+        "node_modules/tailwindcss"
+      ],
+      "fixAvailable": {
+        "name": "tailwindcss",
+        "version": "4.3.3",
+        "isSemVerMajor": true
+      }
+    },
+    "tinypool": {
+      "name": "tinypool",
+      "severity": "critical",
+      "isDirect": false,
+      "via": [
+        {
+          "source": 1241260,
+          "name": "tinypool",
+          "dependency": "tinypool",
+          "title": "Tinypool: Prototype Pollution gadget in worker options leads to Remote Code Execution",
+          "url": "https://github.com/advisories/GHSA-5gmw-xhrv-c9v3",
+          "severity": "critical",
+          "cwe": [
+            "CWE-1321"
+          ],
+          "cvss": {
+            "score": 0,
+            "vectorString": null
+          },
+          "range": "<=2.1.0"
+        },
+        {
+          "source": 1241261,
+          "name": "tinypool",
+          "dependency": "tinypool",
+          "title": "Tinypool: Prototype Pollution Gadget to RCE in run() options",
+          "url": "https://github.com/advisories/GHSA-85c8-ppgw-ccpr",
+          "severity": "critical",
+          "cwe": [
+            "CWE-94",
+            "CWE-1321"
+          ],
+          "cvss": {
+            "score": 0,
+            "vectorString": null
+          },
+          "range": "<2.1.2"
+        }
+      ],
+      "effects": [
+        "vitest"
+      ],
+      "range": "<=2.1.1",
+      "nodes": [
+        "node_modules/tinypool"
+      ],
+      "fixAvailable": {
+        "name": "vitest",
+        "version": "5.0.4",
+        "isSemVerMajor": true
+      }
+    },
+    "typescript-eslint": {
+      "name": "typescript-eslint",
+      "severity": "high",
+      "isDirect": true,
+      "via": [
+        "@typescript-eslint/eslint-plugin",
+        "@typescript-eslint/parser",
+        "@typescript-eslint/utils"
+      ],
+      "effects": [],
+      "range": "8.2.1-alpha.0 - 8.47.1-alpha.9",
+      "nodes": [
+        "node_modules/typescript-eslint"
+      ],
+      "fixAvailable": true
+    },
+    "vite": {
+      "name": "vite",
+      "severity": "high",
+      "isDirect": true,
+      "via": [
+        {
+          "source": 1102437,
+          "name": "vite",
+          "dependency": "vite",
+          "title": "Websites were able to send any requests to the development server and read the response in vite",
+          "url": "https://github.com/advisories/GHSA-vg6x-rcgg-rjx6",
+          "severity": "moderate",
+          "cwe": [
+            "CWE-346",
+            "CWE-350",
+            "CWE-1385"
+          ],
+          "cvss": {
+            "score": 6.5,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:U/C:H/I:N/A:N"
+          },
+          "range": ">=5.0.0 <=5.4.11"
+        },
+        {
+          "source": 1103517,
+          "name": "vite",
+          "dependency": "vite",
+          "title": "Vite bypasses server.fs.deny when using ?raw??",
+          "url": "https://github.com/advisories/GHSA-x574-m823-4x7w",
+          "severity": "moderate",
+          "cwe": [
+            "CWE-200",
+            "CWE-284"
+          ],
+          "cvss": {
+            "score": 5.3,
+            "vectorString": "CVSS:3.1/AV:N/AC:H/PR:N/UI:R/S:U/C:H/I:N/A:N"
+          },
+          "range": ">=5.0.0 <5.4.15"
+        },
+        {
+          "source": 1103884,
+          "name": "vite",
+          "dependency": "vite",
+          "title": "Vite has an `server.fs.deny` bypass with an invalid `request-target`",
+          "url": "https://github.com/advisories/GHSA-356w-63v5-8wf4",
+          "severity": "moderate",
+          "cwe": [
+            "CWE-200"
+          ],
+          "cvss": {
+            "score": 0,
+            "vectorString": null
+          },
+          "range": ">=5.0.0 <5.4.18"
+        },
+        {
+          "source": 1104173,
+          "name": "vite",
+          "dependency": "vite",
+          "title": "Vite's server.fs.deny bypassed with /. for files under project root",
+          "url": "https://github.com/advisories/GHSA-859w-5945-r5v3",
+          "severity": "moderate",
+          "cwe": [
+            "CWE-22"
+          ],
+          "cvss": {
+            "score": 0,
+            "vectorString": null
+          },
+          "range": ">=5.0.0 <=5.4.18"
+        },
+        {
+          "source": 1104202,
+          "name": "vite",
+          "dependency": "vite",
+          "title": "Vite allows server.fs.deny to be bypassed with .svg or relative paths",
+          "url": "https://github.com/advisories/GHSA-xcj6-pq6g-qj4x",
+          "severity": "moderate",
+          "cwe": [
+            "CWE-200",
+            "CWE-284"
+          ],
+          "cvss": {
+            "score": 5.3,
+            "vectorString": "CVSS:3.1/AV:N/AC:H/PR:N/UI:R/S:U/C:H/I:N/A:N"
+          },
+          "range": ">=5.0.0 <5.4.17"
+        },
+        {
+          "source": 1107323,
+          "name": "vite",
+          "dependency": "vite",
+          "title": "Vite middleware may serve files starting with the same name with the public directory",
+          "url": "https://github.com/advisories/GHSA-g4jq-h2w9-997c",
+          "severity": "low",
+          "cwe": [
+            "CWE-22",
+            "CWE-200",
+            "CWE-284"
+          ],
+          "cvss": {
+            "score": 0,
+            "vectorString": null
+          },
+          "range": "<=5.4.19"
+        },
+        {
+          "source": 1107327,
+          "name": "vite",
+          "dependency": "vite",
+          "title": "Vite's `server.fs` settings were not applied to HTML files",
+          "url": "https://github.com/advisories/GHSA-jqfw-vq24-v9c3",
+          "severity": "low",
+          "cwe": [
+            "CWE-23",
+            "CWE-200",
+            "CWE-284"
+          ],
+          "cvss": {
+            "score": 0,
+            "vectorString": null
+          },
+          "range": "<=5.4.19"
+        },
+        {
+          "source": 1109131,
+          "name": "vite",
+          "dependency": "vite",
+          "title": "vite allows server.fs.deny bypass via backslash on Windows",
+          "url": "https://github.com/advisories/GHSA-93m4-6634-74q7",
+          "severity": "moderate",
+          "cwe": [
+            "CWE-22"
+          ],
+          "cvss": {
+            "score": 0,
+            "vectorString": null
+          },
+          "range": ">=5.2.6 <=5.4.20"
+        },
+        {
+          "source": 1112511,
+          "name": "vite",
+          "dependency": "vite",
+          "title": "Vite has a `server.fs.deny` bypassed for `inline` and `raw` with `?import` query",
+          "url": "https://github.com/advisories/GHSA-4r4m-qw57-chr8",
+          "severity": "moderate",
+          "cwe": [
+            "CWE-200",
+            "CWE-284"
+          ],
+          "cvss": {
+            "score": 5.3,
+            "vectorString": "CVSS:3.1/AV:N/AC:H/PR:N/UI:R/S:U/C:H/I:N/A:N"
+          },
+          "range": ">=5.0.0 <5.4.16"
+        },
+        {
+          "source": 1116229,
+          "name": "vite",
+          "dependency": "vite",
+          "title": "Vite Vulnerable to Path Traversal in Optimized Deps `.map` Handling",
+          "url": "https://github.com/advisories/GHSA-4w7w-66w2-5vf9",
+          "severity": "moderate",
+          "cwe": [
+            "CWE-22",
+            "CWE-200"
+          ],
+          "cvss": {
+            "score": 0,
+            "vectorString": null
+          },
+          "range": "<=6.4.1"
+        },
+        {
+          "source": 1120061,
+          "name": "vite",
+          "dependency": "vite",
+          "title": "launch-editor vulnerable to command injection via the crafted request on Windows",
+          "url": "https://github.com/advisories/GHSA-c27g-q93r-2cwf",
+          "severity": "high",
+          "cwe": [
+            "CWE-77"
+          ],
+          "cvss": {
+            "score": 0,
+            "vectorString": null
+          },
+          "range": "<=5.4.8"
+        },
+        {
+          "source": 1120784,
+          "name": "vite",
+          "dependency": "vite",
+          "title": "launch-editor: NTLMv2 hash disclosure via UNC path handling on Windows",
+          "url": "https://github.com/advisories/GHSA-v6wh-96g9-6wx3",
+          "severity": "moderate",
+          "cwe": [
+            "CWE-73",
+            "CWE-522"
+          ],
+          "cvss": {
+            "score": 0,
+            "vectorString": null
+          },
+          "range": "<=6.4.2"
+        },
+        {
+          "source": 1123525,
+          "name": "vite",
+          "dependency": "vite",
+          "title": "vite: `server.fs.deny` bypass on Windows alternate paths",
+          "url": "https://github.com/advisories/GHSA-fx2h-pf6j-xcff",
+          "severity": "high",
+          "cwe": [
+            "CWE-22",
+            "CWE-200"
+          ],
+          "cvss": {
+            "score": 7.5,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N"
+          },
+          "range": "<=6.4.2"
+        },
+        "esbuild"
+      ],
+      "effects": [],
+      "range": "<=6.4.2",
+      "nodes": [
+        "node_modules/vite"
+      ],
+      "fixAvailable": true
+    },
+    "vitest": {
+      "name": "vitest",
+      "severity": "critical",
+      "isDirect": true,
+      "via": [
+        "@vitest/mocker",
+        {
+          "source": 1139528,
+          "name": "vitest",
+          "dependency": "vitest",
+          "title": "When Vitest UI server is listening, arbitrary file can be read and executed",
+          "url": "https://github.com/advisories/GHSA-5xrq-8626-4rwp",
+          "severity": "critical",
+          "cwe": [
+            "CWE-22",
+            "CWE-862"
+          ],
+          "cvss": {
+            "score": 9.8,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H"
+          },
+          "range": "<3.2.6"
+        },
+        {
+          "source": 1193683,
+          "name": "vitest",
+          "dependency": "vitest",
+          "title": "Vitest: Path Traversal / Arbitrary File Read via @vitest/mocker Redirect Mock",
+          "url": "https://github.com/advisories/GHSA-82fw-gwwq-j7x9",
+          "severity": "moderate",
+          "cwe": [
+            "CWE-22"
+          ],
+          "cvss": {
+            "score": 5.9,
+            "vectorString": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:H/I:N/A:N"
+          },
+          "range": ">=2.1.0 <4.1.11"
+        },
+        "tinypool"
+      ],
+      "effects": [],
+      "range": "<=4.1.10",
+      "nodes": [
+        "node_modules/vitest"
+      ],
+      "fixAvailable": {
+        "name": "vitest",
+        "version": "5.0.4",
+        "isSemVerMajor": true
+      }
+    },
+    "ws": {
+      "name": "ws",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        {
+          "source": 1119108,
+          "name": "ws",
+          "dependency": "ws",
+          "title": "ws: Uninitialized memory disclosure",
+          "url": "https://github.com/advisories/GHSA-58qx-3vcg-4xpx",
+          "severity": "moderate",
+          "cwe": [
+            "CWE-908"
+          ],
+          "cvss": {
+            "score": 4.4,
+            "vectorString": "CVSS:3.1/AV:N/AC:H/PR:H/UI:N/S:U/C:H/I:N/A:N"
+          },
+          "range": ">=8.0.0 <8.20.1"
+        },
+        {
+          "source": 1123259,
+          "name": "ws",
+          "dependency": "ws",
+          "title": "ws: Memory exhaustion DoS from tiny fragments and data chunks",
+          "url": "https://github.com/advisories/GHSA-96hv-2xvq-fx4p",
+          "severity": "high",
+          "cwe": [
+            "CWE-400",
+            "CWE-770",
+            "CWE-1050"
+          ],
+          "cvss": {
+            "score": 7.5,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+          },
+          "range": ">=8.0.0 <8.21.0"
+        }
+      ],
+      "effects": [],
+      "range": "8.0.0 - 8.20.1",
+      "nodes": [
+        "node_modules/ws"
+      ],
+      "fixAvailable": true
+    },
+    "yaml": {
+      "name": "yaml",
+      "severity": "moderate",
+      "isDirect": false,
+      "via": [
+        {
+          "source": 1115556,
+          "name": "yaml",
+          "dependency": "yaml",
+          "title": "yaml is vulnerable to Stack Overflow via deeply nested YAML collections",
+          "url": "https://github.com/advisories/GHSA-48c2-rrv3-qjmp",
+          "severity": "moderate",
+          "cwe": [
+            "CWE-674"
+          ],
+          "cvss": {
+            "score": 4.3,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:L/UI:N/S:U/C:N/I:N/A:L"
+          },
+          "range": ">=2.0.0 <2.8.3"
+        }
+      ],
+      "effects": [],
+      "range": "2.0.0 - 2.8.2",
+      "nodes": [
+        "node_modules/yaml"
+      ],
+      "fixAvailable": true
+    }
+  },
+  "metadata": {
+    "vulnerabilities": {
+      "info": 0,
+      "low": 2,
+      "moderate": 8,
+      "high": 25,
+      "critical": 2,
+      "total": 37
+    },
+    "dependencies": {
+      "prod": 145,
+      "dev": 399,
+      "optional": 57,
+      "peer": 0,
+      "peerOptional": 0,
+      "total": 559
+    }
+  }
+}
+
+===== NON-MUTATING FIX PLAN =====
+add @rollup/rollup-win32-x64-gnu 4.64.6
+add @rollup/rollup-win32-ia32-msvc 4.64.6
+add @rollup/rollup-win32-arm64-msvc 4.64.6
+add @rollup/rollup-openharmony-arm64 4.64.6
+add @rollup/rollup-openbsd-x64 4.64.6
+add @rollup/rollup-linux-x64-musl 4.64.6
+add @rollup/rollup-linux-x64-gnu 4.64.6
+add @rollup/rollup-linux-s390x-gnu 4.64.6
+add @rollup/rollup-linux-riscv64-musl 4.64.6
+add @rollup/rollup-linux-riscv64-gnu 4.64.6
+add @rollup/rollup-linux-ppc64-musl 4.64.6
+add @rollup/rollup-linux-ppc64-gnu 4.64.6
+add @rollup/rollup-linux-loong64-musl 4.64.6
+add @rollup/rollup-linux-loong64-gnu 4.64.6
+add @rollup/rollup-linux-arm64-musl 4.64.6
+add @rollup/rollup-linux-arm64-gnu 4.64.6
+add @rollup/rollup-linux-arm-musleabihf 4.64.6
+add @rollup/rollup-linux-arm-gnueabihf 4.64.6
+add @rollup/rollup-freebsd-x64 4.64.6
+add @rollup/rollup-freebsd-arm64 4.64.6
+add @rollup/rollup-darwin-x64 4.64.6
+add @rollup/rollup-darwin-arm64 4.64.6
+add @rollup/rollup-android-arm64 4.64.6
+add @rollup/rollup-android-arm-eabi 4.64.6
+add @napi-rs/lzma-linux-x64-gnu 1.5.1
+add tinyglobby 0.2.17
+add picomatch 4.0.7
+add fdir 6.5.0
+add @typescript-eslint/tsconfig-utils 8.71.2
+add @typescript-eslint/project-service 8.71.2
+add @humanfs/types 0.15.0
+add baseline-browser-mapping 2.11.28
+add @babel/helper-globals 7.29.7
+add @jridgewell/remapping 2.3.5
+add fsevents 2.3.3
+add @esbuild/win32-ia32 0.21.5
+add @esbuild/win32-arm64 0.21.5
+add @esbuild/sunos-x64 0.21.5
+add @esbuild/openbsd-x64 0.21.5
+add @esbuild/netbsd-x64 0.21.5
+add @esbuild/linux-x64 0.21.5
+add @esbuild/linux-s390x 0.21.5
+add @esbuild/linux-riscv64 0.21.5
+add @esbuild/linux-ppc64 0.21.5
+add @esbuild/linux-mips64el 0.21.5
+add @esbuild/linux-loong64 0.21.5
+add @esbuild/linux-ia32 0.21.5
+add @esbuild/linux-arm64 0.21.5
+add @esbuild/linux-arm 0.21.5
+add @esbuild/freebsd-x64 0.21.5
+add @esbuild/freebsd-arm64 0.21.5
+add @esbuild/darwin-x64 0.21.5
+add @esbuild/darwin-arm64 0.21.5
+add @esbuild/android-x64 0.21.5
+add @esbuild/android-arm64 0.21.5
+add @esbuild/android-arm 0.21.5
+add @esbuild/aix-ppc64 0.21.5
+change @typescript-eslint/visitor-keys 8.8.1 => 8.71.2
+change eslint-visitor-keys 3.4.3 => 5.0.1
+change @typescript-eslint/utils 8.8.1 => 8.71.2
+change @typescript-eslint/types 8.8.1 => 8.71.2
+change @typescript-eslint/typescript-estree 8.8.1 => 8.71.2
+add balanced-match 4.0.4
+change semver 7.6.3 => 7.8.5
+change minimatch 9.0.5 => 10.2.6
+change brace-expansion 2.0.1 => 5.0.12
+change @typescript-eslint/type-utils 8.8.1 => 8.71.2
+change @typescript-eslint/parser 8.8.1 => 8.71.2
+change @typescript-eslint/scope-manager 8.8.1 => 8.71.2
+change @typescript-eslint/eslint-plugin 8.8.1 => 8.71.2
+add ignore 7.0.12
+change @types/estree 1.0.6 => 1.0.9
+change @rollup/rollup-win32-x64-msvc 4.24.0 => 4.64.6
+remove @jridgewell/set-array 1.2.1
+change @jridgewell/trace-mapping 0.3.25 => 0.3.31
+change @jridgewell/gen-mapping 0.3.5 => 0.3.13
+change @humanfs/node 0.16.5 => 0.16.8
+add @humanwhocodes/retry 0.4.3
+change @humanfs/core 0.19.0 => 0.19.2
+change @eslint-community/regexpp 4.11.1 => 4.12.2
+change @eslint-community/eslint-utils 4.4.0 => 4.10.1
+change @eslint/plugin-kit 0.2.0 => 0.2.8
+add @eslint/core 0.13.0
+remove @ampproject/remapping 2.3.0
+change @babel/traverse 7.25.7 => 7.29.10
+remove globals 11.12.0
+change @babel/types 7.25.7 => 7.29.8
+change @babel/template 7.25.7 => 7.29.7
+remove @babel/highlight 7.25.7
+change @babel/helper-validator-option 7.25.7 => 7.29.7
+change @babel/parser 7.25.7 => 7.29.9
+change @babel/helpers 7.25.7 => 7.29.10
+change @babel/helper-validator-identifier 7.25.7 => 7.29.7
+remove @babel/helper-simple-access 7.25.7
+change @babel/helper-string-parser 7.25.7 => 7.29.7
+change @babel/helper-module-imports 7.25.7 => 7.29.7
+change @babel/helper-module-transforms 7.25.7 => 7.29.7
+change @babel/core 7.25.7 => 7.29.7
+change @babel/generator 7.25.7 => 7.29.8
+change @babel/helper-compilation-targets 7.25.7 => 7.29.7
+change @babel/code-frame 7.25.7 => 7.29.7
+change @babel/compat-data 7.25.7 => 7.29.7
+change yaml 2.5.1 => 2.9.1
+change ws 8.18.3 => 8.22.0
+change vite 5.4.8 => 5.4.21
+change update-browserslist-db 1.1.1 => 1.3.4
+change typescript-eslint 8.8.1 => 8.71.2
+change ts-api-utils 1.3.0 => 2.5.0
+remove to-fast-properties 2.0.0
+change tailwindcss 3.4.17 => 3.4.19
+remove supports-color 5.5.0
+change source-map-js 1.2.1 => 1.2.2
+change rollup 4.24.0 => 4.64.6
+change postcss-selector-parser 6.1.2 => 6.1.4
+change postcss 8.4.47 => 8.5.30
+change picomatch 2.3.1 => 2.3.2
+change node-releases 2.0.18 => 2.0.58
+change nanoid 3.3.7 => 3.3.20
+change minimatch 3.1.2 => 3.1.5
+change jsesc 3.0.2 => 3.1.0
+change js-yaml 4.1.0 => 4.3.2
+change jiti 1.21.6 => 1.21.7
+remove has-flag 3.0.0
+remove graphemer 1.4.0
+change glob 10.4.5 => 10.5.0
+change minimatch 9.0.5 => 9.0.9
+change brace-expansion 2.0.1 => 2.1.7
+change flatted 3.3.1 => 3.4.4
+change fast-glob 3.3.2 => 3.3.3
+remove escape-string-regexp 1.0.5
+change electron-to-chromium 1.5.33 => 1.5.456
+change dompurify 3.4.11 => 3.4.17
+change debug 4.3.7 => 4.4.3
+change cross-spawn 7.0.3 => 7.0.6
+remove color-name 1.1.3
+remove color-convert 1.9.3
+remove chalk 2.4.2
+change caniuse-lite 1.0.30001667 => 1.0.30001816
+change browserslist 4.24.0 => 4.29.3
+remove ansi-styles 3.2.1
+change ajv 6.12.6 => 6.15.0
+{
+  "added": 61,
+  "removed": 14,
+  "changed": 66,
+  "audited": 569,
+  "funding": 103,
+  "audit": {
+    "auditReportVersion": 2,
+    "vulnerabilities": {
+      "@babel/core": {
+        "name": "@babel/core",
+        "severity": "low",
+        "isDirect": false,
+        "via": [
+          {
+            "source": 1123528,
+            "name": "@babel/core",
+            "dependency": "@babel/core",
+            "title": "@babel/core: Arbitrary File Read via sourceMappingURL Comment",
+            "url": "https://github.com/advisories/GHSA-4x5r-pxfx-6jf8",
+            "severity": "low",
+            "cwe": [
+              "CWE-22",
+              "CWE-200"
+            ],
+            "cvss": {
+              "score": 3.2,
+              "vectorString": "CVSS:3.1/AV:L/AC:H/PR:N/UI:N/S:C/C:L/I:N/A:N"
+            },
+            "range": "<=7.29.0"
+          }
+        ],
+        "effects": [],
+        "range": "<=7.29.0",
+        "nodes": [
+          ""
+        ],
+        "fixAvailable": true
+      },
+      "@babel/helpers": {
+        "name": "@babel/helpers",
+        "severity": "moderate",
+        "isDirect": false,
+        "via": [
+          {
+            "source": 1104001,
+            "name": "@babel/helpers",
+            "dependency": "@babel/helpers",
+            "title": "Babel has inefficient RegExp complexity in generated code with .replace when transpiling named capturing groups",
+            "url": "https://github.com/advisories/GHSA-968p-4wvh-cqc8",
+            "severity": "moderate",
+            "cwe": [
+              "CWE-1333"
+            ],
+            "cvss": {
+              "score": 6.2,
+              "vectorString": "CVSS:3.1/AV:L/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+            },
+            "range": "<7.26.10"
+          }
+        ],
+        "effects": [],
+        "range": "<7.26.10",
+        "nodes": [
+          ""
+        ],
+        "fixAvailable": true
+      },
+      "@eslint/plugin-kit": {
+        "name": "@eslint/plugin-kit",
+        "severity": "low",
+        "isDirect": false,
+        "via": [
+          {
+            "source": 1100564,
+            "name": "@eslint/plugin-kit",
+            "dependency": "@eslint/plugin-kit",
+            "title": "Regular Expression Denial of Service (ReDoS) in @eslint/plugin-kit",
+            "url": "https://github.com/advisories/GHSA-7q7g-4xm8-89cq",
+            "severity": "low",
+            "cwe": [
+              "CWE-770",
+              "CWE-1333"
+            ],
+            "cvss": {
+              "score": 3.5,
+              "vectorString": "CVSS:3.1/AV:N/AC:L/PR:L/UI:R/S:U/C:N/I:N/A:L"
+            },
+            "range": "<0.2.3"
+          },
+          {
+            "source": 1106734,
+            "name": "@eslint/plugin-kit",
+            "dependency": "@eslint/plugin-kit",
+            "title": "@eslint/plugin-kit is vulnerable to Regular Expression Denial of Service attacks through ConfigCommentParser",
+            "url": "https://github.com/advisories/GHSA-xffm-g5w8-qvg7",
+            "severity": "low",
+            "cwe": [
+              "CWE-1333"
+            ],
+            "cvss": {
+              "score": 0,
+              "vectorString": null
+            },
+            "range": "<0.3.4"
+          }
+        ],
+        "effects": [],
+        "range": "<=0.3.3",
+        "nodes": [
+          ""
+        ],
+        "fixAvailable": true
+      },
+      "@humanfs/node": {
+        "name": "@humanfs/node",
+        "severity": "moderate",
+        "isDirect": false,
+        "via": [
+          {
+            "source": 1158499,
+            "name": "@humanfs/node",
+            "dependency": "@humanfs/node",
+            "title": "humanfs: Recursive copy follows symlinked files and copies data from outside the source tree",
+            "url": "https://github.com/advisories/GHSA-p498-v437-472g",
+            "severity": "moderate",
+            "cwe": [
+              "CWE-22"
+            ],
+            "cvss": {
+              "score": 0,
+              "vectorString": null
+            },
+            "range": "<0.16.8"
+          }
+        ],
+        "effects": [],
+        "range": "<0.16.8",
+        "nodes": [
+          ""
+        ],
+        "fixAvailable": true
+      },
+      "@typescript-eslint/eslint-plugin": {
+        "name": "@typescript-eslint/eslint-plugin",
+        "severity": "high",
+        "isDirect": false,
+        "via": [
+          "@typescript-eslint/type-utils",
+          "@typescript-eslint/utils"
+        ],
+        "effects": [],
+        "range": "8.2.1-alpha.0 - 8.47.1-alpha.9",
+        "nodes": [
+          ""
+        ],
+        "fixAvailable": true
+      },
+      "@typescript-eslint/parser": {
+        "name": "@typescript-eslint/parser",
+        "severity": "high",
+        "isDirect": false,
+        "via": [
+          "@typescript-eslint/typescript-estree"
+        ],
+        "effects": [],
+        "range": "8.2.1-alpha.0 - 8.47.1-alpha.9",
+        "nodes": [
+          ""
+        ],
+        "fixAvailable": true
+      },
+      "@typescript-eslint/type-utils": {
+        "name": "@typescript-eslint/type-utils",
+        "severity": "high",
+        "isDirect": false,
+        "via": [
+          "@typescript-eslint/typescript-estree",
+          "@typescript-eslint/utils"
+        ],
+        "effects": [
+          "@typescript-eslint/eslint-plugin"
+        ],
+        "range": "8.2.1-alpha.0 - 8.47.1-alpha.9",
+        "nodes": [
+          ""
+        ],
+        "fixAvailable": true
+      },
+      "@typescript-eslint/typescript-estree": {
+        "name": "@typescript-eslint/typescript-estree",
+        "severity": "high",
+        "isDirect": false,
+        "via": [
+          "fast-glob"
+        ],
+        "effects": [
+          "@typescript-eslint/parser",
+          "@typescript-eslint/type-utils",
+          "@typescript-eslint/utils"
+        ],
+        "range": "8.2.1-alpha.0 - 8.47.1-alpha.9",
+        "nodes": [
+          ""
+        ],
+        "fixAvailable": true
+      },
+      "@typescript-eslint/utils": {
+        "name": "@typescript-eslint/utils",
+        "severity": "high",
+        "isDirect": false,
+        "via": [
+          "@typescript-eslint/typescript-estree"
+        ],
+        "effects": [
+          "typescript-eslint"
+        ],
+        "range": "8.2.1-alpha.0 - 8.47.1-alpha.9",
+        "nodes": [
+          ""
+        ],
+        "fixAvailable": true
+      },
+      "@vitest/mocker": {
+        "name": "@vitest/mocker",
+        "severity": "moderate",
+        "isDirect": false,
+        "via": [
+          {
+            "source": 1193684,
+            "name": "@vitest/mocker",
+            "dependency": "@vitest/mocker",
+            "title": "Vitest: Path Traversal / Arbitrary File Read via @vitest/mocker Redirect Mock",
+            "url": "https://github.com/advisories/GHSA-82fw-gwwq-j7x9",
+            "severity": "moderate",
+            "cwe": [
+              "CWE-22"
+            ],
+            "cvss": {
+              "score": 5.9,
+              "vectorString": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:H/I:N/A:N"
+            },
+            "range": ">=2.1.0 <4.1.11"
+          }
+        ],
+        "effects": [
+          "vitest"
+        ],
+        "range": "2.1.0 - 4.1.10",
+        "nodes": [
+          "node_modules/@vitest/mocker"
+        ],
+        "fixAvailable": {
+          "name": "vitest",
+          "version": "5.0.4",
+          "isSemVerMajor": true
+        }
+      },
+      "ajv": {
+        "name": "ajv",
+        "severity": "moderate",
+        "isDirect": false,
+        "via": [
+          {
+            "source": 1113714,
+            "name": "ajv",
+            "dependency": "ajv",
+            "title": "ajv has ReDoS when using `$data` option",
+            "url": "https://github.com/advisories/GHSA-2g4f-4pwh-qvx6",
+            "severity": "moderate",
+            "cwe": [
+              "CWE-400",
+              "CWE-1333"
+            ],
+            "cvss": {
+              "score": 0,
+              "vectorString": null
+            },
+            "range": "<6.14.0"
+          }
+        ],
+        "effects": [],
+        "range": "<6.14.0",
+        "nodes": [
+          ""
+        ],
+        "fixAvailable": true
+      },
+      "brace-expansion": {
+        "name": "brace-expansion",
+        "severity": "high",
+        "isDirect": false,
+        "via": [
+          {
+            "source": 1105443,
+            "name": "brace-expansion",
+            "dependency": "brace-expansion",
+            "title": "brace-expansion Regular Expression Denial of Service vulnerability",
+            "url": "https://github.com/advisories/GHSA-v6h2-p8h4-qcjw",
+            "severity": "low",
+            "cwe": [
+              "CWE-400"
+            ],
+            "cvss": {
+              "score": 3.1,
+              "vectorString": "CVSS:3.1/AV:N/AC:H/PR:L/UI:N/S:U/C:N/I:N/A:L"
+            },
+            "range": ">=1.0.0 <=1.1.11"
+          },
+          {
+            "source": 1105444,
+            "name": "brace-expansion",
+            "dependency": "brace-expansion",
+            "title": "brace-expansion Regular Expression Denial of Service vulnerability",
+            "url": "https://github.com/advisories/GHSA-v6h2-p8h4-qcjw",
+            "severity": "low",
+            "cwe": [
+              "CWE-400"
+            ],
+            "cvss": {
+              "score": 3.1,
+              "vectorString": "CVSS:3.1/AV:N/AC:H/PR:L/UI:N/S:U/C:N/I:N/A:L"
+            },
+            "range": ">=2.0.0 <=2.0.1"
+          },
+          {
+            "source": 1115540,
+            "name": "brace-expansion",
+            "dependency": "brace-expansion",
+            "title": "brace-expansion: Zero-step sequence causes process hang and memory exhaustion",
+            "url": "https://github.com/advisories/GHSA-f886-m6hf-6m8v",
+            "severity": "moderate",
+            "cwe": [
+              "CWE-400"
+            ],
+            "cvss": {
+              "score": 6.5,
+              "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:U/C:N/I:N/A:H"
+            },
+            "range": "<1.1.13"
+          },
+          {
+            "source": 1115541,
+            "name": "brace-expansion",
+            "dependency": "brace-expansion",
+            "title": "brace-expansion: Zero-step sequence causes process hang and memory exhaustion",
+            "url": "https://github.com/advisories/GHSA-f886-m6hf-6m8v",
+            "severity": "moderate",
+            "cwe": [
+              "CWE-400"
+            ],
+            "cvss": {
+              "score": 6.5,
+              "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:U/C:N/I:N/A:H"
+            },
+            "range": ">=2.0.0 <2.0.3"
+          },
+          {
+            "source": 1123896,
+            "name": "brace-expansion",
+            "dependency": "brace-expansion",
+            "title": "brace-expansion: DoS via exponential-time expansion of consecutive non-expanding {} groups",
+            "url": "https://github.com/advisories/GHSA-3jxr-9vmj-r5cp",
+            "severity": "high",
+            "cwe": [
+              "CWE-400",
+              "CWE-407"
+            ],
+            "cvss": {
+              "score": 5.3,
+              "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:L"
+            },
+            "range": ">=2.0.0 <2.1.2"
+          },
+          {
+            "source": 1123897,
+            "name": "brace-expansion",
+            "dependency": "brace-expansion",
+            "title": "brace-expansion: DoS via exponential-time expansion of consecutive non-expanding {} groups",
+            "url": "https://github.com/advisories/GHSA-3jxr-9vmj-r5cp",
+            "severity": "high",
+            "cwe": [
+              "CWE-400",
+              "CWE-407"
+            ],
+            "cvss": {
+              "score": 5.3,
+              "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:L"
+            },
+            "range": "<1.1.16"
+          },
+          {
+            "source": 1130588,
+            "name": "brace-expansion",
+            "dependency": "brace-expansion",
+            "title": "brace-expansion: DoS via unbounded expansion length causing an out-of-memory process crash",
+            "url": "https://github.com/advisories/GHSA-mh99-v99m-4gvg",
+            "severity": "high",
+            "cwe": [
+              "CWE-400",
+              "CWE-770"
+            ],
+            "cvss": {
+              "score": 7.5,
+              "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+            },
+            "range": "<1.1.17"
+          },
+          {
+            "source": 1130589,
+            "name": "brace-expansion",
+            "dependency": "brace-expansion",
+            "title": "brace-expansion: DoS via unbounded expansion length causing an out-of-memory process crash",
+            "url": "https://github.com/advisories/GHSA-mh99-v99m-4gvg",
+            "severity": "high",
+            "cwe": [
+              "CWE-400",
+              "CWE-770"
+            ],
+            "cvss": {
+              "score": 7.5,
+              "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+            },
+            "range": ">=2.0.0 <2.1.3"
+          },
+          {
+            "source": 1130736,
+            "name": "brace-expansion",
+            "dependency": "brace-expansion",
+            "title": "brace-expansion: DoS via unbounded intermediate arrays, bypassing the CVE-2026-14257 mitigation",
+            "url": "https://github.com/advisories/GHSA-rgw5-rvv9-x895",
+            "severity": "high",
+            "cwe": [
+              "CWE-400",
+              "CWE-770"
+            ],
+            "cvss": {
+              "score": 7.5,
+              "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+            },
+            "range": ">=2.0.0 <2.1.4"
+          },
+          {
+            "source": 1130737,
+            "name": "brace-expansion",
+            "dependency": "brace-expansion",
+            "title": "brace-expansion: DoS via unbounded intermediate arrays, bypassing the CVE-2026-14257 mitigation",
+            "url": "https://github.com/advisories/GHSA-rgw5-rvv9-x895",
+            "severity": "high",
+            "cwe": [
+              "CWE-400",
+              "CWE-770"
+            ],
+            "cvss": {
+              "score": 7.5,
+              "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+            },
+            "range": "<1.1.18"
+          },
+          {
+            "source": 1240100,
+            "name": "brace-expansion",
+            "dependency": "brace-expansion",
+            "title": "brace-expansion: Quadratic-time expansion of the `{a},b}` rewrite causes CPU denial of service",
+            "url": "https://github.com/advisories/GHSA-q2hr-2g5m-vwhr",
+            "severity": "moderate",
+            "cwe": [
+              "CWE-400",
+              "CWE-407"
+            ],
+            "cvss": {
+              "score": 5.3,
+              "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:L"
+            },
+            "range": "<1.1.21"
+          },
+          {
+            "source": 1240101,
+            "name": "brace-expansion",
+            "dependency": "brace-expansion",
+            "title": "brace-expansion: Quadratic-time expansion of the `{a},b}` rewrite causes CPU denial of service",
+            "url": "https://github.com/advisories/GHSA-q2hr-2g5m-vwhr",
+            "severity": "moderate",
+            "cwe": [
+              "CWE-400",
+              "CWE-407"
+            ],
+            "cvss": {
+              "score": 5.3,
+              "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:L"
+            },
+            "range": ">=2.0.0 <2.1.7"
+          },
+          {
+            "source": 1240104,
+            "name": "brace-expansion",
+            "dependency": "brace-expansion",
+            "title": "brace-expansion: DoS via uncontrolled recursion on nested brace groups causing stack exhaustion",
+            "url": "https://github.com/advisories/GHSA-qhr7-859c-m2p7",
+            "severity": "high",
+            "cwe": [
+              "CWE-400",
+              "CWE-674"
+            ],
+            "cvss": {
+              "score": 7.5,
+              "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+            },
+            "range": "<1.1.20"
+          },
+          {
+            "source": 1240105,
+            "name": "brace-expansion",
+            "dependency": "brace-expansion",
+            "title": "brace-expansion: DoS via uncontrolled recursion on nested brace groups causing stack exhaustion",
+            "url": "https://github.com/advisories/GHSA-qhr7-859c-m2p7",
+            "severity": "high",
+            "cwe": [
+              "CWE-400",
+              "CWE-674"
+            ],
+            "cvss": {
+              "score": 7.5,
+              "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+            },
+            "range": ">=2.0.0 <2.1.6"
+          },
+          {
+            "source": 1240108,
+            "name": "brace-expansion",
+            "dependency": "brace-expansion",
+            "title": "brace-expansion: DoS via uncontrolled recursion in parseCommaParts causing stack exhaustion",
+            "url": "https://github.com/advisories/GHSA-6j4f-fj2g-mc7p",
+            "severity": "high",
+            "cwe": [
+              "CWE-400",
+              "CWE-674"
+            ],
+            "cvss": {
+              "score": 7.5,
+              "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+            },
+            "range": "<1.1.19"
+          },
+          {
+            "source": 1240109,
+            "name": "brace-expansion",
+            "dependency": "brace-expansion",
+            "title": "brace-expansion: DoS via uncontrolled recursion in parseCommaParts causing stack exhaustion",
+            "url": "https://github.com/advisories/GHSA-6j4f-fj2g-mc7p",
+            "severity": "high",
+            "cwe": [
+              "CWE-400",
+              "CWE-674"
+            ],
+            "cvss": {
+              "score": 7.5,
+              "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+            },
+            "range": ">=2.0.0 <2.1.5"
+          }
+        ],
+        "effects": [],
+        "range": "<=1.1.20 || 2.0.0 - 2.1.6",
+        "nodes": [
+          "",
+          "",
+          "node_modules/brace-expansion"
+        ],
+        "fixAvailable": true
+      },
+      "braces": {
+        "name": "braces",
+        "severity": "high",
+        "isDirect": false,
+        "via": [
+          {
+            "source": 1240992,
+            "name": "braces",
+            "dependency": "braces",
+            "title": "braces vulnerable to stack-exhaustion denial of service through deeply nested patterns",
+            "url": "https://github.com/advisories/GHSA-vfj7-8cjw-p6xm",
+            "severity": "high",
+            "cwe": [
+              "CWE-674"
+            ],
+            "cvss": {
+              "score": 7.5,
+              "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+            },
+            "range": "<=3.0.3"
+          }
+        ],
+        "effects": [
+          "chokidar",
+          "micromatch"
+        ],
+        "range": "*",
+        "nodes": [
+          "node_modules/braces"
+        ],
+        "fixAvailable": {
+          "name": "tailwindcss",
+          "version": "4.3.3",
+          "isSemVerMajor": true
+        }
+      },
+      "browserslist": {
+        "name": "browserslist",
+        "severity": "high",
+        "isDirect": false,
+        "via": [
+          {
+            "source": 1153171,
+            "name": "browserslist",
+            "dependency": "browserslist",
+            "title": "Browserslist: Unbounded memory growth (no cache eviction) via distinct query results, leading to eventual OOM",
+            "url": "https://github.com/advisories/GHSA-c83g-rgw3-j3cx",
+            "severity": "high",
+            "cwe": [
+              "CWE-770"
+            ],
+            "cvss": {
+              "score": 7.5,
+              "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+            },
+            "range": "<=4.28.6"
+          },
+          {
+            "source": 1153172,
+            "name": "browserslist",
+            "dependency": "browserslist",
+            "title": "Browserslist: Uncaught crash / prototype write via untrusted browserslist-stats.json custom stats (normalizeStats)",
+            "url": "https://github.com/advisories/GHSA-73wf-gq98-2v4g",
+            "severity": "high",
+            "cwe": [
+              "CWE-248",
+              "CWE-1321"
+            ],
+            "cvss": {
+              "score": 7.5,
+              "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+            },
+            "range": "<=4.28.6"
+          }
+        ],
+        "effects": [],
+        "range": "<=4.28.6",
+        "nodes": [
+          ""
+        ],
+        "fixAvailable": true
+      },
+      "chokidar": {
+        "name": "chokidar",
+        "severity": "high",
+        "isDirect": false,
+        "via": [
+          "braces"
+        ],
+        "effects": [
+          "tailwindcss"
+        ],
+        "range": "2.0.0 - 3.6.0",
+        "nodes": [
+          "node_modules/chokidar"
+        ],
+        "fixAvailable": {
+          "name": "tailwindcss",
+          "version": "4.3.3",
+          "isSemVerMajor": true
+        }
+      },
+      "cross-spawn": {
+        "name": "cross-spawn",
+        "severity": "high",
+        "isDirect": false,
+        "via": [
+          {
+            "source": 1104664,
+            "name": "cross-spawn",
+            "dependency": "cross-spawn",
+            "title": "Regular Expression Denial of Service (ReDoS) in cross-spawn",
+            "url": "https://github.com/advisories/GHSA-3xgq-45jj-v275",
+            "severity": "high",
+            "cwe": [
+              "CWE-1333"
+            ],
+            "cvss": {
+              "score": 7.5,
+              "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+            },
+            "range": ">=7.0.0 <7.0.5"
+          }
+        ],
+        "effects": [],
+        "range": "7.0.0 - 7.0.4",
+        "nodes": [
+          ""
+        ],
+        "fixAvailable": true
+      },
+      "dompurify": {
+        "name": "dompurify",
+        "severity": "moderate",
+        "isDirect": false,
+        "via": [
+          {
+            "source": 1138538,
+            "name": "dompurify",
+            "dependency": "dompurify",
+            "title": "DOMPurify: IN_PLACE hook removal leaves a detached subtree executable, causing XSS",
+            "url": "https://github.com/advisories/GHSA-55q2-fjhq-7xh7",
+            "severity": "moderate",
+            "cwe": [
+              "CWE-79"
+            ],
+            "cvss": {
+              "score": 0,
+              "vectorString": null
+            },
+            "range": "<=3.4.12"
+          },
+          {
+            "source": 1240978,
+            "name": "dompurify",
+            "dependency": "dompurify",
+            "title": "DOMPurify: `CUSTOM_ELEMENT_HANDLING` bypasses `afterSanitizeElements` for allowed custom elements.",
+            "url": "https://github.com/advisories/GHSA-c2j3-45gr-mqc4",
+            "severity": "low",
+            "cwe": [
+              "CWE-79",
+              "CWE-184",
+              "CWE-693"
+            ],
+            "cvss": {
+              "score": 0,
+              "vectorString": null
+            },
+            "range": "<=3.4.11"
+          },
+          {
+            "source": 1241204,
+            "name": "dompurify",
+            "dependency": "dompurify",
+            "title": "DOMPurify: IN_PLACE returns a force-removed rawtext root whose text carries attacker markup — pure HTML reparse executes",
+            "url": "https://github.com/advisories/GHSA-6688-9rhm-gjv2",
+            "severity": "low",
+            "cwe": [
+              "CWE-79"
+            ],
+            "cvss": {
+              "score": 0,
+              "vectorString": null
+            },
+            "range": "<=3.4.15"
+          }
+        ],
+        "effects": [],
+        "range": "<=3.4.15",
+        "nodes": [
+          ""
+        ],
+        "fixAvailable": true
+      },
+      "esbuild": {
+        "name": "esbuild",
+        "severity": "moderate",
+        "isDirect": false,
+        "via": [
+          {
+            "source": 1102341,
+            "name": "esbuild",
+            "dependency": "esbuild",
+            "title": "esbuild enables any website to send any requests to the development server and read the response",
+            "url": "https://github.com/advisories/GHSA-67mh-4wv8-2f99",
+            "severity": "moderate",
+            "cwe": [
+              "CWE-346"
+            ],
+            "cvss": {
+              "score": 5.3,
+              "vectorString": "CVSS:3.1/AV:N/AC:H/PR:N/UI:R/S:U/C:H/I:N/A:N"
+            },
+            "range": "<=0.24.2"
+          }
+        ],
+        "effects": [
+          "vite"
+        ],
+        "range": "<=0.24.2",
+        "nodes": [
+          "node_modules/esbuild"
+        ],
+        "fixAvailable": true
+      },
+      "fast-glob": {
+        "name": "fast-glob",
+        "severity": "high",
+        "isDirect": false,
+        "via": [
+          "micromatch"
+        ],
+        "effects": [
+          "@typescript-eslint/typescript-estree"
+        ],
+        "range": "*",
+        "nodes": [
+          ""
+        ],
+        "fixAvailable": true
+      },
+      "flatted": {
+        "name": "flatted",
+        "severity": "high",
+        "isDirect": false,
+        "via": [
+          {
+            "source": 1114526,
+            "name": "flatted",
+            "dependency": "flatted",
+            "title": "flatted vulnerable to unbounded recursion DoS in parse() revive phase",
+            "url": "https://github.com/advisories/GHSA-25h7-pfq9-p65f",
+            "severity": "high",
+            "cwe": [
+              "CWE-674"
+            ],
+            "cvss": {
+              "score": 7.5,
+              "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+            },
+            "range": "<3.4.0"
+          },
+          {
+            "source": 1241196,
+            "name": "flatted",
+            "dependency": "flatted",
+            "title": "Prototype Pollution via parse() in NodeJS flatted",
+            "url": "https://github.com/advisories/GHSA-rf6f-7fwh-wjgh",
+            "severity": "high",
+            "cwe": [
+              "CWE-915",
+              "CWE-1321"
+            ],
+            "cvss": {
+              "score": 0,
+              "vectorString": null
+            },
+            "range": "<=3.4.1"
+          }
+        ],
+        "effects": [],
+        "range": "<=3.4.1",
+        "nodes": [
+          ""
+        ],
+        "fixAvailable": true
+      },
+      "glob": {
+        "name": "glob",
+        "severity": "high",
+        "isDirect": false,
+        "via": [
+          {
+            "source": 1109842,
+            "name": "glob",
+            "dependency": "glob",
+            "title": "glob CLI: Command injection via -c/--cmd executes matches with shell:true",
+            "url": "https://github.com/advisories/GHSA-5j98-mcp5-4vw2",
+            "severity": "high",
+            "cwe": [
+              "CWE-78"
+            ],
+            "cvss": {
+              "score": 7.5,
+              "vectorString": "CVSS:3.1/AV:N/AC:H/PR:L/UI:N/S:U/C:H/I:H/A:H"
+            },
+            "range": ">=10.2.0 <10.5.0"
+          }
+        ],
+        "effects": [],
+        "range": "10.2.0 - 10.4.5",
+        "nodes": [
+          ""
+        ],
+        "fixAvailable": true
+      },
+      "js-yaml": {
+        "name": "js-yaml",
+        "severity": "high",
+        "isDirect": false,
+        "via": [
+          {
+            "source": 1112715,
+            "name": "js-yaml",
+            "dependency": "js-yaml",
+            "title": "js-yaml has prototype pollution in merge (<<)",
+            "url": "https://github.com/advisories/GHSA-mh29-5h37-fv8m",
+            "severity": "moderate",
+            "cwe": [
+              "CWE-1321"
+            ],
+            "cvss": {
+              "score": 5.3,
+              "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N"
+            },
+            "range": ">=4.0.0 <4.1.1"
+          },
+          {
+            "source": 1121860,
+            "name": "js-yaml",
+            "dependency": "js-yaml",
+            "title": "JS-YAML: Quadratic-complexity DoS in merge key handling via repeated aliases",
+            "url": "https://github.com/advisories/GHSA-h67p-54hq-rp68",
+            "severity": "moderate",
+            "cwe": [
+              "CWE-407"
+            ],
+            "cvss": {
+              "score": 5.3,
+              "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:L"
+            },
+            "range": ">=4.0.0 <=4.1.1"
+          },
+          {
+            "source": 1123911,
+            "name": "js-yaml",
+            "dependency": "js-yaml",
+            "title": "js-yaml: YAML merge-key chains can force quadratic CPU consumption",
+            "url": "https://github.com/advisories/GHSA-52cp-r559-cp3m",
+            "severity": "high",
+            "cwe": [
+              "CWE-400",
+              "CWE-407"
+            ],
+            "cvss": {
+              "score": 7.5,
+              "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+            },
+            "range": ">=4.0.0 <4.3.0"
+          },
+          {
+            "source": 1138115,
+            "name": "js-yaml",
+            "dependency": "js-yaml",
+            "title": "JS-YAML: Quadratic CPU consumption in !!omap resolution (3.x and 4.x) — CVE-2026-59870 fix not backported",
+            "url": "https://github.com/advisories/GHSA-5p4m-2wfm-xmqj",
+            "severity": "high",
+            "cwe": [
+              "CWE-407"
+            ],
+            "cvss": {
+              "score": 7.5,
+              "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+            },
+            "range": ">=4.0.0 <4.3.1"
+          },
+          {
+            "source": 1193727,
+            "name": "js-yaml",
+            "dependency": "js-yaml",
+            "title": "js-yaml: maxTotalMergeKeys does not limit CPU use for empty merge sources",
+            "url": "https://github.com/advisories/GHSA-2883-xcg3-v3hh",
+            "severity": "high",
+            "cwe": [
+              "CWE-400",
+              "CWE-407"
+            ],
+            "cvss": {
+              "score": 7.5,
+              "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+            },
+            "range": ">=4.0.0 <4.3.2"
+          }
+        ],
+        "effects": [],
+        "range": "4.0.0 - 4.3.1",
+        "nodes": [
+          ""
+        ],
+        "fixAvailable": true
+      },
+      "micromatch": {
+        "name": "micromatch",
+        "severity": "high",
+        "isDirect": false,
+        "via": [
+          "braces"
+        ],
+        "effects": [
+          "fast-glob",
+          "tailwindcss"
+        ],
+        "range": ">=0.2.0",
+        "nodes": [
+          "node_modules/micromatch"
+        ],
+        "fixAvailable": {
+          "name": "tailwindcss",
+          "version": "4.3.3",
+          "isSemVerMajor": true
+        }
+      },
+      "minimatch": {
+        "name": "minimatch",
+        "severity": "high",
+        "isDirect": false,
+        "via": [
+          {
+            "source": 1113459,
+            "name": "minimatch",
+            "dependency": "minimatch",
+            "title": "minimatch has a ReDoS via repeated wildcards with non-matching literal in pattern",
+            "url": "https://github.com/advisories/GHSA-3ppc-4f35-3m26",
+            "severity": "high",
+            "cwe": [
+              "CWE-1333"
+            ],
+            "cvss": {
+              "score": 0,
+              "vectorString": null
+            },
+            "range": "<3.1.3"
+          },
+          {
+            "source": 1113465,
+            "name": "minimatch",
+            "dependency": "minimatch",
+            "title": "minimatch has a ReDoS via repeated wildcards with non-matching literal in pattern",
+            "url": "https://github.com/advisories/GHSA-3ppc-4f35-3m26",
+            "severity": "high",
+            "cwe": [
+              "CWE-1333"
+            ],
+            "cvss": {
+              "score": 0,
+              "vectorString": null
+            },
+            "range": ">=9.0.0 <9.0.6"
+          },
+          {
+            "source": 1113538,
+            "name": "minimatch",
+            "dependency": "minimatch",
+            "title": "minimatch has ReDoS: matchOne() combinatorial backtracking via multiple non-adjacent GLOBSTAR segments",
+            "url": "https://github.com/advisories/GHSA-7r86-cg39-jmmj",
+            "severity": "high",
+            "cwe": [
+              "CWE-407"
+            ],
+            "cvss": {
+              "score": 7.5,
+              "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+            },
+            "range": "<3.1.3"
+          },
+          {
+            "source": 1113544,
+            "name": "minimatch",
+            "dependency": "minimatch",
+            "title": "minimatch has ReDoS: matchOne() combinatorial backtracking via multiple non-adjacent GLOBSTAR segments",
+            "url": "https://github.com/advisories/GHSA-7r86-cg39-jmmj",
+            "severity": "high",
+            "cwe": [
+              "CWE-407"
+            ],
+            "cvss": {
+              "score": 7.5,
+              "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+            },
+            "range": ">=9.0.0 <9.0.7"
+          },
+          {
+            "source": 1113546,
+            "name": "minimatch",
+            "dependency": "minimatch",
+            "title": "minimatch ReDoS: nested *() extglobs generate catastrophically backtracking regular expressions",
+            "url": "https://github.com/advisories/GHSA-23c5-xmqv-rm74",
+            "severity": "high",
+            "cwe": [
+              "CWE-1333"
+            ],
+            "cvss": {
+              "score": 7.5,
+              "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+            },
+            "range": "<3.1.4"
+          },
+          {
+            "source": 1113552,
+            "name": "minimatch",
+            "dependency": "minimatch",
+            "title": "minimatch ReDoS: nested *() extglobs generate catastrophically backtracking regular expressions",
+            "url": "https://github.com/advisories/GHSA-23c5-xmqv-rm74",
+            "severity": "high",
+            "cwe": [
+              "CWE-1333"
+            ],
+            "cvss": {
+              "score": 7.5,
+              "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+            },
+            "range": ">=9.0.0 <9.0.7"
+          }
+        ],
+        "effects": [],
+        "range": "<=3.1.3 || 9.0.0 - 9.0.6",
+        "nodes": [
+          "",
+          "",
+          ""
+        ],
+        "fixAvailable": true
+      },
+      "nanoid": {
+        "name": "nanoid",
+        "severity": "high",
+        "isDirect": false,
+        "via": [
+          {
+            "source": 1109563,
+            "name": "nanoid",
+            "dependency": "nanoid",
+            "title": "Predictable results in nanoid generation when given non-integer values",
+            "url": "https://github.com/advisories/GHSA-mwcw-c2x4-8c55",
+            "severity": "moderate",
+            "cwe": [
+              "CWE-835"
+            ],
+            "cvss": {
+              "score": 4.3,
+              "vectorString": "CVSS:3.1/AV:N/AC:L/PR:L/UI:N/S:U/C:N/I:L/A:N"
+            },
+            "range": "<3.3.8"
+          },
+          {
+            "source": 1138811,
+            "name": "nanoid",
+            "dependency": "nanoid",
+            "title": "nanoid: non-secure generators can loop indefinitely with negative size",
+            "url": "https://github.com/advisories/GHSA-28wg-ghj8-5hjv",
+            "severity": "high",
+            "cwe": [
+              "CWE-835"
+            ],
+            "cvss": {
+              "score": 5.9,
+              "vectorString": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:N/I:N/A:H"
+            },
+            "range": "<3.3.16"
+          },
+          {
+            "source": 1139427,
+            "name": "nanoid",
+            "dependency": "nanoid",
+            "title": "nanoid: custom generators can loop indefinitely when size is zero",
+            "url": "https://github.com/advisories/GHSA-2v37-7h3g-55p8",
+            "severity": "high",
+            "cwe": [
+              "CWE-835"
+            ],
+            "cvss": {
+              "score": 5.9,
+              "vectorString": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:N/I:N/A:H"
+            },
+            "range": "<3.3.18"
+          },
+          {
+            "source": 1153189,
+            "name": "nanoid",
+            "dependency": "nanoid",
+            "title": "nanoid: Integer Overflow or Wraparound",
+            "url": "https://github.com/advisories/GHSA-xwg4-73v4-xw9w",
+            "severity": "high",
+            "cwe": [
+              "CWE-190"
+            ],
+            "cvss": {
+              "score": 7.4,
+              "vectorString": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:H/I:H/A:N"
+            },
+            "range": "<3.3.12"
+          }
+        ],
+        "effects": [],
+        "range": "<=3.3.17",
+        "nodes": [
+          ""
+        ],
+        "fixAvailable": true
+      },
+      "picomatch": {
+        "name": "picomatch",
+        "severity": "high",
+        "isDirect": false,
+        "via": [
+          {
+            "source": 1115549,
+            "name": "picomatch",
+            "dependency": "picomatch",
+            "title": "Picomatch: Method Injection in POSIX Character Classes causes incorrect Glob Matching",
+            "url": "https://github.com/advisories/GHSA-3v7f-55p6-f55p",
+            "severity": "moderate",
+            "cwe": [
+              "CWE-1321"
+            ],
+            "cvss": {
+              "score": 5.3,
+              "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N"
+            },
+            "range": "<2.3.2"
+          },
+          {
+            "source": 1115552,
+            "name": "picomatch",
+            "dependency": "picomatch",
+            "title": "Picomatch has a ReDoS vulnerability via extglob quantifiers",
+            "url": "https://github.com/advisories/GHSA-c2c7-rcm5-vvqj",
+            "severity": "high",
+            "cwe": [
+              "CWE-1333"
+            ],
+            "cvss": {
+              "score": 7.5,
+              "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+            },
+            "range": "<2.3.2"
+          }
+        ],
+        "effects": [],
+        "range": "<=2.3.1",
+        "nodes": [
+          ""
+        ],
+        "fixAvailable": true
+      },
+      "postcss": {
+        "name": "postcss",
+        "severity": "high",
+        "isDirect": false,
+        "via": [
+          {
+            "source": 1117015,
+            "name": "postcss",
+            "dependency": "postcss",
+            "title": "PostCSS has XSS via Unescaped </style> in its CSS Stringify Output",
+            "url": "https://github.com/advisories/GHSA-qx2v-qp2m-jg93",
+            "severity": "moderate",
+            "cwe": [
+              "CWE-79"
+            ],
+            "cvss": {
+              "score": 6.1,
+              "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:C/C:L/I:L/A:N"
+            },
+            "range": "<8.5.10"
+          },
+          {
+            "source": 1124252,
+            "name": "postcss",
+            "dependency": "postcss",
+            "title": "PostCSS: Arbitrary file read and information disclosure via attacker-controlled sourceMappingURL in CSS comments",
+            "url": "https://github.com/advisories/GHSA-6g55-p6wh-862q",
+            "severity": "high",
+            "cwe": [
+              "CWE-22",
+              "CWE-200"
+            ],
+            "cvss": {
+              "score": 7.5,
+              "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N"
+            },
+            "range": "<=8.5.11"
+          },
+          {
+            "source": 1130709,
+            "name": "postcss",
+            "dependency": "postcss",
+            "title": "PostCSS: incomplete fix of GHSA-6g55-p6wh-862q — attacker-controlled sourceMappingURL reads arbitrary .map files when `from` is unset",
+            "url": "https://github.com/advisories/GHSA-fxqj-rqcc-2cmp",
+            "severity": "moderate",
+            "cwe": [
+              "CWE-22",
+              "CWE-200"
+            ],
+            "cvss": {
+              "score": 0,
+              "vectorString": null
+            },
+            "range": "<=8.5.22"
+          },
+          {
+            "source": 1139510,
+            "name": "postcss",
+            "dependency": "postcss",
+            "title": "PostCSS: Path Traversal in Previous Source Map Auto-Loading (sourceMappingURL) leads to Arbitrary .map File Disclosure",
+            "url": "https://github.com/advisories/GHSA-r28c-9q8g-f849",
+            "severity": "high",
+            "cwe": [
+              "CWE-22"
+            ],
+            "cvss": {
+              "score": 7.5,
+              "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N"
+            },
+            "range": "<=8.5.17"
+          }
+        ],
+        "effects": [],
+        "range": "<=8.5.22",
+        "nodes": [
+          ""
+        ],
+        "fixAvailable": true
+      },
+      "postcss-selector-parser": {
+        "name": "postcss-selector-parser",
+        "severity": "moderate",
+        "isDirect": false,
+        "via": [
+          {
+            "source": 1153170,
+            "name": "postcss-selector-parser",
+            "dependency": "postcss-selector-parser",
+            "title": "postcss-selector-parser allows denial of service through uncontrolled AST recursion",
+            "url": "https://github.com/advisories/GHSA-w9m9-85wc-3x92",
+            "severity": "low",
+            "cwe": [
+              "CWE-404"
+            ],
+            "cvss": {
+              "score": 4.3,
+              "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:U/C:N/I:N/A:L"
+            },
+            "range": ">=6.1.0 <6.1.3"
+          },
+          {
+            "source": 1241232,
+            "name": "postcss-selector-parser",
+            "dependency": "postcss-selector-parser",
+            "title": "PostCSS: Quadratic complexity in flat selector parsing allows CPU exhaustion",
+            "url": "https://github.com/advisories/GHSA-rj75-hqrm-r3gf",
+            "severity": "moderate",
+            "cwe": [
+              "CWE-400",
+              "CWE-407"
+            ],
+            "cvss": {
+              "score": 5.9,
+              "vectorString": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:N/I:N/A:H"
+            },
+            "range": "<7.1.6"
+          }
+        ],
+        "effects": [],
+        "range": "<=7.1.5",
+        "nodes": [
+          "",
+          "node_modules/postcss-selector-parser"
+        ],
+        "fixAvailable": true
+      },
+      "rollup": {
+        "name": "rollup",
+        "severity": "high",
+        "isDirect": false,
+        "via": [
+          {
+            "source": 1113515,
+            "name": "rollup",
+            "dependency": "rollup",
+            "title": "Rollup 4 has Arbitrary File Write via Path Traversal",
+            "url": "https://github.com/advisories/GHSA-mw96-cpmx-2vgc",
+            "severity": "high",
+            "cwe": [
+              "CWE-22"
+            ],
+            "cvss": {
+              "score": 0,
+              "vectorString": null
+            },
+            "range": ">=4.0.0 <4.59.0"
+          }
+        ],
+        "effects": [],
+        "range": "4.0.0 - 4.58.0",
+        "nodes": [
+          ""
+        ],
+        "fixAvailable": true
+      },
+      "source-map-js": {
+        "name": "source-map-js",
+        "severity": "high",
+        "isDirect": false,
+        "via": [
+          {
+            "source": 1241209,
+            "name": "source-map-js",
+            "dependency": "source-map-js",
+            "title": "source-map-js allows event-loop denial of service through indexed source-map section offsets",
+            "url": "https://github.com/advisories/GHSA-68fv-2mgg-jv7q",
+            "severity": "high",
+            "cwe": [
+              "CWE-1284"
+            ],
+            "cvss": {
+              "score": 7.5,
+              "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+            },
+            "range": ">=1.0.0 <1.2.2"
+          }
+        ],
+        "effects": [],
+        "range": "1.0.0 - 1.2.1",
+        "nodes": [
+          ""
+        ],
+        "fixAvailable": true
+      },
+      "tailwindcss": {
+        "name": "tailwindcss",
+        "severity": "high",
+        "isDirect": false,
+        "via": [
+          "chokidar",
+          "fast-glob",
+          "micromatch"
+        ],
+        "effects": [],
+        "range": "<=0.0.0-oxide-insiders.ff2c25f || 2.1.0-canary.1 - 3.4.19",
+        "nodes": [
+          ""
+        ],
+        "fixAvailable": {
+          "name": "tailwindcss",
+          "version": "4.3.3",
+          "isSemVerMajor": true
+        }
+      },
+      "tinypool": {
+        "name": "tinypool",
+        "severity": "critical",
+        "isDirect": false,
+        "via": [
+          {
+            "source": 1241260,
+            "name": "tinypool",
+            "dependency": "tinypool",
+            "title": "Tinypool: Prototype Pollution gadget in worker options leads to Remote Code Execution",
+            "url": "https://github.com/advisories/GHSA-5gmw-xhrv-c9v3",
+            "severity": "critical",
+            "cwe": [
+              "CWE-1321"
+            ],
+            "cvss": {
+              "score": 0,
+              "vectorString": null
+            },
+            "range": "<=2.1.0"
+          },
+          {
+            "source": 1241261,
+            "name": "tinypool",
+            "dependency": "tinypool",
+            "title": "Tinypool: Prototype Pollution Gadget to RCE in run() options",
+            "url": "https://github.com/advisories/GHSA-85c8-ppgw-ccpr",
+            "severity": "critical",
+            "cwe": [
+              "CWE-94",
+              "CWE-1321"
+            ],
+            "cvss": {
+              "score": 0,
+              "vectorString": null
+            },
+            "range": "<2.1.2"
+          }
+        ],
+        "effects": [
+          "vitest"
+        ],
+        "range": "<=2.1.1",
+        "nodes": [
+          "node_modules/tinypool"
+        ],
+        "fixAvailable": {
+          "name": "vitest",
+          "version": "5.0.4",
+          "isSemVerMajor": true
+        }
+      },
+      "typescript-eslint": {
+        "name": "typescript-eslint",
+        "severity": "high",
+        "isDirect": false,
+        "via": [
+          "@typescript-eslint/eslint-plugin",
+          "@typescript-eslint/parser",
+          "@typescript-eslint/utils"
+        ],
+        "effects": [],
+        "range": "8.2.1-alpha.0 - 8.47.1-alpha.9",
+        "nodes": [
+          ""
+        ],
+        "fixAvailable": true
+      },
+      "vite": {
+        "name": "vite",
+        "severity": "high",
+        "isDirect": true,
+        "via": [
+          {
+            "source": 1102437,
+            "name": "vite",
+            "dependency": "vite",
+            "title": "Websites were able to send any requests to the development server and read the response in vite",
+            "url": "https://github.com/advisories/GHSA-vg6x-rcgg-rjx6",
+            "severity": "moderate",
+            "cwe": [
+              "CWE-346",
+              "CWE-350",
+              "CWE-1385"
+            ],
+            "cvss": {
+              "score": 6.5,
+              "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:U/C:H/I:N/A:N"
+            },
+            "range": ">=5.0.0 <=5.4.11"
+          },
+          {
+            "source": 1103517,
+            "name": "vite",
+            "dependency": "vite",
+            "title": "Vite bypasses server.fs.deny when using ?raw??",
+            "url": "https://github.com/advisories/GHSA-x574-m823-4x7w",
+            "severity": "moderate",
+            "cwe": [
+              "CWE-200",
+              "CWE-284"
+            ],
+            "cvss": {
+              "score": 5.3,
+              "vectorString": "CVSS:3.1/AV:N/AC:H/PR:N/UI:R/S:U/C:H/I:N/A:N"
+            },
+            "range": ">=5.0.0 <5.4.15"
+          },
+          {
+            "source": 1103884,
+            "name": "vite",
+            "dependency": "vite",
+            "title": "Vite has an `server.fs.deny` bypass with an invalid `request-target`",
+            "url": "https://github.com/advisories/GHSA-356w-63v5-8wf4",
+            "severity": "moderate",
+            "cwe": [
+              "CWE-200"
+            ],
+            "cvss": {
+              "score": 0,
+              "vectorString": null
+            },
+            "range": ">=5.0.0 <5.4.18"
+          },
+          {
+            "source": 1104173,
+            "name": "vite",
+            "dependency": "vite",
+            "title": "Vite's server.fs.deny bypassed with /. for files under project root",
+            "url": "https://github.com/advisories/GHSA-859w-5945-r5v3",
+            "severity": "moderate",
+            "cwe": [
+              "CWE-22"
+            ],
+            "cvss": {
+              "score": 0,
+              "vectorString": null
+            },
+            "range": ">=5.0.0 <=5.4.18"
+          },
+          {
+            "source": 1104202,
+            "name": "vite",
+            "dependency": "vite",
+            "title": "Vite allows server.fs.deny to be bypassed with .svg or relative paths",
+            "url": "https://github.com/advisories/GHSA-xcj6-pq6g-qj4x",
+            "severity": "moderate",
+            "cwe": [
+              "CWE-200",
+              "CWE-284"
+            ],
+            "cvss": {
+              "score": 5.3,
+              "vectorString": "CVSS:3.1/AV:N/AC:H/PR:N/UI:R/S:U/C:H/I:N/A:N"
+            },
+            "range": ">=5.0.0 <5.4.17"
+          },
+          {
+            "source": 1107323,
+            "name": "vite",
+            "dependency": "vite",
+            "title": "Vite middleware may serve files starting with the same name with the public directory",
+            "url": "https://github.com/advisories/GHSA-g4jq-h2w9-997c",
+            "severity": "low",
+            "cwe": [
+              "CWE-22",
+              "CWE-200",
+              "CWE-284"
+            ],
+            "cvss": {
+              "score": 0,
+              "vectorString": null
+            },
+            "range": "<=5.4.19"
+          },
+          {
+            "source": 1107327,
+            "name": "vite",
+            "dependency": "vite",
+            "title": "Vite's `server.fs` settings were not applied to HTML files",
+            "url": "https://github.com/advisories/GHSA-jqfw-vq24-v9c3",
+            "severity": "low",
+            "cwe": [
+              "CWE-23",
+              "CWE-200",
+              "CWE-284"
+            ],
+            "cvss": {
+              "score": 0,
+              "vectorString": null
+            },
+            "range": "<=5.4.19"
+          },
+          {
+            "source": 1109131,
+            "name": "vite",
+            "dependency": "vite",
+            "title": "vite allows server.fs.deny bypass via backslash on Windows",
+            "url": "https://github.com/advisories/GHSA-93m4-6634-74q7",
+            "severity": "moderate",
+            "cwe": [
+              "CWE-22"
+            ],
+            "cvss": {
+              "score": 0,
+              "vectorString": null
+            },
+            "range": ">=5.2.6 <=5.4.20"
+          },
+          {
+            "source": 1112511,
+            "name": "vite",
+            "dependency": "vite",
+            "title": "Vite has a `server.fs.deny` bypassed for `inline` and `raw` with `?import` query",
+            "url": "https://github.com/advisories/GHSA-4r4m-qw57-chr8",
+            "severity": "moderate",
+            "cwe": [
+              "CWE-200",
+              "CWE-284"
+            ],
+            "cvss": {
+              "score": 5.3,
+              "vectorString": "CVSS:3.1/AV:N/AC:H/PR:N/UI:R/S:U/C:H/I:N/A:N"
+            },
+            "range": ">=5.0.0 <5.4.16"
+          },
+          {
+            "source": 1116229,
+            "name": "vite",
+            "dependency": "vite",
+            "title": "Vite Vulnerable to Path Traversal in Optimized Deps `.map` Handling",
+            "url": "https://github.com/advisories/GHSA-4w7w-66w2-5vf9",
+            "severity": "moderate",
+            "cwe": [
+              "CWE-22",
+              "CWE-200"
+            ],
+            "cvss": {
+              "score": 0,
+              "vectorString": null
+            },
+            "range": "<=6.4.1"
+          },
+          {
+            "source": 1120061,
+            "name": "vite",
+            "dependency": "vite",
+            "title": "launch-editor vulnerable to command injection via the crafted request on Windows",
+            "url": "https://github.com/advisories/GHSA-c27g-q93r-2cwf",
+            "severity": "high",
+            "cwe": [
+              "CWE-77"
+            ],
+            "cvss": {
+              "score": 0,
+              "vectorString": null
+            },
+            "range": "<=5.4.8"
+          },
+          {
+            "source": 1120784,
+            "name": "vite",
+            "dependency": "vite",
+            "title": "launch-editor: NTLMv2 hash disclosure via UNC path handling on Windows",
+            "url": "https://github.com/advisories/GHSA-v6wh-96g9-6wx3",
+            "severity": "moderate",
+            "cwe": [
+              "CWE-73",
+              "CWE-522"
+            ],
+            "cvss": {
+              "score": 0,
+              "vectorString": null
+            },
+            "range": "<=6.4.2"
+          },
+          {
+            "source": 1123525,
+            "name": "vite",
+            "dependency": "vite",
+            "title": "vite: `server.fs.deny` bypass on Windows alternate paths",
+            "url": "https://github.com/advisories/GHSA-fx2h-pf6j-xcff",
+            "severity": "high",
+            "cwe": [
+              "CWE-22",
+              "CWE-200"
+            ],
+            "cvss": {
+              "score": 7.5,
+              "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N"
+            },
+            "range": "<=6.4.2"
+          },
+          "esbuild"
+        ],
+        "effects": [],
+        "range": "<=6.4.2",
+        "nodes": [
+          "",
+          "node_modules/vite"
+        ],
+        "fixAvailable": true
+      },
+      "vitest": {
+        "name": "vitest",
+        "severity": "critical",
+        "isDirect": true,
+        "via": [
+          "@vitest/mocker",
+          {
+            "source": 1139528,
+            "name": "vitest",
+            "dependency": "vitest",
+            "title": "When Vitest UI server is listening, arbitrary file can be read and executed",
+            "url": "https://github.com/advisories/GHSA-5xrq-8626-4rwp",
+            "severity": "critical",
+            "cwe": [
+              "CWE-22",
+              "CWE-862"
+            ],
+            "cvss": {
+              "score": 9.8,
+              "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H"
+            },
+            "range": "<3.2.6"
+          },
+          {
+            "source": 1193683,
+            "name": "vitest",
+            "dependency": "vitest",
+            "title": "Vitest: Path Traversal / Arbitrary File Read via @vitest/mocker Redirect Mock",
+            "url": "https://github.com/advisories/GHSA-82fw-gwwq-j7x9",
+            "severity": "moderate",
+            "cwe": [
+              "CWE-22"
+            ],
+            "cvss": {
+              "score": 5.9,
+              "vectorString": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:H/I:N/A:N"
+            },
+            "range": ">=2.1.0 <4.1.11"
+          },
+          "tinypool"
+        ],
+        "effects": [],
+        "range": "<=4.1.10",
+        "nodes": [
+          "node_modules/vitest"
+        ],
+        "fixAvailable": {
+          "name": "vitest",
+          "version": "5.0.4",
+          "isSemVerMajor": true
+        }
+      },
+      "ws": {
+        "name": "ws",
+        "severity": "high",
+        "isDirect": false,
+        "via": [
+          {
+            "source": 1119108,
+            "name": "ws",
+            "dependency": "ws",
+            "title": "ws: Uninitialized memory disclosure",
+            "url": "https://github.com/advisories/GHSA-58qx-3vcg-4xpx",
+            "severity": "moderate",
+            "cwe": [
+              "CWE-908"
+            ],
+            "cvss": {
+              "score": 4.4,
+              "vectorString": "CVSS:3.1/AV:N/AC:H/PR:H/UI:N/S:U/C:H/I:N/A:N"
+            },
+            "range": ">=8.0.0 <8.20.1"
+          },
+          {
+            "source": 1123259,
+            "name": "ws",
+            "dependency": "ws",
+            "title": "ws: Memory exhaustion DoS from tiny fragments and data chunks",
+            "url": "https://github.com/advisories/GHSA-96hv-2xvq-fx4p",
+            "severity": "high",
+            "cwe": [
+              "CWE-400",
+              "CWE-770",
+              "CWE-1050"
+            ],
+            "cvss": {
+              "score": 7.5,
+              "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+            },
+            "range": ">=8.0.0 <8.21.0"
+          }
+        ],
+        "effects": [],
+        "range": "8.0.0 - 8.20.1",
+        "nodes": [
+          ""
+        ],
+        "fixAvailable": true
+      },
+      "yaml": {
+        "name": "yaml",
+        "severity": "moderate",
+        "isDirect": false,
+        "via": [
+          {
+            "source": 1115556,
+            "name": "yaml",
+            "dependency": "yaml",
+            "title": "yaml is vulnerable to Stack Overflow via deeply nested YAML collections",
+            "url": "https://github.com/advisories/GHSA-48c2-rrv3-qjmp",
+            "severity": "moderate",
+            "cwe": [
+              "CWE-674"
+            ],
+            "cvss": {
+              "score": 4.3,
+              "vectorString": "CVSS:3.1/AV:N/AC:L/PR:L/UI:N/S:U/C:N/I:N/A:L"
+            },
+            "range": ">=2.0.0 <2.8.3"
+          }
+        ],
+        "effects": [],
+        "range": "2.0.0 - 2.8.2",
+        "nodes": [
+          ""
+        ],
+        "fixAvailable": true
+      }
+    },
+    "metadata": {
+      "vulnerabilities": {
+        "info": 0,
+        "low": 2,
+        "moderate": 8,
+        "high": 25,
+        "critical": 2,
+        "total": 37
+      },
+      "dependencies": {
+        "prod": 145,
+        "dev": 408,
+        "optional": 67,
+        "peer": 0,
+        "peerOptional": 0,
+        "total": 568
+      }
+    }
+  }
+}
+
+===== AVAILABLE PROJECT SCRIPTS =====
+Scripts available in topline-flooring@1.0.0 via `npm run-script`:
+  dev
+    node ./node_modules/vite/bin/vite.js
+  build
+    node ./node_modules/vite/bin/vite.js build
+  build:sitemap
+    node scripts/generate-sitemap.mjs
+  prebuild
+    node scripts/generate-sitemap.mjs
+  build:all
+    npm run build
+  lint
+    node ./node_modules/eslint/bin/eslint.js .
+  preview
+    node ./node_modules/vite/bin/vite.js preview
+  typecheck
+    node ./node_modules/typescript/bin/tsc -p tsconfig.app.json --noEmit
+  verify:supabase
+    node scripts/verify-supabase-target.mjs
+  verify:phases-6-8
+    node scripts/verify-phase-6-8.mjs
+  verify:phases-9-11
+    node scripts/verify-phase-9-11.mjs
+  verify:phases-12-14
+    node scripts/verify-phase-12-14.mjs
+  verify:phases-15-17
+    node scripts/verify-phases-15-17.mjs
+  verify:phases-21-23
+    node scripts/verify-phases-21-23.mjs
+  verify:phases-24-26
+    node scripts/verify-phases-24-26.mjs
+  verify:phases-30-32
+    node scripts/verify-phases-30-32.mjs
+  validate:local-db
+    node scripts/validate-local-supabase.mjs
+  verify:schema-contract
+    node scripts/verify-schema-contract.mjs
+  verify:production-readiness
+    node scripts/production-readiness-gate.mjs
+  verify:phases-33-35
+    node scripts/verify-phase-33-35.mjs
+  verify:production-db-preflight
+    node scripts/production-db-preflight.mjs
+  verify:database-dependencies
+    node scripts/verify-database-dependencies.mjs
+  verify:generated-types
+    node scripts/verify-generated-types.mjs
+  verify:remote-deploy-gate
+    node scripts/verify-remote-deploy-gate.mjs
+  verify:phases-36-38
+    node scripts/verify-phases-36-38.mjs
+  db:types
+    node scripts/generate-db-types.mjs
+  verify:phases-39-41
+    node scripts/verify-phases-39-41.mjs
+  verify:phases-42-44
+    node scripts/verify-phases-42-44.mjs
+  verify:phases-45-47
+    node scripts/verify-phases-45-47.mjs
+  verify:ecommerce-stability
+    node scripts/verify-ecommerce-stability.mjs
+  verify:migration-integrity
+    node scripts/verify-migration-integrity.mjs
+  verify:payment-inventory-lifecycle
+    node scripts/verify-payment-inventory-lifecycle.mjs
+  verify:payment-refund-expiry
+    node scripts/verify-payment-refund-expiry.mjs
+  verify:payment-provider-boundary
+    node scripts/verify-payment-provider-boundary.mjs
+  verify:release-candidate
+    node scripts/verify-release-candidate.mjs
+  verify:doctor
+    node scripts/verify-toolchain.mjs
+  verify:vercel
+    node scripts/verify-vercel-deployment.mjs
+  verify:invoice-hook-contract
+    node scripts/verify-invoice-hook-contract.mjs
+  verify:public-tracking-contract
+    node scripts/verify-public-tracking-contract.mjs
+  verify:public-order-tracking-privacy
+    node scripts/verify-public-order-tracking-privacy.mjs
+  verify:commerce-fulfillment-360
+    node scripts/verify-commerce-fulfillment-360.mjs
+  verify:order-operations-360
+    node scripts/verify-order-operations-360.mjs
+  verify:authorization-order-360
+    node scripts/verify-authorization-order-360.mjs
+  verify:phase-2-supabase
+    node scripts/verify-phase-2-supabase.mjs
+  verify:phase-3-email
+    node scripts/verify-phase-3-email.mjs
+  verify:phase-4-sms
+    node scripts/verify-phase-4-sms.mjs
+  verify:phase-5-hosting
+    node scripts/verify-phase-5-hosting.mjs
+  verify:phase-6-launch
+    node scripts/verify-phase-6-launch-readiness.mjs
+  launch:check
+    node scripts/production-launch-check.mjs
+  verify:phase-7-operations
+    node scripts/verify-phase-7-operations.mjs
+  verify:phase-8-field-operations
+    node scripts/verify-phase-8-field-operations.mjs
+  verify:commerce-entrypoints-360
+    node scripts/verify-commerce-entrypoints-360.mjs
+  verify:launch-gap
+    node scripts/verify-launch-gap.mjs
+  verify:fulfillment-operations-360
+    node scripts/verify-fulfillment-operations-360.mjs
+  verify:phase-10-finance-billing-360
+    node scripts/verify-phase-10-finance-billing-360.mjs
+  verify:phase-11-inventory-procurement-360
+    node scripts/verify-phase-11-inventory-procurement-360.mjs
+  verify:phase-12-customer-portal-360
+    node scripts/verify-phase-12-customer-portal-360.mjs
+  verify:phase-13-backup-export-360
+    node scripts/verify-phase-13-backup-export-360.mjs
+  verify:phase-14-ci-release-gate
+    node scripts/verify-phase-14-ci-release-gate.mjs
+  verify:phase-15-17-lifecycle-360
+    node scripts/verify-phases-15-17.mjs
+  verify:phase-18-20-communications-provider-response
+    node scripts/verify-phase-18-20-communications-provider-response.mjs
+  verify:phases-21-23-finance-communications-analytics-360
+    node scripts/verify-phases-21-23-finance-communications-analytics-360.mjs
+  verify:phases-24-26-reporting-intelligence-360
+    node scripts/verify-phases-24-26-reporting-intelligence-360.mjs
+  verify:phases-27-29-public-accessibility-seo-360
+    node scripts/verify-phases-27-29.mjs
+  verify:phases-80-82
+    node scripts/verify-phases-80-82.mjs
+  verify:phases-83-85
+    node scripts/verify-phases-83-85.mjs
+  verify:phases-86-88
+    node scripts/verify-phases-86-88.mjs
+  verify:phases-89-91
+    node scripts/verify-phases-89-91.mjs
+  verify:operation-1-commercial-lifecycle
+    node scripts/verify-operation-1-commercial-lifecycle.mjs
+  verify:operation-2-project-delivery
+    node scripts/verify-operation-2-project-delivery.mjs
+  verify:operation-3-supply-chain
+    node scripts/verify-operation-3-supply-chain.mjs
+  verify:operation-4-finance
+    node scripts/verify-operation-4-finance.mjs
+  verify:operation-5-fulfillment-delivery
+    node scripts/verify-operation-5-fulfillment-delivery.mjs
+  verify:operation-6-customer-lifecycle
+    node scripts/verify-operation-6-customer-lifecycle.mjs
+  verify:operation-7-communications-journey
+    node scripts/verify-operation-7-communications-journey.mjs
+  verify:operation-8-executive-operations
+    node scripts/verify-operation-8-executive-operations.mjs
+  verify:operation-9-production-certification
+    node scripts/verify-operation-9-production-certification.mjs
+  verify:operation-10-reliability-incident-response
+    node scripts/verify-operation-10-reliability-incident-response.mjs
+  verify:operation-11-business-continuity
+    node scripts/verify-operation-11-business-continuity.mjs
+  verify:operation-12-data-governance
+    node scripts/verify-operation-12-data-governance.mjs
+  verify:operation-13-identity-access
+    node scripts/verify-operation-13-identity-access.mjs
+  verify:operation-14-quality-assurance
+    node scripts/verify-operation-14-quality-assurance.mjs
+  verify:operation-15-hse-site-compliance
+    node scripts/verify-operation-15-hse-site-compliance.mjs
+  verify:operation-16-client-owned-supabase
+    node scripts/verify-operation-16-client-owned-supabase.mjs
+  verify:migration-deployment-static
+    node scripts/verify-migration-deployment-static.mjs
+  verify-application-security-trust-boundary
+    node scripts/verify-application-security-trust-boundary.mjs
+  verify:application-security-trust-boundary
+    node scripts/verify-application-security-trust-boundary.mjs
+  verify:rpc-authorization-certification
+    node scripts/verify-rpc-authorization-certification.mjs
+  verify:production-communications-integration-360
+    node scripts/verify-production-communications-integration-360.mjs
+  verify:payment-webhook-reconciliation-360
+    node scripts/verify-payment-webhook-reconciliation-360.mjs
+  verify:customer-self-service-360
+    node scripts/verify-customer-self-service-360.mjs
+  verify:operation-17-production-automation
+    node scripts/verify-operation-17-production-automation.mjs
+  verify:operation-18-theme-brand-governance
+    node scripts/verify-operation-18-theme-brand-governance.mjs
+  verify:project-documents
+    node scripts/verify-project-documents.mjs
+  verify:admin-management-uploads
+    node scripts/verify-admin-management-uploads.mjs
+  verify:delivery-worker-hardening
+    node scripts/verify-delivery-worker-hardening.mjs
+  verify:admin-feedback-contract
+    node scripts/verify-admin-feedback-contract.mjs
+  verify:database-read-boundary
+    node scripts/verify-database-read-boundary.mjs
+  verify:edge-function-deploy-config
+    node scripts/verify-edge-function-deploy-config.mjs
+  verify:vercel-production-contract
+    node scripts/verify-vercel-production-contract.mjs
+  verify:sql-runtime-safety
+    node scripts/verify-sql-runtime-safety.mjs
+  verify:all
+    node scripts/verify-all.mjs
+  verify:db-9-11
+    node scripts/verify-db-9-11.mjs
+  verify:admin-auth-360
+    node scripts/verify-admin-authentication-authorization-360.mjs
+  verify:admin-control-plane-360
+    node scripts/verify-admin-control-plane-privileged-operations-360.mjs
+  verify:customer-self-service-rpc-360
+    node scripts/verify-customer-self-service-rpc-trust-boundary-360.mjs
+  verify:payment-refund-provider-360
+    node scripts/verify-payment-refund-provider-trust-boundary-360.mjs
+  verify:payment-provider-uat
+    node scripts/verify-payment-provider-uat.mjs
+  verify:brevo-email
+    node scripts/verify-brevo-email-integration.mjs
+  verify:launch-repair
+    node scripts/verify-launch-repair.mjs
+  verify:communications-comm-01-03
+    node scripts/verify-communications-comm-01-03.mjs
+  verify:communications-comm-04-06
+    node scripts/verify-communications-comm-04-06.mjs
+  verify:communications-comm-07-09
+    node scripts/verify-communications-comm-07-09.mjs
+  verify:communications-comm-10-12
+    node scripts/verify-communications-comm-10-12.mjs
+  verify:database-source-of-truth-360
+    node scripts/verify-database-source-of-truth-360.mjs
+  verify:communications-comm-13-17
+    node scripts/verify-communications-comm-13-17.mjs
+  verify:payment-provider-certification-activation-360
+    node scripts/verify-payment-provider-certification-activation-360.mjs
+  verify:mpesa-provider-uat
+    node scripts/verify-mpesa-provider-uat.mjs
+  verify:payment-audit-360
+    node scripts/verify-payment-audit-360.mjs
+  test:smoke
+    node ./node_modules/vitest/vitest.mjs run --config vitest.config.ts
+  test:release-env-check
+    node scripts/test-release-environment-check.mjs
+  verify:theme-unification
+    node scripts/verify-theme-unification.mjs
+  test:theme-engine
+    node --experimental-strip-types scripts/test-theme-engine.mjs
+
+===== PROJECT VERIFICATION =====
+PASS Admin guard verifies Auth identity with getUser
+PASS Admin guard requires active staff profile
+PASS Admin guard loads effective permissions
+PASS Admin guard has explicit unauthorized UI
+PASS Admin guard owns inactivity timeout
+PASS Auth callback defers async verification
+PASS login page no longer owns session timeout
+PASS RBAC exposes permission type
+PASS RBAC loads server-derived permissions
+PASS all Admin routes remain behind AdminAuthGuard
+PASS DB permission RPC uses SECURITY DEFINER
+PASS DB permission RPC has fixed empty search_path
+PASS DB permission RPC is not callable by anon
+PASS DB permission RPC is executable by authenticated
+PASS authorization helpers use fixed empty search_path
+PASS profile RPC uses fixed empty search_path
+
+Admin Authentication & Authorization 360: 16/16 passed, 0 failed.
+PASS control-plane migration exists
+PASS audit trigger pins empty search_path
+PASS role helper pins empty search_path
+PASS bootstrap owner pins empty search_path
+PASS operational export requires system.read
+PASS operational export no longer accepts customers.read fallback
+PASS anonymous export execution revoked
+PASS authenticated export execution explicitly retained
+
+Admin Control-Plane & Privileged Operations 360: 8/8 passed.
+Admin feedback contract static verification PASSED.
+Admin management and upload static verification PASSED.
+Application Security & Trust Boundary static verification PASSED
+Authorization + Order Operations 360 verification PASSED.
+- RBAC helper repaired
+- legacy read/select compatibility enforced
+- refund RLS repaired
+- permission-aware order operations snapshot added
+PASS Brevo migration exists
+PASS Brevo API secret is named
+PASS No secret value in migration
+PASS Transactional worker uses Brevo API
+PASS Transactional worker uses idempotency header
+PASS Webhook is provider-scoped
+PASS Brevo test function requires authenticated staff
+PASS Brevo test function handles CORS preflight
+PASS Brevo test function records provider test state
+PASS Brevo test function requires settings permission
+PASS Brevo test function reads secret only from Edge env
+PASS Admin control plane keeps secrets out of browser
+PASS Public site-control reads use non-session client
+PASS Auth SMTP setup is documented in env/config docs
+Brevo verifier: 14/14 passed
+Catalog/Product/Service/Upload integrity verification PASSED.
+- Images bucket capped at 10 MiB with explicit image MIME allow-list.
+- Frontend upload guard remains 5 MiB and non-overwriting.
+- Product/service pricing, ordering and media metadata constraints hardened.
+- Product gallery has at most one primary image.
+- Product and service image upload paths remain preserved.
+Clean project integrity passed: 116 migrations, 116 unique timestamps.
+Commerce Entry-Point Consistency 360 verification PASSED.
+- Product listings load active variants
+- Shop, homepage and related-product entry points are variant-aware
+- Cart and checkout preserve variant identity and authoritative pricing
+- Customer checkout surfaces authoritative validation failures
+Commerce Fulfillment 360 verification PASSED.
+- Variant-aware checkout contract
+- Duplicate-line aggregate stock validation
+- Variant-aware payment stock consumption
+- Reservation expiry cancels unpaid orders and releases coupon usage
+COMM-01–03 static verification PASSED: 20261002140000_communications_comm_01_03_contract_state_matching_360.sql
+Communications COMM-04–06 static sweep: 23/23 passed.
+PASS migration timestamps are unique
+PASS COMM-04 provider contract exists
+PASS all three production providers are contracted
+PASS delivery worker contains all provider adapters
+PASS provider credentials are environment-only
+PASS Brevo callback is secret-authenticated
+PASS SMS callback is secret-authenticated
+PASS WhatsApp callback is HMAC-authenticated
+PASS COMM-05 template governance exists
+PASS template/routing contract covers quotation.status
+PASS template/routing contract covers order.status
+PASS template/routing contract covers project.status
+PASS template/routing contract covers invoice.status
+PASS template/routing contract covers payment.received
+PASS template/routing contract covers site_visit.scheduled
+PASS template/routing contract covers delivery.status
+PASS template/routing contract covers installation.status
+PASS template/routing contract covers service_case.status
+PASS quotation customer matching is strict
+PASS delivery status is wired
+PASS installation status is wired
+PASS service-case status is wired
+PASS wired event catalogue is updated
+PASS get_customer_communications_self_service_360 contract present
+PASS get_communications_center_360 contract present
+PASS get_current_customer_id contract present
+PASS require_staff_permission contract present
+PASS Customer portal communication contract: getCustomerCommunicationsSelfService360
+PASS Customer portal communication contract: Communication history
+PASS Customer portal communication contract: Only communications belonging to your authenticated customer account
+PASS Admin Communication Center contract: get_communications_center_360
+PASS Admin Communication Center contract: Communication Center 360
+PASS Admin Communication Center contract: Inbound customer responses
+PASS Admin Communication Center contract: Outbound communications
+PASS COMM-07-09 static sweep complete
+PASS COMM-10 communication_conversations contract present
+PASS COMM-10 ensure_communication_conversation_worker contract present
+PASS COMM-10 queue_communication_conversation_reply contract present
+PASS COMM-10 get_communication_conversations_360 contract present
+PASS COMM-10 update_communication_conversation_360 contract present
+PASS COMM-11 deliver_communications contract present
+PASS COMM-11 automation_job_runs contract present
+PASS COMM-11 get_communications_worker_certification_360 contract present
+PASS COMM-11 timed_out contract present
+PASS COMM-12 communication_provider_activation contract present
+PASS COMM-12 get_communication_provider_activation_360 contract present
+PASS COMM-12 database_does_not_store_provider_credentials contract present
+PASS Scheduler deliver_communications
+PASS Scheduler start_automation_job
+PASS Scheduler finish_automation_job
+PASS Scheduler x-topline-worker-secret
+PASS COMM-12 readiness TOPLINE_WORKER_SECRET
+PASS COMM-12 readiness constantTimeEqual
+PASS COMM-12 readiness configured
+PASS COMM-12 readiness credentials_exposed
+PASS Delivery worker TOPLINE_WORKER_SECRET
+PASS Delivery worker claim_communication_outbox_worker
+PASS Delivery worker complete_communication_delivery_worker
+PASS Delivery worker fail_communication_delivery_worker
+PASS Delivery worker mark_communication_delivery_uncertain_worker
+PASS Provider gate supabase/functions/communication-provider-webhook/index.ts: COMMUNICATION_WEBHOOK_SECRET
+PASS Provider gate supabase/functions/communication-provider-webhook/index.ts: constantTimeEqual
+PASS Provider gate supabase/functions/sms-delivery-report/index.ts: AT_DLR_SECRET
+PASS Provider gate supabase/functions/sms-delivery-report/index.ts: constantTimeEqual
+PASS Provider gate supabase/functions/whatsapp-webhook/index.ts: WHATSAPP_VERIFY_TOKEN
+PASS Provider gate supabase/functions/whatsapp-webhook/index.ts: WHATSAPP_APP_SECRET
+PASS Provider gate supabase/functions/whatsapp-webhook/index.ts: hmacSha256Hex
+COMM-10-12 static sweep complete (116 migrations)
+COMM-13–17 static certification/release sweep PASSED
+PASS portal identity comes only from auth.uid
+PASS customer payload is filtered by bound customer id
+PASS quotations are filtered by bound customer id or exact bound email
+PASS orders are filtered by bound customer id or exact bound email
+PASS projects are filtered by bound customer id
+PASS invoices are filtered by bound customer id
+PASS service cases are filtered by bound customer id
+PASS site visits are filtered by bound customer id
+PASS installations are filtered through customer-owned project/order
+PASS customer cannot select another customer id from dashboard
+PASS service submission uses current dashboard customer only
+PASS cross-account direct table access is not needed by portal
+Customer cross-account isolation: 12/12 passed.
+PASS registration uses Supabase Auth signUp
+PASS registration carries explicit Topline metadata
+PASS registration requires name and phone
+PASS registration creates customer only for explicit registration metadata
+PASS existing unique customer email is reused rather than duplicated
+PASS ambiguous customer email is not auto-bound
+PASS portal binding requires verified email
+PASS active identity is never rebound to another customer
+PASS dashboard has retry
+PASS dashboard has manual refresh
+PASS service submission refreshes dashboard
+PASS dashboard distinguishes signed-in load failure
+PASS order details are available
+PASS quotation details are available
+PASS project details are available
+PASS invoice details are available
+PASS customer isolation resolves through auth uid
+Customer Registration + Dashboard 360: 17/17 passed.
+Customer Self-Service Experience 360 static verification PASSED
+PASS migration exists
+PASS verified-email gate exists
+PASS ambiguous customer email does not auto-link
+PASS automatic customer rebinding is blocked
+PASS active Auth identity uniqueness is enforced
+PASS customer RPC search paths are emptied
+PASS public checkout search path is emptied
+PASS checkout idempotency replay is bound to contact identity
+PASS authenticated checkout uses linked customer profile
+PASS quotation input length is bounded
+PASS quotation visibility prevents cross-customer email collision
+PASS coupon validation rejects negative discount outcomes
+PASS anonymous quotation execution remains explicit
+PASS anonymous checkout remains explicit
+
+Customer Self-Service RPC / Public Trust Boundary 360: 14/14 passed.
+Database contract verification passed (116 active migrations).
+Database dependency verification passed (116 migrations, 163 tables, 244 functions, 288 FK references).
+Database read boundary static verification PASSED.
+PASS database source-of-truth: 116 migrations, unique timestamps, required customer + COMM-01–17 contracts present
+DB-9–11 verification PASSED.
+- Local migration files: 116
+- DB-9 Data Governance & Privacy hardening: passed
+- DB-10 Identity & Privileged Access hardening: passed
+- DB-11 Quality & Corrective Action hardening: passed
+PASS storage overlap migration exists
+PASS legacy broad private-document read policy is explicitly removed
+PASS legacy broad private-document upload policy is explicitly removed
+PASS legacy broad private-document update policy is explicitly removed
+PASS legacy broad private-document delete policy is explicitly removed
+PASS project document reads are scoped to projects.select inside the projects/ namespace
+PASS project document upload requires an existing project folder
+PASS project document update is metadata scoped
+PASS project document delete is metadata scoped
+PASS legacy media/customer document policies exclude the projects/ namespace
+PASS customer export no longer uses wildcard CORS
+PASS customer export has configurable canonical origin
+PASS document deletion removes metadata before storage cleanup
+PASS document deletion retries storage cleanup
+PASS document deletion reports cleanup failure honestly
+PASS mock-data has no active source import
+PASS mock-data module is not shipped
+Deep hardening static gate passed.
+Delivery worker hardening and service detail static verification PASSED.
+Topline ecommerce stability verification passed. Active migrations: 116
+Edge function deploy configuration verified for 15 functions.
+NOTE .env.local exists locally, is ignored by Git, and is not tracked; keep it out of release archives.
+Environment contract verification passed.
+Fulfillment Operations 360 verification PASSED.
+- Controlled delivery scheduling and assignment
+- Auditable delivery event history
+- Proof-of-delivery capture and enforcement
+- Customer delivery outcome events
+- Admin Delivery Operations 360 view
+Generated database types contract passed (308,772 bytes).
+Invoice hook contract verification PASSED.
+- Frontend invoice item mutations do not carry unused tax-rate parameters
+- Invoice tax recalculation remains server-side and derives tax_rate from the persisted invoice
+Launch gap verification passed.
+Active migrations: 116
+Production provider credentials remain external secrets; none were added to the repository.
+PASS Service repair migration exists
+PASS Service slug column reconciled
+PASS Service short description reconciled
+PASS Service icon reconciled
+PASS Service features reconciled as JSON
+PASS Existing service slugs are backfilled
+PASS Service slugs are unique
+PASS Project-service direct relation added safely
+PASS Admin service form writes canonical fields
+PASS Service hook reads/writes services
+PASS Frontend Service type matches repaired schema
+PASS Scheduler includes delivery worker
+PASS Scheduler calls delivery Edge Function
+PASS Scheduler authenticates delivery call
+PASS Delivery worker uses Brevo API
+PASS Delivery worker uses idempotency
+PASS Brevo test remains server-secret based
+Launch repair verifier: 17/17 passed
+Migration deployment static verification PASSED (116 migrations)
+Topline migration integrity verification passed.
+M-Pesa provider UAT: PENDING (requires isolated UAT endpoint, order, customer email and test phone).
+Operation 1 Commercial Lifecycle 360 verification passed.
+Operation 10 Reliability & Incident Response 360: STRUCTURAL GATE PASSED
+- Active migrations: 116
+- Latest migration: 20261004130000_allow_queued_customer_communications.sql
+- Incident RPC authorization and RLS boundary: passed
+- Admin route/client workflow: passed
+- CI + manifest registration: passed
+Operation 11 Business Continuity & Disaster Recovery 360: STRUCTURAL GATE PASSED
+- Active migrations: 116
+- Latest migration: 20261004130000_allow_queued_customer_communications.sql
+- Recovery plan/drill/checkpoint RPC boundary: passed
+- Admin route/client workflow: passed
+- CI + manifest registration: passed
+Operation 12 Data Governance & Privacy 360: STRUCTURAL GATE PASSED
+- Active migrations: 116
+- Latest migration: 20261004130000_allow_queued_customer_communications.sql
+- Governance/request/access-review RPC boundary: passed
+- Admin route/client workflow: passed
+- CI + manifest registration: passed
+Operation 13 Identity & Privileged Access 360: STRUCTURAL GATE PASSED
+- Active migrations: 116
+- Latest migration: 20261004130000_allow_queued_customer_communications.sql
+- Controlled staff lifecycle and role mutation boundary: passed
+- Privileged access request workflow: passed
+- Admin route/client workflow: passed
+- CI + manifest registration: passed
+Operation 14 Quality Assurance & Corrective Action 360: STRUCTURAL GATE PASSED
+- Active migrations: 116
+- Latest migration: 20261004130000_allow_queued_customer_communications.sql
+- Inspection + corrective action workflow: passed
+- Verification-before-closure control: passed
+- Admin route/client workflow: passed
+- CI + manifest registration: passed
+Operation 15 HSE Site Compliance 360: PASS
+Active migrations: 116
+Site controls: PASS
+HSE events: PASS
+Corrective-action verification gate: PASS
+RLS/RPC security boundary: PASS
+Admin route/UI: PASS
+CI registration: PASS
+Operation 16 client-owned Supabase verification PASSED.
+- Canonical project: zmbsskvnzjdaxuxlauyx
+- Canonical URL: https://zmbsskvnzjdaxuxlauyx.supabase.co
+- Active migrations: 116
+- Retired project reference scan: PASS
+Operation 17 Production Automation Control 360: STRUCTURAL GATE PASSED (116 migrations)
+Operation 18 Theme & Brand Governance 360: STRUCTURAL GATE PASSED
+- Active migrations: 116
+- Latest migration: 20261004130000_allow_queued_customer_communications.sql
+- Governed theme RPC boundary: passed
+- Theme UI version history/rollback: passed
+- CSS token application boundary: passed
+- Manifest + package verifier registration: passed
+Operation 2 verification passed: 116 migrations; Project Delivery 360 contracts present.
+Operation 3 verification passed: 116 migrations; Supply Chain 360 contracts present.
+Operation 4 Finance 360 PASSED
+- Active migrations: 116
+- Payment, invoice, refund and reconciliation controls present
+Operation 5 verification passed: 116 migrations, 20260913050000_078_fulfillment_delivery_control_360.sql
+Operation 6 verification passed: 116 migrations, 20261004130000_allow_queued_customer_communications.sql
+Operation 7 verification passed: 116 migrations, 20260913070000_080_communications_customer_journey_360.sql
+Operation 8 executive operations verification: PASS
+Operation 9 Production Certification: STRUCTURAL GATE PASSED
+- Dedicated Supabase project: zmbsskvnzjdaxuxlauyx
+- Active migrations: 116
+- Latest migration: 20261004130000_allow_queued_customer_communications.sql
+- Application route/import integrity: passed
+- Cumulative operations 1–8 + Operation 9 CI registration: passed
+- Credential boundary and payment fail-closed checks: passed
+- Vercel/security header contract: passed
+- External deployment/UAT evidence: manual and not falsely claimed
+WARNING: .env.local exists locally, is ignored by Git, and is not tracked; keep it out of release archives.
+WARNING: Remote Supabase migration application is not certified by source inspection; perform linked dry-run, review, then authorized db push.
+WARNING: Payment, email, SMS, DNS, backup/restore and business UAT remain external evidence requirements.
+Order Operations 360 type contract verification PASSED.
+- Order type includes canonical order_number
+- 058 RPC returns the complete orders row
+- frontend Order Operations 360 uses the shared Order type
+- admin order operations view reads order_number from the shared contract
+Payment Audit 360: PASS
+Payment Gateway Customer Visibility 360: PASS (116 migrations; target migration verified by name)
+Payment Initiation + Reconciliation 360: PASS (116 migrations, unique timestamps)
+Topline payment/inventory lifecycle verification passed.
+Payment provider boundary verification passed.
+Payment Provider Certification + Activation 360: STRUCTURAL PASS (116 migrations)
+Payment/refund/expiry verification passed.
+Payment/Refund/Provider Trust Boundary 360: 14/14 PASSED
+- Active migrations: 116
+- Latest migration: 20261004130000_allow_queued_customer_communications.sql
+Production Payments + Reconciliation + Provider Webhooks 360 verification PASSED
+Phase 10 Finance & Billing 360 verification passed. 116 migrations; unique versions confirmed.
+Phase 11 Inventory & Procurement Operations 360 verification passed. 116 unique migrations.
+Phase 12–14 source verification passed.
+Phase 12 Customer Portal 360 source verification passed.
+Phase 13 Backup & Export Operations 360 verification passed.
+NOTE .env.local exists locally, is ignored by Git, and is not tracked; keep it out of release archives.
+Phase 14 CI / Release Gate source verification PASSED.
+- Active migrations: 116
+- Node/npm toolchain: Node 22 + npm ci
+- CI permissions: contents: read
+- Frontend gate: lint + typecheck + build
+- Release gate: architecture, migration and production contracts
+Communications Provider + Response 360 source verification PASSED.
+Phase 2 Supabase production infrastructure static verification passed.
+Phase 3 production email architecture verification passed.
+Phase 33–35 database validation passed (116 migrations, 163 tables, 245 functions).
+Phase 4 SMS and customer notification operations verification passed.
+NOTE .env.local exists locally, is ignored by Git, and is not tracked; keep it out of release archives.
+Phase 5 hosting/release verification PASSED.
+- .env.example exists
+- .env.example pins the dedicated Topline Supabase URL
+- .env.example documents the public Supabase key
+- .env.example defines the canonical Topline production URL
+- .env.example contains no service-role/server secret contract
+- Local environment files are ignored/untracked or absent; release packaging must exclude them
+- Node 22.x remains pinned for hosting builds
+- Vercel uses the repository build contract
+- Vercel serves dist
+- Vercel security headers are configured
+- Content-Security-Policy is configured
+- X-Content-Type-Options is configured
+- X-Frame-Options is configured
+- Canonical host redirect rules are explicitly declared
+- www host redirects to the canonical non-www host
+- robots blocks the admin portal
+- robots advertises the canonical sitemap
+- security.txt is published under /.well-known/
+- security.txt uses the real Topline security contact
+- security.txt declares its canonical URL
+- frontend Supabase target guard remains pinned to Topline
+External activation remains required: Vercel project/domain, DNS, Supabase Auth URLs, and production UAT.
+Phase 6–8 source verification passed.
+Phase 6 launch-readiness verification PASSED.
+- Active migration timestamps are unique.
+- Supabase config remains pinned to the dedicated Topline project.
+- Environment contract points at the dedicated Topline Supabase project.
+- Frontend Supabase client retains the dedicated project guard.
+- Vercel uses the repository production build command.
+- Vercel serves the Vite dist output.
+- Vercel SPA routing is defined.
+- Robots policy declares the canonical sitemap.
+- Security contact file exists.
+- Phase 6 launch runbook exists.
+- Production launch check script exists.
+- Transactional communications worker remains present.
+- SMS delivery-report callback remains present.
+- Environment contract declares VITE_SUPABASE_URL.
+- Environment contract declares VITE_SUPABASE_PUBLISHABLE_KEY.
+- Environment contract declares VITE_SITE_URL.
+- Canonical site URL is fixed in the environment contract.
+Phase 7 operations command center verification passed.
+Phase 8 Field Operations 360 verification PASSED.
+- 116 active migrations with unique versions
+- Normalized measurement, material, progress, issue and sign-off records
+- Server-side permission enforcement and RLS
+- Integrated admin Field Operations 360 workspace
+Phase 9–11 source verification passed.
+PASS Phase 1 launch-gap runbook exists
+PASS CMS fails closed when Supabase is unavailable
+PASS CMS query errors are not replaced by demo defaults
+PASS CMS mutations persist before updating local cache
+PASS unsupported public CMS statistics are not embedded
+PASS fictional public project map records are not embedded
+PASS project templates no longer use browser persistence
+PASS custom project templates use canonical Supabase persistence
+PASS project template table has RLS
+PASS project template writes require project permissions
+PASS project template delete requires project permission
+PASS notification center does not use browser business persistence
+PASS notification center uses server-derived operational alerts
+PASS notification center does not claim provider delivery
+PASS fake CRM alert is removed
+Phases 1-7 hardening static gate passed.
+Phase 15–17 source verification passed.
+Phase 18-20 source verification passed.
+Phases 21–23 Finance, Communications & Analytics 360 hardening verification passed.
+Phase 21–23 source verification passed.
+Phases 24–26 Reporting Operational Intelligence 360 verification passed.
+Phase 24–26 source verification passed.
+Phase 27–29 source verification passed.
+NOTE .env.local exists locally, is ignored by Git, and is not tracked; keep it out of release archives.
+Phases 30-32 production verification passed (116 active migrations).
+Database dependency verification passed (116 migrations, 163 tables, 244 functions, 288 FK references).
+Generated database types contract passed (308,772 bytes).
+Remote deployment safety gate passed (116 active migrations, project zmbsskvnzjdaxuxlauyx).
+Phases 36–38 Database Reconciliation & Deployment Safety 360 passed.
+Phase 39–41 source verification passed.
+Phase 42–44 source verification passed.
+Phase 45–47 source verification passed.
+Active migrations: 116
+Phase 80–82 source verification passed.
+Active migrations: 116
+Phase 83–85 source verification passed.
+Active migrations: 116
+PASS: Phases 86-88 static gate (116 migrations)
+PASS: Phases 89-91 static gate (116 migrations)
+Production Communications Integration 360 static verification PASSED (116 migrations)
+Project document vault verification PASSED.
+- Canonical project_documents table and metadata contract present.
+- Private Storage upload/signed URL/delete flow present.
+- Staff RLS and audit trigger present.
+- Fake/localStorage document fallback removed.
+Project documents static verification PASSED.
+PASS Public product listing loader includes active commerce variant data.
+PASS Default variant selection prefers an in-stock active option.
+PASS Shop, homepage and product-detail add-to-cart actions use shared purchasability rules.
+PASS Out-of-stock variant options remain visibly unavailable.
+PASS Cart checkout uses the canonical secure order path with idempotency protection.
+PASS Cart coupon validation remains wired to the canonical RPC wrapper.
+Public Commerce UI Contract: PASS
+Public order tracking privacy initiative verification PASSED.
+- Tracking requires both order number and checkout phone number.
+- Canonical order number is carried into the confirmation receipt.
+- Confirmation receipt survives refresh for a bounded 24-hour session.
+- Confirmation provides a direct tracking path.
+Public tracking contract verification PASSED.
+- track_order_public has an explicit frontend result type
+- the tracking page guards missing order details
+- the frontend contract matches the JSONB RPC shape
+- public tracking requires both order number and checkout phone number
+Release candidate gate PASSED.
+- Dedicated Supabase project: zmbsskvnzjdaxuxlauyx
+- Active migrations: 116
+- Payment webhook: fail-closed until a real provider adapter is configured
+- Next external validation: local DB replay, linked dry-run, provider UAT
+Remote deployment safety gate passed (116 active migrations, project zmbsskvnzjdaxuxlauyx).
+RPC Authorization Certification static verification PASSED
+Schema contract verification passed (116 active migrations).
+PASS public services page has no hard-coded feature catalog
+PASS public services page renders persisted service features only
+PASS empty persisted feature lists do not fabricate feature claims
+PASS service update requires an affected database row
+PASS service delete requires an affected database row
+Service content authority verification PASSED.
+SQL runtime safety static verification PASSED.
+No .env file found. Target identity is still pinned in supabase/config.toml.
+Theme engine runtime tests passed (17/17).
+TOPLINE theme unification verification PASSED.
+- Required design-token/runtime contracts: passed
+- WCAG AA contrast pairs checked: 10/10 passed
+- Router inventory rows written: 92
+- Browser visual and responsive verification: explicitly pending; not represented as complete.
+WARNING: Windows project path contains '&': C:\Users\hp\Desktop\TOPLINE FLOORING & ROOFING. Repository scripts avoid npm .bin resolution, but a path without '&' remains recommended.
+Topline toolchain verification PASSED.
+- Node: v22.22.2
+- Active migrations: 116
+- Supabase target: zmbsskvnzjdaxuxlauyx
+Vercel deployment verification PASSED.
+- package.json uses ESM mode
+- Vercel Node runtime is pinned to 22.x
+- production build script delegates to the Vite CLI
+- Vercel delegates the build to package.json
+- Vercel serves the Vite dist directory
+- Vercel framework is explicitly Vite
+- vite.config.ts exists
+- index.html exists
+- src/main.tsx exists
+- Vercel config does not hard-code an internal node_modules Vite path
+Vercel/CLI production contract verified.
+Verification summary: 117/117 passed, 0 failed.
+
+===== THEME ENGINE TEST =====
+Theme engine runtime tests passed (17/17).
+
+===== DIAGNOSTIC COMPLETE =====

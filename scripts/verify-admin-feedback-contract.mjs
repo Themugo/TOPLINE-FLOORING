@@ -63,7 +63,8 @@ for (const f of fs.readdirSync(path.join(root, 'src/pages/admin')).filter((x) =>
   }
   if (bad.length) failures.push(`src/hooks/use-data.ts: loader without catch near line(s) ${bad.join(', ')}`);
 }
-check(JSON.parse(read('package.json')).scripts['test:smoke'] === 'vitest run --config vitest.config.ts', 'package.json must define test:smoke');
+const smokeCommand = JSON.parse(read('package.json')).scripts['test:smoke'];
+check(typeof smokeCommand === 'string' && /(?:^|\s)run(?:\s|$)/.test(smokeCommand) && smokeCommand.includes('--config vitest.config.ts') && (smokeCommand.includes('vitest') || smokeCommand.includes('node ./node_modules/vitest/vitest.mjs')), 'package.json must define a Windows-compatible Vitest smoke-test command');
 for (const f of ['routes', 'admin-routes', 'admin-services.interaction', 'quotation.interaction', 'admin-products.interaction', 'checkout.interaction']) {
   check(fs.existsSync(path.join(root, `tests/smoke/${f}.test.tsx`)), `tests/smoke/${f}.test.tsx is missing`);
 }

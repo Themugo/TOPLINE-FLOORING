@@ -3,6 +3,7 @@ import { Code2, MailCheck, Save, ShieldCheck, SlidersHorizontal } from 'lucide-r
 import { AdminLayout } from './dashboard';
 import { supabase } from '@/lib/supabase';
 import { useToast } from '@/hooks/use-toast';
+import { isSafeDesignTokenValue, validateCustomCss } from '@/lib/theme-engine';
 
 type Token = { id: string; token_key: string; token_value: string; token_type: string; description: string | null; is_active: boolean };
 type Flag = { id: string; flag_key: string; label: string; description: string | null; is_enabled: boolean; config: Record<string, unknown> };
@@ -10,7 +11,6 @@ type Integration = { id: string; integration_key: string; channel: string; provi
 type PaymentCertification = { gateway_key: string; environment: 'sandbox'|'production'; status: string; certified_at: string | null; expires_at: string | null; test_results: Record<string, unknown>; evidence: Record<string, unknown>; notes: string | null };
 type PaymentGateway = { id: string; gateway_key: string; provider: string; payment_method: 'mpesa'|'card'|'bank_transfer'; display_name: string; customer_description: string | null; icon_key: string | null; is_enabled: boolean; customer_visible: boolean; supports_checkout: boolean; supports_orders: boolean; supports_invoices: boolean; requires_customer_phone: boolean; sort_order: number; public_config: Record<string, unknown>; admin_config: Record<string, unknown>; secret_env_keys: string[]; health_status: string; last_tested_at: string | null; last_test_message: string | null };
 
-const CSS_BLOCKED = /@import|url\s*\(|expression\s*\(|javascript\s*:|behavior\s*:|-moz-binding/i;
 
 export default function AdminSiteControl() {
   const [tab, setTab] = useState<'design'|'integrations'|'features'>('design');
@@ -59,6 +59,10 @@ export default function AdminSiteControl() {
   useEffect(() => { void load(); }, [load]);
 
   const saveToken = async (token: Token) => {
+    if (!/^[a-zA-Z][a-zA-Z0-9_.-]{0,63}$/.test(token.token_key) || !isSafeDesignTokenValue(token.token_value)) {
+      toast({ title: 'Invalid design token', description: 'Use a valid token name and a safe CSS value of 256 characters or fewer.', variant: 'destructive' });
+      return;
+    }
     setSaving(true);
     try {
       const { error } = await supabase.from('site_design_tokens').update({ token_value: token.token_value, is_active: token.is_active, updated_at: new Date().toISOString() }).eq('id', token.id);
@@ -69,7 +73,8 @@ export default function AdminSiteControl() {
   };
 
   const saveCss = async () => {
-    if (CSS_BLOCKED.test(css)) { toast({ title: 'Unsafe CSS rejected', description: 'External imports, URL loading and executable CSS constructs are not permitted.', variant: 'destructive' }); return; }
+    const cssValidation = validateCustomCss(css);
+    if (!cssValidation.valid) { toast({ title: 'Unsafe CSS rejected', description: cssValidation.reason || 'Custom CSS failed validation.', variant: 'destructive' }); return; }
     setSaving(true);
     try {
       const { error } = await supabase.from('site_settings').upsert({ setting_key: 'custom_css', setting_value: { css }, updated_at: new Date().toISOString() }, { onConflict: 'setting_key' });

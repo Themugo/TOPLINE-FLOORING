@@ -1,0 +1,92 @@
+Source file,Route group (heuristic),Inventory status,Browser verification status,Notes
+src/pages/about.tsx,Public / shared route,Inventory captured,Pending after-edit browser verification,Check desktop/tablet/mobile; visual status not inferred from static source
+src/pages/admin/audit-logs.tsx,Admin / operations,Inventory captured,Pending after-edit browser verification,Check desktop/tablet/mobile; visual status not inferred from static source
+src/pages/admin/automation-operations-360.tsx,Admin / operations,Inventory captured,Pending after-edit browser verification,Check desktop/tablet/mobile; visual status not inferred from static source
+src/pages/admin/backups.tsx,Admin / operations,Inventory captured,Pending after-edit browser verification,Check desktop/tablet/mobile; visual status not inferred from static source
+src/pages/admin/business-continuity-360.tsx,Admin / operations,Inventory captured,Pending after-edit browser verification,Check desktop/tablet/mobile; visual status not inferred from static source
+src/pages/admin/categories.tsx,Admin / operations,Inventory captured,Pending after-edit browser verification,Check desktop/tablet/mobile; visual status not inferred from static source
+src/pages/admin/commercial-lifecycle.tsx,Admin / operations,Inventory captured,Pending after-edit browser verification,Check desktop/tablet/mobile; visual status not inferred from static source
+src/pages/admin/communications-journey-360.tsx,Admin / operations,Inventory captured,Pending after-edit browser verification,Check desktop/tablet/mobile; visual status not inferred from static source
+src/pages/admin/communications.tsx,Admin / operations,Inventory captured,Pending after-edit browser verification,Check desktop/tablet/mobile; visual status not inferred from static source
+src/pages/admin/coupons.tsx,Admin / operations,Inventory captured,Pending after-edit browser verification,Check desktop/tablet/mobile; visual status not inferred from static source
+src/pages/admin/crm.tsx,Admin / operations,Inventory captured,Pending after-edit browser verification,Check desktop/tablet/mobile; visual status not inferred from static source
+src/pages/admin/customer-lifecycle-360.tsx,Admin / operations,Inventory captured,Pending after-edit browser verification,Check desktop/tablet/mobile; visual status not inferred from static source
+src/pages/admin/customer-portal-operations.tsx,Admin / operations,Inventory captured,Pending after-edit browser verification,Check desktop/tablet/mobile; visual status not inferred from static source
+src/pages/admin/customer-renewals.tsx,Admin / operations,Inventory captured,Pending after-edit browser verification,Check desktop/tablet/mobile; visual status not inferred from static source
+src/pages/admin/customers.tsx,Admin / operations,Inventory captured,Pending after-edit browser verification,Check desktop/tablet/mobile; visual status not inferred from static source
+src/pages/admin/dashboard.tsx,Admin / operations,Inventory captured,Pending after-edit browser verification,Check desktop/tablet/mobile; visual status not inferred from static source
+src/pages/admin/data-governance-360.tsx,Admin / operations,Inventory captured,Pending after-edit browser verification,Check desktop/tablet/mobile; visual status not inferred from static source
+src/pages/admin/deliveries.tsx,Admin / operations,Inventory captured,Pending after-edit browser verification,Check desktop/tablet/mobile; visual status not inferred from static source
+src/pages/admin/delivery-zones.tsx,Admin / operations,Inventory captured,Pending after-edit browser verification,Check desktop/tablet/mobile; visual status not inferred from static source
+src/pages/admin/executive-operations-360.tsx,Admin / operations,Inventory captured,Pending after-edit browser verification,Check desktop/tablet/mobile; visual status not inferred from static source
+src/pages/admin/field-operations.tsx,Admin / operations,Inventory captured,Pending after-edit browser verification,Check desktop/tablet/mobile; visual status not inferred from static source
+src/pages/admin/finance-operations.tsx,Admin / operations,Inventory captured,Pending after-edit browser verification,Check desktop/tablet/mobile; visual status not inferred from static source
+src/pages/admin/financial-command-center.tsx,Admin / operations,Inventory captured,Pending after-edit browser verification,Check desktop/tablet/mobile; visual status not inferred from static source
+src/pages/admin/fulfillment-delivery-360.tsx,Admin / operations,Inventory captured,Pending after-edit browser verification,Check desktop/tablet/mobile; visual status not inferred from static source
+src/pages/admin/hero-slides.tsx,Admin / operations,Inventory captured,Pending after-edit browser verification,Check desktop/tablet/mobile; visual status not inferred from static source
+src/pages/admin/homepage-builder.tsx,Admin / operations,Inventory captured,Pending after-edit browser verification,Check desktop/tablet/mobile; visual status not inferred from static source
+src/pages/admin/hse-site-compliance-360.tsx,Admin / operations,Inventory captured,Pending after-edit browser verification,Check desktop/tablet/mobile; visual status not inferred from static source
+src/pages/admin/identity-access-360.tsx,Admin / operations,Inventory captured,Pending after-edit browser verification,Check desktop/tablet/mobile; visual status not inferred from static source
+src/pages/admin/installation-workforce.tsx,Admin / operations,Inventory captured,Pending after-edit browser verification,Check desktop/tablet/mobile; visual status not inferred from static source
+src/pages/admin/inventory-procurement-operations.tsx,Admin / operations,Inventory captured,Pending after-edit browser verification,Check desktop/tablet/mobile; visual status not inferred from static source
+src/pages/admin/inventory.tsx,Admin / operations,Inventory captured,Pending after-edit browser verification,Check desktop/tablet/mobile; visual status not inferred from static source
+src/pages/admin/invoices.tsx,Admin / operations,Inventory captured,Pending after-edit browser verification,Check desktop/tablet/mobile; visual status not inferred from static source
+src/pages/admin/leads.tsx,Admin / operations,Inventory captured,Pending after-edit browser verification,Check desktop/tablet/mobile; visual status not inferred from static source
+src/pages/admin/login.tsx,Admin / operations,Inventory captured,Pending after-edit browser verification,Check desktop/tablet/mobile; visual status not inferred from static source
+src/pages/admin/maintenance-plans.tsx,Admin / operations,Inventory captured,Pending after-edit browser verification,Check desktop/tablet/mobile; visual status not inferred from static source
+src/pages/admin/media-library.tsx,Admin / operations,Inventory captured,Pending after-edit browser verification,Check desktop/tablet/mobile; visual status not inferred from static source
+src/pages/admin/navigation.tsx,Admin / operations,Inventory captured,Pending after-edit browser verification,Check desktop/tablet/mobile; visual status not inferred from static source
+src/pages/admin/operations-command-center.tsx,Admin / operations,Inventory captured,Pending after-edit browser verification,Check desktop/tablet/mobile; visual status not inferred from static source
+src/pages/admin/orders.tsx,Admin / operations,Inventory captured,Pending after-edit browser verification,Check desktop/tablet/mobile; visual status not inferred from static source
+src/pages/admin/pages.tsx,Admin / operations,Inventory captured,Pending after-edit browser verification,Check desktop/tablet/mobile; visual status not inferred from static source
+src/pages/admin/partners.tsx,Admin / operations,Inventory captured,Pending after-edit browser verification,Check desktop/tablet/mobile; visual status not inferred from static source
+src/pages/admin/product-brands.tsx,Admin / operations,Inventory captured,Pending after-edit browser verification,Check desktop/tablet/mobile; visual status not inferred from static source
+src/pages/admin/product-documents.tsx,Admin / operations,Inventory captured,Pending after-edit browser verification,Check desktop/tablet/mobile; visual status not inferred from static source
+src/pages/admin/product-images.tsx,Admin / operations,Inventory captured,Pending after-edit browser verification,Check desktop/tablet/mobile; visual status not inferred from static source
+src/pages/admin/product-specifications.tsx,Admin / operations,Inventory captured,Pending after-edit browser verification,Check desktop/tablet/mobile; visual status not inferred from static source
+src/pages/admin/product-variants.tsx,Admin / operations,Inventory captured,Pending after-edit browser verification,Check desktop/tablet/mobile; visual status not inferred from static source
+src/pages/admin/products.tsx,Admin / operations,Inventory captured,Pending after-edit browser verification,Check desktop/tablet/mobile; visual status not inferred from static source
+src/pages/admin/project-delivery-360.tsx,Admin / operations,Inventory captured,Pending after-edit browser verification,Check desktop/tablet/mobile; visual status not inferred from static source
+src/pages/admin/project-delivery.tsx,Admin / operations,Inventory captured,Pending after-edit browser verification,Check desktop/tablet/mobile; visual status not inferred from static source
+src/pages/admin/project-profitability.tsx,Admin / operations,Inventory captured,Pending after-edit browser verification,Check desktop/tablet/mobile; visual status not inferred from static source
+src/pages/admin/projects.tsx,Admin / operations,Inventory captured,Pending after-edit browser verification,Check desktop/tablet/mobile; visual status not inferred from static source
+src/pages/admin/promotions.tsx,Admin / operations,Inventory captured,Pending after-edit browser verification,Check desktop/tablet/mobile; visual status not inferred from static source
+src/pages/admin/quality-assurance-360.tsx,Admin / operations,Inventory captured,Pending after-edit browser verification,Check desktop/tablet/mobile; visual status not inferred from static source
+src/pages/admin/quotations.tsx,Admin / operations,Inventory captured,Pending after-edit browser verification,Check desktop/tablet/mobile; visual status not inferred from static source
+src/pages/admin/reliability-operations-360.tsx,Admin / operations,Inventory captured,Pending after-edit browser verification,Check desktop/tablet/mobile; visual status not inferred from static source
+src/pages/admin/reports.tsx,Admin / operations,Inventory captured,Pending after-edit browser verification,Check desktop/tablet/mobile; visual status not inferred from static source
+src/pages/admin/sales-command-center.tsx,Admin / operations,Inventory captured,Pending after-edit browser verification,Check desktop/tablet/mobile; visual status not inferred from static source
+src/pages/admin/seo.tsx,Admin / operations,Inventory captured,Pending after-edit browser verification,Check desktop/tablet/mobile; visual status not inferred from static source
+src/pages/admin/service-cases.tsx,Admin / operations,Inventory captured,Pending after-edit browser verification,Check desktop/tablet/mobile; visual status not inferred from static source
+src/pages/admin/services.tsx,Admin / operations,Inventory captured,Pending after-edit browser verification,Check desktop/tablet/mobile; visual status not inferred from static source
+src/pages/admin/settings.tsx,Admin / operations,Inventory captured,Pending after-edit browser verification,Check desktop/tablet/mobile; visual status not inferred from static source
+src/pages/admin/site-content.tsx,Admin / operations,Inventory captured,Pending after-edit browser verification,Check desktop/tablet/mobile; visual status not inferred from static source
+src/pages/admin/site-control.tsx,Admin / operations,Inventory captured,Pending after-edit browser verification,Check desktop/tablet/mobile; visual status not inferred from static source
+src/pages/admin/site-settings.tsx,Admin / operations,Inventory captured,Pending after-edit browser verification,Check desktop/tablet/mobile; visual status not inferred from static source
+src/pages/admin/site-visits.tsx,Admin / operations,Inventory captured,Pending after-edit browser verification,Check desktop/tablet/mobile; visual status not inferred from static source
+src/pages/admin/suppliers.tsx,Admin / operations,Inventory captured,Pending after-edit browser verification,Check desktop/tablet/mobile; visual status not inferred from static source
+src/pages/admin/supply-chain-360.tsx,Admin / operations,Inventory captured,Pending after-edit browser verification,Check desktop/tablet/mobile; visual status not inferred from static source
+src/pages/admin/system-health.tsx,Admin / operations,Inventory captured,Pending after-edit browser verification,Check desktop/tablet/mobile; visual status not inferred from static source
+src/pages/admin/testimonials.tsx,Admin / operations,Inventory captured,Pending after-edit browser verification,Check desktop/tablet/mobile; visual status not inferred from static source
+src/pages/admin/theme.tsx,Admin / operations,Inventory captured,Pending after-edit browser verification,Check desktop/tablet/mobile; visual status not inferred from static source
+src/pages/admin/warehouses.tsx,Admin / operations,Inventory captured,Pending after-edit browser verification,Check desktop/tablet/mobile; visual status not inferred from static source
+src/pages/cart.tsx,Commerce / customer journey (path-based classification),Inventory captured,Pending after-edit browser verification,Check desktop/tablet/mobile; visual status not inferred from static source
+src/pages/checkout-success.tsx,Commerce / customer journey (path-based classification),Inventory captured,Pending after-edit browser verification,Check desktop/tablet/mobile; visual status not inferred from static source
+src/pages/compare.tsx,Public / shared route,Inventory captured,Pending after-edit browser verification,Check desktop/tablet/mobile; visual status not inferred from static source
+src/pages/contact.tsx,Public / shared route,Inventory captured,Pending after-edit browser verification,Check desktop/tablet/mobile; visual status not inferred from static source
+src/pages/custom-page.tsx,Public / shared route,Inventory captured,Pending after-edit browser verification,Check desktop/tablet/mobile; visual status not inferred from static source
+src/pages/faq.tsx,Public / shared route,Inventory captured,Pending after-edit browser verification,Check desktop/tablet/mobile; visual status not inferred from static source
+src/pages/home.tsx,Public / shared route,Inventory captured,Pending after-edit browser verification,Check desktop/tablet/mobile; visual status not inferred from static source
+src/pages/industries.tsx,Public / shared route,Inventory captured,Pending after-edit browser verification,Check desktop/tablet/mobile; visual status not inferred from static source
+src/pages/market.tsx,Public / shared route,Inventory captured,Pending after-edit browser verification,Check desktop/tablet/mobile; visual status not inferred from static source
+src/pages/not-found.tsx,Public / shared route,Inventory captured,Pending after-edit browser verification,Check desktop/tablet/mobile; visual status not inferred from static source
+src/pages/order-confirmation.tsx,Commerce / customer journey (path-based classification),Inventory captured,Pending after-edit browser verification,Check desktop/tablet/mobile; visual status not inferred from static source
+src/pages/payment-return.tsx,Public / shared route,Inventory captured,Pending after-edit browser verification,Check desktop/tablet/mobile; visual status not inferred from static source
+src/pages/portal.tsx,Customer portal / account (name-based classification),Inventory captured,Pending after-edit browser verification,Check desktop/tablet/mobile; visual status not inferred from static source
+src/pages/portfolio.tsx,Public / shared route,Inventory captured,Pending after-edit browser verification,Check desktop/tablet/mobile; visual status not inferred from static source
+src/pages/quotation.tsx,Commerce / customer journey (path-based classification),Inventory captured,Pending after-edit browser verification,Check desktop/tablet/mobile; visual status not inferred from static source
+src/pages/service-detail.tsx,Public / shared route,Inventory captured,Pending after-edit browser verification,Check desktop/tablet/mobile; visual status not inferred from static source
+src/pages/services.tsx,Commerce / customer journey (path-based classification),Inventory captured,Pending after-edit browser verification,Check desktop/tablet/mobile; visual status not inferred from static source
+src/pages/shop-detail.tsx,Public / shared route,Inventory captured,Pending after-edit browser verification,Check desktop/tablet/mobile; visual status not inferred from static source
+src/pages/shop.tsx,Public / shared route,Inventory captured,Pending after-edit browser verification,Check desktop/tablet/mobile; visual status not inferred from static source
+src/pages/track-order.tsx,Commerce / customer journey (path-based classification),Inventory captured,Pending after-edit browser verification,Check desktop/tablet/mobile; visual status not inferred from static source

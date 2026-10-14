@@ -1,19 +1,10 @@
 import { useEffect } from 'react';
 import { useThemeSettings } from '@/hooks/use-data';
-import { applyTheme } from '@/lib/theme-engine';
+import { applyTheme, DEFAULT_APPLIED_THEME, isSafeDesignTokenValue, validateCustomCss } from '@/lib/theme-engine';
 import { loadSiteDesignTokens } from '@/lib/site-control';
 import { publicSupabase } from '@/lib/supabase';
 
-const DEFAULT_THEME = {
-  primary_color: '#c9971f',
-  secondary_color: '#f59e0b',
-  accent_color: '#0369a1',
-  heading_font: 'Space Grotesk',
-  body_font: 'Inter',
-  button_style: 'rounded',
-  border_radius: 8,
-  spacing_scale: 8,
-};
+const DEFAULT_THEME = DEFAULT_APPLIED_THEME;
 
 /** Applies the governed CMS theme as CSS custom properties at the app root. */
 export function ThemeApplier() {
@@ -23,7 +14,11 @@ export function ThemeApplier() {
     applyTheme({ ...DEFAULT_THEME, ...theme });
     void loadSiteDesignTokens().then((tokens) => {
       const root = document.documentElement;
-      tokens.forEach((token) => root.style.setProperty(`--${token.token_key.replace(/[^a-zA-Z0-9_-]/g, '-')}`, token.token_value));
+      tokens.forEach((token) => {
+        if (!/^[a-zA-Z][a-zA-Z0-9_.-]{0,63}$/.test(token.token_key) || !isSafeDesignTokenValue(token.token_value)) return;
+        const property = `--${token.token_key.replace(/[._]/g, '-').replace(/[^a-zA-Z0-9-]/g, '-')}`;
+        root.style.setProperty(property, token.token_value);
+      });
     }, () => undefined);
     void publicSupabase.from('site_settings').select('setting_value').eq('setting_key', 'custom_css').maybeSingle().then(({ data }) => {
       const raw = data?.setting_value as unknown;
@@ -31,7 +26,9 @@ export function ThemeApplier() {
       const id = 'admin-custom-css';
       let style = document.getElementById(id) as HTMLStyleElement | null;
       if (!style) { style = document.createElement('style'); style.id = id; document.head.appendChild(style); }
-      style.textContent = customCss;
+      const validation = validateCustomCss(customCss);
+      style.textContent = validation.valid ? customCss : '';
+      if (!validation.valid) console.warn(`Stored custom CSS was not applied: ${validation.reason}`);
     }, () => undefined);
   }, [theme]);
 

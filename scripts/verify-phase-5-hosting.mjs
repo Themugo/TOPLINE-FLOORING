@@ -1,5 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import { checkReleaseEnvironmentFiles } from './lib-release-environment-check.mjs';
 
 const root = process.cwd();
 const failures = [];
@@ -20,8 +21,9 @@ check(envExample.includes(`VITE_SUPABASE_URL=${expectedSupabase}`), '.env.exampl
 check(envExample.includes('VITE_SUPABASE_PUBLISHABLE_KEY='), '.env.example documents the public Supabase key');
 check(envExample.includes(`VITE_SITE_URL=${expectedUrl}`), '.env.example defines the canonical Topline production URL');
 check(!envExample.match(/SUPABASE_SERVICE_ROLE_KEY|service_role/i), '.env.example contains no service-role/server secret contract');
-check(!fs.existsSync(path.join(root, '.env')), 'No local .env is packaged');
-check(!fs.existsSync(path.join(root, '.env.local')), 'No local .env.local is packaged');
+const envCheck = checkReleaseEnvironmentFiles(root);
+for (const note of envCheck.notes) console.warn(`NOTE ${note}`);
+check(envCheck.failures.length === 0, envCheck.failures.length ? `Environment release safety: ${envCheck.failures.join('; ')}` : 'Local environment files are ignored/untracked or absent; release packaging must exclude them');
 check(packageJson.engines?.node === '22.x', 'Node 22.x remains pinned for hosting builds');
 check(vercel.buildCommand === 'npm run build', 'Vercel uses the repository build contract');
 check(vercel.outputDirectory === 'dist', 'Vercel serves dist');

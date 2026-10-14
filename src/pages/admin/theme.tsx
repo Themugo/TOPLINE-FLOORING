@@ -5,9 +5,10 @@ import { supabase } from '@/lib/supabase';
 import { useToast } from '@/hooks/use-toast';
 import { useCMS } from '@/context/CMSContext';
 import type { ThemeSetting } from '@/lib/types';
+import { validateAppliedTheme } from '@/lib/theme-engine';
 
 const presets = [
-  { name: 'Professional', primary: '#0369a1', secondary: '#f59e0b', accent: '#0369a1' },
+  { name: 'Professional', primary: '#153f69', secondary: '#c9971f', accent: '#0369a1' },
   { name: 'Modern Blue', primary: '#1e40af', secondary: '#3b82f6', accent: '#1d4ed8' },
   { name: 'Earthy', primary: '#78350f', secondary: '#a16207', accent: '#92400e' },
   { name: 'Forest', primary: '#14532d', secondary: '#22c55e', accent: '#166534' },
@@ -64,6 +65,11 @@ export default function AdminTheme() {
 
   const handleSave = async () => {
     if (!theme) return;
+    const validationErrors = validateAppliedTheme(theme);
+    if (validationErrors.length) {
+      toast({ title: 'Theme settings need correction', description: validationErrors.join(' '), variant: 'destructive' });
+      return;
+    }
     setSaving(true);
     try {
       const { data, error } = await supabase.rpc('save_theme_brand_version', { p_theme: theme, p_change_note: changeNote || null });
@@ -112,7 +118,7 @@ export default function AdminTheme() {
         <section className="bg-white rounded-xl border p-6">
           <h2 className="font-semibold mb-1">Custom Colors</h2><p className="text-sm text-gray-500 mb-4">All three brand colors are live and governed.</p>
           <div className="grid sm:grid-cols-3 gap-6">
-            {([['Primary Color','primary_color','#0369a1'],['Secondary Color','secondary_color','#f59e0b'],['Accent Color','accent_color','#0369a1']] as const).map(([label,key,fallback]) => <div key={key}><label className="block text-sm font-medium text-gray-700 mb-2">{label}</label><div className="flex gap-3"><input type="color" value={theme[key] || fallback} onChange={(e) => updateTheme({ [key]: e.target.value })} className="w-12 h-12 rounded border cursor-pointer" /><input type="text" value={theme[key] || fallback} onChange={(e) => updateTheme({ [key]: e.target.value })} className="input flex-1 font-mono text-sm" /></div></div>)}
+            {([['Primary Color','primary_color','#153f69'],['Secondary / Gold Accent','secondary_color','#c9971f'],['Supporting Accent','accent_color','#0369a1']] as const).map(([label,key,fallback]) => <div key={key}><label className="block text-sm font-medium text-gray-700 mb-2">{label}</label><div className="flex gap-3"><input type="color" value={theme[key] || fallback} onChange={(e) => updateTheme({ [key]: e.target.value })} className="w-12 h-12 rounded border cursor-pointer" /><input type="text" value={theme[key] || fallback} onChange={(e) => updateTheme({ [key]: e.target.value })} className="input flex-1 font-mono text-sm" /></div></div>)}
           </div>
         </section>
 

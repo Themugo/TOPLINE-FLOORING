@@ -8,19 +8,48 @@ export default {
         display: ['Outfit', 'Inter', 'system-ui', 'sans-serif'],
       },
       colors: {
-        // Brand gold - matches the site's actual mustard/gold accent
-        // (buttons, section headings, "TOPLINE" logo text)
+        // Shared warm-neutral surfaces and accessible slate text used by legacy gray-* classes.
+        // This centralizes existing utility usage without editing dozens of page files.
+        gray: {
+          50: '#faf6ee',
+          100: '#f4efe6',
+          200: '#e7e0d4',
+          300: '#d2c8b8',
+          400: '#64748b',
+          500: '#64748b',
+          600: '#475569',
+          700: '#334155',
+          800: '#1f2937',
+          900: '#0f172a',
+          950: '#020617',
+        },
+        // Authoritative brand primary: TOPLINE deep blue. Runtime theme settings may
+        // generate a governed ramp over these defaults without requiring a rebuild.
         primary: {
+          50: '#eef4fa',
+          100: '#dce8f4',
+          200: '#bfd5e9',
+          300: '#91b7d7',
+          400: '#5d91bf',
+          500: '#153f69',
+          600: '#12365a',
+          700: '#102d4b',
+          800: '#0d243b',
+          900: '#0a1c2f',
+          950: '#06111d',
+        },
+        // Restrained TOPLINE gold is an accent, not a semantic status color.
+        gold: {
           50: '#fdf8ed',
           100: '#faedc9',
           200: '#f5d98d',
           300: '#f0c150',
           400: '#e6ab2e',
           500: '#c9971f',
-          600: '#a87817',
-          700: '#855c16',
-          800: '#6d4a18',
-          900: '#5c3f19',
+          600: '#855c16',
+          700: '#6d4a18',
+          800: '#5c3f19',
+          900: '#493014',
           950: '#35220c',
         },
         // Brand blue - matches the site's actual link/nav/contact-bar
@@ -40,17 +69,17 @@ export default {
           950: '#0d2740',
         },
         accent: {
-          50: '#f0fdfa',
-          100: '#ccfbf1',
-          200: '#99f6e4',
-          300: '#5eead4',
-          400: '#2dd4bf',
-          500: '#14b8a6',
-          600: '#0d9488',
-          700: '#0f766e',
-          800: '#115e59',
-          900: '#134e4a',
-          950: '#042f2e',
+          50: '#eff6ff',
+          100: '#dbeafe',
+          200: '#bfdbfe',
+          300: '#93c5fd',
+          400: '#60a5fa',
+          500: '#0369a1',
+          600: '#075985',
+          700: '#0c4a6e',
+          800: '#083344',
+          900: '#082f49',
+          950: '#061f32',
         },
         // Warm cream page background, used in place of pure white for a
         // more premium storefront feel

@@ -10,6 +10,7 @@ interface RGB { r: number; g: number; b: number; }
 interface HSL { h: number; s: number; l: number; }
 
 function hexToRgb(hex: string): RGB {
+  if (!/^#(?:[0-9a-f]{3}|[0-9a-f]{6})$/i.test(hex)) throw new Error('Invalid theme color');
   const clean = hex.replace('#', '');
   const bigint = parseInt(clean.length === 3
     ? clean.split('').map((c) => c + c).join('')
@@ -60,48 +61,56 @@ function hslToHex({ h, s, l }: HSL): string {
   return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
 }
 
-// Target lightness for each shade step, calibrated to feel like a
-// normal Tailwind-style ramp regardless of the input hue.
-const LIGHTNESS_STEPS: Record<string, number> = {
-  '50': 96,
-  '100': 91,
-  '200': 82,
-  '300': 70,
-  '400': 58,
-  '500': 47,
-  '600': 38,
-  '700': 30,
-  '800': 24,
-  '900': 20,
-  '950': 12,
-};
+// Shade positions are generated around the selected color, keeping the selected
+// value at step 500. This avoids the previous behavior where the picker color was
+// discarded in favor of a fixed 47% lightness ramp.
+const LIGHTER_STEPS: Record<string, number> = { '50': 0.95, '100': 0.80, '200': 0.60, '300': 0.38, '400': 0.16 };
+const DARKER_STEPS: Record<string, number> = { '600': 0.16, '700': 0.34, '800': 0.54, '900': 0.76, '950': 0.92 };
 
 export function generateColorRamp(baseHex: string): Record<string, string> {
-  let hsl: HSL;
+  let base: HSL;
   try {
-    hsl = rgbToHsl(hexToRgb(baseHex));
+    base = rgbToHsl(hexToRgb(baseHex));
   } catch {
-    hsl = { h: 42, s: 65, l: 47 }; // fallback to the default brand gold's hue
+    // Invalid or absent persisted values must never generate malformed CSS.
+    base = rgbToHsl(hexToRgb('#153f69'));
   }
-
-  const ramp: Record<string, string> = {};
-  for (const [step, lightness] of Object.entries(LIGHTNESS_STEPS)) {
-    // Slightly reduce saturation at the extremes so very light/dark
-    // steps don't look neon or muddy.
-    const satAdjust = lightness > 85 || lightness < 20 ? hsl.s * 0.85 : hsl.s;
-    ramp[step] = hslToHex({ h: hsl.h, s: Math.min(satAdjust, 90), l: lightness });
+  const ramp: Record<string, string> = { '500': hslToHex(base) };
+  for (const [step, fraction] of Object.entries(LIGHTER_STEPS)) {
+    const lightness = base.l + (98 - base.l) * fraction;
+    const saturation = lightness > 85 ? base.s * 0.85 : base.s;
+    ramp[step] = hslToHex({ h: base.h, s: Math.min(saturation, 90), l: lightness });
+  }
+  for (const [step, fraction] of Object.entries(DARKER_STEPS)) {
+    const lightness = base.l - (base.l - 8) * fraction;
+    const saturation = lightness < 20 ? base.s * 0.85 : base.s;
+    ramp[step] = hslToHex({ h: base.h, s: Math.min(saturation, 90), l: lightness });
   }
   return ramp;
 }
 
-/** Applies a generated ramp to the document as CSS custom properties
- * and injects override rules for every primary-* utility class actually
- * used across the site, so the admin's color choice takes effect
- * immediately without a rebuild. */
-export function applyPrimaryColorRamp(baseHex: string) {
-  if (typeof document === 'undefined') return;
+function buildRampRules(prefix: 'primary' | 'accent', baseHex: string): string[] {
   const ramp = generateColorRamp(baseHex);
+  const rules: string[] = [];
+  for (const [step, hex] of Object.entries(ramp)) {
+    rules.push(`.bg-${prefix}-${step}{background-color:${hex} !important}`);
+    rules.push(`.text-${prefix}-${step}{color:${hex} !important}`);
+    rules.push(`.border-${prefix}-${step}{border-color:${hex} !important}`);
+    rules.push(`.ring-${prefix}-${step}{--tw-ring-color:${hex} !important}`);
+    rules.push(`.hover\\:bg-${prefix}-${step}:hover{background-color:${hex} !important}`);
+    rules.push(`.hover\\:text-${prefix}-${step}:hover{color:${hex} !important}`);
+    rules.push(`.focus\\:ring-${prefix}-${step}:focus{--tw-ring-color:${hex} !important}`);
+    rules.push(`.hover\\:border-${prefix}-${step}:hover{border-color:${hex} !important}`);
+    rules.push(`.focus\\:border-${prefix}-${step}:focus{border-color:${hex} !important}`);
+    rules.push(`.from-${prefix}-${step}{--tw-gradient-from:${hex} !important}`);
+    rules.push(`.via-${prefix}-${step}{--tw-gradient-via:${hex} !important}`);
+    rules.push(`.to-${prefix}-${step}{--tw-gradient-to:${hex} !important}`);
+  }
+  return rules;
+}
 
+function updateDynamicColorRamp(kind: 'primary' | 'accent', baseHex: string) {
+  if (typeof document === 'undefined') return;
   const styleId = 'dynamic-theme-overrides';
   let styleTag = document.getElementById(styleId) as HTMLStyleElement | null;
   if (!styleTag) {
@@ -109,26 +118,33 @@ export function applyPrimaryColorRamp(baseHex: string) {
     styleTag.id = styleId;
     document.head.appendChild(styleTag);
   }
-
+  styleTag.dataset[`${kind}Hex`] = normalizeThemeColor(baseHex, kind === 'primary' ? '#153f69' : '#0369a1', true);
   const rules: string[] = [];
-  for (const [step, hex] of Object.entries(ramp)) {
-    rules.push(`.bg-primary-${step}{background-color:${hex} !important}`);
-    rules.push(`.text-primary-${step}{color:${hex} !important}`);
-    rules.push(`.border-primary-${step}{border-color:${hex} !important}`);
-    rules.push(`.ring-primary-${step}{--tw-ring-color:${hex} !important}`);
-    rules.push(`.hover\\:bg-primary-${step}:hover{background-color:${hex} !important}`);
-    rules.push(`.hover\\:text-primary-${step}:hover{color:${hex} !important}`);
-    rules.push(`.focus\\:ring-primary-${step}:focus{--tw-ring-color:${hex} !important}`);
-    rules.push(`.from-primary-${step}{--tw-gradient-from:${hex} !important}`);
-  }
-
+  const primaryHex = styleTag.dataset.primaryHex;
+  const accentHex = styleTag.dataset.accentHex;
+  if (primaryHex) rules.push(...buildRampRules('primary', primaryHex));
+  if (accentHex) rules.push(...buildRampRules('accent', accentHex));
   styleTag.textContent = rules.join('\n');
+}
+
+/** Applies the administrator-governed primary color ramp to existing utility classes. */
+export function applyPrimaryColorRamp(baseHex: string) {
+  updateDynamicColorRamp('primary', baseHex);
+}
+
+/** Applies the administrator-governed supporting accent ramp without replacing the primary ramp. */
+export function applyAccentColorRamp(baseHex: string) {
+  updateDynamicColorRamp('accent', baseHex);
 }
 
 export function resetPrimaryColorOverrides() {
   if (typeof document === 'undefined') return;
   const styleTag = document.getElementById('dynamic-theme-overrides');
-  if (styleTag) styleTag.textContent = '';
+  if (styleTag) {
+    styleTag.textContent = '';
+    delete styleTag.dataset.primaryHex;
+    delete styleTag.dataset.accentHex;
+  }
 }
 
 
@@ -143,6 +159,89 @@ export interface AppliedTheme {
   spacing_scale: number;
 }
 
+export const DEFAULT_APPLIED_THEME: AppliedTheme = {
+  primary_color: '#153f69', secondary_color: '#c9971f', accent_color: '#0369a1',
+  heading_font: 'Space Grotesk', body_font: 'Inter', button_style: 'rounded', border_radius: 8, spacing_scale: 8,
+};
+
+export const ALLOWED_THEME_FONTS = ['Inter', 'Space Grotesk', 'Montserrat', 'Open Sans', 'Poppins', 'Roboto', 'Playfair Display', 'Source Sans Pro'] as const;
+
+export function isValidThemeColor(value: unknown): value is string {
+  return typeof value === 'string' && /^#(?:[0-9a-f]{3}|[0-9a-f]{6})$/i.test(value.trim());
+}
+
+function normalizeThemeColor(value: unknown, fallback: string, requireWhiteTextContrast = false): string {
+  if (!isValidThemeColor(value)) return fallback;
+  const clean = value.trim().toLowerCase();
+  const normalized = clean.length === 4 ? `#${clean[1]}${clean[1]}${clean[2]}${clean[2]}${clean[3]}${clean[3]}` : clean;
+  return requireWhiteTextContrast && contrastRatio(normalized, '#ffffff') < 4.5 ? fallback : normalized;
+}
+
+export function normalizeAppliedTheme(theme: Partial<AppliedTheme> | null | undefined): AppliedTheme {
+  const candidate = theme ?? {};
+  const font = (value: unknown, fallback: string) => typeof value === 'string' && (ALLOWED_THEME_FONTS as readonly string[]).includes(value) ? value : fallback;
+  const radius = Number(candidate.border_radius), spacing = Number(candidate.spacing_scale);
+  return {
+    primary_color: normalizeThemeColor(candidate.primary_color, DEFAULT_APPLIED_THEME.primary_color, true),
+    secondary_color: normalizeThemeColor(candidate.secondary_color, DEFAULT_APPLIED_THEME.secondary_color),
+    accent_color: normalizeThemeColor(candidate.accent_color, DEFAULT_APPLIED_THEME.accent_color, true),
+    heading_font: font(candidate.heading_font, DEFAULT_APPLIED_THEME.heading_font),
+    body_font: font(candidate.body_font, DEFAULT_APPLIED_THEME.body_font),
+    button_style: candidate.button_style === 'square' || candidate.button_style === 'pill' ? candidate.button_style : 'rounded',
+    border_radius: Number.isFinite(radius) ? Math.min(32, Math.max(0, radius)) : DEFAULT_APPLIED_THEME.border_radius,
+    spacing_scale: Number.isFinite(spacing) ? Math.min(12, Math.max(6, spacing)) : DEFAULT_APPLIED_THEME.spacing_scale,
+  };
+}
+
+function relativeLuminance(hex: string): number {
+  const rgb = hexToRgb(normalizeThemeColor(hex, '#153f69'));
+  const channels = [rgb.r, rgb.g, rgb.b].map((value) => value / 255).map((value) => value <= 0.04045 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4);
+  return channels[0] * 0.2126 + channels[1] * 0.7152 + channels[2] * 0.0722;
+}
+
+function contrastRatio(foreground: string, background: string): number {
+  const a = relativeLuminance(foreground), b = relativeLuminance(background);
+  return (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05);
+}
+
+export function validateAppliedTheme(theme: Partial<AppliedTheme>): string[] {
+  const errors: string[] = [];
+  for (const key of ['primary_color', 'secondary_color', 'accent_color'] as const) {
+    if (!isValidThemeColor(theme[key])) errors.push(`${key.replace('_', ' ')} must be a valid 3- or 6-digit hexadecimal color.`);
+  }
+  if (isValidThemeColor(theme.primary_color) && contrastRatio(theme.primary_color, '#ffffff') < 4.5) errors.push('Primary color must provide at least 4.5:1 contrast with white button text.');
+  if (isValidThemeColor(theme.accent_color) && contrastRatio(theme.accent_color, '#ffffff') < 4.5) errors.push('Supporting accent must provide at least 4.5:1 contrast with white button text.');
+  for (const key of ['heading_font', 'body_font'] as const) {
+    if (typeof theme[key] !== 'string' || !(ALLOWED_THEME_FONTS as readonly string[]).includes(theme[key])) errors.push(`${key.replace('_', ' ')} is not an approved font option.`);
+  }
+  if (!['square', 'rounded', 'pill'].includes(String(theme.button_style))) errors.push('Button style must be square, rounded, or pill.');
+  if (!Number.isFinite(Number(theme.border_radius)) || Number(theme.border_radius) < 0 || Number(theme.border_radius) > 32) errors.push('Border radius must be between 0 and 32 pixels.');
+  if (!Number.isFinite(Number(theme.spacing_scale)) || Number(theme.spacing_scale) < 6 || Number(theme.spacing_scale) > 12) errors.push('Spacing scale must be between 6 and 12 pixels.');
+  return errors;
+}
+
+export function validateCustomCss(css: string): { valid: boolean; reason?: string } {
+  if (css.length > 40000) return { valid: false, reason: 'Custom CSS must be 40,000 characters or fewer.' };
+  if (/@import|url\s*\(|expression\s*\(|javascript\s*:|behavior\s*:|-moz-binding/i.test(css)) return { valid: false, reason: 'External imports, URL loading and executable CSS constructs are not permitted.' };
+  if (/outline\s*:\s*(?:none|0)(?:\s*!important)?/i.test(css)) return { valid: false, reason: 'Custom CSS cannot remove visible keyboard focus outlines.' };
+  if (/(?:^|})\s*(?:html|:root|body|#root|main|\*)\s*\{[^}]*?(?:display\s*:\s*none|visibility\s*:\s*hidden)/i.test(css)) return { valid: false, reason: 'Custom CSS cannot hide the application root or all page content.' };
+  return { valid: true };
+}
+
+function containsDisallowedControlCharacter(value: string): boolean {
+  // Use code-point checks instead of a control-character regex so ESLint's
+  // no-control-regex rule stays enabled without weakening token validation.
+  for (let index = 0; index < value.length; index += 1) {
+    const code = value.charCodeAt(index);
+    if (code <= 0x1f) return true;
+  }
+  return false;
+}
+
+export function isSafeDesignTokenValue(value: unknown): value is string {
+  return typeof value === 'string' && value.trim().length > 0 && value.length <= 256 && !/[;{}<>]/.test(value) && !containsDisallowedControlCharacter(value) && !/@import|url\s*\(|expression\s*\(|javascript\s*:|behavior\s*:|-moz-binding/i.test(value);
+}
+
 const RADIUS_BY_BUTTON_STYLE: Record<string, string> = {
   square: '0.25rem',
   rounded: '0.5rem',
@@ -151,13 +250,22 @@ const RADIUS_BY_BUTTON_STYLE: Record<string, string> = {
 
 export function applyTheme(theme: AppliedTheme) {
   if (typeof document === 'undefined') return;
+  const safeTheme = normalizeAppliedTheme(theme);
   const root = document.documentElement;
-  root.style.setProperty('--theme-secondary', theme.secondary_color);
-  root.style.setProperty('--theme-accent', theme.accent_color);
-  root.style.setProperty('--theme-heading-font', theme.heading_font);
-  root.style.setProperty('--theme-body-font', theme.body_font);
-  root.style.setProperty('--theme-border-radius', `${Math.max(0, theme.border_radius)}px`);
-  root.style.setProperty('--theme-spacing-scale', `${Math.max(1, theme.spacing_scale)}px`);
-  root.style.setProperty('--theme-btn-radius', RADIUS_BY_BUTTON_STYLE[theme.button_style] ?? RADIUS_BY_BUTTON_STYLE.rounded);
-  applyPrimaryColorRamp(theme.primary_color);
+  root.style.setProperty('--topline-brand-primary', safeTheme.primary_color);
+  root.style.setProperty('--topline-brand-accent', safeTheme.secondary_color);
+  root.style.setProperty('--topline-brand-accent-strong', generateColorRamp(safeTheme.secondary_color)['700']);
+  root.style.setProperty('--theme-secondary', safeTheme.secondary_color);
+  root.style.setProperty('--theme-accent', safeTheme.accent_color);
+  root.style.setProperty('--topline-focus', safeTheme.primary_color);
+  root.style.setProperty('--theme-heading-font', `"${safeTheme.heading_font}", sans-serif`);
+  root.style.setProperty('--theme-body-font', `"${safeTheme.body_font}", sans-serif`);
+  root.style.setProperty('--theme-border-radius', `${safeTheme.border_radius}px`);
+  root.style.setProperty('--theme-spacing-scale', `${safeTheme.spacing_scale}px`);
+  // Runtime theme settings provide layout defaults; active site-design tokens load later and take precedence.
+  root.style.setProperty('--layout-section-gap', `${safeTheme.spacing_scale * 8}px`);
+  root.style.setProperty('--layout-content-gap', `${safeTheme.spacing_scale * 3}px`);
+  root.style.setProperty('--theme-btn-radius', RADIUS_BY_BUTTON_STYLE[safeTheme.button_style] ?? RADIUS_BY_BUTTON_STYLE.rounded);
+  applyPrimaryColorRamp(safeTheme.primary_color);
+  applyAccentColorRamp(safeTheme.accent_color);
 }

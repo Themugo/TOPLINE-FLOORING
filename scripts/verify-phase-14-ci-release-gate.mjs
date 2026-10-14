@@ -1,5 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import { checkReleaseEnvironmentFiles } from './lib-release-environment-check.mjs';
 
 const root = process.cwd();
 const failures = [];
@@ -53,8 +54,9 @@ for (let i = 1; i < versions.length; i++) {
   if (versions[i - 1] >= versions[i]) failures.push(`Migration ordering is not strictly increasing: ${migrations[i - 1]} -> ${migrations[i]}`);
 }
 
-const forbiddenFiles = ['.env', '.env.local', '.env.production'];
-for (const file of forbiddenFiles) if (exists(file)) failures.push(`Secret-bearing local environment file must not be committed: ${file}`);
+const envCheck = checkReleaseEnvironmentFiles(root);
+for (const note of envCheck.notes) console.warn(`NOTE ${note}`);
+failures.push(...envCheck.failures);
 
 const workflow = read(workflowPath);
 if (/SUPABASE_SERVICE_ROLE_KEY\s*[:=]/i.test(workflow)) failures.push('CI workflow must not hard-code service-role credentials.');

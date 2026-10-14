@@ -1,0 +1,15 @@
+Operation,Workflow,Static source gate,Runtime evidence in this audit,Required next evidence,Status
+Public,Navigation and routes,Present,Not run,Route smoke tests plus browser review,Pending
+Public,Products variants media and cart,Pass,Static only,Database-backed product/variant/media/cart tests,Pending
+Public,Services and quotations,Pass,Static only,Database-backed service CRUD and quotation submission,Pending
+Public,Checkout pricing stock and coupons,Pass,Static only,Local PostgreSQL transaction and concurrency tests,Pending
+Public,Payment initiation callbacks and return,Pass,Static only,Provider sandbox/UAT and reconciliation evidence,Pending
+Public,Order tracking and customer portal,Pass,Static only,Ownership and privacy integration tests,Pending
+Admin,Authentication and permissions,Pass,Static only,Least-privilege role matrix against deployed RLS/grants,Pending
+Admin,Orders CRM projects and field operations,Pass,Static only,CRUD and workflow transition integration tests,Pending
+Admin,Inventory procurement warehouses and delivery,Pass,Static only,Reservation expiry stock race receiving/dispatch tests,Pending
+Admin,Invoices finance refunds and reconciliation,Pass,Static only,Transactional DB and finance-role tests plus provider UAT,Pending
+Shared,Email SMS WhatsApp and notifications,Pass,Static only,Real provider delivery and callback/report UAT,Pending
+Shared,CMS site controls and theme settings,Pass,Static only,Save/reload/failure behavior against real data,Pending
+Shared,Backup export audit and governance,Pass,Static only,Authorized backup/restore drill and audit review,Pending
+Release,Vercel DNS HTTPS environment,Pass,Static only,Live deployment/domain/TLS/browser smoke,Pending

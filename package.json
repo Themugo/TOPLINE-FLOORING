@@ -123,7 +123,10 @@
     "verify:payment-provider-certification-activation-360": "node scripts/verify-payment-provider-certification-activation-360.mjs",
     "verify:mpesa-provider-uat": "node scripts/verify-mpesa-provider-uat.mjs",
     "verify:payment-audit-360": "node scripts/verify-payment-audit-360.mjs",
-    "test:smoke": "vitest run --config vitest.config.ts"
+    "test:smoke": "node ./node_modules/vitest/vitest.mjs run --config vitest.config.ts",
+    "test:release-env-check": "node scripts/test-release-environment-check.mjs",
+    "verify:theme-unification": "node scripts/verify-theme-unification.mjs",
+    "test:theme-engine": "node --experimental-strip-types scripts/test-theme-engine.mjs"
   },
   "dependencies": {
     "@radix-ui/react-accordion": "^1.2.16",
