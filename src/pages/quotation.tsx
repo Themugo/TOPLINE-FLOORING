@@ -257,7 +257,7 @@ export default function Quotation() {
             {/* Left: Estimation Preview Widget & Tips */}
             <div className="lg:col-span-5 space-y-6">
               {/* Calculator Widget */}
-              <div className="bg-[#142C46] rounded-2xl border border-slate-700 p-6 text-white shadow-xl space-y-5">
+              <div className="bg-[#153F69] rounded-2xl border border-slate-700 p-6 text-white shadow-xl space-y-5">
                 <div className="flex items-center justify-between pb-3 border-b border-white/10">
                   <div className="flex items-center gap-2">
                     <Calculator className="w-5 h-5 text-primary-400" />

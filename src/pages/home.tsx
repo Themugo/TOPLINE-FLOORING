@@ -233,7 +233,7 @@ export default function Home() {
 
       {/* Hero Section - Full viewport slider with dark navy overlay */}
       <section
-        className="topline-home-hero relative h-[30rem] min-h-[30rem] sm:h-[32rem] lg:h-[35rem] overflow-hidden bg-[#142C46] touch-pan-y"
+        className="topline-home-hero relative h-[30rem] min-h-[30rem] sm:h-[32rem] lg:h-[35rem] overflow-hidden bg-[#153F69] touch-pan-y"
         aria-roledescription="carousel"
         aria-label="Featured products, services and company highlights"
         onMouseEnter={() => setIsSliderPaused(true)}
@@ -254,7 +254,7 @@ export default function Home() {
             }`}
           >
             <div
-              className="absolute inset-0 z-10 bg-gradient-to-r from-[#142C46]/90 via-[#142C46]/70 to-[#142C46]/15"
+              className="absolute inset-0 z-10 bg-gradient-to-r from-[#153F69]/90 via-[#153F69]/70 to-[#153F69]/15"
               style={{ opacity: Math.min(1, Math.max(0.55, overlayOpacity / 100)) }}
             />
             <img
@@ -304,7 +304,7 @@ export default function Home() {
                     <Link
                       href={slide.button_link}
                       tabIndex={index === currentSlide ? 0 : -1}
-                      className={`inline-flex items-center gap-2 bg-[#F7F5EF] hover:bg-white text-[#142C46] px-6 py-3 rounded-lg text-sm font-semibold transition-all duration-500 delay-400 shadow-sm hover:shadow-md ${
+                      className={`inline-flex items-center gap-2 bg-[#FAF6EE] hover:bg-white text-[#153F69] px-6 py-3 rounded-lg text-sm font-semibold transition-all duration-500 delay-400 shadow-sm hover:shadow-md ${
                         index === currentSlide ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2'
                       }`}
                     >
@@ -356,7 +356,7 @@ export default function Home() {
       </section>
 
       {/* Customer intent shortcuts: help first-time visitors choose the right journey immediately. */}
-      <section className="relative z-30 bg-[#F7F5EF] px-4 sm:px-6 lg:px-8 py-5 sm:py-6">
+      <section className="relative z-30 bg-[#FAF6EE] px-4 sm:px-6 lg:px-8 py-5 sm:py-6">
         <div className="max-w-6xl mx-auto customer-intent-grid">
           <Link href="/shop" className="group customer-intent-card">
             <div><strong>Shop materials</strong><span>Browse products and variants</span></div><ArrowRight className="w-4 h-4 text-primary-500 transition-transform group-hover:translate-x-1" />

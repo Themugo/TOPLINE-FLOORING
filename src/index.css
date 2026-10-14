@@ -4,9 +4,9 @@
 
 :root {
   /* Canonical TOPLINE brand tokens. Runtime theme governance may update brand values. */
-  --topline-brand-primary: #142c46;
-  --topline-brand-accent: #c5ad7a;
-  --topline-brand-accent-strong: #79633b;
+  --topline-brand-primary: #153f69;
+  --topline-brand-accent: #c9971f;
+  --topline-brand-accent-strong: #795b13;
   --topline-page-background: #f7f5ef;
   --topline-surface: #ffffff;
   --topline-text: #26384b;
@@ -17,8 +17,8 @@
   --topline-warning: #854d0e;
   --topline-danger: #b91c1c;
   --topline-info: #075985;
-  --topline-chart-1: #142c46;
-  --topline-chart-2: #c5ad7a;
+  --topline-chart-1: #153f69;
+  --topline-chart-2: #c9971f;
   --topline-chart-3: #607d98;
   --topline-chart-4: #64748b;
   --container-max-width: 1280px;
@@ -32,8 +32,8 @@
   --theme-body-font: "Inter", sans-serif;
   --theme-border-radius: 8px;
   --theme-spacing-scale: 8px;
-  --topline-ink: #142c46;
-  --topline-line: rgba(20, 44, 70, .12);
+  --topline-ink: #153f69;
+  --topline-line: rgba(21, 63, 105, .12);
   --topline-surface-translucent: rgba(255,255,255,.92);
   --topline-surface-soft: rgba(255,255,255,.65);
   --topline-shadow: 0 18px 50px rgba(15,23,42,.08);
@@ -350,5 +350,71 @@ button:disabled, input:disabled, textarea:disabled, select:disabled { cursor: no
   .topline-home-hero h1 {
     overflow-wrap: anywhere;
     text-wrap: balance;
+  }
+}
+
+
+/* --------------------------------------------------------------------------
+   TOPLINE SIGNATURE REFINEMENT — approved palette, shared public-page polish.
+   Intentionally does not set dimensions, aspect-ratios, padding, or positioning
+   on .topline-home-hero or its descendants: homepage hero size is locked.
+   -------------------------------------------------------------------------- */
+:root {
+  --topline-brand-primary: #153f69;
+  --topline-brand-accent: #c9971f;
+  --topline-brand-accent-strong: #795b13;
+  --topline-page-background: #faf6ee;
+  --topline-surface: #ffffff;
+  --topline-text: #26384b;
+  --topline-muted: #64748b;
+  --topline-border: #dbe3ec;
+  --topline-focus: #153f69;
+  --topline-ink: #153f69;
+  --topline-line: rgba(21, 63, 105, .12);
+  --topline-shadow: 0 18px 50px rgba(21, 63, 105, .075);
+}
+
+/* One calm, consistent surface language across catalogue, customer and form pages. */
+.page-shell {
+  color: var(--topline-text);
+}
+
+.page-shell :where(input:not([type="checkbox"]):not([type="radio"]):not([type="range"]), select, textarea) {
+  accent-color: var(--topline-brand-primary);
+  border-color: var(--topline-border);
+}
+
+.page-shell :where(input:not([type="checkbox"]):not([type="radio"]):not([type="range"]), select, textarea):focus-visible {
+  border-color: var(--topline-focus);
+  box-shadow: 0 0 0 3px rgba(21, 63, 105, .12);
+}
+
+.page-shell :where(button, [role="button"], a) {
+  -webkit-tap-highlight-color: transparent;
+}
+
+.page-shell :where(img) {
+  max-width: 100%;
+}
+
+/* Gold is an accent, not a second competing primary action colour. */
+.section-label,
+.eyebrow {
+  color: var(--topline-brand-accent-strong);
+}
+
+.page-shell :where(.rounded-xl, .rounded-2xl, .rounded-3xl) {
+  background-clip: padding-box;
+}
+
+/* Keep wide data tables usable on phones without forcing the entire page wide. */
+.page-shell :where(table) {
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+@media (max-width: 639px) {
+  .page-shell :where(input:not([type="checkbox"]):not([type="radio"]):not([type="range"]), select, textarea) {
+    max-width: 100%;
   }
 }

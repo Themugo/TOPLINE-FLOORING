@@ -222,7 +222,7 @@ export default function Cart() {
             <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
               <ShoppingCart className="w-8 h-8 text-gray-400" />
             </div>
-            <h1 className="font-display text-3xl font-bold tracking-tight text-[#142C46] mb-4">
+            <h1 className="font-display text-3xl font-bold tracking-tight text-[#153F69] mb-4">
               Your cart is empty
             </h1>
             <p className="text-gray-500 mb-8">
@@ -253,7 +253,7 @@ export default function Cart() {
           <div className="grid lg:grid-cols-3 gap-8">
             {/* Cart Items */}
             <div className="lg:col-span-2">
-              <h1 className="font-display text-3xl font-bold tracking-tight text-[#142C46] mb-6">
+              <h1 className="font-display text-3xl font-bold tracking-tight text-[#153F69] mb-6">
                 Your Cart ({items.length} {items.length === 1 ? 'item' : 'items'})
               </h1>
 

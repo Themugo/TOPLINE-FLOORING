@@ -61,19 +61,19 @@ export function Header() {
             <div className="flex items-center gap-5 text-navy-100">
               {address && (
                 <span className="flex items-center gap-1.5">
-                  <MapPin className="w-3.5 h-3.5 text-[#C5AD7A]" />
+                  <MapPin className="w-3.5 h-3.5 text-[#C9971F]" />
                   {address}
                 </span>
               )}
               {phone && (
                 <a href={telHref(phone)} className="flex items-center gap-1.5 hover:text-primary-400 transition-colors">
-                  <Phone className="w-3.5 h-3.5 text-[#C5AD7A]" />
+                  <Phone className="w-3.5 h-3.5 text-[#C9971F]" />
                   {phone}
                 </a>
               )}
               {email && (
                 <a href={`mailto:${email}`} className="flex items-center gap-1.5 hover:text-primary-400 transition-colors">
-                  <Mail className="w-3.5 h-3.5 text-[#C5AD7A]" />
+                  <Mail className="w-3.5 h-3.5 text-[#C9971F]" />
                   {email}
                 </a>
               )}
@@ -86,7 +86,7 @@ export function Header() {
                     href={url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-slate-200 hover:text-[#C5AD7A] transition-colors"
+                    className="text-slate-200 hover:text-[#C9971F] transition-colors"
                     aria-label={`Visit our ${key} page`}
                   >
                     <Icon className="w-3.5 h-3.5" />
@@ -103,7 +103,7 @@ export function Header() {
         <div className="max-w-[1440px] mx-auto px-4 sm:px-6 xl:px-8">
           <div className="flex items-center justify-between min-h-16 lg:min-h-20 gap-3">
             <Link href="/" className="group flex min-w-0 shrink-0 items-center gap-3 rounded-xl py-1 pr-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#607D98]" aria-label={`${siteName} home`}>
-              <div className="flex h-11 w-11 lg:h-12 lg:w-12 shrink-0 items-center justify-center rounded-xl border border-[#C5AD7A]/45 bg-[#142C46] shadow-[0_4px_12px_rgba(20,44,70,.16)]">
+              <div className="flex h-11 w-11 lg:h-12 lg:w-12 shrink-0 items-center justify-center rounded-xl border border-[#C9971F]/45 bg-[#142C46] shadow-[0_4px_12px_rgba(20,44,70,.16)]">
                 <span className="font-display text-xl font-bold tracking-tight text-[#F7F5EF]">{firstWord.charAt(0).toUpperCase()}</span>
               </div>
               <div className="hidden min-w-0 sm:block">
@@ -127,7 +127,7 @@ export function Header() {
                 >
                   {link.label}
                   {isActive(link.href) && (
-                    <span className="absolute left-4 right-4 -bottom-0.5 h-0.5 bg-[#C5AD7A] rounded-full" />
+                    <span className="absolute left-4 right-4 -bottom-0.5 h-0.5 bg-[#C9971F] rounded-full" />
                   )}
                 </Link>
               ))}
@@ -221,7 +221,7 @@ export function Header() {
                 aria-current={isActive(link.href) ? 'page' : undefined}
                 className={`block px-4 py-3 text-sm font-medium rounded-lg transition-colors ${
                   isActive(link.href)
-                    ? 'text-[#142C46] bg-[#F7F5EF] border-l-2 border-[#C5AD7A]'
+                    ? 'text-[#142C46] bg-[#F7F5EF] border-l-2 border-[#C9971F]'
                     : 'text-slate-700 hover:text-[#142C46] hover:bg-[#F7F5EF]'
                 }`}
               >
