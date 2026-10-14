@@ -8,6 +8,10 @@ import { getServicePlaceholder, withFallback } from '@/lib/placeholders';
 import { useSeoMeta } from '@/hooks/use-seo';
 import { useSiteSettings } from '@/hooks/use-data';
 
+function slugifyServiceName(value: string): string {
+  return value.toLowerCase().normalize('NFKD').replace(/[\u0300-\u036f]/g, '').trim().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+}
+
 interface Service {
   id: string;
   name: string;
@@ -61,15 +65,32 @@ export default function ServiceDetail() {
     setLoading(true);
     setService(null);
     try {
-      const { data, error } = await supabase
+      // Prefer the canonical slug lookup. If the existing additive migration is not
+      // yet visible through PostgREST, fall back to the active catalogue for reads.
+      const direct = await supabase
         .from('services')
         .select('*')
         .eq('slug', slug)
         .eq('is_active', true)
         .maybeSingle();
-      if (!error && data) setService(data as Service);
+
+      if (!direct.error && direct.data) {
+        setService(direct.data as Service);
+        return;
+      }
+
+      const catalogue = await supabase.from('services').select('*').eq('is_active', true).order('display_order');
+      if (catalogue.error) throw catalogue.error;
+      const rows = (catalogue.data || []) as unknown as Array<Record<string, unknown>>;
+      const match = rows.find(row => {
+        const rowSlug = typeof row.slug === 'string' && row.slug.trim()
+          ? row.slug.trim()
+          : slugifyServiceName(String(row.name || ''));
+        return rowSlug === slug;
+      });
+      if (match) setService(match as unknown as Service);
     } catch {
-      // Falls through to the "not found" state; never leave the page spinning.
+      // Stop loading cleanly if schema deployment or connectivity is incomplete.
     } finally {
       setLoading(false);
     }
@@ -196,7 +217,7 @@ export default function ServiceDetail() {
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
           <p className="text-xs font-bold uppercase tracking-[.18em] text-[#D8C9A7]">Next step</p><h2 className="mb-3 mt-3 font-display text-3xl font-semibold tracking-tight sm:text-4xl">Ready to begin your project?</h2>
           <p className="text-navy-100/90 text-base mb-8 max-w-xl mx-auto">
-            Contact us today for a free technical consultation and formal quote for your {service.name.toLowerCase()} project.
+            Tell us about your site and requirements so we can discuss the scope and quotation for your {service.name.toLowerCase()} project.
           </p>
           <div className="flex flex-col sm:flex-row justify-center items-center gap-4">
             <Link href="/quotation" className="w-full rounded-xl bg-[#D8C9A7] px-8 py-3 text-sm font-bold text-[#142C46] shadow-md transition hover:bg-[#E7DCC4] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white sm:w-auto">
