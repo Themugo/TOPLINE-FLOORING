@@ -36,6 +36,7 @@ const URL = (process.env.VITE_SUPABASE_URL || '').replace(/\/$/, '');
 const KEY = process.env.VITE_SUPABASE_PUBLISHABLE_KEY || process.env.VITE_SUPABASE_ANON_KEY || '';
 const RUN_MUTATIONS = process.env.E2E_RUN_MUTATIONS === 'true';
 const ALLOW_PROD = process.env.E2E_ALLOW_PRODUCTION_MUTATIONS === 'true';
+const EXPECTED_MUTATION_URL = (process.env.E2E_EXPECTED_SUPABASE_URL || '').replace(/\/$/, '');
 const EMAIL = process.env.E2E_ADMIN_EMAIL || '';
 const PASSWORD = process.env.E2E_ADMIN_PASSWORD || '';
 
@@ -74,28 +75,44 @@ let assignmentId = '';
 async function main() {
   requireValue(URL, 'VITE_SUPABASE_URL');
   requireValue(KEY, 'VITE_SUPABASE_PUBLISHABLE_KEY');
-  if (URL !== CANONICAL) fail('Supabase target', `Expected ${CANONICAL}, got ${URL}`);
-  else pass('Supabase target', CANONICAL);
+  if (URL === CANONICAL) {
+    pass('Supabase target', CANONICAL);
+  } else if (RUN_MUTATIONS && EXPECTED_MUTATION_URL === URL) {
+    pass('Supabase target', `Explicitly confirmed mutation target: ${URL}`);
+  } else {
+    fail('Supabase target', `Expected ${CANONICAL}; got ${URL}. For isolated staging mutations only, set E2E_EXPECTED_SUPABASE_URL to this exact URL.`);
+    throw new Error('Supabase target mismatch; stopped before any catalogue or storage request.');
+  }
 
   let services;
   try {
-    services = await request('/rest/v1/services?select=id,name,slug,is_active&limit=1', { method: 'GET' });
+    services = await request('/rest/v1/services?select=id,name,slug,is_active,image_url&limit=5', { method: 'GET' });
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     if (/42703|column services\.slug does not exist/i.test(message)) {
       throw new Error(
-        'Live Supabase schema is behind the local migration foundation: services.slug is missing. ' +
-        'Apply the pending migration 20260930170000_service_catalog_and_communications_worker_hardening.sql ' +
-        '(and subsequent migrations) with `supabase db push`, then rerun this E2E test.'
+        'The REST API reports services.slug missing, but this test cannot prove the database column is absent. ' +
+        'First confirm VITE_SUPABASE_URL matches the SQL Editor project, then refresh the PostgREST schema cache ' +
+        "through an authorized Supabase SQL session (NOTIFY pgrst, 'reload schema';). Do not run db push " +
+        'or edit migration history solely to address this API error.'
       );
     }
     throw error;
   }
-  pass('Public services read', `${Array.isArray(services) ? services.length : 0} service row(s) readable`);
+  if (!Array.isArray(services)) throw new Error('Public services endpoint did not return a JSON array');
+  pass('Public services read', `${services.length} service row(s) readable; slug field included`);
 
-  const bucket = await request('/storage/v1/bucket/images', { method: 'GET' }).catch((e) => { throw new Error(`images bucket unavailable: ${e.message}`); });
-  if (bucket?.name !== 'images') throw new Error('images bucket response is not canonical');
-  pass('Images storage bucket exists', `public=${bucket.public}`);
+  // The Storage bucket-administration endpoint is not readable by an ordinary public/anon key.
+  // Verify an existing public image only when a service has a same-project image URL; actual object
+  // upload/read-back is exercised in explicitly enabled mutation mode below.
+  const existingImage = services.find((service) => typeof service.image_url === 'string' && service.image_url.startsWith(`${URL}/storage/v1/object/public/images/`));
+  if (existingImage) {
+    const imageCheck = await fetch(existingImage.image_url, { method: 'HEAD' });
+    if (!imageCheck.ok) throw new Error(`Existing public service image is not retrievable: HTTP ${imageCheck.status}`);
+    pass('Existing public service image', `HTTP ${imageCheck.status}`);
+  } else {
+    skip('Public service image read', 'No same-project public images-bucket URL found in the sampled service rows; mutation mode tests real upload/read-back.');
+  }
 
   if (!RUN_MUTATIONS) {
     skip('Authenticated service create/upload/update/delete', 'Set E2E_RUN_MUTATIONS=true with E2E_ADMIN_EMAIL/E2E_ADMIN_PASSWORD on a staging environment.');
@@ -105,7 +122,7 @@ async function main() {
 
   requireValue(EMAIL, 'E2E_ADMIN_EMAIL');
   requireValue(PASSWORD, 'E2E_ADMIN_PASSWORD');
-  if (URL === CANONICAL && !ALLOW_PROD) throw new Error('Mutation mode is blocked against the canonical production Supabase project. Use staging or explicitly set E2E_ALLOW_PRODUCTION_MUTATIONS=true.');
+  if (URL === CANONICAL && !ALLOW_PROD) throw new Error('Mutation mode is blocked against the canonical production Supabase project. Use an isolated staging project and set E2E_EXPECTED_SUPABASE_URL to its exact URL. Production mutations require the separate E2E_ALLOW_PRODUCTION_MUTATIONS=true override.');
 
   const session = await request('/auth/v1/token?grant_type=password', { method: 'POST', body: JSON.stringify({ email: EMAIL, password: PASSWORD }) });
   accessToken = session?.access_token;
