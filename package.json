@@ -127,7 +127,9 @@
     "test:smoke": "node ./node_modules/vitest/vitest.mjs run --config vitest.config.ts",
     "test:release-env-check": "node scripts/test-release-environment-check.mjs",
     "verify:theme-unification": "node scripts/verify-theme-unification.mjs",
-    "test:theme-engine": "node --experimental-strip-types scripts/test-theme-engine.mjs"
+    "test:theme-engine": "node --experimental-strip-types scripts/test-theme-engine.mjs",
+    "verify:shop-page": "node scripts/verify-shop-page.mjs",
+    "verify:customer-commerce-pages": "node scripts/verify-customer-commerce-pages.mjs"
   },
   "dependencies": {
     "@radix-ui/react-accordion": "^1.2.16",

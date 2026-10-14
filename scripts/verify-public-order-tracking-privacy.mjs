@@ -30,7 +30,7 @@ for (const token of requiredSql) if (!sql.includes(token)) throw new Error(`Trac
 if (!/both your order number and the phone number used at checkout/i.test(tracking)) {
   throw new Error('Tracking UI does not require both identity factors.');
 }
-if (!/if \(!orderId\.trim\(\) \|\| !phone\.trim\(\)\)/.test(tracking)) {
+if (!/const normalizedOrder = orderId\.trim\(\)/.test(tracking) || !/const checkoutPhone = phone\.trim\(\)/.test(tracking) || !/if \(!normalizedOrder \|\| !checkoutPhone\)/.test(tracking)) {
   throw new Error('Tracking submit guard is not enforcing both fields.');
 }
 if (!/order_number\?: string/.test(api)) throw new Error('Checkout result does not expose order_number.');

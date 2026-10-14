@@ -67,7 +67,8 @@ export default function Quotation() {
   const estimatedBudget = useMemo(() => {
     const areaNum = parseFloat(form.area_size.replace(/[^0-9.]/g, ''));
     if (isNaN(areaNum) || areaNum <= 0) return null;
-    const system = SYSTEM_ESTIMATES[form.project_type] || SYSTEM_ESTIMATES['Industrial Flooring'];
+    const system = SYSTEM_ESTIMATES[form.project_type];
+    if (!system) return null;
     const minEst = Math.round(areaNum * system.ratePerSqm * 0.9);
     const maxEst = Math.round(areaNum * system.ratePerSqm * 1.15);
     return {
@@ -81,6 +82,16 @@ export default function Quotation() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (submitting) return;
+    const area = Number(form.area_size);
+    if (!Number.isFinite(area) || area <= 0) {
+      toast({ title: 'Check project area', description: 'Enter a valid area greater than zero square metres.', variant: 'destructive' });
+      return;
+    }
+    if (!form.location.trim()) {
+      toast({ title: 'Project location required', description: 'Enter the county, town or project site location.', variant: 'destructive' });
+      return;
+    }
     setSubmitting(true);
 
     try {
@@ -102,7 +113,7 @@ export default function Quotation() {
 
       toast({
         title: 'Quotation Request Received',
-        description: `${refCode ? `Reference Code: ${refCode}. ` : ''}An engineer will deliver a formal submittal within 24 hours.`,
+        description: `${refCode ? `Reference Code: ${refCode}. ` : ''}Our team will review your request and contact you using the details provided.`,
       });
     } catch {
       toast({
@@ -120,7 +131,7 @@ export default function Quotation() {
       <CustomerLayout>
         <div className="min-h-screen bg-gray-50/60 py-16 lg:py-24">
           <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="bg-white rounded-3xl border border-gray-200/80 p-8 sm:p-10 shadow-xl text-center space-y-6 relative overflow-hidden">
+            <div className="bg-white rounded-3xl border border-slate-200 p-8 sm:p-10 shadow-sm text-center space-y-6 relative overflow-hidden">
               <div className="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-emerald-500 via-primary-500 to-emerald-500" />
 
               <div className="w-20 h-20 bg-emerald-50 rounded-2xl border border-emerald-100 flex items-center justify-center mx-auto shadow-sm">
@@ -157,7 +168,7 @@ export default function Quotation() {
                   </li>
                   <li className="flex items-start gap-2">
                     <Check className="w-4 h-4 text-emerald-500 flex-shrink-0 mt-0.5" />
-                    <span><strong>Formal BOQ Delivery:</strong> Detailed itemized quotation (Materials + Labor + Warranty) sent to <strong>{form.email}</strong> within 24h.</span>
+                    <span><strong>Quotation follow-up:</strong> The team will confirm scope, pricing and any site assessment requirements with <strong>{form.email}</strong>.</span>
                   </li>
                 </ul>
               </div>
@@ -201,7 +212,7 @@ export default function Quotation() {
   return (
     <CustomerLayout>
       <Breadcrumbs items={[{ label: 'Request Quotation' }]} />
-      <div className="min-h-screen bg-gray-50/60 pb-16">
+      <div className="min-h-screen bg-slate-50/80 pb-16">
         {/* Hero Banner Header */}
         <section className="relative bg-navy-950 text-white overflow-hidden py-16 lg:py-20 border-b border-navy-800">
           <div className="absolute inset-0 opacity-25">
@@ -224,17 +235,17 @@ export default function Quotation() {
                 Request an Itemized Technical Quotation
               </h1>
               <p className="text-gray-300 text-base sm:text-lg leading-relaxed">
-                Receive an engineering-certified cost breakdown including substrate prep, primer systems, resin coats, and manufacturer warranty options.
+                Share your project scope to request an itemized quotation covering preparation, system build-up, materials and installation options.
               </p>
 
               <div className="pt-2 flex flex-wrap items-center gap-6 text-xs sm:text-sm font-semibold text-gray-300">
                 <div className="flex items-center gap-2">
                   <ShieldCheck className="w-4 h-4 text-emerald-400" />
-                  <span>Guaranteed 24h Turnaround</span>
+                  <span>Technical review of your project scope</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <ShieldCheck className="w-4 h-4 text-emerald-400" />
-                  <span>Zero Obligation Free Site Assessment</span>
+                  <span>Site assessment arranged where appropriate</span>
                 </div>
               </div>
             </div>
@@ -246,7 +257,7 @@ export default function Quotation() {
             {/* Left: Estimation Preview Widget & Tips */}
             <div className="lg:col-span-5 space-y-6">
               {/* Calculator Widget */}
-              <div className="bg-navy-950 rounded-2xl border border-navy-800 p-6 text-white shadow-xl space-y-5">
+              <div className="bg-[#142C46] rounded-2xl border border-slate-700 p-6 text-white shadow-xl space-y-5">
                 <div className="flex items-center justify-between pb-3 border-b border-white/10">
                   <div className="flex items-center gap-2">
                     <Calculator className="w-5 h-5 text-primary-400" />
@@ -291,13 +302,13 @@ export default function Quotation() {
                   {estimatedBudget && estimatedBudget.min > 0 ? (
                     <div className="p-4 rounded-xl bg-gradient-to-br from-primary-950/80 to-navy-900 border border-primary-500/30 mt-4 space-y-1">
                       <p className="text-[10px] font-bold uppercase tracking-wider text-primary-300">
-                        Estimated Budget Range (KES)
+                        Indicative Budget Range (KES)
                       </p>
                       <p className="font-display text-2xl font-bold text-white">
                         KES {estimatedBudget.min.toLocaleString()} – {estimatedBudget.max.toLocaleString()}
                       </p>
                       <p className="text-[10px] text-gray-400 leading-tight pt-1">
-                        *Includes supply of premium chemical resin and specialized installation. Final price depends on substrate moisture levels and surface profiling requirements.
+                        *Includes supply of premium chemical resin and specialized installation. This is a planning estimate, not a quotation. Final pricing depends on measured scope, site conditions, system specification and availability.
                       </p>
                     </div>
                   ) : (
@@ -452,12 +463,15 @@ export default function Quotation() {
                         </label>
                         <div className="relative">
                           <input
-                            type="text"
+                            type="number"
+                            min="0.1"
+                            step="any"
+                            inputMode="decimal"
                             required
                             value={form.area_size}
                             onChange={(e) => setForm({ ...form, area_size: e.target.value })}
                             className="w-full px-3.5 py-2.5 pr-12 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:bg-white text-xs font-medium text-navy-950 transition-all placeholder:text-gray-400"
-                            placeholder="e.g. 500"
+                            placeholder="e.g. 500" aria-label="Total project area in square metres"
                           />
                           <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs font-bold text-gray-400">
                             SQM
@@ -531,6 +545,7 @@ export default function Quotation() {
                     <textarea
                       required
                       value={form.message}
+                      maxLength={3000}
                       onChange={(e) => setForm({ ...form, message: e.target.value })}
                       className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:bg-white text-xs font-medium text-navy-950 transition-all placeholder:text-gray-400 min-h-[120px] resize-none"
                       placeholder="Specify chemical exposure risks (acid/alkali), forklift traffic weight, desired RAL color, or roof slope details..."
@@ -547,7 +562,7 @@ export default function Quotation() {
                   </button>
 
                   <p className="text-[11px] text-gray-500 text-center leading-relaxed">
-                    By submitting this RFQ, our quantity surveying department will generate an official bill of quantities. No payment or financial commitment required.
+                    Submitting this request starts a quotation review; it is not a confirmed price or an issued bill of quantities. Any site assessment, fees, scope and delivery timelines will be confirmed by the team. No payment is taken by this form.
                   </p>
                 </form>
               </div>

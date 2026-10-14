@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Link, useLocation } from 'wouter';
 import { Trash2, ShoppingCart, ArrowLeft, Minus, Plus, Tag, X, Truck } from 'lucide-react';
 import { CustomerLayout } from '@/components/layout/CustomerLayout';
@@ -67,6 +67,16 @@ export default function Cart() {
     return selectedZone.base_charge || 0;
   }, [selectedZone, totalPrice]);
 
+  // A coupon is validated against a specific subtotal. Any cart edit invalidates it.
+  useEffect(() => {
+    if (appliedCoupon) {
+      setAppliedCoupon(null);
+      setCouponError('Your cart changed. Please reapply the coupon to confirm the updated discount.');
+    }
+  // totalPrice is the subtotal used by the coupon RPC; intentionally revalidate after changes.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [totalPrice]);
+
   const discountAmount = appliedCoupon?.discountAmount || 0;
   const finalTotal = Math.max(totalPrice + deliveryCharge - discountAmount, 0);
 
@@ -115,8 +125,10 @@ export default function Cart() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (submitting) return;
     if (!validate()) return;
-    if (!paymentMethod) { toast({ title: 'Choose a payment method', description: 'Select one of the payment options available for this order.', variant: 'destructive' }); return; }
+    if (!items.length) { toast({ title: 'Your cart is empty', description: 'Add products before checking out.', variant: 'destructive' }); return; }
+    if (!paymentMethod || !paymentGatewayKey) { toast({ title: 'Choose an available payment method', description: 'Select a payment option that is currently available before placing the order.', variant: 'destructive' }); return; }
 
     setSubmitting(true);
     try {
@@ -146,7 +158,6 @@ export default function Cart() {
 
       const orderId = result.order_id;
       if (!orderId) throw new Error('Order was created without an order reference');
-      if (!paymentGatewayKey) throw new Error('The selected payment gateway is unavailable. Please choose a payment option again.');
       const payment = await initiateCustomerPayment({ targetType: 'order', targetId: orderId, email: form.email.trim(), phone: form.phone.trim(), paymentMethod, gatewayKey: paymentGatewayKey, idempotencyKey: `checkout-payment:${checkoutIdempotencyKey}`, returnUrl: `${window.location.origin}/payment-return` });
 
       // Stash a summary for the confirmation page to display. We don't
@@ -207,11 +218,11 @@ export default function Cart() {
       <CustomerLayout>
         <Breadcrumbs items={[{ label: 'Materials Shop', href: '/shop' }, { label: 'Shopping Cart' }]} />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-20">
-          <div className="text-center">
+          <div className="text-center rounded-3xl border border-slate-200 bg-white px-6 py-14 shadow-sm">
             <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
               <ShoppingCart className="w-8 h-8 text-gray-400" />
             </div>
-            <h1 className="font-display text-2xl font-bold text-gray-900 mb-4">
+            <h1 className="font-display text-3xl font-bold tracking-tight text-[#142C46] mb-4">
               Your cart is empty
             </h1>
             <p className="text-gray-500 mb-8">
@@ -229,7 +240,7 @@ export default function Cart() {
   return (
     <CustomerLayout>
       <Breadcrumbs items={[{ label: 'Materials Shop', href: '/shop' }, { label: 'Shopping Cart' }]} />
-      <div className="bg-gray-50 min-h-screen">
+      <div className="min-h-screen bg-slate-50/80">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
           <Link
             href="/shop"
@@ -242,7 +253,7 @@ export default function Cart() {
           <div className="grid lg:grid-cols-3 gap-8">
             {/* Cart Items */}
             <div className="lg:col-span-2">
-              <h1 className="font-display text-2xl font-bold text-gray-900 mb-6">
+              <h1 className="font-display text-3xl font-bold tracking-tight text-[#142C46] mb-6">
                 Your Cart ({items.length} {items.length === 1 ? 'item' : 'items'})
               </h1>
 
@@ -275,7 +286,7 @@ export default function Cart() {
                           <div className="flex items-center border border-gray-300 rounded-lg">
                             <button
                               onClick={() => updateQuantity(item.product.id, item.quantity - 1, item.variant)}
-                              className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+                              type="button" aria-label={`Decrease ${item.product.name} quantity`} className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-50"
                             >
                               <Minus className="w-4 h-4" />
                             </button>
@@ -284,6 +295,7 @@ export default function Cart() {
                             </span>
                             <button
                               onClick={() => updateQuantity(item.product.id, item.quantity + 1, item.variant)}
+                              type="button" aria-label={`Increase ${item.product.name} quantity`}
                               className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-50"
                             >
                               <Plus className="w-4 h-4" />
@@ -294,7 +306,7 @@ export default function Cart() {
                           </p>
                           <button
                             onClick={() => removeFromCart(item.product.id, item.variant)}
-                            className="p-2 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg ml-auto"
+                            type="button" aria-label={`Remove ${item.product.name} from cart`} className="p-2 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg ml-auto"
                           >
                             <Trash2 className="w-4 h-4" />
                           </button>
@@ -308,7 +320,7 @@ export default function Cart() {
 
             {/* Checkout Form */}
             <div className="lg:col-span-1">
-              <div className="bg-white rounded-xl p-6 border border-gray-200 sticky top-24">
+              <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm sticky top-24">
                 <h2 className="font-display text-lg font-bold text-gray-900 mb-4">
                   Order Summary
                 </h2>
@@ -338,7 +350,7 @@ export default function Cart() {
                     <select
                       value={selectedZoneId}
                       onChange={(e) => setSelectedZoneId(e.target.value)}
-                      className="input text-sm"
+                      className="input text-sm" aria-label="Delivery area"
                     >
                       <option value="">Select your area (optional)</option>
                       {zones.map((zone) => (
@@ -354,7 +366,7 @@ export default function Cart() {
                         value={form.deliveryAddress}
                         onChange={(e) => setForm({ ...form, deliveryAddress: e.target.value })}
                         placeholder="Delivery address / landmark"
-                        className="input text-sm mt-2"
+                        className="input text-sm mt-2" aria-label="Delivery address or landmark"
                       />
                     )}
                   </div>
@@ -380,7 +392,7 @@ export default function Cart() {
                           value={couponCode}
                           onChange={(e) => setCouponCode(e.target.value)}
                           placeholder="Enter code"
-                          className="input text-sm flex-1"
+                          className="input text-sm flex-1" aria-label="Coupon code"
                         />
                         <button
                           type="button"

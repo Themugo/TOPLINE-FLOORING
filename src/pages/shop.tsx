@@ -23,10 +23,10 @@ export default function Shop() {
   const [selectedVariants, setSelectedVariants] = useState<Record<string, string>>({});
 
   const { categories } = useCategories();
-  const { products, loading, error: loadError, refetch } = useProducts(
-    selectedCategory ? { categoryId: selectedCategory } : undefined
-  );
-  const { addItem } = useCart();
+  // Load the complete active catalogue once so category counts remain correct
+  // while category filtering is applied locally.
+  const { products, loading, error: loadError, refetch } = useProducts();
+  const { addItem, totalItems } = useCart();
 
   // Preload product images for zero image load delay
   useImagePreloader(
@@ -48,23 +48,27 @@ export default function Shop() {
   const categoryItemCounts = useMemo(() => {
     const counts: Record<string, number> = {};
     products.forEach((p) => {
-      if (p.category_id) {
-        counts[p.category_id] = (counts[p.category_id] || 0) + 1;
-      }
+      if (p.category_id) counts[p.category_id] = (counts[p.category_id] || 0) + 1;
     });
     return counts;
   }, [products]);
 
-  // Filter and sort products
+  // Filter the full active catalogue locally. This keeps category counts stable
+  // and makes search, category and stock filters compose instead of fighting.
   const filteredProducts = useMemo(() => {
+    const term = searchQuery.trim().toLocaleLowerCase();
     return products
       .filter((product) => {
-        const matchesSearch =
-          product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          product.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          product.sku?.toLowerCase().includes(searchQuery.toLowerCase());
+        const searchable = [
+          product.name, product.slug, product.description, product.short_description,
+          product.sku, product.material, product.collection, product.unit,
+          product.category?.name, product.brand?.name,
+          ...(product.variants ?? []).flatMap((variant) => [variant.variant_name, variant.sku]),
+        ].filter(Boolean).join(' ').toLocaleLowerCase();
+        const matchesSearch = !term || searchable.includes(term);
+        const matchesCategory = !selectedCategory || product.category_id === selectedCategory;
         const matchesStock = !inStockOnly || product.in_stock;
-        return matchesSearch && matchesStock;
+        return matchesSearch && matchesCategory && matchesStock;
       })
       .sort((a, b) => {
         if (sortBy === 'price-asc') return a.price - b.price;
@@ -75,7 +79,7 @@ export default function Shop() {
         if (!a.featured && b.featured) return 1;
         return a.display_order - b.display_order;
       });
-  }, [products, searchQuery, inStockOnly, sortBy]);
+  }, [products, searchQuery, selectedCategory, inStockOnly, sortBy]);
 
   const handleAddToCart = (product: Product, e: React.MouseEvent) => {
     e.preventDefault();
@@ -98,7 +102,7 @@ export default function Shop() {
         <section className="bg-gradient-to-b from-gray-50 via-white to-gray-50 border-b border-gray-200/80 py-12 lg:py-16 relative overflow-hidden">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
             <span className="inline-block px-3.5 py-1 rounded-full bg-primary-50 text-primary-600 border border-primary-100 text-xs font-semibold uppercase tracking-wider mb-3">
-              Certified Chemical & Material Supplies
+              Professional Flooring & Waterproofing Materials
             </span>
             <h1 className="font-display text-3xl sm:text-4xl lg:text-5xl font-bold text-navy-950 tracking-tight mb-3">
               Find the right material for your project
@@ -111,15 +115,15 @@ export default function Shop() {
             <div className="mt-8 flex flex-wrap justify-center items-center gap-6 sm:gap-10 text-xs sm:text-sm font-semibold text-navy-800">
               <div className="flex items-center gap-2">
                 <Truck className="w-4 h-4 text-primary-500" />
-                <span>Fast Direct Site Delivery</span>
+                <span>Delivery options at checkout</span>
               </div>
               <div className="flex items-center gap-2">
                 <ShieldCheck className="w-4 h-4 text-primary-500" />
-                <span>Batch Quality & TDS Certified</span>
+                <span>Product details and specifications</span>
               </div>
               <div className="flex items-center gap-2">
                 <PackageCheck className="w-4 h-4 text-primary-500" />
-                <span>Bulk Commercial Rates Available</span>
+                <span>Project and bulk enquiries welcome</span>
               </div>
             </div>
           </div>
@@ -157,7 +161,8 @@ export default function Shop() {
                   <div className="relative">
                     <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                     <input
-                      type="text"
+                      type="search"
+                      aria-label="Search materials by name, description, SKU, brand or variant"
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                       placeholder="e.g. Epoxy, PU Screed, 20L..."
@@ -258,8 +263,14 @@ export default function Shop() {
             {/* Products Main View */}
             <div className="flex-1">
               <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
-                <div><p className="text-sm font-bold text-navy-950">{filteredProducts.length} {filteredProducts.length === 1 ? 'material' : 'materials'} available</p><p className="text-xs text-navy-500 mt-0.5">Choose a product, select its variant and add it to your order.</p></div>
-                {(searchQuery || selectedCategory || inStockOnly) && <button type="button" onClick={() => { setSelectedCategory(null); setSearchQuery(''); setInStockOnly(false); }} className="text-xs font-bold text-primary-600 hover:text-primary-700">Clear filters</button>}
+                <div>
+                  <p className="text-sm font-bold text-navy-950">{filteredProducts.length} {filteredProducts.length === 1 ? 'material' : 'materials'} available</p>
+                  <p className="text-xs text-navy-500 mt-0.5">Choose a product, confirm its variant and add it to your order.</p>
+                </div>
+                <div className="flex items-center gap-3">
+                  {totalItems > 0 && <Link href="/cart" className="inline-flex items-center gap-2 rounded-xl border border-primary-200 bg-primary-50 px-3 py-2 text-xs font-bold text-primary-700 hover:bg-primary-100" aria-label={`View cart with ${totalItems} items`}><ShoppingCart className="h-4 w-4" /> View cart ({totalItems})</Link>}
+                  {(searchQuery || selectedCategory || inStockOnly) && <button type="button" onClick={() => { setSelectedCategory(null); setSearchQuery(''); setInStockOnly(false); }} className="text-xs font-bold text-primary-600 hover:text-primary-700">Clear filters</button>}
+                </div>
               </div>
               {/* Header Controls Bar */}
               <div className="bg-white rounded-2xl border border-gray-200/80 p-4 mb-6 shadow-2xs flex flex-col sm:flex-row items-center justify-between gap-4">
@@ -279,6 +290,7 @@ export default function Shop() {
                   <SlidersHorizontal className="w-3.5 h-3.5 text-gray-400" />
                   <span className="text-xs text-gray-500 font-medium">Sort by:</span>
                   <select
+                    aria-label="Sort products"
                     value={sortBy}
                     onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
                     className="bg-gray-50 border border-gray-200 rounded-xl px-3 py-1.5 text-xs font-semibold text-navy-950 focus:outline-none focus:ring-2 focus:ring-primary-500 cursor-pointer"

@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { Link } from 'wouter';
 import {
   ArrowRight, CheckCircle2, ChevronRight, FileCheck2, HardHat,
-  Layers3, Loader2, Search, ShieldCheck, Sparkles, Wrench, X,
+  Layers3, Search, ShieldCheck, Sparkles, Wrench, X,
 } from 'lucide-react';
 import { CustomerLayout } from '@/components/layout/CustomerLayout';
 import { Breadcrumbs } from '@/components/Breadcrumbs';
