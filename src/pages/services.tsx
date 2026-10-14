@@ -23,7 +23,7 @@ export default function Services() {
       {/* Hero Header */}
       <section className="bg-gradient-to-b from-gray-50 via-white to-gray-50 border-b border-gray-200/80 py-16 lg:py-20 relative overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
-          <span className="inline-block px-3.5 py-1 rounded-full bg-primary-50 text-primary-600 border border-primary-100 text-xs font-semibold uppercase tracking-wider mb-3">
+          <span className="inline-block px-3.5 py-1 rounded-full bg-[#F7F5EF] text-[#142C46] border border-[#E1E5EA] text-xs font-semibold uppercase tracking-wider mb-3">
             Technical Engineering Services
           </span>
           <h1 className="font-display text-3xl sm:text-4xl lg:text-5xl font-bold text-navy-950 tracking-tight mb-4">
@@ -36,16 +36,16 @@ export default function Services() {
           {/* Trust Highlights */}
           <div className="mt-8 flex flex-wrap justify-center items-center gap-6 sm:gap-10 text-xs sm:text-sm font-semibold text-navy-800">
             <div className="flex items-center gap-2">
-              <Shield className="w-4 h-4 text-primary-500" />
-              <span>Certified Installers</span>
+              <Shield className="w-4 h-4 text-[#607D98]" />
+              <span>Technical Assessment</span>
             </div>
             <div className="flex items-center gap-2">
-              <Award className="w-4 h-4 text-primary-500" />
-              <span>Written Handover Documentation</span>
+              <Award className="w-4 h-4 text-[#607D98]" />
+              <span>System Specification</span>
             </div>
             <div className="flex items-center gap-2">
-              <Clock className="w-4 h-4 text-primary-500" />
-              <span>On-Site Site Audits</span>
+              <Clock className="w-4 h-4 text-[#607D98]" />
+              <span>Project Planning</span>
             </div>
           </div>
         </div>
@@ -56,19 +56,19 @@ export default function Services() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {loading ? (
             <div className="text-center py-16">
-              <Loader2 className="w-8 h-8 text-primary-500 animate-spin mx-auto mb-4" />
+              <Loader2 className="w-8 h-8 text-[#607D98] animate-spin mx-auto mb-4" />
               <p className="text-gray-500 font-medium text-sm">Loading specialized services...</p>
             </div>
           ) : services.length === 0 ? (
             <div className="text-center py-20 bg-gray-50 rounded-2xl border border-dashed border-gray-200">
               <div className="w-16 h-16 rounded-2xl bg-primary-50 flex items-center justify-center mx-auto mb-4">
-                <Wrench className="w-8 h-8 text-primary-500" />
+                <Wrench className="w-8 h-8 text-[#607D98]" />
               </div>
               <h3 className="font-display text-xl font-bold text-navy-950 mb-2">No Services Listed</h3>
               <p className="text-gray-500 max-w-md mx-auto text-sm mb-6">
                 Our technical service offerings are being updated. Please contact our engineering department directly for immediate assistance.
               </p>
-              <Link href="/contact" className="inline-flex items-center gap-2 px-6 py-3 bg-primary-500 hover:bg-primary-600 text-white rounded-xl font-bold text-sm transition-all shadow-sm">
+              <Link href="/contact" className="inline-flex items-center gap-2 px-6 py-3 bg-[#142C46] hover:bg-[#203F60] text-white rounded-xl font-bold text-sm transition-all shadow-sm">
                 <span>Contact Engineering Team</span>
                 <ArrowRight className="w-4 h-4" />
               </Link>
@@ -110,7 +110,7 @@ export default function Services() {
                       index % 2 === 1 ? 'lg:order-1' : ''
                     }`}>
                       <div>
-                        <div className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-primary-600 mb-2">
+                        <div className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[#142C46] mb-2">
                           <span className="w-2 h-2 rounded-full bg-primary-500" />
                           <span>Service Specification</span>
                         </div>
@@ -139,7 +139,7 @@ export default function Services() {
                       <div className="flex flex-wrap items-center gap-3 pt-4 border-t border-gray-100">
                         <Link
                           href="/quotation"
-                          className="px-5 py-2.5 bg-primary-500 hover:bg-primary-600 text-white rounded-xl font-bold text-xs sm:text-sm transition-all shadow-2xs hover:shadow-sm inline-flex items-center gap-2"
+                          className="px-5 py-2.5 bg-[#142C46] hover:bg-[#203F60] text-white rounded-xl font-bold text-xs sm:text-sm transition-all shadow-2xs hover:shadow-sm inline-flex items-center gap-2"
                         >
                           <span>Request Quote</span>
                           <ArrowRight className="w-4 h-4" />
@@ -147,7 +147,7 @@ export default function Services() {
                         {service.slug && (
                           <Link
                             href={`/service/${service.slug}`}
-                            className="px-5 py-2.5 bg-gray-100 hover:bg-gray-200 text-navy-800 rounded-xl font-bold text-xs sm:text-sm transition-colors inline-flex items-center gap-1.5"
+                            className="px-5 py-2.5 bg-[#F7F5EF] hover:bg-slate-100 text-[#142C46] rounded-xl font-bold text-xs sm:text-sm transition-colors inline-flex items-center gap-1.5"
                           >
                             <span>Technical Details</span>
                           </Link>
@@ -166,11 +166,11 @@ export default function Services() {
       <section className="py-16 lg:py-24 bg-gray-50/80 border-y border-gray-200/60">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-3xl mx-auto mb-14">
-            <span className="inline-block px-3 py-1 rounded-full bg-primary-50 text-primary-600 border border-primary-100 text-xs font-semibold uppercase tracking-wider mb-2">
+            <span className="inline-block px-3 py-1 rounded-full bg-[#F7F5EF] text-[#142C46] border border-[#E1E5EA] text-xs font-semibold uppercase tracking-wider mb-2">
               Execution Methodology
             </span>
             <h2 className="font-display text-3xl lg:text-4xl font-bold text-navy-950 tracking-tight mb-3">
-              Our Certified Process
+              Our Installation Process
             </h2>
             <p className="text-gray-600 text-sm sm:text-base">
               From site diagnostic and moisture testing to surface profiling and final application, we adhere strictly to international flooring standards.
@@ -209,8 +209,8 @@ export default function Services() {
                 <div key={item.step} className="bg-white rounded-2xl p-6 border border-gray-200/80 shadow-2xs relative hover:shadow-md transition-all flex flex-col justify-between">
                   <div>
                     <div className="flex items-center justify-between mb-4">
-                      <span className="text-3xl font-display font-extrabold text-primary-500/20">{item.step}</span>
-                      <div className="w-10 h-10 rounded-xl bg-primary-50 text-primary-600 flex items-center justify-center">
+                      <span className="text-3xl font-display font-extrabold text-[#607D98]/20">{item.step}</span>
+                      <div className="w-10 h-10 rounded-xl bg-primary-50 text-[#142C46] flex items-center justify-center">
                         <IconComp className="w-5 h-5" />
                       </div>
                     </div>
@@ -235,7 +235,7 @@ export default function Services() {
             Our experienced sales engineers are ready to inspect your site, perform moisture testing, and recommend the exact chemical system for your budget.
           </p>
           <div className="flex flex-col sm:flex-row justify-center items-center gap-4">
-            <Link href="/quotation" className="w-full sm:w-auto bg-primary-500 hover:bg-primary-600 text-white px-8 py-3.5 rounded-xl font-bold text-sm shadow-lg shadow-primary-500/25 transition-all">
+            <Link href="/quotation" className="w-full sm:w-auto bg-[#142C46] hover:bg-[#203F60] text-white px-8 py-3.5 rounded-xl font-bold text-sm shadow-lg shadow-primary-500/25 transition-all">
               Request On-Site Inspection
             </Link>
             <Link href="/contact" className="w-full sm:w-auto bg-navy-800/80 hover:bg-navy-800 border border-navy-700 text-white px-8 py-3.5 rounded-xl font-bold text-sm transition-all">

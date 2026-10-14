@@ -14,19 +14,19 @@ export function CustomerLayout({ children }: CustomerLayoutProps) {
     <div className="min-h-screen flex flex-col">
       <a href="#main-content" className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-lg focus:bg-white focus:px-4 focus:py-3 focus:text-navy-950 focus:shadow-lg">Skip to main content</a>
       <Header />
-      <div className="hidden md:block mt-[116px] border-b border-navy-100/70 bg-white/95 backdrop-blur-sm relative z-40">
-        <div className="page-container h-11 flex items-center justify-between gap-4 text-[12px]">
-          <div className="flex items-center gap-5 text-navy-600">
-            <span className="font-semibold text-navy-900">How can we help?</span>
-            <Link href="/shop" className="inline-flex items-center gap-1.5 hover:text-primary-600 transition-colors"><ShoppingBag className="w-3.5 h-3.5" />Shop materials</Link>
-            <Link href="/services" className="inline-flex items-center gap-1.5 hover:text-primary-600 transition-colors"><Wrench className="w-3.5 h-3.5" />Find a service</Link>
-            <Link href="/quotation" className="inline-flex items-center gap-1.5 hover:text-primary-600 transition-colors"><MessageSquareQuote className="w-3.5 h-3.5" />Get a quote</Link>
-            <Link href="/track-order" className="inline-flex items-center gap-1.5 hover:text-primary-600 transition-colors"><ClipboardCheck className="w-3.5 h-3.5" />Track order</Link>
+      <div className="hidden md:block mt-16 lg:mt-[116px] border-b border-[#E1E5EA] bg-[#F7F5EF] relative z-40">
+        <div className="page-container min-h-10 py-2 flex flex-wrap items-center justify-between gap-x-4 gap-y-2 text-[12px]">
+          <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-slate-700">
+            <span className="font-semibold text-[#142C46]">How can we help?</span>
+            <Link href="/shop" className="inline-flex items-center gap-1.5 hover:text-[#142C46] transition-colors"><ShoppingBag className="w-3.5 h-3.5" />Shop materials</Link>
+            <Link href="/services" className="inline-flex items-center gap-1.5 hover:text-[#142C46] transition-colors"><Wrench className="w-3.5 h-3.5" />Find a service</Link>
+            <Link href="/quotation" className="inline-flex items-center gap-1.5 hover:text-[#142C46] transition-colors"><MessageSquareQuote className="w-3.5 h-3.5" />Get a quote</Link>
+            <Link href="/track-order" className="inline-flex items-center gap-1.5 hover:text-[#142C46] transition-colors"><ClipboardCheck className="w-3.5 h-3.5" />Track order</Link>
           </div>
-          <Link href="/portal" className="inline-flex items-center gap-1.5 font-semibold text-primary-600 hover:text-primary-700">Customer account <ArrowRight className="w-3.5 h-3.5" /></Link>
+          <Link href="/portal" className="inline-flex items-center gap-1.5 font-semibold text-[#142C46] hover:text-slate-600">Customer account <ArrowRight className="w-3.5 h-3.5" /></Link>
         </div>
       </div>
-      <main id="main-content" tabIndex={-1} className="flex-1 pt-16 lg:pt-0">{children}</main>
+      <main id="main-content" tabIndex={-1} className="flex-1 pt-16 md:pt-0">{children}</main>
       <Footer />
       <WhatsAppButton />
     </div>

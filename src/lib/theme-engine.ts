@@ -160,7 +160,7 @@ export interface AppliedTheme {
 }
 
 export const DEFAULT_APPLIED_THEME: AppliedTheme = {
-  primary_color: '#153f69', secondary_color: '#c9971f', accent_color: '#0369a1',
+  primary_color: '#142c46', secondary_color: '#c5ad7a', accent_color: '#355a78',
   heading_font: 'Space Grotesk', body_font: 'Inter', button_style: 'rounded', border_radius: 8, spacing_scale: 8,
 };
 

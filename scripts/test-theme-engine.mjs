@@ -13,11 +13,11 @@ check('color ramp contains eleven shade steps', () => {
   if (Object.keys(generateColorRamp('#153f69')).length !== 11) throw new Error('Expected 11 shade steps.');
 });
 check('invalid theme color normalizes safely', () => {
-  if (normalizeAppliedTheme({ primary_color: 'red' }).primary_color !== '#153f69') throw new Error('Invalid color did not fall back.');
+  if (normalizeAppliedTheme({ primary_color: 'red' }).primary_color !== '#142c46') throw new Error('Invalid color did not fall back.');
 });
 check('low-contrast persisted theme normalizes to safe brand colors', () => {
   const normalized = normalizeAppliedTheme({ primary_color: '#c9971f', accent_color: '#3b82f6' });
-  if (normalized.primary_color !== '#153f69' || normalized.accent_color !== '#0369a1') throw new Error('Low-contrast persisted color did not fall back safely.');
+  if (normalized.primary_color !== '#142c46' || normalized.accent_color !== '#355a78') throw new Error('Low-contrast persisted color did not fall back safely.');
 });
 check('unsafe low-contrast primary is rejected', () => {
   const errors = validateAppliedTheme({ primary_color: '#ffffff', secondary_color: '#c9971f', accent_color: '#0369a1', heading_font: 'Inter', body_font: 'Inter', button_style: 'rounded', border_radius: 8, spacing_scale: 8 });
@@ -58,7 +58,7 @@ check('design tokens reject control characters without regex control ranges', ()
 });
 check('theme values are clamped to supported bounds', () => {
   const normalized = normalizeAppliedTheme({ primary_color: 'red', heading_font: '<bad>', button_style: 'weird', border_radius: 100, spacing_scale: 0 });
-  if (normalized.primary_color !== '#153f69' || normalized.heading_font !== 'Space Grotesk' || normalized.button_style !== 'rounded' || normalized.border_radius !== 32 || normalized.spacing_scale !== 6) throw new Error('Normalization did not apply safe defaults/bounds.');
+  if (normalized.primary_color !== '#142c46' || normalized.heading_font !== 'Space Grotesk' || normalized.button_style !== 'rounded' || normalized.border_radius !== 32 || normalized.spacing_scale !== 6) throw new Error('Normalization did not apply safe defaults/bounds.');
 });
 check('applyTheme updates semantic variables and preserves both dynamic ramps', () => {
   const vars = new Map();

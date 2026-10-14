@@ -16,8 +16,8 @@ const revenueChart = read('src/components/admin/RevenueTrendChart.tsx');
 const reportsPage = read('src/pages/admin/reports.tsx');
 
 for (const [label, source, tokens] of [
-  ['Tailwind palette', tailwind, ["primary:", "500: '#153f69'", "gold:", "500: '#c9971f'", "50: '#faf6ee'", "400: '#64748b'"]],
-  ['CSS semantic tokens', css, ['--topline-brand-primary: #153f69', '--topline-brand-accent: #c9971f', '--topline-page-background: #faf6ee', '--topline-surface: #ffffff', '--topline-muted: #64748b', '--topline-success:', '--topline-warning:', '--topline-danger:', '--topline-info:', '--topline-chart-1:', '--topline-chart-4:']],
+  ['Tailwind palette', tailwind, ["primary:", "500: '#142c46'", "gold:", "500: '#c5ad7a'", "50: '#faf6ee'", "400: '#64748b'"]],
+  ['CSS semantic tokens', css, ['--topline-brand-primary: #142c46', '--topline-brand-accent: #c5ad7a', '--topline-page-background: #f7f5ef', '--topline-surface: #ffffff', '--topline-muted: #64748b', '--topline-success:', '--topline-warning:', '--topline-danger:', '--topline-info:', '--topline-chart-1:', '--topline-chart-4:']],
   ['Runtime theme validation', engine, ['normalizeAppliedTheme', 'validateAppliedTheme', 'isValidThemeColor', 'ALLOWED_THEME_FONTS', 'applyAccentColorRamp', 'LIGHTER_STEPS', 'DARKER_STEPS', 'Math.min(32', 'Math.min(12', '--layout-section-gap', '--layout-content-gap']],
   ['Custom CSS safety', engine, ['validateCustomCss', '@import', 'outline', '40,000 characters', 'isSafeDesignTokenValue']],
   ['Theme application', applier, ['DEFAULT_APPLIED_THEME', 'validateCustomCss', 'isSafeDesignTokenValue', 'loadSiteDesignTokens', 'admin-custom-css']],
@@ -47,11 +47,11 @@ function luminance(hex) {
 }
 function contrast(a, b) { const x = luminance(a), y = luminance(b); return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05); }
 const contrastPairs = [
-  ['#153f69', '#ffffff', 'brand primary on white'],
-  ['#153f69', '#faf6ee', 'brand primary on warm background'],
+  ['#142c46', '#ffffff', 'brand primary on white'],
+  ['#142c46', '#f7f5ef', 'brand primary on warm background'],
   ['#64748b', '#ffffff', 'muted text on white'],
-  ['#855c16', '#ffffff', 'strong gold accent fallback on white'],
-  ['#916d16', '#ffffff', 'generated gold accent text on white'],
+  ['#79633b', '#ffffff', 'strong champagne accent fallback on white'],
+  ['#79633b', '#ffffff', 'generated champagne accent text on white'],
   ['#0369a1', '#ffffff', 'supporting accent on white'],
   ['#166534', '#f0fdf4', 'success text on success surface'],
   ['#854d0e', '#fffbeb', 'warning text on warning surface'],

@@ -11,7 +11,7 @@ interface ProjectWithImages extends Project {
 }
 
 export function RecentProjects() {
-  const { projects, loading } = useProjects({ activeOnly: true });
+  const { projects, loading, error } = useProjects({ activeOnly: true });
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
   const [selectedProject, setSelectedProject] = useState<ProjectWithImages | null>(null);
   const [activeImageIndex, setActiveImageIndex] = useState<number>(0);
@@ -162,14 +162,21 @@ export function RecentProjects() {
         {/* Loading State - Skeleton Grid */}
         {loading ? (
           <ProjectsSkeleton />
+        ) : error ? (
+          <div className="text-center py-16 bg-white rounded-2xl border border-[#E1E5EA]">
+            <Building2 className="w-10 h-10 text-[#607D98] mx-auto mb-3" />
+            <p className="text-[#142C46] font-semibold text-base mb-1">Project gallery temporarily unavailable</p>
+            <p className="text-slate-600 text-sm">The project records could not be loaded. Please visit the full portfolio or contact our team.</p>
+            <Link href="/portfolio" className="inline-flex mt-4 items-center gap-2 rounded-lg bg-[#142C46] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#203F60]">View portfolio <ArrowRight className="w-4 h-4" /></Link>
+          </div>
         ) : filteredProjects.length === 0 ? (
-          <div className="text-center py-16 bg-navy-950/40 rounded-2xl border border-navy-700/50">
+          <div className="text-center py-16 bg-white rounded-2xl border border-[#E1E5EA]">
             <Building2 className="w-12 h-12 text-navy-400 mx-auto mb-3" />
-            <p className="text-navy-100 font-semibold text-base mb-1">No projects found in "{selectedCategory}".</p>
-            <p className="text-navy-300 text-xs">Try selecting another category filter above or check back soon.</p>
+            <p className="text-[#142C46] font-semibold text-base mb-1">No projects found in "{selectedCategory}".</p>
+            <p className="text-slate-600 text-sm">Try selecting another category filter above or check back soon.</p>
             <button
               onClick={() => setSelectedCategory('All')}
-              className="mt-4 px-4 py-2 bg-navy-800 hover:bg-navy-700 text-xs text-primary-300 font-semibold rounded-lg transition-colors"
+              className="mt-4 px-4 py-2 bg-[#F7F5EF] hover:bg-slate-100 text-xs text-[#142C46] font-semibold rounded-lg transition-colors"
             >
               Reset Category Filter
             </button>

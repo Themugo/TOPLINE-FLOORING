@@ -79,7 +79,7 @@ export default function ServiceDetail() {
     return (
       <CustomerLayout>
         <div className="min-h-[60vh] flex items-center justify-center">
-          <Loader2 className="w-8 h-8 text-primary-500 animate-spin" />
+          <Loader2 className="w-8 h-8 text-[#607D98] animate-spin" />
         </div>
       </CustomerLayout>
     );
@@ -92,7 +92,7 @@ export default function ServiceDetail() {
           <div className="text-center px-4">
             <h1 className="font-display text-2xl font-bold text-navy-950 mb-2">Service Specification Not Found</h1>
             <p className="text-gray-500 mb-6 text-sm">The requested service spec is unavailable or may have been updated.</p>
-            <Link href="/services" className="inline-flex items-center gap-2 px-6 py-3 bg-primary-500 hover:bg-primary-600 text-white rounded-xl font-bold text-sm shadow-sm transition-all">
+            <Link href="/services" className="inline-flex items-center gap-2 px-6 py-3 bg-[#142C46] hover:bg-[#203F60] text-white rounded-xl font-bold text-sm shadow-sm transition-all">
               <span>Browse All Services</span>
               <ArrowRight className="w-4 h-4" />
             </Link>
@@ -124,12 +124,12 @@ export default function ServiceDetail() {
                 {service.short_description || service.description}
               </p>
               <div className="flex flex-wrap items-center gap-4">
-                <Link href="/quotation" className="px-6 py-3 bg-primary-500 hover:bg-primary-600 text-white rounded-xl font-bold text-sm transition-all shadow-sm inline-flex items-center gap-2">
+                <Link href="/quotation" className="px-6 py-3 bg-[#142C46] hover:bg-[#203F60] text-white rounded-xl font-bold text-sm transition-all shadow-sm inline-flex items-center gap-2">
                   <span>Get Quotation</span>
                   <ArrowRight className="w-4 h-4" />
                 </Link>
                 <Link href="/contact" className="px-6 py-3 bg-white border border-gray-200 text-navy-800 hover:bg-gray-50 rounded-xl font-bold text-sm transition-colors inline-flex items-center gap-2">
-                  <PhoneCall className="w-4 h-4 text-primary-500" />
+                  <PhoneCall className="w-4 h-4 text-[#607D98]" />
                   <span>Request Site Visit</span>
                 </Link>
               </div>
@@ -149,9 +149,9 @@ export default function ServiceDetail() {
                 <div className="absolute bottom-4 left-4 right-4 flex items-center justify-between text-white text-xs font-semibold bg-navy-950/80 backdrop-blur-md px-4 py-2.5 rounded-xl border border-white/10">
                   <span className="flex items-center gap-1.5">
                     <ShieldCheck className="w-4 h-4 text-emerald-400" />
-                    {companyName} Certified Application
+                    Technical service information
                   </span>
-                  <span className="text-primary-300">10-Yr Warranty</span>
+
                 </div>
               </div>
             </div>
@@ -196,7 +196,7 @@ export default function ServiceDetail() {
             Contact us today for a free technical consultation and formal quote for your {service.name.toLowerCase()} project.
           </p>
           <div className="flex flex-col sm:flex-row justify-center items-center gap-4">
-            <Link href="/quotation" className="w-full sm:w-auto bg-primary-500 hover:bg-primary-600 text-white px-8 py-3 rounded-xl font-bold text-sm shadow-md transition-all">
+            <Link href="/quotation" className="w-full sm:w-auto bg-[#142C46] hover:bg-[#203F60] text-white px-8 py-3 rounded-xl font-bold text-sm shadow-md transition-all">
               Request Project Quotation
             </Link>
             <Link href="/services" className="w-full sm:w-auto bg-navy-800 border border-navy-700 text-white hover:bg-navy-700 px-8 py-3 rounded-xl font-bold text-sm transition-all">

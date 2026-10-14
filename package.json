@@ -99,6 +99,7 @@
     "verify:operation-18-theme-brand-governance": "node scripts/verify-operation-18-theme-brand-governance.mjs",
     "verify:project-documents": "node scripts/verify-project-documents.mjs",
     "verify:admin-management-uploads": "node scripts/verify-admin-management-uploads.mjs",
+    "test:e2e:services-installation": "node scripts/e2e-service-upload-installation.mjs",
     "verify:delivery-worker-hardening": "node scripts/verify-delivery-worker-hardening.mjs",
     "verify:admin-feedback-contract": "node scripts/verify-admin-feedback-contract.mjs",
     "verify:database-read-boundary": "node scripts/verify-database-read-boundary.mjs",

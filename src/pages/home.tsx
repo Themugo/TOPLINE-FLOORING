@@ -43,12 +43,17 @@ export default function Home() {
   const getSection = (type: string) => sections.find(s => s.section_type === type);
   const productsSection = getSection('products');
   const productsLimit = Number(productsSection?.content?.limit) || 6;
-  const { products } = useProducts({ featured: true, limit: productsLimit });
+  const { products: featuredProducts, error: featuredProductsError } = useProducts({ featured: true, limit: productsLimit });
+  // Keep the homepage useful when the catalogue is populated but no products are marked featured.
+  // The query still respects active/public product rules; it does not create demo products.
+  const { products: catalogueProducts, error: catalogueProductsError } = useProducts({ limit: productsLimit });
+  const products = featuredProducts.length > 0 ? featuredProducts : catalogueProducts;
+  const productsLoadError = featuredProductsError && catalogueProductsError ? featuredProductsError : null;
   const { projects } = useProjects({ activeOnly: true });
   const { testimonials } = useTestimonials();
   const { partners } = usePartners();
   const { promotions } = usePromotions('top');
-  const { services } = useServices();
+  const { services, error: servicesLoadError } = useServices();
   const { settings } = useSiteSettings();
   const phone = settings.contact?.phone || '';
   const { theme } = useThemeSettings();
@@ -63,8 +68,6 @@ export default function Home() {
   const heroSection = sections.find(s => s.section_type === 'hero');
   const slideInterval = heroSection?.content?.slide_interval || 6000;
   const overlayOpacity = heroSection?.content?.overlay_opacity || 70;
-  const showFeaturedProducts = heroSection?.content?.show_featured_products !== false;
-  const showFeaturedServices = heroSection?.content?.show_featured_services !== false;
 
   // Generic accessor for the other admin-editable sections (services,
   // about, products, partners, testimonials, cta). Falls back to
@@ -109,80 +112,34 @@ export default function Home() {
   const addToCartText = productsSection?.content?.add_to_cart_text || 'Add to Cart';
   const testimonialsBadgeText = testimonialsSection?.content?.badge_text || 'Client Feedback';
 
-  // Combine hero slides with services, featured products, and project showcases
+  // The homepage hero is curated, not assembled from randomly shuffled catalogue
+  // records. Service and product discovery belongs in their own sections. This keeps
+  // the headline, image and call to action stable between visits while preserving CMS slides.
   const allSlides: HeroSlideData[] = useMemo(() => {
-    const combined: HeroSlideData[] = [];
-
-    // Add dedicated hero slides first
-    slides.forEach((slide, idx) => {
-      combined.push({
-        id: slide.id,
-        title: slide.title,
-        subtitle: slide.subtitle,
-        description: slide.description,
-        image_url: ensureRealImage(slide.image_url, 'hero', slide.id || idx),
-        button_text: slide.button_text,
-        button_link: slide.button_link,
-        source_type: 'hero_slide'
-      });
-    });
-
-    // Services pool
-    const servicesPool: HeroSlideData[] = showFeaturedServices ? services.map((service, idx) => ({
-      id: `service-${service.id}`,
-      title: service.name,
-      subtitle: 'Our Services',
-      description: service.short_description || service.description,
-      image_url: ensureRealImage(service.image_url, service.slug || service.name, service.id || idx),
-      button_text: 'Learn More',
-      button_link: '/services',
-      source_type: 'service' as const,
-    })) : [];
-
-    // Featured products pool
-    const productsPool: HeroSlideData[] = showFeaturedProducts ? products.map((product, idx) => ({
-      id: `product-${product.id}`,
-      title: product.name,
-      subtitle: 'Featured Material',
-      description: product.short_description || `High performance ${product.category?.name || 'industrial'} system from our shop`,
-      image_url: ensureRealImage(product.image_url, product.category?.slug || product.category?.name, product.id || idx),
-      button_text: 'View Material',
-      button_link: `/product/${product.slug}`,
-      source_type: 'product' as const,
-    })) : [];
-
-    // Portfolio projects pool (guarantees real installation photos even if shop is out of stock)
-    const projectsPool: HeroSlideData[] = projects.map((project, idx) => ({
-      id: `project-${project.id}`,
-      title: project.title,
-      subtitle: 'Completed Showcase',
-      description: project.summary || project.description || `Industrial turnkey installation in ${project.location || 'East Africa'}`,
-      image_url: ensureRealImage(project.image_url, 'industrial', project.id || idx),
-      button_text: 'Explore Project',
-      button_link: '/portfolio',
+    const configuredSlides = slides.map((slide, idx) => ({
+      id: slide.id,
+      title: slide.title,
+      subtitle: slide.subtitle,
+      description: slide.description,
+      image_url: ensureRealImage(slide.image_url, 'hero', slide.id || idx),
+      button_text: slide.button_text,
+      button_link: slide.button_link,
       source_type: 'hero_slide' as const,
     }));
 
-    // Fisher-Yates shuffle
-    const shuffle = <T,>(arr: T[]): T[] => {
-      const copy = [...arr];
-      for (let i = copy.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [copy[i], copy[j]] = [copy[j], copy[i]];
-      }
-      return copy;
-    };
+    if (configuredSlides.length > 0) return configuredSlides;
 
-    const candidates = [...servicesPool, ...productsPool, ...projectsPool];
-    const shuffledCandidates = shuffle(candidates).slice(0, 6);
-    combined.push(...shuffledCandidates);
-
-    // Final safety pass to ensure no empty image URLs or static placeholders
-    return combined.map((s, i) => ({
-      ...s,
-      image_url: ensureRealImage(s.image_url, 'flooring', s.id || i),
-    }));
-  }, [slides, services, products, projects, showFeaturedProducts, showFeaturedServices]);
+    return [{
+      id: 'topline-homepage-default',
+      title: 'Floors and waterproofing built to perform.',
+      subtitle: 'FLOORING & WATERPROOFING CONTRACTOR',
+      description: 'Technical flooring systems, roof and water-tank waterproofing, and installation support across Kenya.',
+      image_url: getRandomRealImage('flooring', 0),
+      button_text: 'Discuss Your Project',
+      button_link: '/quotation',
+      source_type: 'hero_slide' as const,
+    }];
+  }, [slides]);
 
   // Preload hero slide, service, product, project, and partner images for smooth transitions
   useImagePreloader(
@@ -248,7 +205,7 @@ export default function Home() {
 
       {/* Hero Section - Full viewport slider with dark navy overlay */}
       <section
-        className="relative min-h-[31rem] h-[58vh] md:h-[62vh] lg:h-[68vh] overflow-hidden"
+        className="relative h-[27rem] min-h-[27rem] sm:h-[29rem] lg:h-[31rem] overflow-hidden bg-[#142C46]"
         onMouseEnter={() => setIsSliderPaused(true)}
         onMouseLeave={() => setIsSliderPaused(false)}
         onTouchStart={handleTouchStart}
@@ -262,8 +219,8 @@ export default function Home() {
             }`}
           >
             <div
-              className="absolute inset-0 bg-gradient-to-r from-navy-950/80 via-navy-900/70 to-navy-800/50 z-10"
-              style={{ opacity: overlayOpacity / 100 }}
+              className="absolute inset-0 z-10 bg-gradient-to-r from-[#142C46]/90 via-[#142C46]/70 to-[#142C46]/15"
+              style={{ opacity: Math.min(1, Math.max(0.55, overlayOpacity / 100)) }}
             />
             <img
               src={slide.image_url}
@@ -276,11 +233,11 @@ export default function Home() {
               }}
             />
             <div className="absolute inset-0 z-20 flex items-center">
-              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
-                <div className="max-w-xl">
+              <div className="max-w-7xl mx-auto px-5 sm:px-8 lg:px-10 w-full">
+                <div className="max-w-2xl py-10">
                   {slide.subtitle && (
                     <p
-                      className={`text-primary-400 font-medium mb-2 text-sm uppercase tracking-wider transition-all duration-500 delay-100 ${
+                      className={`text-[#E6D7B5] font-semibold mb-4 text-xs sm:text-sm uppercase tracking-[0.18em] transition-all duration-500 delay-100 ${
                         index === currentSlide ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2'
                       }`}
                     >
@@ -288,7 +245,7 @@ export default function Home() {
                     </p>
                   )}
                   <h1
-                    className={`font-display text-3xl sm:text-4xl lg:text-6xl font-bold text-white mb-3 transition-all duration-500 delay-200 ${
+                    className={`font-display text-4xl sm:text-5xl lg:text-[3.75rem] leading-[1.04] font-bold tracking-tight text-white mb-5 max-w-2xl transition-all duration-500 delay-200 ${
                       index === currentSlide ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2'
                     }`}
                   >
@@ -296,7 +253,7 @@ export default function Home() {
                   </h1>
                   {slide.description && (
                     <p
-                      className={`text-sm lg:text-base text-gray-200 mb-5 line-clamp-2 transition-all duration-500 delay-300 ${
+                      className={`text-base sm:text-lg text-slate-100 mb-7 max-w-xl leading-relaxed line-clamp-3 transition-all duration-500 delay-300 ${
                         index === currentSlide ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2'
                       }`}
                     >
@@ -306,7 +263,7 @@ export default function Home() {
                   {slide.button_text && slide.button_link && (
                     <Link
                       href={slide.button_link}
-                      className={`inline-flex items-center gap-2 bg-primary-500 hover:bg-primary-600 text-white px-5 py-2.5 rounded-lg text-sm font-medium transition-all duration-500 delay-400 shadow-lg hover:shadow-xl ${
+                      className={`inline-flex items-center gap-2 bg-[#F7F5EF] hover:bg-white text-[#142C46] px-6 py-3 rounded-lg text-sm font-semibold transition-all duration-500 delay-400 shadow-sm hover:shadow-md ${
                         index === currentSlide ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2'
                       }`}
                     >
@@ -351,7 +308,7 @@ export default function Home() {
       </section>
 
       {/* Customer intent shortcuts: help first-time visitors choose the right journey immediately. */}
-      <section className="relative z-30 px-4 sm:px-6 lg:px-8 -mt-7 sm:-mt-9">
+      <section className="relative z-30 bg-[#F7F5EF] px-4 sm:px-6 lg:px-8 py-5 sm:py-6">
         <div className="max-w-6xl mx-auto customer-intent-grid">
           <Link href="/shop" className="group customer-intent-card">
             <div><strong>Shop materials</strong><span>Browse products and variants</span></div><ArrowRight className="w-4 h-4 text-primary-500 transition-transform group-hover:translate-x-1" />
@@ -371,7 +328,7 @@ export default function Home() {
       {/* Trust Bar - elevated stats card overlapping the hero, admin-configurable in Homepage Builder */}
       {showTrustBar && (
         <section className="relative z-30 px-4 sm:px-6 lg:px-8">
-          <div className="max-w-5xl mx-auto -mt-8 sm:-mt-10 lg:-mt-12 bg-white rounded-2xl shadow-xl border border-gray-100 px-6 sm:px-10 py-6 sm:py-8">
+          <div className="max-w-5xl mx-auto mt-2 bg-white rounded-xl shadow-sm border border-slate-200 px-6 sm:px-10 py-6 sm:py-8">
             <div className={`grid grid-cols-2 gap-6 sm:gap-4 divide-y-0 ${TRUST_BAR_GRID_COLS[Math.min(trustBarItems.length, 6)] || 'sm:grid-cols-4'}`}>
               {trustBarItems.slice(0, 6).map((item, i) => (
                 <div key={i} className="text-center sm:border-l sm:first:border-l-0 border-gray-100 sm:px-4">
@@ -388,7 +345,7 @@ export default function Home() {
       {isSectionVisible('services') && (
       <section className={`${servicesSection?.padding || 'py-16 lg:py-20'} bg-white`} style={sectionStyle('services')}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-3xl mx-auto mb-12">
+          <div className="text-left max-w-3xl mb-9">
             <span className="inline-block px-3 py-1 rounded-full bg-primary-50 text-primary-600 border border-primary-100 text-xs font-semibold uppercase tracking-wider mb-2">
               {servicesBadgeText}
             </span>
@@ -434,7 +391,7 @@ export default function Home() {
                   <Link
                     key={service.id}
                     href="/services"
-                    className="group relative overflow-hidden rounded-2xl aspect-[4/3] shadow-md hover:shadow-xl transition-all duration-300 border border-gray-100"
+                    className="group relative overflow-hidden rounded-xl aspect-[4/3] shadow-sm hover:shadow-lg transition-all duration-300 border border-slate-200"
                   >
                     <img
                       src={withFallback(service.image_url, getServicePlaceholder(service.slug || service.name))}
@@ -458,7 +415,7 @@ export default function Home() {
             )
           ) : (
             <div className="text-center py-10 bg-gray-50 rounded-2xl border border-dashed border-gray-200">
-              <p className="text-gray-500 text-sm">No services available yet. Add services in the admin panel.</p>
+              <p className="text-gray-600 text-sm">{servicesLoadError ? "We could not load services right now. Please try again or contact our team." : "Service information is being updated. Please contact our team for assistance."}</p>
             </div>
           )}
 
@@ -483,7 +440,7 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-10 lg:gap-16 items-center">
             <div>
-              <span className="inline-block px-3 py-1 rounded-full bg-primary-50 text-primary-600 border border-primary-100 text-xs font-semibold uppercase tracking-wider mb-2">
+              <span className="inline-block text-[#79633B] text-xs font-semibold uppercase tracking-[0.16em] mb-2">
                 {aboutBadgeText}
               </span>
               <h2 className="font-display text-2xl lg:text-4xl font-bold text-navy-950 tracking-tight mb-4">
@@ -554,7 +511,7 @@ export default function Home() {
                 const variants = getActiveProductVariants(product);
                 const selectedVariant = variants.find((v) => v.id === selectedFeaturedVariants[product.id]) || getDefaultProductVariant(product);
                 return (
-                <div key={product.id} className="group bg-white rounded-2xl border border-gray-200/80 hover:border-primary-300 shadow-2xs hover:shadow-xl transition-all duration-300 overflow-hidden flex flex-col justify-between">
+                <div key={product.id} className="group bg-white rounded-xl border border-slate-200 hover:border-slate-300 shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden flex flex-col justify-between">
                   <div>
                     <Link href={`/product/${product.slug}`} className="block relative aspect-square overflow-hidden bg-gray-50">
                       <img
@@ -602,7 +559,7 @@ export default function Home() {
             </div>
           ) : (
             <div className="text-center py-10 bg-gray-50 rounded-2xl border border-dashed border-gray-200">
-              <p className="text-gray-500 text-sm">No featured products available at the moment.</p>
+              <p className="text-gray-600 text-sm">{productsLoadError ? "We could not load materials right now. Please try the full catalogue or contact our team." : "No active materials are available to feature right now. Browse the full catalogue for current listings."}</p>
             </div>
           )}
         </div>
