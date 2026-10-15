@@ -61,14 +61,14 @@ export default function ShopDetail() {
     },
   } : undefined);
 
-  const { addItem } = useCart();
+  const { addToCart } = useCart();
 
   useEffect(() => {
     if (!product) return;
     trackRecentlyViewed(product.slug);
     setSelectedImageIndex(0);
     setQty(1);
-    setSelectedVariant(product.variants?.find((v) => v.is_default && v.is_active) || product.variants?.find((v) => v.is_active));
+    setSelectedVariant(getDefaultProductVariant(product));
   }, [product?.slug]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const { products: relatedProductsRaw } = useProducts(
@@ -118,10 +118,7 @@ export default function ShopDetail() {
 
   const handleAddToCart = () => {
     if (!product || !isProductPurchasable(product, selectedVariant)) return;
-    addItem(product, selectedVariant);
-    if (qty > 1) {
-      for (let i = 1; i < qty; i++) addItem(product, selectedVariant);
-    }
+    addToCart(product, qty, selectedVariant);
     setAdded(true);
     setTimeout(() => setAdded(false), 2000);
   };
@@ -262,7 +259,7 @@ export default function ShopDetail() {
                         key={variant.id}
                         type="button"
                         disabled={variant.stock_quantity <= 0}
-                        onClick={() => setSelectedVariant(variant)}
+                        onClick={() => { setSelectedVariant(variant); setQty((current) => Math.max(1, Math.min(current, variant.stock_quantity))); }}
                         className={`px-3 py-2 rounded-lg border text-sm font-medium ${selectedVariant?.id === variant.id ? 'border-primary-500 bg-primary-50 text-primary-700' : 'border-gray-200 text-gray-700'} ${variant.stock_quantity <= 0 ? 'opacity-50 cursor-not-allowed' : ''}`}
                       >
                         {variant.variant_name}
@@ -289,7 +286,13 @@ export default function ShopDetail() {
               </div>
 
               {/* Purchase Actions */}
-              {(selectedVariant ? selectedVariant.stock_quantity > 0 : product.stock_quantity > 0) && (
+              {!isProductPurchasable(product, selectedVariant) && (
+                <div role="status" className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+                  This material is currently unavailable for cart checkout. Please request a quotation or contact us to confirm availability.
+                  <div className="mt-2"><Link href={`/quotation?product=${encodeURIComponent(product.name)}&sku=${encodeURIComponent(product.sku || '')}`} className="inline-flex font-bold underline underline-offset-2">Request a quotation</Link></div>
+                </div>
+              )}
+              {isProductPurchasable(product, selectedVariant) && (
                 <div className="space-y-4 pt-2">
                   <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
                     <div className="flex items-center justify-between sm:justify-start border border-gray-200 rounded-xl bg-gray-50 p-1">
@@ -306,7 +309,8 @@ export default function ShopDetail() {
                       </span>
                       <button
                         className="w-9 h-9 rounded-lg bg-white shadow-2xs flex items-center justify-center hover:bg-gray-100 transition-colors text-navy-950"
-                        onClick={() => setQty((q) => q + 1)}
+                        onClick={() => setQty((q) => Math.min(selectedVariant ? selectedVariant.stock_quantity : product.stock_quantity, q + 1))}
+                        disabled={qty >= (selectedVariant ? selectedVariant.stock_quantity : product.stock_quantity)}
                         aria-label="Increase quantity"
                       >
                         <Plus className="w-3.5 h-3.5" />
@@ -314,6 +318,7 @@ export default function ShopDetail() {
                     </div>
 
                     <button
+                      type="button"
                       onClick={handleAddToCart}
                       className={`flex-1 py-3 px-6 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2 ${
                         added
@@ -452,10 +457,10 @@ export default function ShopDetail() {
                           disabled={!isProductPurchasable(rp, selectedRpVariant)}
                           onClick={(e) => {
                             e.preventDefault();
-                            if (isProductPurchasable(rp, selectedRpVariant)) addItem(rp, selectedRpVariant);
+                            if (isProductPurchasable(rp, selectedRpVariant)) addToCart(rp, 1, selectedRpVariant);
                           }}
                         >
-                          {rp.in_stock ? 'Add' : 'Unavailable'}
+                          {isProductPurchasable(rp, selectedRpVariant) ? 'Add to Cart' : 'Out of Stock'}
                         </button>
                       </div>
                     </div>

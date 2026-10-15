@@ -26,7 +26,7 @@ export default function Shop() {
   // Load the complete active catalogue once so category counts remain correct
   // while category filtering is applied locally.
   const { products, loading, error: loadError, refetch } = useProducts();
-  const { addItem, totalItems } = useCart();
+  const { addToCart, totalItems } = useCart();
   const [, setLocation] = useLocation();
 
   // Preload product images for zero image load delay
@@ -87,8 +87,13 @@ export default function Shop() {
     e.stopPropagation();
     const variants = getActiveProductVariants(product);
     const variant = variants.length ? variants.find((v) => v.id === selectedVariants[product.id]) || getDefaultProductVariant(product) : undefined;
-    if (!isProductPurchasable(product, variant)) return;
-    addItem(product, variant);
+    if (!isProductPurchasable(product, variant)) {
+      // Never silently swallow a click: unavailable materials go to the existing
+      // quotation flow instead of pretending inventory exists.
+      setLocation(`/quotation?product=${encodeURIComponent(product.name)}&sku=${encodeURIComponent(product.sku || '')}`);
+      return;
+    }
+    addToCart(product, 1, variant);
     setAddedItemIds((prev) => ({ ...prev, [product.id]: true }));
     // Make the add-to-cart action visibly complete by opening the cart.
     // The cart state is shared by CartProvider and persists across this route change.
@@ -368,7 +373,7 @@ export default function Shop() {
                                   <span />
                                 )}
 
-                                {product.in_stock ? (
+                                {isProductPurchasable(product, variants.length ? getDefaultProductVariant(product) : undefined) ? (
                                   <span className="bg-emerald-500/90 text-white backdrop-blur-xs text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md">
                                     In Stock
                                   </span>
@@ -428,13 +433,14 @@ export default function Shop() {
                           <button
                             type="button"
                             onClick={(e) => handleAddToCart(product, e)}
-                            disabled={!isProductPurchasable(product, selectedVariant)}
+                            aria-label={isProductPurchasable(product, selectedVariant) ? `Add ${product.name} to cart` : `Request availability for ${product.name}`}
+                            title={isProductPurchasable(product, selectedVariant) ? 'Add this material to your cart' : 'Request availability for this material'}
                             className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
                               isAdded
                                 ? 'bg-emerald-600 text-white shadow-sm scale-105'
                                 : isProductPurchasable(product, selectedVariant)
                                 ? 'bg-primary-500 hover:bg-primary-600 text-white shadow-sm shadow-primary-500/20 active:scale-95'
-                                : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                                : 'bg-amber-100 hover:bg-amber-200 text-amber-900'
                             }`}
                           >
                             {isAdded ? (
@@ -445,7 +451,7 @@ export default function Shop() {
                             ) : (
                               <>
                                 <ShoppingCart className="w-3.5 h-3.5" />
-                                <span>Add to Cart</span>
+                                <span>{isProductPurchasable(product, selectedVariant) ? 'Add to Cart' : 'Request Availability'}</span>
                               </>
                             )}
                           </button>

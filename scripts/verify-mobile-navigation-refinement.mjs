@@ -16,7 +16,7 @@ check('Contact and quotation routes have relevant navigation icons', /startsWith
 check('Mobile navigation links expose at least 48px minimum height', /min-h-12/.test(header));
 check('Active route remains explicitly exposed to assistive technology', /aria-current=\{isActive\(link\.href\) \? 'page' : undefined\}/.test(header));
 check('Menu button exposes expanded state and controls the menu', /aria-expanded=\{mobileMenuOpen\}/.test(header) && /aria-controls="mobile-menu"/.test(header));
-check('Escape closes the mobile menu', /event\.key === 'Escape'\) setMobileMenuOpen\(false\)/.test(header));
+check('Escape closes the mobile menu', /event\.key === 'Escape'\)\s*\{\s*setMobileMenuOpen\(false\);\s*setMoreMenuOpen\(false\);/.test(header));
 check('Route changes close both navigation menus', /setMobileMenuOpen\(false\);\s*setMoreMenuOpen\(false\);[\s\S]*\}, \[location\]\)/.test(header));
 check('Mobile menu actions retain customer account, tracking and quotation routes', /href="\/portal"/.test(header) && /href="\/track-order"/.test(header) && /href="\/quotation"/.test(header));
 check('Phone and email actions remain settings-driven', /href=\{telHref\(phone\)\}/.test(header) && /href=\{`mailto:\$\{email\}`\}/.test(header));

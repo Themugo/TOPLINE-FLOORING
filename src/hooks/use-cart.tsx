@@ -80,36 +80,41 @@ function cartReducer(state: CartState, action: CartAction): CartState {
   }
 }
 
-export function CartProvider({ children }: { children: ReactNode }) {
-  const [state, dispatch] = useReducer(cartReducer, { items: [] });
+function readSavedCart(): CartItem[] {
+  try {
+    const raw = localStorage.getItem('flooring_app_cart');
+    if (!raw) return [];
+    const parsed: unknown = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return [];
+    // Ignore malformed entries instead of allowing one bad local-storage value
+    // to break the entire cart. This is client state, not inventory authority.
+    return parsed.filter((entry: unknown): entry is CartItem => {
+      if (!entry || typeof entry !== 'object') return false;
+      const candidate = entry as Partial<CartItem>;
+      const product = candidate.product;
+      return Boolean(
+        product && typeof product === 'object' &&
+        typeof product.id === 'string' && typeof product.name === 'string' &&
+        Number.isInteger(candidate.quantity) && (candidate.quantity ?? 0) > 0
+      );
+    });
+  } catch {
+    // Storage can be unavailable in private browsing or when browser policy blocks it.
+    return [];
+  }
+}
 
-  useEffect(() => {
-    let savedCart: string | null = null;
-    try {
-      savedCart = localStorage.getItem('flooring_app_cart');
-    } catch {
-      // storage unavailable (private mode, blocked cookies) - start empty
-      return;
-    }
-    if (savedCart) {
-      try {
-        const items = JSON.parse(savedCart);
-        dispatch({ type: 'LOAD_CART', items });
-      } catch {
-        try {
-          localStorage.removeItem('flooring_app_cart');
-        } catch {
-          // ignore storage failures
-        }
-      }
-    }
-  }, []);
+export function CartProvider({ children }: { children: ReactNode }) {
+  // Hydrate synchronously before the first interactive render. Previously, the
+  // initial empty state could be persisted while a saved cart was still loading,
+  // making cart contents appear to disappear during navigation.
+  const [state, dispatch] = useReducer(cartReducer, undefined, () => ({ items: readSavedCart() }));
 
   useEffect(() => {
     try {
       localStorage.setItem('flooring_app_cart', JSON.stringify(state.items));
     } catch {
-      // storage unavailable - skip persisting cart
+      // Storage is best-effort; the in-memory cart remains usable for this session.
     }
   }, [state.items]);
 

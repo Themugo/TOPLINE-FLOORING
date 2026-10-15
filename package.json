@@ -131,7 +131,8 @@
     "verify:shop-page": "node scripts/verify-shop-page.mjs",
     "verify:customer-commerce-pages": "node scripts/verify-customer-commerce-pages.mjs",
     "verify:contact-track-palette": "node scripts/verify-contact-track-palette.mjs",
-    "verify:cart-brand": "node scripts/verify-cart-navigation-and-brand-uniformity.mjs"
+    "verify:cart-brand": "node scripts/verify-cart-navigation-and-brand-uniformity.mjs",
+    "verify:shop-cart-end-to-end": "node scripts/verify-shop-cart-end-to-end.mjs"
   },
   "dependencies": {
     "@fontsource-variable/manrope": "^5.3.0",
