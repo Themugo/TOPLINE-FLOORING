@@ -103,16 +103,22 @@ export default function TrackOrder() {
   const currentStage = status === "shipped" ? "dispatched" : status;
   const stageIndex = orderStages.indexOf(currentStage);
   const cancelled = ["cancelled", "failed"].includes(status);
+  const paymentState = (result?.payment_status || "").toLowerCase();
+  const paymentTone = ["paid", "completed", "succeeded", "success"].includes(paymentState)
+    ? "bg-[#F0FDF4] text-[#166534]"
+    : ["failed", "refunded", "cancelled", "declined"].includes(paymentState)
+      ? "bg-[#FEF2F2] text-[#B91C1C]"
+      : "bg-[#FFFBEB] text-[#854D0E]";
 
   return (
     <CustomerLayout>
       <Breadcrumbs items={[{ label: "Track Order" }]} />
       <div className="bg-[#F7F6F3]">
         <section className="relative overflow-hidden bg-[#0C2D57] text-white">
-          <div aria-hidden="true" className="absolute inset-0 opacity-20 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-[#A8B9CA] via-[#0C2D57] to-[#0B1B2D]" />
+          <div aria-hidden="true" className="absolute inset-0 opacity-20 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-[#0E6B78] via-[#0C2D57] to-[#0B1B2D]" />
           <div className="page-container relative grid gap-8 py-12 sm:py-16 lg:grid-cols-[1fr_280px] lg:items-end lg:py-20">
             <div className="max-w-3xl">
-              <p className="mb-4 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/5 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#E4D8BF]"><ClipboardCheck className="h-4 w-4" /> Order care</p>
+              <p className="mb-4 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/5 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#C8F26A]"><ClipboardCheck className="h-4 w-4" /> Order care</p>
               <h1 className="font-display text-3xl font-semibold leading-tight tracking-tight sm:text-4xl lg:text-5xl">Your order, clearly accounted for.</h1>
               <p className="mt-4 max-w-2xl text-sm leading-7 text-white/75 sm:text-base">Check the latest order and delivery information using the order number and phone number supplied at checkout.</p>
             </div>
@@ -131,16 +137,12 @@ export default function TrackOrder() {
                 <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#566F0D]">Order lookup</p>
                 <h2 className="mt-3 font-display text-2xl font-semibold text-[#0C2D57] sm:text-3xl">Find your delivery</h2>
                 <p className="mt-3 text-sm leading-7 text-slate-600">Use the order reference from your confirmation and the same phone number used when placing the order. We only show a limited summary needed to help you follow progress.</p>
-                <div className="mt-6 flex items-start gap-3 rounded-xl border border-[#DDD9D2] bg-white/70 p-4 text-sm text-slate-600">
-                  <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-[#5F6B7A]" />
-                  <p><span className="font-semibold text-[#0C2D57]">Your details stay protected.</span> Order number alone is not enough to view an order.</p>
-                </div>
                 <div className="mt-6 flex flex-wrap gap-3 text-sm">
-                  <Link href="/contact" className="inline-flex items-center gap-2 font-semibold text-[#0C2D57] hover:text-[#5F6B7A]">Contact support <ArrowRight className="h-4 w-4" /></Link>
-                  <Link href="/quotation" className="inline-flex items-center gap-2 font-semibold text-[#0C2D57] hover:text-[#5F6B7A]">Request a quote <ArrowRight className="h-4 w-4" /></Link>
+                  <Link href="/contact" className="inline-flex items-center gap-2 font-semibold text-[#0C2D57] hover:text-[#0B5864]">Contact support <ArrowRight className="h-4 w-4" /></Link>
+                  <Link href="/quotation" className="inline-flex items-center gap-2 font-semibold text-[#0C2D57] hover:text-[#0B5864]">Request a quote <ArrowRight className="h-4 w-4" /></Link>
                 </div>
               </div>
-              <form onSubmit={handleTrack} className="rounded-2xl border border-[#DDD9D2] bg-white p-5 shadow-[0_18px_55px_-40px_rgba(20,44,70,0.4)] sm:p-8" aria-describedby={error ? "track-order-error" : "track-order-help"}>
+              <form onSubmit={handleTrack} className="rounded-2xl border border-[#DDD9D2] bg-white p-5 shadow-[0_18px_55px_-40px_rgba(12,45,87,0.4)] sm:p-8" aria-describedby={error ? "track-order-error" : "track-order-help"}>
                 <div className="mb-6 border-b border-[#E3DFD8] pb-5">
                   <h2 className="font-display text-xl font-semibold text-[#0C2D57]">Order details</h2>
                   <p id="track-order-help" className="mt-1 text-sm text-slate-500">Both fields are required.</p>
@@ -148,15 +150,15 @@ export default function TrackOrder() {
                 <div className="space-y-5">
                   <div className="space-y-2">
                     <Label htmlFor="orderId" className="text-sm font-semibold text-[#0C2D57]">Order number</Label>
-                    <Input id="orderId" name="orderNumber" autoComplete="off" required maxLength={120} value={orderId} onChange={(e) => setOrderId(e.target.value)} placeholder="Enter your order reference" className="h-12 rounded-lg border-[#D6D2CA] bg-white px-4 text-sm focus-visible:ring-[#5F6B7A]" />
+                    <Input id="orderId" name="orderNumber" autoComplete="off" required maxLength={120} value={orderId} onChange={(e) => setOrderId(e.target.value)} placeholder="Enter your order reference" className="h-12 rounded-lg border-[#868D95] bg-white px-4 text-sm placeholder:text-[#5F6B78] focus-visible:border-[#0E6B78] focus-visible:ring-[#0E6B78]/30" />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="checkoutPhone" className="text-sm font-semibold text-[#0C2D57]">Checkout phone number</Label>
-                    <Input id="checkoutPhone" name="phone" type="tel" autoComplete="tel" required maxLength={30} value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="Use the number entered at checkout" className="h-12 rounded-lg border-[#D6D2CA] bg-white px-4 text-sm focus-visible:ring-[#5F6B7A]" />
+                    <Input id="checkoutPhone" name="phone" type="tel" autoComplete="tel" required maxLength={30} value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="Use the number entered at checkout" className="h-12 rounded-lg border-[#868D95] bg-white px-4 text-sm placeholder:text-[#5F6B78] focus-visible:border-[#0E6B78] focus-visible:ring-[#0E6B78]/30" />
                     <p className="text-xs leading-5 text-slate-500">Enter the number in the same format used when you placed the order.</p>
                   </div>
                   {error && <p id="track-order-error" role="alert" className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm leading-6 text-red-800">{error}</p>}
-                  <Button type="submit" disabled={loading} className="h-12 w-full rounded-lg bg-[#0C2D57] text-sm font-semibold text-white hover:bg-[#203E5D] disabled:opacity-60">
+                  <Button type="submit" disabled={loading} className="h-12 w-full rounded-lg bg-[#0C2D57] text-sm font-semibold text-white hover:bg-[#0A2548] disabled:opacity-60">
                     {loading ? <><span className="mr-2 inline-block h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white" />Looking up order…</> : <><Search className="mr-2 h-4 w-4" /> Track order</>}
                   </Button>
                 </div>
@@ -166,36 +168,36 @@ export default function TrackOrder() {
             <div className="mx-auto max-w-5xl">
               <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
                 <div><p className="text-xs font-bold uppercase tracking-[0.18em] text-[#566F0D]">Order overview</p><h2 className="mt-2 font-display text-2xl font-semibold text-[#0C2D57] sm:text-3xl">Order {result.order_number || result.id.slice(0, 8)}</h2></div>
-                <Button variant="outline" onClick={() => { setResult(null); setError(null); }} className="rounded-lg border-[#C9D1DA] bg-white text-[#0C2D57]"><RotateCcw className="mr-2 h-4 w-4" />Track another order</Button>
+                <Button variant="outline" onClick={() => { setResult(null); setError(null); }} className="rounded-lg border-[#CFCAC1] bg-white text-[#0C2D57]"><RotateCcw className="mr-2 h-4 w-4" />Track another order</Button>
               </div>
               <div className="grid gap-5 lg:grid-cols-[1.2fr_0.8fr]">
                 <div className="space-y-5">
                   <section className="rounded-2xl border border-[#DDD9D2] bg-white p-5 shadow-sm sm:p-7">
                     <div className="flex items-start gap-4">
-                      <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl ${cancelled ? "bg-red-50 text-red-700" : status === "delivered" || status === "completed" ? "bg-emerald-50 text-emerald-700" : "bg-[#F1EFEB] text-[#0C2D57]"}`}>{iconForStatus(status)}</div>
+                      <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl ${cancelled ? "bg-[#FEF2F2] text-[#B91C1C]" : status === "delivered" || status === "completed" ? "bg-[#F0FDF4] text-[#166534]" : ["dispatched", "shipped", "in_transit"].includes(status) ? "bg-[#E6F5F7] text-[#0E6B78]" : "bg-[#F1EFEB] text-[#0C2D57]"}`}>{iconForStatus(status)}</div>
                       <div className="min-w-0 flex-1"><p className="text-xs font-semibold uppercase tracking-wider text-slate-500">Current order status</p><p className="mt-1 font-display text-xl font-semibold text-[#0C2D57]">{orderStatusLabel[status] || status.replace(/_/g, " ")}</p><p className="mt-2 text-sm text-slate-500">Placed {displayDate(result.created_at) || "date unavailable"}</p></div>
                     </div>
                     {!cancelled && <div className="mt-7 grid grid-cols-3 gap-2 sm:grid-cols-6" aria-label="Order progress">
                       {orderStages.map((stage, index) => {
                         const complete = stageIndex >= index || status === "completed";
-                        return <div key={stage} className="min-w-0"><div className={`h-1.5 rounded-full ${complete ? "bg-[#5F6B7A]" : "bg-[#E5E9ED]"}`} /><p className={`mt-2 text-[10px] leading-4 sm:text-[11px] ${complete ? "font-semibold text-[#0C2D57]" : "text-slate-400"}`}>{({ pending: "Received", confirmed: "Confirmed", processing: "Preparing", dispatched: "Dispatched", in_transit: "In transit", delivered: "Delivered" } as Record<string, string>)[stage]}</p></div>;
+                        return <div key={stage} className="min-w-0"><div className={`h-1.5 rounded-full ${complete ? "bg-[#0E6B78]" : "bg-[#E3DFD8]"}`} /><p className={`mt-2 text-[10px] leading-4 sm:text-[11px] ${complete ? "font-semibold text-[#0C2D57]" : "text-slate-500"}`}>{({ pending: "Received", confirmed: "Confirmed", processing: "Preparing", dispatched: "Dispatched", in_transit: "In transit", delivered: "Delivered" } as Record<string, string>)[stage]}</p></div>;
                       })}
                     </div>}
                     {cancelled && <p className="mt-5 rounded-lg bg-red-50 p-3 text-sm leading-6 text-red-800">This order needs assistance. Please contact our team for clarification.</p>}
                     <div className="mt-6 grid gap-4 border-t border-[#E3DFD8] pt-5 sm:grid-cols-2">
-                      <div><p className="text-xs text-slate-500">Payment status</p><p className="mt-1 font-semibold capitalize text-[#0C2D57]">{(result.payment_status || "unknown").replace(/_/g, " ")}</p></div>
+                      <div><p className="text-xs text-slate-500">Payment status</p><p className={`mt-1 inline-flex rounded-full px-3 py-1 text-sm font-semibold capitalize ${paymentTone}`}>{(result.payment_status || "unknown").replace(/_/g, " ")}</p></div>
                       <div><p className="text-xs text-slate-500">Order total</p><p className="mt-1 font-display text-xl font-semibold text-[#0C2D57]">{money(result.total_amount)}</p></div>
                     </div>
-                    {result.delivery_address && <div className="mt-4 flex items-start gap-3 border-t border-[#E3DFD8] pt-4"><MapPin className="mt-0.5 h-4 w-4 shrink-0 text-slate-400" /><div><p className="text-xs text-slate-500">Delivery address</p><p className="mt-1 break-words text-sm font-medium text-[#0C2D57]">{result.delivery_address}</p></div></div>}
+                    {result.delivery_address && <div className="mt-4 flex items-start gap-3 border-t border-[#E3DFD8] pt-4"><MapPin className="mt-0.5 h-4 w-4 shrink-0 text-slate-500" /><div><p className="text-xs text-slate-500">Delivery address</p><p className="mt-1 break-words text-sm font-medium text-[#0C2D57]">{result.delivery_address}</p></div></div>}
                   </section>
-                  {result.items && result.items.length > 0 && <section className="rounded-2xl border border-[#DDD9D2] bg-white p-5 sm:p-7"><h3 className="font-display text-lg font-semibold text-[#0C2D57]">Items in this order</h3><div className="mt-4 divide-y divide-[#EEF0F2]">{result.items.map((item, index) => <div key={`${item.product_name}-${index}`} className="flex items-start justify-between gap-4 py-3 text-sm"><div className="min-w-0"><p className="font-medium text-[#0C2D57]">{item.product_name}</p><p className="mt-1 text-xs text-slate-500">Quantity: {item.quantity}</p></div><p className="shrink-0 font-semibold text-[#0C2D57]">{money(Number(item.unit_price) * Number(item.quantity))}</p></div>)}</div></section>}
+                  {result.items && result.items.length > 0 && <section className="rounded-2xl border border-[#DDD9D2] bg-white p-5 sm:p-7"><h3 className="font-display text-lg font-semibold text-[#0C2D57]">Items in this order</h3><div className="mt-4 divide-y divide-[#E3DFD8]">{result.items.map((item, index) => <div key={`${item.product_name}-${index}`} className="flex items-start justify-between gap-4 py-3 text-sm"><div className="min-w-0"><p className="font-medium text-[#0C2D57]">{item.product_name}</p><p className="mt-1 text-xs text-slate-500">Quantity: {item.quantity}</p></div><p className="shrink-0 font-semibold text-[#0C2D57]">{money(Number(item.unit_price) * Number(item.quantity))}</p></div>)}</div></section>}
                 </div>
                 <aside className="space-y-5">
                   <section className="rounded-2xl border border-[#DDD9D2] bg-white p-5 sm:p-6"><div className="flex items-center gap-3"><div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#F1EFEB] text-[#0C2D57]"><Truck className="h-5 w-5" /></div><div><h3 className="font-display text-lg font-semibold text-[#0C2D57]">Delivery details</h3><p className="text-xs text-slate-500">Latest details available to us</p></div></div>
                     {result.delivery ? <div className="mt-5 space-y-4 text-sm">
                       <div><p className="text-xs text-slate-500">Delivery reference</p><p className="mt-1 break-all font-mono font-semibold text-[#0C2D57]">{result.delivery.tracking_number || "Not assigned yet"}</p></div>
                       <div><p className="text-xs text-slate-500">Delivery status</p><p className="mt-1 font-semibold text-[#0C2D57]">{deliveryStatusLabel[result.delivery.status] || result.delivery.status.replace(/_/g, " ")}</p></div>
-                      <div className="flex items-start gap-3"><CalendarDays className="mt-0.5 h-4 w-4 shrink-0 text-slate-400" /><div><p className="text-xs text-slate-500">Scheduled date</p><p className="mt-1 font-medium text-[#0C2D57]">{displayDate(result.delivery.scheduled_date) || "Not scheduled yet"}</p></div></div>
+                      <div className="flex items-start gap-3"><CalendarDays className="mt-0.5 h-4 w-4 shrink-0 text-slate-500" /><div><p className="text-xs text-slate-500">Scheduled date</p><p className="mt-1 font-medium text-[#0C2D57]">{displayDate(result.delivery.scheduled_date) || "Not scheduled yet"}</p></div></div>
                       {result.delivery.dispatched_at && <div><p className="text-xs text-slate-500">Dispatched on</p><p className="mt-1 font-medium text-[#0C2D57]">{displayDate(result.delivery.dispatched_at)}</p></div>}
                       {result.delivery.delivered_at && <div><p className="text-xs text-slate-500">Delivered on</p><p className="mt-1 font-medium text-[#0C2D57]">{displayDate(result.delivery.delivered_at)}</p></div>}
                       {result.delivery.driver_name && <div><p className="text-xs text-slate-500">Delivery contact</p><p className="mt-1 font-medium text-[#0C2D57]">{result.delivery.driver_name}</p></div>}

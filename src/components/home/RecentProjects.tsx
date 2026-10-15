@@ -164,7 +164,7 @@ export function RecentProjects() {
           <ProjectsSkeleton />
         ) : error ? (
           <div className="text-center py-16 bg-white rounded-2xl border border-[#DDD9D2]">
-            <Building2 className="w-10 h-10 text-[#5F6B7A] mx-auto mb-3" />
+            <Building2 className="w-10 h-10 text-[#0E6B78] mx-auto mb-3" />
             <p className="text-[#0C2D57] font-semibold text-base mb-1">Project gallery temporarily unavailable</p>
             <p className="text-slate-600 text-sm">The project records could not be loaded. Please visit the full portfolio or contact our team.</p>
             <Link href="/portfolio" className="inline-flex mt-4 items-center gap-2 rounded-lg bg-[#0C2D57] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#123766]">View portfolio <ArrowRight className="w-4 h-4" /></Link>

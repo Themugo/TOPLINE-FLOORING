@@ -66,7 +66,7 @@
     /* Apply the existing governed CMS font token without changing the established palette. */
     font-family: var(--theme-body-font, 'Manrope Variable'), system-ui, sans-serif;
     font-feature-settings: 'cv11', 'ss01';
-    background-image: radial-gradient(circle at 10% 0%, rgba(197,173,122,.055), transparent 28rem), radial-gradient(circle at 90% 20%, rgba(96,125,152,.035), transparent 32rem);
+    background-image: radial-gradient(circle at 10% 0%, rgba(14,107,120,.045), transparent 28rem), radial-gradient(circle at 90% 20%, rgba(12,45,87,.035), transparent 32rem);
   }
 
   h1, h2, h3, h4, h5, h6 {
@@ -237,7 +237,7 @@
   @media (min-width: 640px) { .page-section { padding-block: calc(var(--layout-section-gap, 4rem) * 1.25); } }
   @media (min-width: 1024px) { .page-section { padding-block: calc(var(--layout-section-gap, 4rem) * 1.5); } }
   .page-hero { @apply relative overflow-hidden border-b border-navy-100/60 bg-gradient-to-br from-primary-950 via-primary-900 to-primary-700; }
-  .page-hero::after { content:""; position:absolute; inset:auto -10% -55% 35%; height:24rem; background: radial-gradient(circle,color-mix(in srgb, var(--topline-brand-accent, #8dba17) 18%, transparent),transparent 65%); pointer-events:none; }
+  .page-hero::after { content:""; position:absolute; inset:auto -10% -55% 35%; height:24rem; background: radial-gradient(circle,color-mix(in srgb, var(--topline-brand-accent, #b4e33d) 18%, transparent),transparent 65%); pointer-events:none; }
   .page-hero-inner { @apply relative z-10 mx-auto px-4 sm:px-6 lg:px-8 py-14 sm:py-18 lg:py-20; max-width: var(--container-max-width, 80rem); }
   .eyebrow { @apply inline-flex items-center gap-2 text-[11px] font-bold uppercase tracking-[.22em]; color: var(--topline-brand-accent-strong, #566f0d); }
   .eyebrow-light { @apply text-primary-300; }
@@ -276,7 +276,7 @@
 @layer utilities {
   .text-balance { text-wrap: balance; }
   .shadow-premium-xl { box-shadow: 0 30px 80px rgba(15,23,42,.13); }
-  .ring-premium { box-shadow: 0 0 0 1px rgba(201,151,31,.18), 0 18px 50px rgba(21,63,105,.08); }
+  .ring-premium { box-shadow: 0 0 0 1px rgba(14,107,120,.20), 0 18px 50px rgba(12,45,87,.08); }
 }
 
 /* Make existing pages feel coherent without requiring each route to reinvent

@@ -53,7 +53,7 @@ export function Header() {
   );
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 shadow-[0_8px_28px_rgba(20,44,70,.09)]">
+    <header className="fixed top-0 left-0 right-0 z-50 shadow-[0_8px_28px_rgba(12,45,87,.09)]">
       {/* Top utility bar - contact info + social, desktop only */}
       <div className="hidden lg:block bg-[#0C2D57] text-white border-b border-white/10">
         <div className="max-w-7xl mx-auto px-6 xl:px-8">
@@ -102,15 +102,15 @@ export function Header() {
       <div className="bg-white/95 backdrop-blur-xl border-b border-slate-200/80">
         <div className="max-w-[1440px] mx-auto px-4 sm:px-6 xl:px-8">
           <div className="flex items-center justify-between min-h-16 lg:min-h-20 gap-3">
-            <Link href="/" className="group flex min-w-0 shrink-0 items-center gap-3 rounded-xl py-1 pr-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5F6B7A]" aria-label={`${siteName} home`}>
-              <div className="flex h-11 w-11 lg:h-12 lg:w-12 shrink-0 items-center justify-center rounded-xl border border-[#B4E33D]/45 bg-[#0C2D57] shadow-[0_4px_12px_rgba(20,44,70,.16)]">
+            <Link href="/" className="group flex min-w-0 shrink-0 items-center gap-3 rounded-xl py-1 pr-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0E6B78]" aria-label={`${siteName} home`}>
+              <div className="flex h-11 w-11 lg:h-12 lg:w-12 shrink-0 items-center justify-center rounded-xl border border-[#B4E33D]/45 bg-[#0C2D57] shadow-[0_4px_12px_rgba(12,45,87,.16)]">
                 <span className="font-display text-xl font-bold tracking-tight text-[#F7F6F3]">{firstWord.charAt(0).toUpperCase()}</span>
               </div>
               <div className="hidden min-w-0 sm:block">
                 <span className="block max-w-[200px] xl:max-w-[245px] truncate font-display text-[15px] lg:text-[16px] font-bold leading-tight tracking-[-0.02em] text-[#0C2D57]">
                   {firstWord}{restWords.length > 0 ? ` ${restWords.join(' ')}` : ''}
                 </span>
-                <span className="mt-1 block max-w-[200px] xl:max-w-[245px] whitespace-normal text-[9px] lg:text-[10px] font-semibold leading-[1.35] tracking-[0.11em] text-[#5F6B7A]">{tagline}</span>
+                <span className="mt-1 block max-w-[200px] xl:max-w-[245px] whitespace-normal text-[9px] lg:text-[10px] font-semibold leading-[1.35] tracking-[0.11em] text-slate-500">{tagline}</span>
               </div>
             </Link>
 
@@ -198,7 +198,7 @@ export function Header() {
 
               <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="lg:hidden shrink-0 rounded-lg p-2 text-[#0C2D57] hover:bg-[#F7F6F3] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5F6B7A]"
+                className="lg:hidden shrink-0 rounded-lg p-2 text-[#0C2D57] hover:bg-[#F7F6F3] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0E6B78]"
                 aria-label={mobileMenuOpen ? 'Close menu' : 'Open menu'}
                 aria-expanded={mobileMenuOpen}
                 aria-controls="mobile-menu"

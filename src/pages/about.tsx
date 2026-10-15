@@ -9,12 +9,12 @@ import { useSeoMeta } from "@/hooks/use-seo";
 import { useSiteSettings } from "@/hooks/use-data";
 
 const defaultValues = [
-  { icon: Shield, label: "Durable", desc: "Long-lasting solutions built to withstand the harshest conditions", color: "bg-green-600" },
-  { icon: Zap, label: "Cost-Effective", desc: "Competitive pricing without compromising on quality", color: "bg-sky-500" },
-  { icon: Users, label: "Professional", desc: "Skilled team with years of industry expertise", color: "bg-slate-800" },
-  { icon: Star, label: "Integrity", desc: "Honest, transparent business practices", color: "bg-green-600" },
-  { icon: Lightbulb, label: "Innovation", desc: "Modern techniques and cutting-edge materials", color: "bg-sky-500" },
-  { icon: TrendingUp, label: "Excellence", desc: "Commitment to superior quality and results", color: "bg-slate-800" },
+  { icon: Shield, label: "Durable", desc: "Long-lasting solutions built to withstand the harshest conditions", color: "bg-accent-500" },
+  { icon: Zap, label: "Cost-Effective", desc: "Competitive pricing without compromising on quality", color: "bg-primary-500" },
+  { icon: Users, label: "Professional", desc: "Skilled team with years of industry expertise", color: "bg-primary-700" },
+  { icon: Star, label: "Integrity", desc: "Honest, transparent business practices", color: "bg-accent-500" },
+  { icon: Lightbulb, label: "Innovation", desc: "Modern techniques and cutting-edge materials", color: "bg-primary-500" },
+  { icon: TrendingUp, label: "Excellence", desc: "Commitment to superior quality and results", color: "bg-primary-700" },
 ];
 
 const iconMap: Record<string, typeof Shield> = {

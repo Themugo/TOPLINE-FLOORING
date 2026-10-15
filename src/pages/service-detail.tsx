@@ -100,7 +100,7 @@ export default function ServiceDetail() {
     return (
       <CustomerLayout>
         <div className="flex min-h-[60vh] items-center justify-center bg-[#F3F2EE]">
-          <div role="status" className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white px-5 py-4 text-sm font-medium text-slate-600 shadow-sm"><Loader2 className="h-5 w-5 animate-spin text-[#5F6B7A]" />Loading service details…</div>
+          <div role="status" className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white px-5 py-4 text-sm font-medium text-slate-600 shadow-sm"><Loader2 className="h-5 w-5 animate-spin text-[#0E6B78]" />Loading service details…</div>
         </div>
       </CustomerLayout>
     );
@@ -137,7 +137,7 @@ export default function ServiceDetail() {
         <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="grid items-center gap-8 lg:grid-cols-12 lg:gap-12">
             <div className="lg:col-span-7">
-              <span className="mb-4 inline-flex items-center rounded-full border border-[#C8F26A]/30 bg-white/[0.06] px-3.5 py-2 text-[11px] font-bold uppercase tracking-[.18em] text-[#E7D9B9]">
+              <span className="mb-4 inline-flex items-center rounded-full border border-[#C8F26A]/30 bg-white/[0.06] px-3.5 py-2 text-[11px] font-bold uppercase tracking-[.18em] text-[#C8F26A]">
                 Technical Specification
               </span>
               <h1 className="mb-4 font-display text-3xl font-semibold leading-[1.1] tracking-tight text-white sm:text-4xl lg:text-5xl">
@@ -202,7 +202,7 @@ export default function ServiceDetail() {
             <p className="text-xs font-bold uppercase tracking-[.18em] text-[#566F0D]">At a glance</p><h2 className="mb-6 mt-2 font-display text-2xl font-semibold tracking-tight text-[#0C2D57]">Key system attributes</h2>
             <div className="grid sm:grid-cols-2 gap-3.5">
               {service.features.map((feature) => (
-                <div key={feature} className="flex items-start gap-3 rounded-xl border border-slate-200/80 bg-white p-4 shadow-[0_3px_12px_rgba(20,44,70,.03)]">
+                <div key={feature} className="flex items-start gap-3 rounded-xl border border-slate-200/80 bg-white p-4 shadow-[0_3px_12px_rgba(12,45,87,.03)]">
                   <CheckCircle2 className="w-5 h-5 text-emerald-500 flex-shrink-0 mt-0.5" />
                   <span className="text-navy-900 font-medium text-sm sm:text-base">{feature}</span>
                 </div>

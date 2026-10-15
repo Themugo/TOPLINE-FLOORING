@@ -278,7 +278,7 @@ export default function Home() {
                   )}
                   {slide.subtitle && (
                     <p
-                      className={`text-[#E6D7B5] font-semibold mb-4 text-xs sm:text-sm uppercase tracking-[0.18em] transition-all duration-500 delay-100 ${
+                      className={`text-[#C8F26A] font-semibold mb-4 text-xs sm:text-sm uppercase tracking-[0.18em] transition-all duration-500 delay-100 ${
                         index === currentSlide ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2'
                       }`}
                     >
@@ -517,7 +517,7 @@ export default function Home() {
               )}
             </div>
             <div className="relative">
-              <div className="absolute -inset-1.5 bg-gradient-to-r from-primary-500/20 to-emerald-500/20 rounded-3xl blur-lg pointer-events-none" />
+              <div className="absolute -inset-1.5 bg-gradient-to-r from-primary-500/20 to-accent-500/20 rounded-3xl blur-lg pointer-events-none" />
               <img
                 src={withFallback(aboutContent.image_url, 'https://images.unsplash.com/photo-1541888946425-d81bb19240f5?auto=format&fit=crop&w=1200&q=80')}
                 alt={aboutSection?.title || 'Flooring specialists team'}
