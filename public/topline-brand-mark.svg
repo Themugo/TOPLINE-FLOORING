@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 104" fill="none" role="img" aria-labelledby="title desc">
+  <title id="title">Topline roof and flooring mark</title>
+  <desc id="desc">Navy roof and house, lime roofline, and geometric floor tiles.</desc>
+  <path d="M8 43 56 3 111 42 99 42 56 12 20 43Z" fill="#0C2D57"/>
+  <path d="M23 45 57 17 91 43 81 43 57 25 33 45Z" fill="#B4E33D"/>
+  <path d="M42 45 57 32 75 45V62H42Z" fill="#0C2D57"/>
+  <path d="M50 44V53H57V44Z M62 44V53H69V44Z M50 57V63H57V57Z M62 57V63H69V57Z" fill="#F7F6F3"/>
+  <path d="M8 69 37 69 23 83 0 83Z" fill="#0C2D57"/>
+  <path d="M42 69H69L57 83H28Z" fill="#0C2D57"/>
+  <path d="M74 69H101L89 83H61Z" fill="#0C2D57"/>
+  <path d="M25 86 53 86 42 99H13Z" fill="#6F7780"/>
+  <path d="M58 86H85L74 99H47Z" fill="#6F7780"/>
+  <path d="M90 86H113L102 99H79Z" fill="#6F7780"/>
+  <path d="M16 65 31 51 45 51 26 69H9Z" fill="#B4E33D"/>
+  <path d="M79 48 91 45 108 57 98 57Z" fill="#B4E33D"/>
+</svg>

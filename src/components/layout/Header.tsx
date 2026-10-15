@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useLocation } from 'wouter';
 import { Menu, X, ShoppingCart, Phone, Mail, MapPin, LogIn, Facebook, Instagram, Linkedin, UserRound, ClipboardCheck, ChevronDown } from 'lucide-react';
 import { useCart } from '@/hooks/use-cart';
@@ -9,13 +9,31 @@ export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [moreMenuOpen, setMoreMenuOpen] = useState(false);
   const [location] = useLocation();
+
+  useEffect(() => {
+    setMobileMenuOpen(false);
+    setMoreMenuOpen(false);
+  }, [location]);
+
+  useEffect(() => {
+    if (!mobileMenuOpen && !moreMenuOpen) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setMobileMenuOpen(false);
+        setMoreMenuOpen(false);
+      }
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [mobileMenuOpen, moreMenuOpen]);
   const { totalItems } = useCart();
   const { settings } = useSiteSettings();
   const { menus } = useNavigationMenus('header');
 
-  const siteName = settings.site_info?.name || 'Topline Flooring & Waterproofing';
-  const [firstWord, ...restWords] = siteName.split(' ');
-  const tagline = settings.site_info?.tagline || 'FLOORING & WATERPROOFING';
+  // Canonical brand lock: the logo wordmark and descriptor are brand assets, not CMS copy.
+  // Keep the identity consistent across desktop, mobile, footer and future app surfaces.
+  const tagline = 'FLOORING & WATERPROOFING';
+  const brandPromise = 'Professional Solutions for Lasting Spaces';
   const phone = settings.contact?.phone || '';
   const email = settings.contact?.email || '';
   const address = settings.contact?.address || '';
@@ -100,21 +118,30 @@ export function Header() {
 
       {/* Main nav */}
       <div className="bg-white/95 backdrop-blur-xl border-b border-slate-200/80">
-        <div className="max-w-[1440px] mx-auto px-4 sm:px-6 xl:px-8">
-          <div className="flex items-center justify-between min-h-16 lg:min-h-20 gap-3">
-            <Link href="/" className="group flex min-w-0 shrink-0 items-center gap-3 rounded-xl py-1 pr-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0E6B78]" aria-label={`${siteName} home`}>
-              <div className="flex h-11 w-11 lg:h-12 lg:w-12 shrink-0 items-center justify-center rounded-xl border border-[#B4E33D]/45 bg-[#0C2D57] shadow-[0_4px_12px_rgba(12,45,87,.16)]">
-                <span className="font-display text-xl font-bold tracking-tight text-[#F7F6F3]">{firstWord.charAt(0).toUpperCase()}</span>
-              </div>
-              <div className="hidden min-w-0 sm:block">
-                <span className="block max-w-[200px] xl:max-w-[245px] truncate font-display text-[15px] lg:text-[16px] font-bold leading-tight tracking-[-0.02em] text-[#0C2D57]">
-                  {firstWord}{restWords.length > 0 ? ` ${restWords.join(' ')}` : ''}
-                </span>
-                <span className="mt-1 block max-w-[200px] xl:max-w-[245px] whitespace-normal text-[9px] lg:text-[10px] font-semibold leading-[1.35] tracking-[0.11em] text-slate-500">{tagline}</span>
-              </div>
+        <div className="max-w-[1440px] mx-auto px-3 sm:px-6 xl:px-8">
+          <div className="flex items-center justify-between min-h-16 lg:min-h-20 gap-2 sm:gap-3">
+            <Link
+              href="/"
+              className="group flex min-w-0 shrink-0 items-center gap-2.5 sm:gap-3 rounded-xl py-1 pr-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0E6B78] focus-visible:ring-offset-2"
+              aria-label="Topline Flooring and Waterproofing home"
+            >
+              <img
+                src="/topline-brand-mark.svg"
+                alt=""
+                aria-hidden="true"
+                className="h-9 w-9 sm:h-12 sm:w-[3.35rem] lg:h-[3.35rem] lg:w-[3.75rem] shrink-0 object-contain transition-transform duration-200 group-hover:scale-[1.03]"
+                width="72"
+                height="64"
+              />
+              <span className="min-w-0 flex flex-col justify-center">
+                <span className="block font-display text-[19px] sm:text-[21px] lg:text-[23px] font-extrabold leading-[0.98] tracking-[-0.045em] text-[#0C2D57]">Topline</span>
+                <span className="mt-1 block whitespace-nowrap text-[7px] sm:text-[9px] lg:text-[10px] font-extrabold leading-tight tracking-[0.005em] sm:tracking-[0.045em] text-[#0C2D57]">{tagline}</span>
+                <span className="mt-1 hidden lg:block whitespace-nowrap text-[9px] font-medium leading-tight tracking-[0.13em] text-slate-500">{brandPromise}</span>
+                <span className="mt-1 hidden sm:block lg:hidden text-[8px] font-semibold leading-tight tracking-[0.06em] text-slate-500">Professional solutions for lasting spaces</span>
+              </span>
             </Link>
 
-            <nav className="hidden lg:flex min-w-0 items-center gap-0.5" aria-label="Main navigation">
+            <nav className="hidden lg:flex min-w-0 items-center gap-1" aria-label="Main navigation">
               {primaryLinks.map((link) => (
                 <Link
                   key={link.href}
@@ -170,7 +197,7 @@ export function Header() {
 
               <Link
                 href="/cart"
-                className="relative p-2 text-slate-600 hover:text-[#0C2D57] transition-colors"
+                className="relative rounded-xl p-2.5 text-slate-600 transition-colors hover:bg-[#F7F6F3] hover:text-[#0C2D57] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0E6B78]"
                 aria-label={`Shopping cart${totalItems > 0 ? `, ${totalItems} items` : ''}`}
               >
                 <ShoppingCart className="w-5 h-5" />
@@ -183,7 +210,7 @@ export function Header() {
 
               <Link
                 href="/quotation"
-                className="hidden md:flex items-center gap-2 px-3 xl:px-4 py-2.5 text-[12px] xl:text-[13px] font-semibold rounded-lg bg-[#0C2D57] text-white hover:bg-[#123766] transition-colors shadow-sm active:scale-[0.98] whitespace-nowrap"
+                className="hidden md:flex items-center gap-2 px-4 xl:px-5 py-3 text-[12px] xl:text-[13px] font-bold rounded-xl bg-[#0C2D57] text-white hover:bg-[#123766] transition-all shadow-[0_5px_14px_rgba(12,45,87,.18)] hover:shadow-[0_8px_20px_rgba(12,45,87,.22)] active:scale-[0.98] whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#B4E33D] focus-visible:ring-offset-2"
               >
                 Request Quotation
               </Link>
@@ -198,7 +225,7 @@ export function Header() {
 
               <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="lg:hidden shrink-0 rounded-lg p-2 text-[#0C2D57] hover:bg-[#F7F6F3] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0E6B78]"
+                className="lg:hidden shrink-0 rounded-xl border border-slate-200/80 bg-white p-2.5 text-[#0C2D57] shadow-sm hover:border-[#B4E33D]/70 hover:bg-[#F7F6F3] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0E6B78]"
                 aria-label={mobileMenuOpen ? 'Close menu' : 'Open menu'}
                 aria-expanded={mobileMenuOpen}
                 aria-controls="mobile-menu"
@@ -211,36 +238,41 @@ export function Header() {
       </div>
 
       {mobileMenuOpen && (
-        <div id="mobile-menu" className="lg:hidden bg-white border-t border-gray-200 max-h-[calc(100dvh-4rem)] overflow-y-auto shadow-lg">
-          <nav className="max-w-7xl mx-auto px-4 py-4 space-y-1" aria-label="Mobile navigation">
+        <div id="mobile-menu" className="lg:hidden border-t border-slate-200/80 bg-white/98 shadow-[0_18px_42px_rgba(12,45,87,.16)] backdrop-blur-xl max-h-[calc(100dvh-4rem)] overflow-y-auto">
+          <nav className="mx-auto max-w-7xl space-y-1 px-4 py-4 sm:px-6 sm:py-5" aria-label="Mobile navigation">
+            <div className="mb-3 flex items-center justify-between border-b border-slate-100 pb-3">
+              <span className="text-[10px] font-extrabold uppercase tracking-[0.2em] text-[#566F0D]">Explore Topline</span>
+              <span className="rounded-full bg-[#B4E33D]/20 px-2.5 py-1 text-[10px] font-bold tracking-wide text-[#0C2D57]">FLOORING · WATERPROOFING</span>
+            </div>
             {navLinks.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
                 onClick={() => setMobileMenuOpen(false)}
                 aria-current={isActive(link.href) ? 'page' : undefined}
-                className={`block px-4 py-3 text-sm font-medium rounded-lg transition-colors ${
+                className={`flex items-center justify-between rounded-xl border px-4 py-3.5 text-sm font-semibold transition-all ${
                   isActive(link.href)
-                    ? 'text-[#0C2D57] bg-[#F7F6F3] border-l-2 border-[#B4E33D]'
-                    : 'text-slate-700 hover:text-[#0C2D57] hover:bg-[#F7F6F3]'
+                    ? 'border-[#B4E33D]/60 bg-[#B4E33D]/10 text-[#0C2D57] shadow-sm'
+                    : 'border-transparent text-slate-700 hover:border-slate-200 hover:bg-[#F7F6F3] hover:text-[#0C2D57]'
                 }`}
               >
-                {link.label}
+                <span>{link.label}</span>
+                <span aria-hidden="true" className={`text-lg leading-none ${isActive(link.href) ? 'text-[#566F0D]' : 'text-slate-300'}`}>›</span>
               </Link>
             ))}
-            <div className="pt-4 mt-4 border-t border-gray-200 space-y-1">
-              <Link href="/portal" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-2 px-4 py-3 text-sm font-semibold text-primary-700 bg-primary-50 rounded-xl">
+            <div className="mt-4 grid grid-cols-1 gap-2 border-t border-slate-200 pt-4 sm:grid-cols-2">
+              <Link href="/portal" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-2 rounded-xl border border-[#0E6B78]/15 bg-[#0E6B78]/5 px-4 py-3.5 text-sm font-bold text-[#0C2D57] transition-colors hover:bg-[#0E6B78]/10">
                 <UserRound className="w-4 h-4" />
                 <span>My Customer Account</span>
               </Link>
-              <Link href="/track-order" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-2 px-4 py-3 text-sm text-navy-700">
+              <Link href="/track-order" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-2 rounded-xl px-4 py-3.5 text-sm font-semibold text-[#0C2D57] transition-colors hover:bg-[#F7F6F3]">
                 <ClipboardCheck className="w-4 h-4" />
                 <span>Track an Order</span>
               </Link>
               {phone && (
                 <a
                   href={telHref(phone)}
-                  className="flex items-center gap-2 px-4 py-3 text-sm text-navy-700"
+                  className="flex items-center gap-2 rounded-xl px-4 py-3.5 text-sm font-semibold text-[#0C2D57] transition-colors hover:bg-[#F7F6F3]"
                 >
                   <Phone className="w-4 h-4" />
                   <span>{phone}</span>
@@ -249,16 +281,24 @@ export function Header() {
               {email && (
                 <a
                   href={`mailto:${email}`}
-                  className="flex items-center gap-2 px-4 py-3 text-sm text-navy-700"
+                  className="flex items-center gap-2 rounded-xl px-4 py-3.5 text-sm font-semibold text-[#0C2D57] transition-colors hover:bg-[#F7F6F3]"
                 >
                   <Mail className="w-4 h-4" />
                   <span>{email}</span>
                 </a>
               )}
               <Link
+                href="/quotation"
+                onClick={() => setMobileMenuOpen(false)}
+                className="flex items-center justify-between rounded-xl bg-[#0C2D57] px-5 py-4 text-sm font-bold text-white shadow-[0_6px_16px_rgba(12,45,87,.18)] transition-all hover:bg-[#123766] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#B4E33D] focus-visible:ring-offset-2 sm:col-span-2"
+              >
+                <span>Request a quotation</span>
+                <span aria-hidden="true" className="text-lg">→</span>
+              </Link>
+              <Link
                 href="/admin/login"
                 onClick={() => setMobileMenuOpen(false)}
-                className="flex items-center gap-2 px-4 py-3 text-sm font-medium text-primary-600"
+                className="flex items-center gap-2 rounded-xl px-4 py-3.5 text-sm font-semibold text-[#0C2D57] transition-colors hover:bg-[#F7F6F3]"
               >
                 <LogIn className="w-4 h-4" />
                 <span>Admin Login</span>
