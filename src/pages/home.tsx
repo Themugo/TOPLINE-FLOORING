@@ -128,27 +128,37 @@ export default function Home() {
       source_type: 'hero_slide',
     }));
 
-    const productSlides: HeroSlideData[] = products.slice(0, 3).map((product) => ({
-      id: `featured-product-${product.id}`,
-      title: product.name,
-      subtitle: 'FEATURED PRODUCT',
-      description: product.short_description || product.description || 'Explore product details, available variants, and ordering options.',
-      image_url: product.image_url || getProductPlaceholder(product.name),
-      button_text: 'View Product',
-      button_link: `/product/${product.slug}`,
-      source_type: 'product',
-    }));
+    // Catalogue slides are a fallback only when the administrator has not
+    // configured hero slides. Use real, published catalogue media rather than
+    // inventing product/service imagery or mixing every catalogue item into
+    // an already-curated hero carousel.
+    const productSlides: HeroSlideData[] = products
+      .filter((product) => Boolean(product.image_url && product.slug))
+      .slice(0, 3)
+      .map((product) => ({
+        id: `featured-product-${product.id}`,
+        title: product.name,
+        subtitle: 'FEATURED PRODUCT',
+        description: product.short_description || product.description || 'View product details and available ordering options.',
+        image_url: product.image_url as string,
+        button_text: 'View Product',
+        button_link: `/product/${product.slug}`,
+        source_type: 'product',
+      }));
 
-    const serviceSlides: HeroSlideData[] = services.filter((service) => service.is_active !== false).slice(0, 3).map((service, index) => ({
-      id: `featured-service-${service.id}`,
-      title: service.name,
-      subtitle: 'FEATURED SERVICE',
-      description: service.short_description || service.description || 'Explore this service and discuss the right solution for your project.',
-      image_url: ensureRealImage(service.image_url, 'service', service.id || index),
-      button_text: 'Explore Service',
-      button_link: `/service/${service.slug}`,
-      source_type: 'service',
-    }));
+    const serviceSlides: HeroSlideData[] = services
+      .filter((service) => service.is_active !== false && Boolean(service.image_url && service.slug))
+      .slice(0, 3)
+      .map((service) => ({
+        id: `featured-service-${service.id}`,
+        title: service.name,
+        subtitle: 'FEATURED SERVICE',
+        description: service.short_description || service.description || 'Explore this service and discuss the right solution for your project.',
+        image_url: service.image_url as string,
+        button_text: 'Explore Service',
+        button_link: `/service/${service.slug}`,
+        source_type: 'service',
+      }));
 
     const defaultSlide: HeroSlideData = {
       id: 'topline-homepage-default',
@@ -161,11 +171,9 @@ export default function Home() {
       source_type: 'hero_slide',
     };
 
-    return [
-      ...(configuredSlides.length > 0 ? configuredSlides : [defaultSlide]),
-      ...productSlides,
-      ...serviceSlides,
-    ];
+    if (configuredSlides.length > 0) return configuredSlides;
+    const mediaBackedCatalogueSlides = [...productSlides, ...serviceSlides];
+    return mediaBackedCatalogueSlides.length > 0 ? mediaBackedCatalogueSlides : [defaultSlide];
   }, [slides, products, services]);
 
   // Preload hero slide, service, product, project, and partner images for smooth transitions
@@ -181,6 +189,10 @@ export default function Home() {
       return urls;
     }, [allSlides, services, products, projects, partners, aboutContent?.image_url])
   );
+
+  useEffect(() => {
+    if (currentSlide >= allSlides.length) setCurrentSlide(0);
+  }, [currentSlide, allSlides.length]);
 
   useEffect(() => {
     if (allSlides.length < 2 || isSliderPaused) return;
@@ -278,7 +290,7 @@ export default function Home() {
                   )}
                   {slide.subtitle && (
                     <p
-                      className={`text-[#C8F26A] font-semibold mb-4 text-xs sm:text-sm uppercase tracking-[0.18em] transition-all duration-500 delay-100 ${
+                      className={`text-[#B4E33D] font-semibold mb-3 sm:mb-4 text-[11px] sm:text-sm uppercase tracking-[0.16em] sm:tracking-[0.18em] transition-all duration-500 delay-100 ${
                         index === currentSlide ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2'
                       }`}
                     >
@@ -286,7 +298,7 @@ export default function Home() {
                     </p>
                   )}
                   <h1
-                    className={`font-display text-4xl sm:text-5xl lg:text-[3.75rem] leading-[1.04] font-bold tracking-tight text-white mb-5 max-w-2xl transition-all duration-500 delay-200 ${
+                    className={`font-display text-[2rem] leading-[1.06] sm:text-5xl lg:text-[3.75rem] sm:leading-[1.04] font-bold tracking-tight text-white mb-4 sm:mb-5 max-w-2xl text-balance transition-all duration-500 delay-200 ${
                       index === currentSlide ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2'
                     }`}
                   >
@@ -294,7 +306,7 @@ export default function Home() {
                   </h1>
                   {slide.description && (
                     <p
-                      className={`text-base sm:text-lg text-slate-100 mb-7 max-w-xl leading-relaxed line-clamp-3 transition-all duration-500 delay-300 ${
+                      className={`text-sm sm:text-lg text-slate-100 mb-5 sm:mb-7 max-w-xl leading-relaxed line-clamp-3 transition-all duration-500 delay-300 ${
                         index === currentSlide ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2'
                       }`}
                     >
@@ -305,7 +317,7 @@ export default function Home() {
                     <Link
                       href={slide.button_link}
                       tabIndex={index === currentSlide ? 0 : -1}
-                      className={`inline-flex items-center gap-2 bg-[#F7F6F3] hover:bg-white text-[#0C2D57] px-6 py-3 rounded-lg text-sm font-semibold transition-all duration-500 delay-400 shadow-sm hover:shadow-md ${
+                      className={`min-h-11 inline-flex items-center justify-center gap-2 bg-[#B4E33D] hover:bg-[#c4ed5d] text-[#0C2D57] px-5 sm:px-6 py-3 rounded-lg text-sm font-bold transition-all duration-500 delay-400 shadow-sm hover:shadow-md ${
                         index === currentSlide ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2'
                       }`}
                     >
@@ -326,7 +338,7 @@ export default function Home() {
               type="button"
               aria-label="Show previous featured slide"
               onClick={() => setCurrentSlide((prev) => (prev - 1 + allSlides.length) % allSlides.length)}
-              className="absolute left-3 sm:left-5 top-1/2 -translate-y-1/2 z-30 p-2 rounded-full bg-white/10 backdrop-blur text-white hover:bg-primary-500 transition-colors"
+              className="hidden sm:flex absolute left-3 sm:left-5 top-1/2 -translate-y-1/2 z-30 p-3 rounded-full bg-[#0C2D57]/65 backdrop-blur text-white hover:bg-[#0E6B78] transition-colors items-center justify-center"
             >
               <ChevronLeft className="w-5 h-5" />
             </button>
@@ -334,11 +346,11 @@ export default function Home() {
               type="button"
               aria-label="Show next featured slide"
               onClick={() => setCurrentSlide((prev) => (prev + 1) % allSlides.length)}
-              className="absolute right-3 sm:right-5 top-1/2 -translate-y-1/2 z-30 p-2 rounded-full bg-white/10 backdrop-blur text-white hover:bg-primary-500 transition-colors"
+              className="hidden sm:flex absolute right-3 sm:right-5 top-1/2 -translate-y-1/2 z-30 p-3 rounded-full bg-[#0C2D57]/65 backdrop-blur text-white hover:bg-[#0E6B78] transition-colors items-center justify-center"
             >
               <ChevronRight className="w-5 h-5" />
             </button>
-            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-30 flex items-center gap-2">
+            <div className="absolute bottom-3 sm:bottom-4 left-1/2 -translate-x-1/2 z-30 flex items-center gap-2 rounded-full bg-[#0C2D57]/45 px-3 py-2 backdrop-blur-sm">
               {allSlides.map((_, index) => (
                 <button
                   key={index}

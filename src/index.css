@@ -261,10 +261,10 @@
   .form-section h2 { @apply text-lg font-bold text-navy-950; }
   .form-section label { @apply text-xs font-semibold uppercase tracking-[.08em] text-navy-600; }
   .prose-copy { @apply text-navy-600 leading-8; }
-  .customer-intent-grid { @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4; gap: var(--layout-content-gap, .75rem); }
-  .customer-intent-card { @apply flex items-center justify-between gap-4 rounded-xl border border-slate-200 bg-white px-5 py-4 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-premium; }
-  .customer-intent-card strong { @apply block text-sm font-semibold text-[#0C2D57]; }
-  .customer-intent-card span { @apply block mt-0.5 text-xs text-slate-500; }
+  .customer-intent-grid { @apply grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4; gap: .625rem; gap: var(--layout-content-gap, .75rem); }
+  .customer-intent-card { @apply flex min-w-0 items-center justify-between gap-2 sm:gap-4 rounded-xl border border-slate-200 bg-white px-3 py-3 sm:px-5 sm:py-4 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-premium; }
+  .customer-intent-card strong { @apply block text-xs sm:text-sm font-semibold leading-snug text-[#0C2D57]; }
+  .customer-intent-card span { @apply block mt-1 text-[11px] sm:text-xs leading-snug text-slate-500; }
   .customer-section-head { @apply flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-8; }
   .customer-section-head h2 { @apply text-2xl sm:text-3xl lg:text-4xl font-bold text-navy-950; }
   .customer-section-head p { @apply mt-2 text-sm sm:text-base text-navy-500 max-w-2xl; }
@@ -350,5 +350,18 @@ button:disabled, input:disabled, textarea:disabled, select:disabled { cursor: no
   .topline-home-hero h1 {
     overflow-wrap: anywhere;
     text-wrap: balance;
+    max-width: 13ch;
+  }
+  .topline-home-hero [aria-label^="Show featured slide"] {
+    min-width: 2.75rem;
+    min-height: 2.75rem;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .topline-home-hero .transition-all,
+  .topline-home-hero .transition-opacity,
+  .topline-home-hero .transition-transform {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
   }
 }
