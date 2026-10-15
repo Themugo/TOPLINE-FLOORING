@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, useLocation } from 'wouter';
-import { Menu, X, ShoppingCart, Phone, Mail, MapPin, LogIn, Facebook, Instagram, Linkedin, UserRound, ClipboardCheck, ChevronDown, Home, Wrench, Briefcase, ShoppingBag, MessageSquareQuote, ChevronRight } from 'lucide-react';
+import { Menu, X, ShoppingCart, Phone, Mail, MapPin, LogIn, Facebook, Instagram, Linkedin, UserRound, ClipboardCheck, ChevronDown, Home, Wrench, Briefcase, ShoppingBag, MessageSquareQuote, ChevronRight, Search } from 'lucide-react';
 import { useCart } from '@/hooks/use-cart';
 import { useSiteSettings, useNavigationMenus } from '@/hooks/use-data';
 import { telHref } from '@/lib/utils';
@@ -20,11 +20,14 @@ const getMobileNavIcon = (href: string) => {
 export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [moreMenuOpen, setMoreMenuOpen] = useState(false);
-  const [location] = useLocation();
+  const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
+  const [mobileSearchQuery, setMobileSearchQuery] = useState('');
+  const [location, setLocation] = useLocation();
 
   useEffect(() => {
     setMobileMenuOpen(false);
     setMoreMenuOpen(false);
+    setMobileSearchOpen(false);
   }, [location]);
 
   useEffect(() => {
@@ -211,7 +214,15 @@ export function Header() {
               )}
             </nav>
 
-            <div className="flex items-center gap-2 lg:gap-3">
+            <div className="flex items-center gap-1 sm:gap-2 lg:gap-3">
+              <button
+                type="button"
+                className="lg:hidden inline-flex h-10 w-9 sm:w-10 items-center justify-center rounded-xl text-[#0C2D57] hover:bg-[#F7F6F3] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0E6B78]"
+                aria-label={mobileSearchOpen ? 'Close product search' : 'Search products'}
+                aria-expanded={mobileSearchOpen}
+                onClick={() => { setMobileSearchOpen((open) => !open); setMobileMenuOpen(false); }}
+              ><Search className="h-5 w-5" aria-hidden="true" /></button>
+              {phone && <a href={telHref(phone)} className="lg:hidden inline-flex h-10 w-9 sm:w-10 items-center justify-center rounded-xl text-[#0C2D57] hover:bg-[#F7F6F3] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0E6B78]" aria-label="Call Topline"><Phone className="h-5 w-5" aria-hidden="true" /></a>}
               <Link
                 href="/portal"
                 className="hidden sm:flex items-center gap-2 px-2.5 py-2 text-[13px] font-semibold text-slate-600 hover:text-[#0C2D57] hover:bg-slate-50 rounded-lg transition-colors"
@@ -262,6 +273,26 @@ export function Header() {
           </div>
         </div>
       </div>
+
+      {mobileSearchOpen && (
+        <form
+          className="lg:hidden border-t border-[#E3DFD8] bg-white p-3 shadow-lg"
+          role="search"
+          onSubmit={(event) => {
+            event.preventDefault();
+            const query = mobileSearchQuery.trim();
+            setMobileSearchOpen(false);
+            if (query) setLocation(`/shop?search=${encodeURIComponent(query)}`);
+            else setLocation('/shop');
+          }}
+        >
+          <label htmlFor="topline-mobile-product-search" className="sr-only">Search flooring and waterproofing products</label>
+          <div className="mx-auto flex max-w-3xl gap-2">
+            <input id="topline-mobile-product-search" type="search" value={mobileSearchQuery} onChange={(event) => setMobileSearchQuery(event.target.value)} placeholder="Search flooring, tiles, waterproofing…" className="min-w-0 flex-1 rounded-xl border border-[#D8DDE4] bg-[#F7F6F3] px-4 py-3 text-sm text-[#0C2D57] outline-none focus:border-[#0E6B78] focus:ring-2 focus:ring-[#0E6B78]/20" />
+            <button type="submit" className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-[#0C2D57] px-4 text-sm font-bold text-white"><Search className="h-4 w-4" />Search</button>
+          </div>
+        </form>
+      )}
 
       {mobileMenuOpen && (
         <div id="mobile-menu" className="topline-mobile-menu lg:hidden border-t border-[#E3DFD8] bg-[#F7F6F3] shadow-[0_18px_42px_rgba(12,45,87,.16)] max-h-[calc(100dvh-4rem)] overflow-y-auto overscroll-contain">

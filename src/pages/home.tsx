@@ -247,6 +247,7 @@ export default function Home() {
       {/* Hero Section - Full viewport slider with dark navy overlay */}
       <section
         className="topline-home-hero relative h-[30rem] min-h-[30rem] sm:h-[32rem] lg:h-[35rem] overflow-hidden bg-[#0C2D57] touch-pan-y"
+        style={{ backgroundImage: allSlides[currentSlide]?.image_url ? `linear-gradient(90deg, rgba(12,45,87,.90), rgba(12,45,87,.52)), url("${allSlides[currentSlide].image_url.replace(/"/g, '%22')}")` : undefined, backgroundSize: 'cover', backgroundPosition: 'center' }}
         aria-roledescription="carousel"
         aria-label="Featured products, services and company highlights"
         onMouseEnter={() => setIsSliderPaused(true)}
@@ -274,8 +275,9 @@ export default function Home() {
               src={slide.image_url}
               alt={slide.title}
               className="w-full h-full object-cover object-center transition-transform duration-1000 ease-out"
-              loading={index === 0 ? 'eager' : 'lazy'}
-              fetchPriority={index === 0 ? 'high' : 'auto'}
+              loading={index === currentSlide ? 'eager' : 'lazy'}
+              decoding={index === currentSlide ? 'sync' : 'async'}
+              fetchPriority={index === currentSlide ? 'high' : 'auto'}
               onError={(e) => {
                 e.currentTarget.src = getRandomRealImage('flooring', index);
               }}

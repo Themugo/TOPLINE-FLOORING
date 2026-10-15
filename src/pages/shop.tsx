@@ -16,7 +16,7 @@ import { getActiveProductVariants, getDefaultProductVariant, getProductUnitPrice
 export default function Shop() {
   useSeoMeta('shop', null, { breadcrumbs: [{ label: 'Shop' }] });
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState(() => new URLSearchParams(window.location.search).get('search') || '');
   const [inStockOnly, setInStockOnly] = useState(false);
   const [sortBy, setSortBy] = useState<'featured' | 'price-asc' | 'price-desc' | 'name'>('featured');
   const [addedItemIds, setAddedItemIds] = useState<Record<string, boolean>>({});

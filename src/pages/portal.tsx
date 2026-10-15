@@ -184,8 +184,24 @@ export default function Portal() {
     if (!session) { setSignedIn(false); setData(null); setLoading(false); return; }
     setSignedIn(true);
     try {
-      const [portal, journeyEvents, prefs, docs, communicationHistory] = await Promise.all([getCustomerPortal360(), getCustomerJourney(), getCustomerPortalPreferences(), getCustomerPortalDocuments(), getCustomerCommunicationsSelfService360()]);
-      setData(portal); setJourney(journeyEvents); setNotificationPrefs(prefs.notification_preferences); setDocuments(docs); setCommunications(communicationHistory.timeline || []);
+      // The canonical customer payload is required for the dashboard. Ancillary
+      // timeline, preference, document and communication services are independent: a
+      // temporary failure in one must not hide a customer's orders and quotations.
+      const portal = await getCustomerPortal360();
+      setData(portal);
+      setAuthenticatedError(false);
+      const [journeyResult, prefsResult, docsResult, communicationsResult] = await Promise.allSettled([
+        getCustomerJourney(),
+        getCustomerPortalPreferences(),
+        getCustomerPortalDocuments(),
+        getCustomerCommunicationsSelfService360(),
+      ]);
+      setJourney(journeyResult.status === 'fulfilled' ? journeyResult.value : []);
+      setNotificationPrefs(prefsResult.status === 'fulfilled' ? prefsResult.value.notification_preferences : null);
+      setDocuments(docsResult.status === 'fulfilled' ? docsResult.value : []);
+      setCommunications(communicationsResult.status === 'fulfilled' ? communicationsResult.value.timeline || [] : []);
+      const failedSections = [journeyResult, prefsResult, docsResult, communicationsResult].some((result) => result.status === 'rejected');
+      setError(failedSections ? 'Some account extras are temporarily unavailable. Your orders and quotations are still available; try refreshing later.' : null);
     } catch (err) { setAuthenticatedError(true); setError(err instanceof Error ? err.message : 'Your customer dashboard could not be loaded.'); }
     finally { setLoading(false); }
   }, []);
