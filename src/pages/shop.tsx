@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Link } from 'wouter';
+import { Link, useLocation } from 'wouter';
 import { Search, Filter, X, ShoppingCart, Check, ShieldCheck, Truck, Sparkles, Tag, ArrowRight, PackageCheck, SlidersHorizontal } from 'lucide-react';
 import { CustomerLayout } from '@/components/layout/CustomerLayout';
 import { Breadcrumbs } from '@/components/Breadcrumbs';
@@ -27,6 +27,7 @@ export default function Shop() {
   // while category filtering is applied locally.
   const { products, loading, error: loadError, refetch } = useProducts();
   const { addItem, totalItems } = useCart();
+  const [, setLocation] = useLocation();
 
   // Preload product images for zero image load delay
   useImagePreloader(
@@ -89,9 +90,9 @@ export default function Shop() {
     if (!isProductPurchasable(product, variant)) return;
     addItem(product, variant);
     setAddedItemIds((prev) => ({ ...prev, [product.id]: true }));
-    setTimeout(() => {
-      setAddedItemIds((prev) => ({ ...prev, [product.id]: false }));
-    }, 1800);
+    // Make the add-to-cart action visibly complete by opening the cart.
+    // The cart state is shared by CartProvider and persists across this route change.
+    setLocation('/cart');
   };
 
   return (
@@ -425,6 +426,7 @@ export default function Shop() {
                           </div>
 
                           <button
+                            type="button"
                             onClick={(e) => handleAddToCart(product, e)}
                             disabled={!isProductPurchasable(product, selectedVariant)}
                             className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${

@@ -31,15 +31,6 @@ export function Header() {
   }, [location]);
 
   useEffect(() => {
-    if (!mobileMenuOpen) return;
-    const handleEscape = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') setMobileMenuOpen(false);
-    };
-    window.addEventListener('keydown', handleEscape);
-    return () => window.removeEventListener('keydown', handleEscape);
-  }, [mobileMenuOpen]);
-
-  useEffect(() => {
     setMobileMenuOpen(false);
     setMoreMenuOpen(false);
   }, [location]);

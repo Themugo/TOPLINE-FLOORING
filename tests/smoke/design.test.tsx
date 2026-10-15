@@ -45,8 +45,8 @@ describe('mobile action bar', () => {
     window.history.pushState({}, '', '/services');
     const { default: App } = await import('@/App');
     render(<App />);
-    await waitFor(() => expect(document.querySelector('nav[aria-label="Quick actions"]')).not.toBeNull(), { timeout: 10000 });
-    const quote = Array.from(document.querySelectorAll('nav[aria-label="Quick actions"] a')).find((a) => a.textContent?.includes('Get a quote'));
+    await waitFor(() => expect(document.querySelector('nav[aria-label="Primary mobile navigation"]')).not.toBeNull(), { timeout: 10000 });
+    const quote = Array.from(document.querySelectorAll('nav[aria-label="Primary mobile navigation"] a')).find((a) => a.getAttribute('aria-label') === 'Request a quotation');
     expect(quote?.getAttribute('href')).toBe('/quotation');
   });
 
@@ -56,6 +56,6 @@ describe('mobile action bar', () => {
     render(<App />);
     await waitFor(() => expect(document.body.innerHTML.length).toBeGreaterThan(500), { timeout: 10000 });
     await new Promise((r) => setTimeout(r, 150));
-    expect(document.querySelector('nav[aria-label="Quick actions"]')).toBeNull();
+    expect(document.querySelector('nav[aria-label="Primary mobile navigation"]')).toBeNull();
   });
 });

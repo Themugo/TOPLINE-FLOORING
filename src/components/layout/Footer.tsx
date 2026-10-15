@@ -20,8 +20,7 @@ export function Footer() {
   const { menus: footerMenus } = useNavigationMenus('footer');
 
   const siteName = settings.site_info?.name || DEFAULTS.name;
-  const [firstWord, ...restWords] = siteName.split(' ');
-  const tagline = settings.site_info?.tagline || DEFAULTS.tagline;
+  const tagline = DEFAULTS.tagline;
   const description = settings.site_info?.description || DEFAULTS.description;
 
   const phone = settings.contact?.phone || DEFAULTS.phone;
@@ -46,21 +45,29 @@ export function Footer() {
   const showSocial = settings.footer?.show_social !== false;
 
   return (
-    <footer className="bg-white text-navy-700 border-t border-gray-200">
+    <footer className="bg-white text-navy-700 border-t border-gray-200 pb-20 md:pb-0">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-16">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12">
           <div>
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-10 h-10 rounded-full border-2 border-navy-600 flex items-center justify-center flex-shrink-0">
-                <span className="text-primary-600 font-display font-bold text-lg">{firstWord.charAt(0)}</span>
-              </div>
-              <div>
-                <h2 className="font-display font-bold text-lg text-primary-600 leading-tight">
-                  {firstWord}{restWords.length > 0 ? ` ${restWords.join(' ')}` : ''}
-                </h2>
-                <p className="text-xs text-navy-600 tracking-wide">{tagline}</p>
-              </div>
-            </div>
+            <Link
+              href="/"
+              aria-label="Topline Flooring and Waterproofing home"
+              className="group flex items-center gap-2.5 sm:gap-3 mb-6 rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0E6B78] focus-visible:ring-offset-2"
+            >
+              <img
+                src="/topline-brand-mark.svg"
+                alt=""
+                aria-hidden="true"
+                className="h-10 w-10 sm:h-12 sm:w-[3.35rem] shrink-0 object-contain"
+                width="72"
+                height="64"
+              />
+              <span className="min-w-0 flex flex-col justify-center">
+                <span className="block font-display text-[19px] sm:text-[21px] font-extrabold leading-[0.98] tracking-[-0.045em] text-[#0C2D57]">Topline</span>
+                <span className="mt-1 block whitespace-nowrap text-[7px] sm:text-[9px] font-extrabold leading-tight tracking-[0.005em] sm:tracking-[0.045em] text-[#0C2D57]">{tagline}</span>
+                <span className="mt-1 hidden sm:block text-[8px] font-semibold leading-tight tracking-[0.06em] text-slate-500">Professional solutions for lasting spaces</span>
+              </span>
+            </Link>
             <p className="text-sm text-navy-500 leading-relaxed">{description}</p>
           </div>
 
