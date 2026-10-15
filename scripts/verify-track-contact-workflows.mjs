@@ -25,6 +25,10 @@ const checks = [
   ['More navigation still retains tracking and contact destinations', header.includes("{ href: '/track-order', label: 'Track Order'") && header.includes("{ href: '/contact', label: 'Contact'")],
   ['Contact form has explicit accessible labels and bounded message', contact.includes('htmlFor="contact-name"') && contact.includes('htmlFor="contact-message"') && contact.includes('maxLength={5000}')],
   ['No unsupported 24-hour or free-assessment promise added', !contact.includes('24-Hour RFQ Turnaround') && !contact.includes('Free On-Site Assessments') && !contact.includes('24/7')],
+  ['Contact hero heading explicitly uses high-contrast white text', /<h1 className="[^"]*text-white[^"]*">Let's talk about what your project needs\.<\/h1>/.test(contact)],
+  ['Contact hero guidance heading explicitly uses white text', /<h2 className="[^"]*text-white[^"]*">Help us route your enquiry<\/h2>/.test(contact)],
+  ['Track Order hero heading explicitly uses high-contrast white text', /<h1 className="[^"]*text-white[^"]*">Your order, clearly accounted for\.<\/h1>/.test(tracking)],
+  ['Contact and Track Order use the approved Signal Lime accent', !contact.includes('#C8F26A') && !tracking.includes('#C8F26A') && contact.includes('#B4E33D') && tracking.includes('#B4E33D')],
 ];
 let failed = 0;
 for (const [label, ok] of checks) { console.log(`${ok ? 'PASS' : 'FAIL'} ${label}`); if (!ok) failed++; }

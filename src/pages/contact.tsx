@@ -74,13 +74,13 @@ export default function Contact() {
           <div className="absolute inset-0 -z-10 bg-gradient-to-r from-[#0B1B2D] via-[#0C2D57]/95 to-[#0C2D57]/75" />
           <div className="page-container grid gap-9 py-12 sm:py-16 lg:grid-cols-[1.25fr_0.75fr] lg:items-end lg:py-20">
             <div className="max-w-3xl">
-              <p className="mb-4 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/5 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#C8F26A]"><Headphones className="h-4 w-4" /> Contact TOPLINE</p>
-              <h1 className="font-display text-3xl font-semibold leading-tight tracking-tight sm:text-4xl lg:text-5xl">Let's talk about what your project needs.</h1>
+              <p className="mb-4 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/5 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#B4E33D]"><Headphones className="h-4 w-4" /> Contact TOPLINE</p>
+              <h1 className="font-display text-3xl font-semibold leading-tight tracking-tight text-white sm:text-4xl lg:text-5xl">Let's talk about what your project needs.</h1>
               <p className="mt-4 max-w-2xl text-sm leading-7 text-white/75 sm:text-base">Tell us about your flooring, waterproofing, material or site requirements. Share the details and our team can direct your enquiry to the right workflow.</p>
-              <div className="mt-6 flex flex-wrap gap-x-5 gap-y-3 text-sm text-white/80"><span className="inline-flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-[#C8F26A]" />Project and service enquiries</span><span className="inline-flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-[#C8F26A]" />Product and technical questions</span></div>
+              <div className="mt-6 flex flex-wrap gap-x-5 gap-y-3 text-sm text-white/80"><span className="inline-flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-[#B4E33D]" />Project and service enquiries</span><span className="inline-flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-[#B4E33D]" />Product and technical questions</span></div>
             </div>
             <div className="rounded-2xl border border-white/15 bg-white/[0.07] p-5 backdrop-blur-sm sm:p-6">
-              <div className="flex items-start gap-3"><div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#C8F26A]/15 text-[#C8F26A]"><Sparkles className="h-5 w-5" /></div><div><h2 className="font-display text-lg font-semibold">Help us route your enquiry</h2><p className="mt-1 text-sm leading-6 text-white/70">Choose a subject and include the project context, location and timing that you already know.</p></div></div>
+              <div className="flex items-start gap-3"><div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#B4E33D]/15 text-[#B4E33D]"><Sparkles className="h-5 w-5" /></div><div><h2 className="font-display text-lg font-semibold text-white">Help us route your enquiry</h2><p className="mt-1 text-sm leading-6 text-white/70">Choose a subject and include the project context, location and timing that you already know.</p></div></div>
               <Link href="/quotation" className="mt-5 inline-flex w-full items-center justify-between rounded-lg bg-white px-4 py-3 text-sm font-semibold text-[#0C2D57] transition hover:bg-[#F7F6F3]">Need a formal quotation? <ArrowRight className="h-4 w-4" /></Link>
             </div>
           </div>
