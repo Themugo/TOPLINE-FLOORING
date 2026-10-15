@@ -647,7 +647,7 @@ function SectionEditor({ section, onSave, onClose, saving }: { section: Homepage
                 <option value="#ffffff">White</option>
                 <option value="#f9fafb">Gray 50</option>
                 <option value="#f3f4f6">Gray 100</option>
-                <option value="#c9971f">Primary Gold</option>
+                <option value="#8DBA17">Primary Gold</option>
                 <option value="#141a26">Navy Dark</option>
               </select>
               <input

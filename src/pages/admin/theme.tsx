@@ -8,14 +8,14 @@ import type { ThemeSetting } from '@/lib/types';
 import { validateAppliedTheme } from '@/lib/theme-engine';
 
 const presets = [
-  { name: 'Professional', primary: '#153f69', secondary: '#c9971f', accent: '#0369a1' },
+  { name: 'TOPLINE Ocean & Lime', primary: '#0C2D57', secondary: '#B4E33D', accent: '#0E6B78' },
   { name: 'Modern Blue', primary: '#1e40af', secondary: '#3b82f6', accent: '#1d4ed8' },
   { name: 'Earthy', primary: '#78350f', secondary: '#a16207', accent: '#92400e' },
   { name: 'Forest', primary: '#14532d', secondary: '#22c55e', accent: '#166534' },
   { name: 'Royal', primary: '#4c1d95', secondary: '#a855f7', accent: '#6b21a8' },
   { name: 'Slate', primary: '#1e293b', secondary: '#64748b', accent: '#334155' },
 ];
-const fonts = ['Inter', 'Space Grotesk', 'Montserrat', 'Open Sans', 'Poppins', 'Roboto', 'Playfair Display', 'Source Sans Pro'];
+const fonts = ['Sora', 'Manrope', 'Inter', 'Space Grotesk', 'Montserrat', 'Open Sans', 'Poppins', 'Roboto', 'Playfair Display', 'Source Sans Pro'];
 const buttonStyles = ['rounded', 'pill', 'square'];
 const spacingOptions = [6, 8, 10, 12];
 
@@ -118,7 +118,7 @@ export default function AdminTheme() {
         <section className="bg-white rounded-xl border p-6">
           <h2 className="font-semibold mb-1">Custom Colors</h2><p className="text-sm text-gray-500 mb-4">All three brand colors are live and governed.</p>
           <div className="grid sm:grid-cols-3 gap-6">
-            {([['Primary Color','primary_color','#153f69'],['Secondary / Gold Accent','secondary_color','#c9971f'],['Supporting Accent','accent_color','#0369a1']] as const).map(([label,key,fallback]) => <div key={key}><label className="block text-sm font-medium text-gray-700 mb-2">{label}</label><div className="flex gap-3"><input type="color" value={theme[key] || fallback} onChange={(e) => updateTheme({ [key]: e.target.value })} className="w-12 h-12 rounded border cursor-pointer" /><input type="text" value={theme[key] || fallback} onChange={(e) => updateTheme({ [key]: e.target.value })} className="input flex-1 font-mono text-sm" /></div></div>)}
+            {([['Primary Color','primary_color','#12396D'],['Secondary / Gold Accent','secondary_color','#8DBA17'],['Supporting Accent','accent_color','#0E6B78']] as const).map(([label,key,fallback]) => <div key={key}><label className="block text-sm font-medium text-gray-700 mb-2">{label}</label><div className="flex gap-3"><input type="color" value={theme[key] || fallback} onChange={(e) => updateTheme({ [key]: e.target.value })} className="w-12 h-12 rounded border cursor-pointer" /><input type="text" value={theme[key] || fallback} onChange={(e) => updateTheme({ [key]: e.target.value })} className="input flex-1 font-mono text-sm" /></div></div>)}
           </div>
         </section>
 

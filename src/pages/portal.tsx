@@ -202,9 +202,24 @@ export default function Portal() {
   if (authenticatedError || !data) return <CustomerLayout><section className="min-h-[65vh] bg-slate-50/80 py-16 md:py-20"><div className="container mx-auto max-w-md px-6"><Card className="rounded-2xl border-slate-200 shadow-sm"><CardContent className="p-8 text-center space-y-4"><ShieldCheck className="mx-auto h-10 w-10 text-primary" /><h2 className="text-xl font-semibold">We couldn't load your dashboard</h2><p className="text-sm text-muted-foreground">Your account is signed in, but your customer information is temporarily unavailable.</p>{error && <p className="text-sm text-destructive">{error}</p>}<div className="flex justify-center gap-3"><Button onClick={()=>void loadDashboard()}><RefreshCw className="h-4 w-4 mr-2"/>Try again</Button><Button variant="outline" onClick={()=>void signOutCustomer()}>Sign out</Button></div></CardContent></Card></div></section></CustomerLayout>;
 
   return <CustomerLayout>
-    <section className="bg-[#153F69] text-white py-14 md:py-16"><div className="container mx-auto px-6 md:px-12 flex flex-col md:flex-row md:items-end justify-between gap-6"><div><p className="text-sky-200 text-xs uppercase tracking-[0.2em] mb-2">MY TOPLINE · CUSTOMER ACCOUNT</p><h1 className="font-display text-3xl md:text-4xl font-bold tracking-tight text-white">Welcome, {data.customer.name}</h1><p className="text-secondary-foreground/60 mt-2">Your quotations and orders in one place.</p></div><div className="flex gap-3"><Button variant="outline" className="w-fit" onClick={() => void loadDashboard()}><RefreshCw className="h-4 w-4 mr-2" /> Refresh</Button><Button variant="outline" className="w-fit" onClick={() => { void signOutCustomer().then(() => { setSignedIn(false); setData(null); }).catch((err) => setError(err instanceof Error ? err.message : 'Unable to sign out. Please try again.')); }}><LogOut className="h-4 w-4 mr-2" /> Sign out</Button></div></div></section>
+    <section className="bg-[#0C2D57] text-white py-14 md:py-16"><div className="container mx-auto px-6 md:px-12 flex flex-col md:flex-row md:items-end justify-between gap-6"><div><p className="text-sky-200 text-xs uppercase tracking-[0.2em] mb-2">MY TOPLINE · CUSTOMER ACCOUNT</p><h1 className="font-display text-3xl md:text-4xl font-bold tracking-tight text-white">Welcome, {data.customer.name}</h1><p className="text-secondary-foreground/60 mt-2">Your quotations and orders in one place.</p></div><div className="flex gap-3"><Button variant="outline" className="w-fit" onClick={() => void loadDashboard()}><RefreshCw className="h-4 w-4 mr-2" /> Refresh</Button><Button variant="outline" className="w-fit" onClick={() => { void signOutCustomer().then(() => { setSignedIn(false); setData(null); }).catch((err) => setError(err instanceof Error ? err.message : 'Unable to sign out. Please try again.')); }}><LogOut className="h-4 w-4 mr-2" /> Sign out</Button></div></div></section>
     <section className="bg-slate-50/80 py-10 md:py-12"><div className="container mx-auto px-6 md:px-12 space-y-8">
       {error && <p className="rounded-md border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive">{error}</p>}
+      {(() => {
+        // Orders still awaiting payment (anything not paid, refunded or cancelled), newest first.
+        const unpaid = data.orders.filter((o) => !['paid', 'refunded'].includes((o.payment_status || '').toLowerCase()) && !['cancelled', 'canceled'].includes((o.status || '').toLowerCase()));
+        if (unpaid.length === 0) return null;
+        const total = unpaid.reduce((sum, o) => sum + Number(o.total_amount || 0), 0);
+        return (
+          <div role="status" className="flex flex-col gap-3 rounded-2xl border border-lime-400 bg-lime-50 p-5 sm:flex-row sm:items-center">
+            <div className="flex-1">
+              <p className="font-display text-lg font-bold text-primary-500">Payment needed</p>
+              <p className="mt-1 text-sm text-slate-700">{unpaid.length === 1 ? `Order ${unpaid[0].order_number || ''} is awaiting payment.` : `${unpaid.length} orders are awaiting payment.`} Total due: <strong className="tabular-nums">KES {total.toLocaleString('en-KE', { maximumFractionDigits: 2 })}</strong></p>
+            </div>
+            <Button className="bg-lime-400 text-primary-500 font-bold hover:bg-lime-300" onClick={() => setSelectedRecord({ type: 'order', value: unpaid[0] })}>Review and pay</Button>
+          </div>
+        );
+      })()}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Card className="rounded-2xl border-slate-200 shadow-sm"><CardContent className="p-5"><p className="text-xs uppercase tracking-wider text-muted-foreground">Active projects</p><p className="text-2xl font-bold mt-2">{data.summary.active_projects}</p></CardContent></Card>
         <Card className="rounded-2xl border-slate-200 shadow-sm"><CardContent className="p-5"><p className="text-xs uppercase tracking-wider text-muted-foreground">Open orders</p><p className="text-2xl font-bold mt-2">{data.summary.open_orders}</p></CardContent></Card>

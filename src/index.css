@@ -4,36 +4,36 @@
 
 :root {
   /* Canonical TOPLINE brand tokens. Runtime theme governance may update brand values. */
-  --topline-brand-primary: #153f69;
-  --topline-brand-accent: #c9971f;
-  --topline-brand-accent-strong: #795b13;
-  --topline-page-background: #f7f5ef;
+  --topline-brand-primary: #0c2d57;
+  --topline-brand-accent: #b4e33d;
+  --topline-brand-accent-strong: #566f0d;
+  --topline-page-background: #f7f6f3;
   --topline-surface: #ffffff;
-  --topline-text: #26384b;
-  --topline-muted: #64748b;
-  --topline-border: #e1e5ea;
-  --topline-focus: #153f69;
+  --topline-text: #17212b;
+  --topline-muted: #5f6b78;
+  --topline-border: #ddd9d2;
+  --topline-focus: #0e6b78;
   --topline-success: #166534;
   --topline-warning: #854d0e;
   --topline-danger: #b91c1c;
-  --topline-info: #075985;
-  --topline-chart-1: #153f69;
-  --topline-chart-2: #c9971f;
-  --topline-chart-3: #607d98;
-  --topline-chart-4: #64748b;
+  --topline-info: #0e6b78;
+  --topline-chart-1: #0c2d57;
+  --topline-chart-2: #b4e33d;
+  --topline-chart-3: #0e8a93;
+  --topline-chart-4: #8f5b3e;
   --container-max-width: 1280px;
   --layout-section-gap: 64px;
   --layout-content-gap: 24px;
   --surface-shadow: 0 10px 30px rgba(15, 23, 42, .08);
   --theme-btn-radius: 0.5rem;
-  --theme-secondary: #c5ad7a;
-  --theme-accent: #0369a1;
-  --theme-heading-font: "Space Grotesk", sans-serif;
-  --theme-body-font: "Inter", sans-serif;
+  --theme-secondary: #b4e33d;
+  --theme-accent: #0e6b78;
+  --theme-heading-font: "Sora Variable", "Sora", sans-serif;
+  --theme-body-font: "Manrope Variable", "Manrope", sans-serif;
   --theme-border-radius: 8px;
   --theme-spacing-scale: 8px;
-  --topline-ink: #153f69;
-  --topline-line: rgba(21, 63, 105, .12);
+  --topline-ink: #0c2d57;
+  --topline-line: rgba(12, 45, 87, .12);
   --topline-surface-translucent: rgba(255,255,255,.92);
   --topline-surface-soft: rgba(255,255,255,.65);
   --topline-shadow: 0 18px 50px rgba(15,23,42,.08);
@@ -61,10 +61,10 @@
 
   body {
     @apply antialiased;
-    color: var(--topline-text, #153f69);
-    background-color: var(--topline-page-background, #faf6ee);
+    color: var(--topline-text, #17212b);
+    background-color: var(--topline-page-background, #f7f6f3);
     /* Apply the existing governed CMS font token without changing the established palette. */
-    font-family: var(--theme-body-font, Inter), system-ui, sans-serif;
+    font-family: var(--theme-body-font, 'Manrope Variable'), system-ui, sans-serif;
     font-feature-settings: 'cv11', 'ss01';
     background-image: radial-gradient(circle at 10% 0%, rgba(197,173,122,.055), transparent 28rem), radial-gradient(circle at 90% 20%, rgba(96,125,152,.035), transparent 32rem);
   }
@@ -72,7 +72,7 @@
   h1, h2, h3, h4, h5, h6 {
     @apply font-display font-semibold tracking-tight text-navy-950;
     /* Theme Settings already publishes this token; connect it to rendered headings. */
-    font-family: var(--theme-heading-font, Outfit), Inter, system-ui, sans-serif;
+    font-family: var(--theme-heading-font, 'Sora Variable'), 'Manrope Variable', system-ui, sans-serif;
     line-height: 1.15;
   }
 
@@ -145,7 +145,7 @@
      (e.g. "OUR CERTIFIED PARTNERS"). */
   .section-label {
     @apply inline-block text-xs font-semibold tracking-[0.2em] uppercase;
-    color: var(--topline-brand-accent-strong, #79633b);
+    color: var(--topline-brand-accent-strong, #566f0d);
   }
 
   /* Consistent section heading pair: eyebrow label + large title.
@@ -237,9 +237,9 @@
   @media (min-width: 640px) { .page-section { padding-block: calc(var(--layout-section-gap, 4rem) * 1.25); } }
   @media (min-width: 1024px) { .page-section { padding-block: calc(var(--layout-section-gap, 4rem) * 1.5); } }
   .page-hero { @apply relative overflow-hidden border-b border-navy-100/60 bg-gradient-to-br from-primary-950 via-primary-900 to-primary-700; }
-  .page-hero::after { content:""; position:absolute; inset:auto -10% -55% 35%; height:24rem; background: radial-gradient(circle,color-mix(in srgb, var(--topline-brand-accent, #c9971f) 18%, transparent),transparent 65%); pointer-events:none; }
+  .page-hero::after { content:""; position:absolute; inset:auto -10% -55% 35%; height:24rem; background: radial-gradient(circle,color-mix(in srgb, var(--topline-brand-accent, #8dba17) 18%, transparent),transparent 65%); pointer-events:none; }
   .page-hero-inner { @apply relative z-10 mx-auto px-4 sm:px-6 lg:px-8 py-14 sm:py-18 lg:py-20; max-width: var(--container-max-width, 80rem); }
-  .eyebrow { @apply inline-flex items-center gap-2 text-[11px] font-bold uppercase tracking-[.22em]; color: var(--topline-brand-accent-strong, #79633b); }
+  .eyebrow { @apply inline-flex items-center gap-2 text-[11px] font-bold uppercase tracking-[.22em]; color: var(--topline-brand-accent-strong, #566f0d); }
   .eyebrow-light { @apply text-primary-300; }
   .display-title { @apply font-display text-4xl sm:text-5xl lg:text-6xl font-bold tracking-[-.035em] text-navy-950; }
   .display-title-light { @apply text-white; }
@@ -263,7 +263,7 @@
   .prose-copy { @apply text-navy-600 leading-8; }
   .customer-intent-grid { @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4; gap: var(--layout-content-gap, .75rem); }
   .customer-intent-card { @apply flex items-center justify-between gap-4 rounded-xl border border-slate-200 bg-white px-5 py-4 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-premium; }
-  .customer-intent-card strong { @apply block text-sm font-semibold text-[#142C46]; }
+  .customer-intent-card strong { @apply block text-sm font-semibold text-[#0C2D57]; }
   .customer-intent-card span { @apply block mt-0.5 text-xs text-slate-500; }
   .customer-section-head { @apply flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-8; }
   .customer-section-head h2 { @apply text-2xl sm:text-3xl lg:text-4xl font-bold text-navy-950; }
@@ -322,13 +322,13 @@ button:disabled, input:disabled, textarea:disabled, select:disabled { cursor: no
   .status-surface-success { background-color: #f0fdf4; color: #166534; border-color: #bbf7d0; }
   .status-surface-warning { background-color: #fffbeb; color: #854d0e; border-color: #fde68a; }
   .status-surface-danger { background-color: #fef2f2; color: #991b1b; border-color: #fecaca; }
-  .status-surface-info { background-color: #f0f9ff; color: #075985; border-color: #bae6fd; }
-  .page-title { @apply text-2xl sm:text-3xl font-bold tracking-tight; color: var(--topline-brand-primary, #153f69); }
+  .status-surface-info { background-color: #f0f9ff; color: #0e6b78; border-color: #bae6fd; }
+  .page-title { @apply text-2xl sm:text-3xl font-bold tracking-tight; color: var(--topline-brand-primary, #12396d); }
   .page-description { color: var(--topline-muted, #64748b); }
 }
 
 :where(a, button, input, textarea, select, summary, [tabindex]):focus-visible {
-  outline: 3px solid var(--topline-focus, #153f69);
+  outline: 3px solid var(--topline-focus, #12396d);
   outline-offset: 3px;
 }
 
@@ -336,85 +336,19 @@ button:disabled, input:disabled, textarea:disabled, select:disabled { cursor: no
 /* Homepage hero: restrained premium brand treatment and predictable touch behaviour. */
 .topline-home-hero {
   isolation: isolate;
-  background: linear-gradient(115deg, #142c46 0%, #243f5c 58%, #607d98 100%);
+  background: linear-gradient(115deg, #0c2d57 0%, #123766 58%, #0e6b78 100%);
 }
 .topline-home-hero img {
   object-position: center 52%;
 }
 .topline-home-hero a:focus-visible,
 .topline-home-hero button:focus-visible {
-  outline-color: #f0e4c9;
+  outline-color: #eefbcf;
   outline-offset: 4px;
 }
 @media (max-width: 639px) {
   .topline-home-hero h1 {
     overflow-wrap: anywhere;
     text-wrap: balance;
-  }
-}
-
-
-/* --------------------------------------------------------------------------
-   TOPLINE SIGNATURE REFINEMENT — approved palette, shared public-page polish.
-   Intentionally does not set dimensions, aspect-ratios, padding, or positioning
-   on .topline-home-hero or its descendants: homepage hero size is locked.
-   -------------------------------------------------------------------------- */
-:root {
-  --topline-brand-primary: #153f69;
-  --topline-brand-accent: #c9971f;
-  --topline-brand-accent-strong: #795b13;
-  --topline-page-background: #faf6ee;
-  --topline-surface: #ffffff;
-  --topline-text: #26384b;
-  --topline-muted: #64748b;
-  --topline-border: #dbe3ec;
-  --topline-focus: #153f69;
-  --topline-ink: #153f69;
-  --topline-line: rgba(21, 63, 105, .12);
-  --topline-shadow: 0 18px 50px rgba(21, 63, 105, .075);
-}
-
-/* One calm, consistent surface language across catalogue, customer and form pages. */
-.page-shell {
-  color: var(--topline-text);
-}
-
-.page-shell :where(input:not([type="checkbox"]):not([type="radio"]):not([type="range"]), select, textarea) {
-  accent-color: var(--topline-brand-primary);
-  border-color: var(--topline-border);
-}
-
-.page-shell :where(input:not([type="checkbox"]):not([type="radio"]):not([type="range"]), select, textarea):focus-visible {
-  border-color: var(--topline-focus);
-  box-shadow: 0 0 0 3px rgba(21, 63, 105, .12);
-}
-
-.page-shell :where(button, [role="button"], a) {
-  -webkit-tap-highlight-color: transparent;
-}
-
-.page-shell :where(img) {
-  max-width: 100%;
-}
-
-/* Gold is an accent, not a second competing primary action colour. */
-.section-label,
-.eyebrow {
-  color: var(--topline-brand-accent-strong);
-}
-
-.page-shell :where(.rounded-xl, .rounded-2xl, .rounded-3xl) {
-  background-clip: padding-box;
-}
-
-/* Keep wide data tables usable on phones without forcing the entire page wide. */
-.page-shell :where(table) {
-  border-collapse: separate;
-  border-spacing: 0;
-}
-
-@media (max-width: 639px) {
-  .page-shell :where(input:not([type="checkbox"]):not([type="radio"]):not([type="range"]), select, textarea) {
-    max-width: 100%;
   }
 }

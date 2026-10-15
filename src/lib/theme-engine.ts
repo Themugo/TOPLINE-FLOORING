@@ -73,7 +73,7 @@ export function generateColorRamp(baseHex: string): Record<string, string> {
     base = rgbToHsl(hexToRgb(baseHex));
   } catch {
     // Invalid or absent persisted values must never generate malformed CSS.
-    base = rgbToHsl(hexToRgb('#153f69'));
+    base = rgbToHsl(hexToRgb('#12396D'));
   }
   const ramp: Record<string, string> = { '500': hslToHex(base) };
   for (const [step, fraction] of Object.entries(LIGHTER_STEPS)) {
@@ -118,7 +118,7 @@ function updateDynamicColorRamp(kind: 'primary' | 'accent', baseHex: string) {
     styleTag.id = styleId;
     document.head.appendChild(styleTag);
   }
-  styleTag.dataset[`${kind}Hex`] = normalizeThemeColor(baseHex, kind === 'primary' ? '#153f69' : '#0369a1', true);
+  styleTag.dataset[`${kind}Hex`] = normalizeThemeColor(baseHex, kind === 'primary' ? '#12396D' : '#0E6B78', true);
   const rules: string[] = [];
   const primaryHex = styleTag.dataset.primaryHex;
   const accentHex = styleTag.dataset.accentHex;
@@ -160,11 +160,11 @@ export interface AppliedTheme {
 }
 
 export const DEFAULT_APPLIED_THEME: AppliedTheme = {
-  primary_color: '#142c46', secondary_color: '#c5ad7a', accent_color: '#355a78',
-  heading_font: 'Space Grotesk', body_font: 'Inter', button_style: 'rounded', border_radius: 8, spacing_scale: 8,
+  primary_color: '#0c2d57', secondary_color: '#b4e33d', accent_color: '#0e6b78',
+  heading_font: 'Sora', body_font: 'Manrope', button_style: 'rounded', border_radius: 8, spacing_scale: 8,
 };
 
-export const ALLOWED_THEME_FONTS = ['Inter', 'Space Grotesk', 'Montserrat', 'Open Sans', 'Poppins', 'Roboto', 'Playfair Display', 'Source Sans Pro'] as const;
+export const ALLOWED_THEME_FONTS = ['Sora', 'Manrope', 'Inter', 'Space Grotesk', 'Montserrat', 'Open Sans', 'Poppins', 'Roboto', 'Playfair Display', 'Source Sans Pro'] as const;
 
 export function isValidThemeColor(value: unknown): value is string {
   return typeof value === 'string' && /^#(?:[0-9a-f]{3}|[0-9a-f]{6})$/i.test(value.trim());
@@ -194,7 +194,7 @@ export function normalizeAppliedTheme(theme: Partial<AppliedTheme> | null | unde
 }
 
 function relativeLuminance(hex: string): number {
-  const rgb = hexToRgb(normalizeThemeColor(hex, '#153f69'));
+  const rgb = hexToRgb(normalizeThemeColor(hex, '#12396D'));
   const channels = [rgb.r, rgb.g, rgb.b].map((value) => value / 255).map((value) => value <= 0.04045 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4);
   return channels[0] * 0.2126 + channels[1] * 0.7152 + channels[2] * 0.0722;
 }
@@ -248,6 +248,10 @@ const RADIUS_BY_BUTTON_STYLE: Record<string, string> = {
   pill: '9999px',
 };
 
+// Self-hosted brand fonts register as "<Name> Variable"; other approved fonts are system or user-installed.
+const FONT_FAMILY: Record<string, string> = { Sora: '"Sora Variable", "Sora"', Manrope: '"Manrope Variable", "Manrope"' };
+const fontStack = (name: string) => `${FONT_FAMILY[name] ?? `"${name}"`}, system-ui, sans-serif`;
+
 export function applyTheme(theme: AppliedTheme) {
   if (typeof document === 'undefined') return;
   const safeTheme = normalizeAppliedTheme(theme);
@@ -258,8 +262,8 @@ export function applyTheme(theme: AppliedTheme) {
   root.style.setProperty('--theme-secondary', safeTheme.secondary_color);
   root.style.setProperty('--theme-accent', safeTheme.accent_color);
   root.style.setProperty('--topline-focus', safeTheme.primary_color);
-  root.style.setProperty('--theme-heading-font', `"${safeTheme.heading_font}", sans-serif`);
-  root.style.setProperty('--theme-body-font', `"${safeTheme.body_font}", sans-serif`);
+  root.style.setProperty('--theme-heading-font', fontStack(safeTheme.heading_font));
+  root.style.setProperty('--theme-body-font', fontStack(safeTheme.body_font));
   root.style.setProperty('--theme-border-radius', `${safeTheme.border_radius}px`);
   root.style.setProperty('--theme-spacing-scale', `${safeTheme.spacing_scale}px`);
   // Runtime theme settings provide layout defaults; active site-design tokens load later and take precedence.

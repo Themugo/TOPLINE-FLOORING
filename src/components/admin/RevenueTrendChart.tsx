@@ -74,18 +74,18 @@ export function RevenueTrendChart() {
           <AreaChart data={data} margin={{ top: 5, right: 20, left: 10, bottom: 5 }}>
             <defs>
               <linearGradient id="revenueGrad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="var(--topline-chart-1, #153f69)" stopOpacity={0.3} />
-                <stop offset="95%" stopColor="var(--topline-chart-1, #153f69)" stopOpacity={0} />
+                <stop offset="5%" stopColor="var(--topline-chart-1, #12396D)" stopOpacity={0.3} />
+                <stop offset="95%" stopColor="var(--topline-chart-1, #12396D)" stopOpacity={0} />
               </linearGradient>
             </defs>
-            <CartesianGrid strokeDasharray="3 3" stroke="var(--topline-border, #dbe3ec)" />
+            <CartesianGrid strokeDasharray="3 3" stroke="var(--topline-border, #D6D2CA)" />
             <XAxis dataKey="date" tick={{ fontSize: 11 }} stroke="var(--topline-muted, #64748b)" />
             <YAxis tick={{ fontSize: 11 }} stroke="var(--topline-muted, #64748b)" tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`} />
             <Tooltip
               formatter={(value) => [formatKES(Number(value) || 0), 'Revenue']}
-              contentStyle={{ borderRadius: '8px', border: '1px solid var(--topline-border, #dbe3ec)', fontSize: '12px' }}
+              contentStyle={{ borderRadius: '8px', border: '1px solid var(--topline-border, #D6D2CA)', fontSize: '12px' }}
             />
-            <Area type="monotone" dataKey="revenue" stroke="var(--topline-chart-1, #153f69)" strokeWidth={2} fill="url(#revenueGrad)" />
+            <Area type="monotone" dataKey="revenue" stroke="var(--topline-chart-1, #12396D)" strokeWidth={2} fill="url(#revenueGrad)" />
           </AreaChart>
         </ResponsiveContainer>
       </div>

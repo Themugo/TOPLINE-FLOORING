@@ -23,7 +23,7 @@ export function WhatsAppButton() {
   };
 
   return (
-    <div className="fixed bottom-5 right-5 z-50 flex flex-col items-end">
+    <div className="fixed bottom-5 right-5 z-50 hidden md:flex flex-col items-end">
       {/* Sleek Quick Chat Popover */}
       {isOpen && (
         <div className="mb-3 w-72 sm:w-80 bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-hidden animate-in fade-in slide-in-from-bottom-3 duration-200">

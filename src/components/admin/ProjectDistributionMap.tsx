@@ -216,7 +216,7 @@ export function ProjectDistributionMap({
       const popupContent = `
         <div style="font-family: sans-serif; min-width: 200px; max-width: 260px; padding: 4px;">
           <div style="display: flex; items-center; justify-content: space-between; margin-bottom: 6px;">
-            <span style="font-size: 10px; font-weight: 700; text-transform: uppercase; color: ${color}; bg-color: #f1f5f9; padding: 2px 6px; border-radius: 4px;">
+            <span style="font-size: 10px; font-weight: 700; text-transform: uppercase; color: ${color}; bg-color: #F3F2EE; padding: 2px 6px; border-radius: 4px;">
               ${p.service_type || 'Flooring Service'}
             </span>
             <span style="font-size: 11px; color: #64748b; font-weight: 600;">
@@ -231,7 +231,7 @@ export function ProjectDistributionMap({
               ? `<p style="font-size: 11px; color: #475569; margin: 0 0 6px 0; font-weight: 600;">Client: ${p.client_name}</p>`
               : ''
           }
-          <div style="font-size: 11px; color: #64748b; border-top: 1px solid #f1f5f9; pt: 6px; margin-top: 6px; display: flex; align-items: center; justify-content: space-between;">
+          <div style="font-size: 11px; color: #64748b; border-top: 1px solid #F3F2EE; pt: 6px; margin-top: 6px; display: flex; align-items: center; justify-content: space-between;">
             <span>📍 ${p.location || 'Metropolitan Area'}</span>
             ${p.area_size ? `<span>📐 ${p.area_size}</span>` : ''}
           </div>

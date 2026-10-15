@@ -190,7 +190,7 @@ function ReportsContent() {
             <StatCard title="Pending Orders" value={stats.pendingOrders} icon={<ShoppingCart className="w-5 h-5" />} color="bg-yellow-700" />
             <StatCard title="Low Stock Items" value={stats.lowStockCount} icon={<AlertTriangle className="w-5 h-5" />} color="bg-red-500" />
             <StatCard title="Quote Conversion" value={`${stats.conversionRate}%`} icon={<TrendingUp className="w-5 h-5" />} color="bg-green-600" />
-            <StatCard title="Avg Order Value" value={formatKES(stats.avgOrderValue)} icon={<BarChart3 className="w-5 h-5" />} color="bg-gold-600" />
+            <StatCard title="Avg Order Value" value={formatKES(stats.avgOrderValue)} icon={<BarChart3 className="w-5 h-5" />} color="bg-lime-600" />
           </div>
 
           <div className="grid sm:grid-cols-2 gap-4">
@@ -209,11 +209,11 @@ function ReportsContent() {
             ) : (
               <ResponsiveContainer width="100%" height={240}>
                 <LineChart data={revenueTrend}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="var(--topline-border, #dbe3ec)" />
+                  <CartesianGrid strokeDasharray="3 3" stroke="var(--topline-border, #D6D2CA)" />
                   <XAxis dataKey="date" tick={{ fontSize: 11, fill: "var(--topline-muted, #64748b)" }} stroke="var(--topline-muted, #64748b)" interval="preserveStartEnd" />
                   <YAxis tick={{ fontSize: 11, fill: "var(--topline-muted, #64748b)" }} stroke="var(--topline-muted, #64748b)" tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`} />
-                  <Tooltip formatter={tooltipFormatter} contentStyle={{ borderRadius: "8px", border: "1px solid var(--topline-border, #dbe3ec)" }} />
-                  <Line type="monotone" dataKey="revenue" stroke="var(--topline-chart-2, #c9971f)" strokeWidth={2} dot={false} />
+                  <Tooltip formatter={tooltipFormatter} contentStyle={{ borderRadius: "8px", border: "1px solid var(--topline-border, #D6D2CA)" }} />
+                  <Line type="monotone" dataKey="revenue" stroke="var(--topline-chart-2, #8DBA17)" strokeWidth={2} dot={false} />
                 </LineChart>
               </ResponsiveContainer>
             )}

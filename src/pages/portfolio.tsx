@@ -9,6 +9,7 @@ import { Breadcrumbs } from '@/components/Breadcrumbs';
 import { CustomerLayout } from '@/components/layout/CustomerLayout';
 import { useSeoMeta } from '@/hooks/use-seo';
 import { loadPublicProjects } from '@/lib/public-projects';
+import { ServiceToneBar } from '@/components/ui/ServiceToneBar';
 import type { Project, ProjectImage } from '@/lib/types';
 
 interface ProjectWithImages extends Project {
@@ -217,6 +218,7 @@ export default function Portfolio() {
                     <div className="relative aspect-[4/3] overflow-hidden bg-navy-900">
                       <ProjectPhoto src={primaryImage(project)} alt={project.title} className="h-full w-full object-cover transition duration-700 group-hover:scale-105" />
                       <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-navy-950/85 via-navy-950/10 to-transparent" />
+                      <ServiceToneBar service={{ name: `${project.service_type || ''} ${project.category || ''} ${project.title}` }} />
                       {project.featured && <span className="absolute left-3 top-3 inline-flex items-center gap-1.5 rounded-lg bg-primary-600 px-2.5 py-1.5 text-[10px] font-bold uppercase tracking-wider text-white"><Sparkles className="h-3 w-3" aria-hidden="true" /> Featured</span>}
                       {project.area_size && <span className="absolute right-3 top-3 rounded-lg border border-white/20 bg-navy-950/75 px-2.5 py-1.5 text-[11px] font-semibold text-white backdrop-blur">{project.area_size}</span>}
                       <span className="absolute bottom-3 left-3 right-3 flex items-end justify-between gap-3 text-white">

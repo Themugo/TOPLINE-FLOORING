@@ -65,7 +65,7 @@ for (const f of fs.readdirSync(path.join(root, 'src/pages/admin')).filter((x) =>
 }
 const smokeCommand = JSON.parse(read('package.json')).scripts['test:smoke'];
 check(typeof smokeCommand === 'string' && /(?:^|\s)run(?:\s|$)/.test(smokeCommand) && smokeCommand.includes('--config vitest.config.ts') && (smokeCommand.includes('vitest') || smokeCommand.includes('node ./node_modules/vitest/vitest.mjs')), 'package.json must define a Windows-compatible Vitest smoke-test command');
-for (const f of ['routes', 'admin-routes', 'admin-services.interaction', 'quotation.interaction', 'admin-products.interaction', 'checkout.interaction']) {
+for (const f of ['routes', 'admin-routes', 'admin-services.interaction', 'quotation.interaction', 'admin-products.interaction', 'checkout.interaction', 'design']) {
   check(fs.existsSync(path.join(root, `tests/smoke/${f}.test.tsx`)), `tests/smoke/${f}.test.tsx is missing`);
 }
 // Edge Function failures must surface the function's own message, not supabase-js's generic non-2xx text.

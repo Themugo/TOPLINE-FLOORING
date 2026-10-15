@@ -1,3 +1,5 @@
+> **SUPERSEDED 2026-10-15:** the palette in this document (deep navy `#142C46`, champagne `#C5AD7A`, cream `#F7F5EF`) was replaced by the ocean navy / signal lime / petrol / concrete system in `TOPLINE-DESIGN-SYSTEM-2026-10-15.md`.
+
 # TOPLINE Unified Design-Token Specification
 
 **Scope:** shared public/customer and admin/operations UI. This is a source-level token contract; rendered contrast and responsive certification must still be confirmed in a browser on the release checkout.

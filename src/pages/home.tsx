@@ -6,6 +6,7 @@ import { RecentProjects } from '@/components/home/RecentProjects';
 import { useHeroSlides, useProducts, useTestimonials, usePartners, usePromotions, useHomepageSections, useServices, useSiteSettings, useThemeSettings, useProjects } from '@/hooks/use-data';
 import { useSeoMeta } from '@/hooks/use-seo';
 import { formatKES, telHref } from '@/lib/utils';
+import { ServiceToneBar } from '@/components/ui/ServiceToneBar';
 import { getServicePlaceholder, getProductPlaceholder, withFallback, ensureRealImage, getRandomRealImage } from '@/lib/placeholders';
 import { useCart } from '@/hooks/use-cart';
 import { useImagePreloader } from '@/hooks/use-image-preloader';
@@ -233,7 +234,7 @@ export default function Home() {
 
       {/* Hero Section - Full viewport slider with dark navy overlay */}
       <section
-        className="topline-home-hero relative h-[30rem] min-h-[30rem] sm:h-[32rem] lg:h-[35rem] overflow-hidden bg-[#153F69] touch-pan-y"
+        className="topline-home-hero relative h-[30rem] min-h-[30rem] sm:h-[32rem] lg:h-[35rem] overflow-hidden bg-[#0C2D57] touch-pan-y"
         aria-roledescription="carousel"
         aria-label="Featured products, services and company highlights"
         onMouseEnter={() => setIsSliderPaused(true)}
@@ -254,7 +255,7 @@ export default function Home() {
             }`}
           >
             <div
-              className="absolute inset-0 z-10 bg-gradient-to-r from-[#153F69]/90 via-[#153F69]/70 to-[#153F69]/15"
+              className="absolute inset-0 z-10 bg-gradient-to-r from-[#0C2D57]/90 via-[#0C2D57]/70 to-[#0C2D57]/15"
               style={{ opacity: Math.min(1, Math.max(0.55, overlayOpacity / 100)) }}
             />
             <img
@@ -271,7 +272,7 @@ export default function Home() {
               <div className="max-w-7xl mx-auto px-5 sm:px-8 lg:px-10 w-full">
                 <div className="max-w-2xl py-10">
                   {slide.source_type !== 'hero_slide' && (
-                    <p className="inline-flex items-center rounded-full border border-white/30 bg-white/10 px-3 py-1 mb-4 text-[11px] font-bold uppercase tracking-[0.16em] text-[#F0E4C9] backdrop-blur-sm">
+                    <p className="inline-flex items-center rounded-full border border-white/30 bg-white/10 px-3 py-1 mb-4 text-[11px] font-bold uppercase tracking-[0.16em] text-[#EEFBCF] backdrop-blur-sm">
                       {slide.source_type === 'product' ? 'Featured product' : 'Featured service'}
                     </p>
                   )}
@@ -304,7 +305,7 @@ export default function Home() {
                     <Link
                       href={slide.button_link}
                       tabIndex={index === currentSlide ? 0 : -1}
-                      className={`inline-flex items-center gap-2 bg-[#FAF6EE] hover:bg-white text-[#153F69] px-6 py-3 rounded-lg text-sm font-semibold transition-all duration-500 delay-400 shadow-sm hover:shadow-md ${
+                      className={`inline-flex items-center gap-2 bg-[#F7F6F3] hover:bg-white text-[#0C2D57] px-6 py-3 rounded-lg text-sm font-semibold transition-all duration-500 delay-400 shadow-sm hover:shadow-md ${
                         index === currentSlide ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2'
                       }`}
                     >
@@ -356,7 +357,7 @@ export default function Home() {
       </section>
 
       {/* Customer intent shortcuts: help first-time visitors choose the right journey immediately. */}
-      <section className="relative z-30 bg-[#FAF6EE] px-4 sm:px-6 lg:px-8 py-5 sm:py-6">
+      <section className="relative z-30 bg-[#F7F6F3] px-4 sm:px-6 lg:px-8 py-5 sm:py-6">
         <div className="max-w-6xl mx-auto customer-intent-grid">
           <Link href="/shop" className="group customer-intent-card">
             <div><strong>Shop materials</strong><span>Browse products and variants</span></div><ArrowRight className="w-4 h-4 text-primary-500 transition-transform group-hover:translate-x-1" />
@@ -420,6 +421,7 @@ export default function Home() {
                       loading="lazy"
                       className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                     />
+                    <ServiceToneBar service={service} />
                     <div className="absolute inset-0 bg-gradient-to-t from-navy-950 via-navy-900/50 to-transparent opacity-90 group-hover:opacity-80 transition-opacity" />
                     <div className="absolute bottom-0 left-0 right-0 p-6">
                       <span className="inline-block text-[11px] font-semibold tracking-widest uppercase text-primary-300 mb-1.5">
@@ -447,6 +449,7 @@ export default function Home() {
                       loading="lazy"
                       className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                     />
+                    <ServiceToneBar service={service} />
                     <div className="absolute inset-0 bg-gradient-to-t from-navy-950 via-navy-900/60 to-transparent opacity-90 group-hover:opacity-80 transition-opacity" />
                     <div className="absolute top-3.5 right-3.5 w-8 h-8 rounded-full bg-primary-500/90 backdrop-blur-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-1 group-hover:translate-y-0 shadow-md">
                       <ArrowRight className="w-4 h-4 text-white" />
@@ -488,7 +491,7 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-10 lg:gap-16 items-center">
             <div>
-              <span className="inline-block text-[#79633B] text-xs font-semibold uppercase tracking-[0.16em] mb-2">
+              <span className="inline-block text-[#566F0D] text-xs font-semibold uppercase tracking-[0.16em] mb-2">
                 {aboutBadgeText}
               </span>
               <h2 className="font-display text-2xl lg:text-4xl font-bold text-navy-950 tracking-tight mb-4">

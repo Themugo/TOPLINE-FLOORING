@@ -163,20 +163,20 @@ export function RecentProjects() {
         {loading ? (
           <ProjectsSkeleton />
         ) : error ? (
-          <div className="text-center py-16 bg-white rounded-2xl border border-[#E1E5EA]">
-            <Building2 className="w-10 h-10 text-[#607D98] mx-auto mb-3" />
-            <p className="text-[#142C46] font-semibold text-base mb-1">Project gallery temporarily unavailable</p>
+          <div className="text-center py-16 bg-white rounded-2xl border border-[#DDD9D2]">
+            <Building2 className="w-10 h-10 text-[#5F6B7A] mx-auto mb-3" />
+            <p className="text-[#0C2D57] font-semibold text-base mb-1">Project gallery temporarily unavailable</p>
             <p className="text-slate-600 text-sm">The project records could not be loaded. Please visit the full portfolio or contact our team.</p>
-            <Link href="/portfolio" className="inline-flex mt-4 items-center gap-2 rounded-lg bg-[#142C46] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#203F60]">View portfolio <ArrowRight className="w-4 h-4" /></Link>
+            <Link href="/portfolio" className="inline-flex mt-4 items-center gap-2 rounded-lg bg-[#0C2D57] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#123766]">View portfolio <ArrowRight className="w-4 h-4" /></Link>
           </div>
         ) : filteredProjects.length === 0 ? (
-          <div className="text-center py-16 bg-white rounded-2xl border border-[#E1E5EA]">
+          <div className="text-center py-16 bg-white rounded-2xl border border-[#DDD9D2]">
             <Building2 className="w-12 h-12 text-navy-400 mx-auto mb-3" />
-            <p className="text-[#142C46] font-semibold text-base mb-1">No projects found in "{selectedCategory}".</p>
+            <p className="text-[#0C2D57] font-semibold text-base mb-1">No projects found in "{selectedCategory}".</p>
             <p className="text-slate-600 text-sm">Try selecting another category filter above or check back soon.</p>
             <button
               onClick={() => setSelectedCategory('All')}
-              className="mt-4 px-4 py-2 bg-[#F7F5EF] hover:bg-slate-100 text-xs text-[#142C46] font-semibold rounded-lg transition-colors"
+              className="mt-4 px-4 py-2 bg-[#F7F6F3] hover:bg-slate-100 text-xs text-[#0C2D57] font-semibold rounded-lg transition-colors"
             >
               Reset Category Filter
             </button>

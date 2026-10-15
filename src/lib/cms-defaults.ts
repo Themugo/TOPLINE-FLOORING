@@ -443,12 +443,12 @@ export const DEFAULT_CMS_STORE: CMSContentStore = {
   },
 
   theme_settings: {
-    preset: 'gold-amber',
-    primary_color: '#b45309',
-    secondary_color: '#1e293b',
-    accent_color: '#d97706',
-    heading_font: 'Plus Jakarta Sans',
-    body_font: 'Inter',
+    preset: 'ocean-lime',
+    primary_color: '#0C2D57',
+    secondary_color: '#B4E33D',
+    accent_color: '#0E6B78',
+    heading_font: 'Sora',
+    body_font: 'Manrope',
     button_style: 'rounded-md',
     border_radius: 6,
     spacing_scale: 1,

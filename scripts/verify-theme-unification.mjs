@@ -16,12 +16,12 @@ const revenueChart = read('src/components/admin/RevenueTrendChart.tsx');
 const reportsPage = read('src/pages/admin/reports.tsx');
 
 for (const [label, source, tokens] of [
-  ['Tailwind palette', tailwind, ["primary:", "500: '#142c46'", "gold:", "500: '#c5ad7a'", "50: '#faf6ee'", "400: '#64748b'"]],
-  ['CSS semantic tokens', css, ['--topline-brand-primary: #142c46', '--topline-brand-accent: #c5ad7a', '--topline-page-background: #f7f5ef', '--topline-surface: #ffffff', '--topline-muted: #64748b', '--topline-success:', '--topline-warning:', '--topline-danger:', '--topline-info:', '--topline-chart-1:', '--topline-chart-4:']],
+  ['Tailwind palette', tailwind, ["primary:", "500: '#0c2d57'", "lime:", "400: '#b4e33d'", "50: '#f7f6f3'", "500: '#5f6b78'", "accent:", "500: '#0e6b78'"]],
+  ['CSS semantic tokens', css, ['--topline-brand-primary: #0c2d57', '--topline-brand-accent: #b4e33d', '--topline-page-background: #f7f6f3', '--topline-surface: #ffffff', '--topline-muted: #5f6b78', '--topline-success:', '--topline-warning:', '--topline-danger:', '--topline-info:', '--topline-chart-1:', '--topline-chart-4:']],
   ['Runtime theme validation', engine, ['normalizeAppliedTheme', 'validateAppliedTheme', 'isValidThemeColor', 'ALLOWED_THEME_FONTS', 'applyAccentColorRamp', 'LIGHTER_STEPS', 'DARKER_STEPS', 'Math.min(32', 'Math.min(12', '--layout-section-gap', '--layout-content-gap']],
   ['Custom CSS safety', engine, ['validateCustomCss', '@import', 'outline', '40,000 characters', 'isSafeDesignTokenValue']],
   ['Theme application', applier, ['DEFAULT_APPLIED_THEME', 'validateCustomCss', 'isSafeDesignTokenValue', 'loadSiteDesignTokens', 'admin-custom-css']],
-  ['Admin theme save validation', themePage, ['validateAppliedTheme', 'Theme settings need correction', '#153f69', '#c9971f']],
+  ['Admin theme save validation', themePage, ['validateAppliedTheme', 'Theme settings need correction', '#0C2D57', '#B4E33D']],
   ['Site control CSS validation', siteControl, ['validateCustomCss', 'Unsafe CSS rejected', 'isSafeDesignTokenValue']],
   ['Revenue chart tokenization', revenueChart, ['--topline-chart-1', '--topline-border', '--topline-muted']],
   ['Reports chart tokenization', reportsPage, ['--topline-chart-2', '--topline-border', '--topline-muted']],
@@ -47,16 +47,16 @@ function luminance(hex) {
 }
 function contrast(a, b) { const x = luminance(a), y = luminance(b); return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05); }
 const contrastPairs = [
-  ['#142c46', '#ffffff', 'brand primary on white'],
-  ['#142c46', '#f7f5ef', 'brand primary on warm background'],
-  ['#64748b', '#ffffff', 'muted text on white'],
-  ['#79633b', '#ffffff', 'strong champagne accent fallback on white'],
-  ['#79633b', '#ffffff', 'generated champagne accent text on white'],
-  ['#0369a1', '#ffffff', 'supporting accent on white'],
+  ['#0c2d57', '#ffffff', 'brand primary on white'],
+  ['#0c2d57', '#f7f6f3', 'brand primary on concrete background'],
+  ['#0c2d57', '#b4e33d', 'navy text on signal lime action'],
+  ['#5f6b78', '#ffffff', 'muted text on white'],
+  ['#566f0d', '#ffffff', 'strong lime accent text on white'],
+  ['#0e6b78', '#ffffff', 'supporting petrol accent on white'],
   ['#166534', '#f0fdf4', 'success text on success surface'],
   ['#854d0e', '#fffbeb', 'warning text on warning surface'],
   ['#991b1b', '#fef2f2', 'danger text on danger surface'],
-  ['#075985', '#f0f9ff', 'information text on information surface'],
+  ['#0e6b78', '#f0f9ff', 'information text on information surface'],
 ];
 for (const [fg, bg, label] of contrastPairs) {
   const ratio = contrast(fg, bg);
