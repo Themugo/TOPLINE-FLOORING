@@ -171,3 +171,7 @@ The current active chain contains 117 uniquely timestamped active migrations. Th
 - `20261004130000_allow_queued_customer_communications.sql` — `queue_customer_message()` logs status `queued`, which the CHECK constraint rejected; staff could not send any customer message.
 
 - `20261015140000_reconcile_existing_verified_customer_portal_links.sql` — safely backfills missing links only for email-verified Auth users with exactly one normalized customer email match and no existing identity/customer mapping.
+
+## 2026-10-15 email communication closure
+
+- `20261015180000_email_quotation_and_brevo_marketing_sync_360.sql` — queues admin/customer quotation emails and consent-gated Brevo marketing-list synchronization through the existing communication worker.

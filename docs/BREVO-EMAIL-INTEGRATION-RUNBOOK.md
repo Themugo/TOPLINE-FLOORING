@@ -68,3 +68,36 @@ For inbound email, configure Brevo's inbound parsing/webhook mechanism to the de
 - A delivery event updates the corresponding outbox row.
 - A bounce/failure is recorded without leaking provider secrets.
 - Duplicate/replayed provider events do not create duplicate business notifications.
+
+
+## Quotation intake and consent-gated marketing synchronization
+
+The migration `20261015180000_email_quotation_and_brevo_marketing_sync_360.sql` adds two durable flows:
+
+- Every newly inserted quotation queues a transactional acknowledgement to the requester and a new-RFQ alert to the configured administrator. The admin destination is `site_integration_configs.public_config.quotation_admin_email` for `communications.email`; when unset, it falls back to the email in CMS `contact/info`, then `footer/contact`. Set and verify that destination before live use.
+- Customer portal `marketing_email_enabled` changes are recorded in `brevo_marketing_sync_queue`. Only explicit opt-ins are added to the Brevo marketing list. Opt-outs unlink the address from the configured list; they do not globally blacklist the address, so transactional email can still be sent.
+
+Add these secrets/configuration to Supabase Edge Function environment (never Vite/client env):
+
+- `BREVO_API_KEY`
+- `BREVO_SENDER_EMAIL`
+- `BREVO_SENDER_NAME`
+- `BREVO_REPLY_TO_EMAIL`
+- `BREVO_MARKETING_LIST_ID` (numeric list ID from Brevo)
+- Existing `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, and `TOPLINE_WORKER_SECRET`
+
+The existing `deliver-communications` worker processes both the transactional outbox and marketing sync queue. The existing `operations-scheduler` must be deployed/configured and invoked on a recurring schedule with `x-topline-worker-secret`; otherwise queued messages and marketing list changes remain queued. Inspect worker results for `marketing_sync.configured` and processed counts.
+
+### Activation and real-mailbox UAT
+
+1. Apply migrations in the canonical order, including the new 20261015 migration, to the intended Supabase project.
+2. Verify the Brevo sender/domain and configure the marketing list ID.
+3. Deploy `deliver-communications` and `operations-scheduler` with required secrets.
+4. Configure Supabase Auth Custom SMTP using Brevo's SMTP login/password separately; the API key for transactional API calls is not the SMTP password.
+5. Use Admin Site Control to send a Brevo test message to a mailbox you control.
+6. Submit a test quotation and verify both the admin RFQ alert and customer acknowledgement arrive, with provider message IDs and delivery webhooks recorded.
+7. Register a test account with the marketing checkbox unchecked; verify it does not join the Brevo marketing list. Repeat with the checkbox checked; confirm no subscription is queued before email verification, then verify the address and confirm it joins the configured list.
+8. In a linked customer account, turn marketing email on and verify the contact joins the configured list; turn it off and verify the contact is removed from that list. Confirm transactional mail is still possible after opt-out.
+9. Test password reset, signup verification, and magic-link email from Supabase Auth.
+
+Do not bulk-import historic customer addresses into the marketing list unless there is documented, valid marketing consent for each address. A quotation request or account registration alone is not marketing consent. This repository change cannot verify Brevo account/domain state or prove live delivery until the above UAT is completed.

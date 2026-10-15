@@ -25,7 +25,7 @@ export interface CustomerPortalData {
   orders: PortalOrder[];
 }
 
-export async function registerCustomerAccount(input: { name: string; email: string; phone: string; company?: string; password: string }) {
+export async function registerCustomerAccount(input: { name: string; email: string; phone: string; company?: string; password: string; marketingEmailOptIn?: boolean }) {
   const { data, error } = await supabase.auth.signUp({
     email: input.email.trim().toLowerCase(),
     password: input.password,
@@ -36,6 +36,7 @@ export async function registerCustomerAccount(input: { name: string; email: stri
         name: input.name.trim(),
         phone: input.phone.trim(),
         company: input.company?.trim() || null,
+        marketing_email_opt_in: input.marketingEmailOptIn === true,
       },
     },
   });

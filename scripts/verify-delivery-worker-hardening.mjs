@@ -9,7 +9,8 @@ const worker = read('supabase/functions/deliver-communications/index.ts');
 check((worker.match(/AbortSignal\.timeout\(PROVIDER_TIMEOUT_MS\)/g) || []).length >= 3, 'Every provider fetch (Brevo, SMS, WhatsApp) needs a timeout');
 check(worker.includes('findAcceptedAttempt') && worker.includes('"accepted"'), 'Worker must not re-send a message already accepted by the provider');
 check(worker.includes('isPermanentFailure') && worker.includes('p_retry: !isPermanentFailure(message)'), 'Permanent provider rejections must not be retried');
-check(worker.includes('"started_at"') && !worker.includes('.order("created_at"'), 'communication_delivery_attempts has started_at, not created_at');
+const acceptedAttemptBlock = worker.slice(worker.indexOf('async function findAcceptedAttempt'), worker.indexOf('async function processItem'));
+check(acceptedAttemptBlock.includes('.order("started_at"') && !acceptedAttemptBlock.includes('.order("created_at"'), 'communication_delivery_attempts uses started_at; marketing queue ordering is independently allowed');
 check(worker.includes('Idempotency-Key'), 'Existing idempotency header contract must remain');
 check(!/BREVO_API_KEY\s*=\s*["'][^"']+["']/.test(worker), 'No hard-coded provider credentials');
 

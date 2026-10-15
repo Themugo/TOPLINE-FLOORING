@@ -38,6 +38,7 @@ function SignIn() {
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [company, setCompany] = useState('');
+  const [marketingEmailOptIn, setMarketingEmailOptIn] = useState(false);
   const [password, setPassword] = useState('');
   const [sent, setSent] = useState(false);
   const [registered, setRegistered] = useState(false);
@@ -47,7 +48,7 @@ function SignIn() {
     e.preventDefault(); setLoading(true); setError(null);
     try {
       if (mode === 'register') {
-        const result = await registerCustomerAccount({ name, email, phone, company, password });
+        const result = await registerCustomerAccount({ name, email, phone, company, password, marketingEmailOptIn });
         setRegistered(!result.session);
       } else if (signInMethod === 'password') {
         await signInCustomer(email, password);
@@ -71,6 +72,10 @@ function SignIn() {
           <div><Label htmlFor="portal-company">Company (optional)</Label><Input id="portal-company" value={company} onChange={e=>setCompany(e.target.value)} /></div>
           <div><Label htmlFor="portal-register-email">Email address</Label><Input id="portal-register-email" type="email" required value={email} onChange={e=>setEmail(e.target.value)} /></div>
           <div><Label htmlFor="portal-password">Password</Label><Input id="portal-password" type="password" minLength={8} required value={password} onChange={e=>setPassword(e.target.value)} /></div>
+          <label className="flex items-start gap-3 rounded-lg border border-slate-200 p-3 text-sm text-slate-700">
+            <input id="portal-marketing-email-opt-in" type="checkbox" className="mt-1 h-4 w-4 shrink-0" checked={marketingEmailOptIn} onChange={e=>setMarketingEmailOptIn(e.target.checked)} />
+            <span>Yes, send me occasional Topline offers, project inspiration and marketing updates by email. I can unsubscribe at any time. This is optional and is separate from account, quotation and order emails.</span>
+          </label>
         </> : <><div><Label htmlFor="portal-email">Email address</Label><Input id="portal-email" type="email" required value={email} onChange={e => setEmail(e.target.value)} placeholder="you@company.co.ke" /></div>{signInMethod === 'password' ? <div><Label htmlFor="portal-signin-password">Password</Label><Input id="portal-signin-password" type="password" required minLength={8} value={password} onChange={e=>setPassword(e.target.value)} /></div> : null}</>}
         {mode === 'signin' && <Button type="button" variant="link" className="px-0" onClick={()=>setSignInMethod(signInMethod === 'password' ? 'link' : 'password')}>{signInMethod === 'password' ? 'Use email sign-in link instead' : 'Use password instead'}</Button>}
         {error && <p className="text-sm text-destructive">{error}</p>}

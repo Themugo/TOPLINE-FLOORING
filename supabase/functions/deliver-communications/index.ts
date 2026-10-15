@@ -18,6 +18,7 @@ const brevoApiKey = Deno.env.get("BREVO_API_KEY");
 const brevoSenderEmail = Deno.env.get("BREVO_SENDER_EMAIL");
 const brevoSenderName = Deno.env.get("BREVO_SENDER_NAME") ?? "Topline Flooring & Waterproofing";
 const brevoReplyToEmail = Deno.env.get("BREVO_REPLY_TO_EMAIL");
+const brevoMarketingListId = Number(Deno.env.get("BREVO_MARKETING_LIST_ID") ?? "");
 const whatsappProvider = Deno.env.get("WHATSAPP_PROVIDER") ?? "meta";
 const whatsappAccessToken = Deno.env.get("WHATSAPP_ACCESS_TOKEN");
 const whatsappPhoneNumberId = Deno.env.get("WHATSAPP_PHONE_NUMBER_ID");
@@ -57,6 +58,70 @@ async function sendEmail(item: OutboxMessage) {
   let parsed: { messageId?: string } = {};
   try { parsed = JSON.parse(body); } catch { /* provider may return empty body */ }
   return { provider: "brevo", reference: parsed.messageId ?? null, httpStatus: response.status, raw: parsed };
+}
+
+type MarketingSyncItem = { id: string; email: string; action: "subscribe" | "unsubscribe"; attempt_count: number };
+
+async function processBrevoMarketingSync(limit: number) {
+  if (!brevoApiKey || !Number.isInteger(brevoMarketingListId) || brevoMarketingListId < 1) {
+    return { processed: 0, configured: false, reason: "BREVO_API_KEY or BREVO_MARKETING_LIST_ID is missing" };
+  }
+  const { error: recoverError } = await admin.from("brevo_marketing_sync_queue")
+    .update({ status: "queued", locked_at: null, next_attempt_at: new Date().toISOString() })
+    .eq("status", "processing")
+    .lt("locked_at", new Date(Date.now() - 10 * 60 * 1000).toISOString());
+  if (recoverError) throw new Error(`Could not recover stale marketing sync locks: ${recoverError.message}`);
+  const { data, error } = await admin.from("brevo_marketing_sync_queue")
+    .select("id,email,action,attempt_count")
+    .eq("status", "queued")
+    .lte("next_attempt_at", new Date().toISOString())
+    .order("created_at", { ascending: true })
+    .limit(Math.max(1, Math.min(limit, 50)));
+  if (error) throw new Error(`Could not read Brevo marketing sync queue: ${error.message}`);
+  const results: Array<{ id: string; status: string; error?: string }> = [];
+  for (const candidate of (data ?? []) as MarketingSyncItem[]) {
+    const { data: claimed, error: claimError } = await admin.from("brevo_marketing_sync_queue")
+      .update({ status: "processing", locked_at: new Date().toISOString(), attempt_count: candidate.attempt_count + 1, last_error: null })
+      .eq("id", candidate.id).eq("status", "queued")
+      .select("id,email,action,attempt_count").maybeSingle();
+    if (claimError) { results.push({ id: candidate.id, status: "claim_failed", error: claimError.message }); continue; }
+    if (!claimed) continue;
+    const item = claimed as MarketingSyncItem;
+    try {
+      const url = item.action === "subscribe"
+        ? "https://api.brevo.com/v3/contacts"
+        : `https://api.brevo.com/v3/contacts/${encodeURIComponent(item.email)}`;
+      const payload = item.action === "subscribe"
+        ? { email: item.email, listIds: [brevoMarketingListId], updateEnabled: true }
+        : { unlinkListIds: [brevoMarketingListId] };
+      const response = await fetch(url, {
+        method: item.action === "subscribe" ? "POST" : "PUT",
+        signal: AbortSignal.timeout(PROVIDER_TIMEOUT_MS),
+        headers: { accept: "application/json", "api-key": brevoApiKey, "content-type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const raw = await response.text();
+      // A contact already absent from the list is a successful unsubscribe state.
+      if (!response.ok && !(item.action === "unsubscribe" && response.status === 404)) {
+        throw new Error(`Brevo marketing ${response.status}: ${raw.slice(0, 300)}`);
+      }
+      const { error: finishError } = await admin.from("brevo_marketing_sync_queue")
+        .update({ status: "synced", locked_at: null, processed_at: new Date().toISOString(), last_error: null })
+        .eq("id", item.id).eq("status", "processing");
+      if (finishError) throw new Error(`Provider accepted sync but queue completion failed: ${finishError.message}`);
+      results.push({ id: item.id, status: "synced" });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      const exhausted = item.attempt_count >= 8;
+      const delaySeconds = Math.min(3600, 30 * (2 ** Math.min(item.attempt_count, 7)));
+      const { error: failError } = await admin.from("brevo_marketing_sync_queue")
+        .update({ status: exhausted ? "failed" : "queued", locked_at: null, last_error: message.slice(0, 500), next_attempt_at: new Date(Date.now() + delaySeconds * 1000).toISOString() })
+        .eq("id", item.id).eq("status", "processing");
+      if (failError) console.error("Unable to record Brevo marketing sync failure", failError.message);
+      results.push({ id: item.id, status: exhausted ? "failed" : "retry_queued", error: message });
+    }
+  }
+  return { processed: results.length, configured: true, results };
 }
 
 async function sendSms(item: OutboxMessage) {
@@ -222,7 +287,15 @@ Deno.serve(async (req) => {
     if (error) throw error;
     const results = [];
     for (const item of (data ?? []) as OutboxMessage[]) results.push(await processItem(item));
-    return Response.json({ processed: results.length, results });
+    let marketingSync: unknown;
+    try {
+      marketingSync = await processBrevoMarketingSync(limit);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      console.error("Brevo marketing sync queue processing failed", message);
+      marketingSync = { processed: 0, configured: Boolean(brevoApiKey && brevoMarketingListId > 0), error: message };
+    }
+    return Response.json({ processed: results.length, results, marketing_sync: marketingSync });
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     return Response.json({ error: message }, { status: 500 });
