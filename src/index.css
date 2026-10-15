@@ -365,3 +365,22 @@ button:disabled, input:disabled, textarea:disabled, select:disabled { cursor: no
     animation-duration: 0.01ms !important;
   }
 }
+
+/* Mobile navigation: keep the menu fully opaque so hero/media layers never bleed through. */
+.topline-mobile-menu {
+  background-color: #F7F6F3;
+  background-image: none;
+  opacity: 1;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  color: #0C2D57;
+  isolation: isolate;
+}
+.topline-mobile-menu nav > a {
+  -webkit-tap-highlight-color: rgba(180, 227, 61, .18);
+}
+@media (max-width: 639px) {
+  .topline-mobile-menu nav {
+    padding-bottom: max(1rem, env(safe-area-inset-bottom));
+  }
+}

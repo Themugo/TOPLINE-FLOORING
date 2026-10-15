@@ -1,14 +1,40 @@
 import { useEffect, useState } from 'react';
 import { Link, useLocation } from 'wouter';
-import { Menu, X, ShoppingCart, Phone, Mail, MapPin, LogIn, Facebook, Instagram, Linkedin, UserRound, ClipboardCheck, ChevronDown } from 'lucide-react';
+import { Menu, X, ShoppingCart, Phone, Mail, MapPin, LogIn, Facebook, Instagram, Linkedin, UserRound, ClipboardCheck, ChevronDown, Home, Wrench, Briefcase, ShoppingBag, MessageSquareQuote, ChevronRight } from 'lucide-react';
 import { useCart } from '@/hooks/use-cart';
 import { useSiteSettings, useNavigationMenus } from '@/hooks/use-data';
 import { telHref } from '@/lib/utils';
+
+const getMobileNavIcon = (href: string) => {
+  if (href === '/') return Home;
+  if (href.startsWith('/services')) return Wrench;
+  if (href.startsWith('/portfolio')) return Briefcase;
+  if (href.startsWith('/shop')) return ShoppingBag;
+  if (href.startsWith('/track-order')) return ClipboardCheck;
+  if (href.startsWith('/contact')) return MessageSquareQuote;
+  if (href.startsWith('/quotation')) return ClipboardCheck;
+  if (href.startsWith('/portal')) return UserRound;
+  return ChevronRight;
+};
 
 export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [moreMenuOpen, setMoreMenuOpen] = useState(false);
   const [location] = useLocation();
+
+  useEffect(() => {
+    setMobileMenuOpen(false);
+    setMoreMenuOpen(false);
+  }, [location]);
+
+  useEffect(() => {
+    if (!mobileMenuOpen) return;
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setMobileMenuOpen(false);
+    };
+    window.addEventListener('keydown', handleEscape);
+    return () => window.removeEventListener('keydown', handleEscape);
+  }, [mobileMenuOpen]);
 
   useEffect(() => {
     setMobileMenuOpen(false);
@@ -238,7 +264,7 @@ export function Header() {
       </div>
 
       {mobileMenuOpen && (
-        <div id="mobile-menu" className="lg:hidden border-t border-slate-200/80 bg-white/98 shadow-[0_18px_42px_rgba(12,45,87,.16)] backdrop-blur-xl max-h-[calc(100dvh-4rem)] overflow-y-auto">
+        <div id="mobile-menu" className="topline-mobile-menu lg:hidden border-t border-[#E3DFD8] bg-[#F7F6F3] shadow-[0_18px_42px_rgba(12,45,87,.16)] max-h-[calc(100dvh-4rem)] overflow-y-auto overscroll-contain">
           <nav className="mx-auto max-w-7xl space-y-1 px-4 py-4 sm:px-6 sm:py-5" aria-label="Mobile navigation">
             <div className="mb-3 flex items-center justify-between border-b border-slate-100 pb-3">
               <span className="text-[10px] font-extrabold uppercase tracking-[0.2em] text-[#566F0D]">Explore Topline</span>
@@ -250,17 +276,22 @@ export function Header() {
                 href={link.href}
                 onClick={() => setMobileMenuOpen(false)}
                 aria-current={isActive(link.href) ? 'page' : undefined}
-                className={`flex items-center justify-between rounded-xl border px-4 py-3.5 text-sm font-semibold transition-all ${
+                className={`group flex min-h-12 items-center justify-between gap-3 rounded-xl border px-3.5 py-3 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0E6B78] focus-visible:ring-offset-2 focus-visible:ring-offset-[#F7F6F3] ${
                   isActive(link.href)
-                    ? 'border-[#B4E33D]/60 bg-[#B4E33D]/10 text-[#0C2D57] shadow-sm'
-                    : 'border-transparent text-slate-700 hover:border-slate-200 hover:bg-[#F7F6F3] hover:text-[#0C2D57]'
+                    ? 'border-[#B4E33D] bg-white text-[#0C2D57] shadow-[0_3px_12px_rgba(12,45,87,.07)]'
+                    : 'border-transparent bg-transparent text-[#334155] hover:border-[#E3DFD8] hover:bg-white hover:text-[#0C2D57]'
                 }`}
               >
-                <span>{link.label}</span>
-                <span aria-hidden="true" className={`text-lg leading-none ${isActive(link.href) ? 'text-[#566F0D]' : 'text-slate-300'}`}>›</span>
+                <span className="flex min-w-0 items-center gap-3">
+                  <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${isActive(link.href) ? 'bg-[#B4E33D]/25 text-[#0C2D57]' : 'bg-white text-[#0E6B78] ring-1 ring-inset ring-[#0E6B78]/10 group-hover:bg-[#EAF1F0]'}`}>
+                    {(() => { const Icon = getMobileNavIcon(link.href); return <Icon className="h-[18px] w-[18px]" aria-hidden="true" />; })()}
+                  </span>
+                  <span className="truncate">{link.label}</span>
+                </span>
+                <ChevronRight className={`h-4 w-4 shrink-0 transition-transform ${isActive(link.href) ? 'text-[#566F0D]' : 'text-slate-400 group-hover:translate-x-0.5 group-hover:text-[#0C2D57]'}`} aria-hidden="true" />
               </Link>
             ))}
-            <div className="mt-4 grid grid-cols-1 gap-2 border-t border-slate-200 pt-4 sm:grid-cols-2">
+            <div className="mt-4 grid grid-cols-1 gap-2 border-t border-[#D8D4CC] pt-4 sm:grid-cols-2">
               <Link href="/portal" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-2 rounded-xl border border-[#0E6B78]/15 bg-[#0E6B78]/5 px-4 py-3.5 text-sm font-bold text-[#0C2D57] transition-colors hover:bg-[#0E6B78]/10">
                 <UserRound className="w-4 h-4" />
                 <span>My Customer Account</span>
@@ -290,7 +321,7 @@ export function Header() {
               <Link
                 href="/quotation"
                 onClick={() => setMobileMenuOpen(false)}
-                className="flex items-center justify-between rounded-xl bg-[#0C2D57] px-5 py-4 text-sm font-bold text-white shadow-[0_6px_16px_rgba(12,45,87,.18)] transition-all hover:bg-[#123766] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#B4E33D] focus-visible:ring-offset-2 sm:col-span-2"
+                className="flex min-h-12 items-center justify-between rounded-xl bg-[#0C2D57] px-5 py-4 text-sm font-bold text-white shadow-[0_6px_16px_rgba(12,45,87,.18)] transition-all hover:bg-[#123766] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#B4E33D] focus-visible:ring-offset-2 sm:col-span-2"
               >
                 <span>Request a quotation</span>
                 <span aria-hidden="true" className="text-lg">→</span>
