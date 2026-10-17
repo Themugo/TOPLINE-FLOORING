@@ -1,4 +1,5 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { constantTimeEqual } from '../_shared/security.ts';
 
 const supabaseUrl = Deno.env.get('SUPABASE_URL');
 const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
@@ -12,7 +13,7 @@ type Job = typeof jobs[number];
 function authorized(req: Request) {
   const direct = req.headers.get('x-topline-worker-secret');
   const bearer = req.headers.get('authorization')?.replace(/^Bearer\s+/i, '');
-  return direct === workerSecret || bearer === workerSecret;
+  return constantTimeEqual(direct, workerSecret ?? null) || constantTimeEqual(bearer, workerSecret ?? null);
 }
 
 async function runJob(job: Job) {

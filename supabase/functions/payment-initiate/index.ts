@@ -1,5 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { handlePreflight, jsonResponse } from "../_shared/cors.ts";
+import { handlePreflight, isAllowedSiteUrl, jsonResponse } from "../_shared/cors.ts";
 import { constantTimeEqual } from "../_shared/security.ts";
 
 type TargetType = "order" | "invoice";
@@ -123,7 +123,14 @@ Deno.serve(async (req: Request) => {
   const idempotency = clean(body.idempotency_key) || crypto.randomUUID();
   const phone = clean(body.phone);
   const email = clean(body.email);
-  const returnUrl = safeUrl(clean(body.return_url));
+  const rawReturnUrl = clean(body.return_url);
+  const returnUrl = safeUrl(rawReturnUrl);
+
+  // The one-time payment access token is appended to the return URL and the gateway redirects the
+  // customer there, so it must point back at Topline and nowhere else.
+  if (rawReturnUrl && (!returnUrl || !isAllowedSiteUrl(returnUrl))) {
+    return reply(400, { success: false, error: "Return URL is not permitted" });
+  }
 
   if (!targetType || !targetId || !method || !gatewayKey || !email) {
     return reply(400, { success: false, error: "Payment target, method, gateway and customer email are required" });
@@ -418,9 +425,9 @@ Deno.serve(async (req: Request) => {
     });
     const result = (await response.json()) as ProviderResponse;
     if (!response.ok) throw new Error(result.message || result.error || "Card gateway checkout could not be created");
-    const checkoutUrl = clean(result.checkout_url) || clean(result.redirect_url) || clean(result.url);
+    const checkoutUrl = safeUrl(clean(result.checkout_url) || clean(result.redirect_url) || clean(result.url));
     const providerTransaction = clean(result.transaction_id) || clean(result.id);
-    if (!checkoutUrl) throw new Error("Card gateway did not return a checkout URL");
+    if (!checkoutUrl) throw new Error("Card gateway did not return a secure (https) checkout URL");
 
     await db
       .from("payment_transactions")

@@ -1,5 +1,6 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { constantTimeEqual } from "../_shared/security.ts";
 
 type JsonValue = null | boolean | number | string | JsonValue[] | { [key:string]: JsonValue };
 type JsonRecord = { [key:string]: JsonValue };
@@ -60,7 +61,7 @@ async function sendEmail(item: OutboxMessage) {
   return { provider: "brevo", reference: parsed.messageId ?? null, httpStatus: response.status, raw: parsed };
 }
 
-type MarketingSyncItem = { id: string; email: string; action: "subscribe" | "unsubscribe"; attempt_count: number };
+type MarketingSyncItem = { id: string; email: string; action: "subscribe" | "unsubscribe"; attempt_count: number; created_at: string };
 
 async function processBrevoMarketingSync(limit: number) {
   if (!brevoApiKey || !Number.isInteger(brevoMarketingListId) || brevoMarketingListId < 1) {
@@ -72,7 +73,7 @@ async function processBrevoMarketingSync(limit: number) {
     .lt("locked_at", new Date(Date.now() - 10 * 60 * 1000).toISOString());
   if (recoverError) throw new Error(`Could not recover stale marketing sync locks: ${recoverError.message}`);
   const { data, error } = await admin.from("brevo_marketing_sync_queue")
-    .select("id,email,action,attempt_count")
+    .select("id,email,action,attempt_count,created_at")
     .eq("status", "queued")
     .lte("next_attempt_at", new Date().toISOString())
     .order("created_at", { ascending: true })
@@ -83,11 +84,30 @@ async function processBrevoMarketingSync(limit: number) {
     const { data: claimed, error: claimError } = await admin.from("brevo_marketing_sync_queue")
       .update({ status: "processing", locked_at: new Date().toISOString(), attempt_count: candidate.attempt_count + 1, last_error: null })
       .eq("id", candidate.id).eq("status", "queued")
-      .select("id,email,action,attempt_count").maybeSingle();
+      .select("id,email,action,attempt_count,created_at").maybeSingle();
     if (claimError) { results.push({ id: candidate.id, status: "claim_failed", error: claimError.message }); continue; }
     if (!claimed) continue;
     const item = claimed as MarketingSyncItem;
     try {
+      if (item.action === "subscribe") {
+        // Newest consent decision wins: never (re-)subscribe an address that unsubscribed after this
+        // request was queued, or one that is suppressed (bounce, complaint, unsubscribe).
+        const { data: newerUnsubscribe, error: newerError } = await admin.from("brevo_marketing_sync_queue")
+          .select("id").eq("email", item.email).eq("action", "unsubscribe")
+          .in("status", ["queued", "processing", "synced"]).gt("created_at", item.created_at).limit(1);
+        if (newerError) throw new Error(`Could not check newer consent changes: ${newerError.message}`);
+        const { data: suppressed, error: suppressedError } = await admin.from("communication_suppressions")
+          .select("reason").eq("email", item.email).limit(1);
+        if (suppressedError) throw new Error(`Could not check suppression list: ${suppressedError.message}`);
+        if ((newerUnsubscribe ?? []).length > 0 || (suppressed ?? []).length > 0) {
+          const { error: supersedeError } = await admin.from("brevo_marketing_sync_queue")
+            .update({ status: "superseded", locked_at: null, processed_at: new Date().toISOString(), last_error: "newer unsubscribe or suppression" })
+            .eq("id", item.id).eq("status", "processing");
+          if (supersedeError) throw new Error(`Could not supersede subscribe request: ${supersedeError.message}`);
+          results.push({ id: item.id, status: "superseded" });
+          continue;
+        }
+      }
       const url = item.action === "subscribe"
         ? "https://api.brevo.com/v3/contacts"
         : `https://api.brevo.com/v3/contacts/${encodeURIComponent(item.email)}`;
@@ -278,7 +298,7 @@ async function processItem(item: OutboxMessage) {
 
 Deno.serve(async (req) => {
   if (req.method !== "POST") return new Response("Method Not Allowed", { status: 405 });
-  if (!workerSecret || req.headers.get("x-topline-worker-secret") !== workerSecret) return new Response("Unauthorized", { status: 401 });
+  if (!workerSecret || !constantTimeEqual(req.headers.get("x-topline-worker-secret"), workerSecret)) return new Response("Unauthorized", { status: 401 });
   if ((req.headers.get("content-length") && Number(req.headers.get("content-length")) > 32768)) return new Response("Payload Too Large", { status: 413 });
   try {
     const body = await req.json().catch(() => ({}));

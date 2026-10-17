@@ -12,6 +12,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useSeoMeta } from '@/hooks/use-seo';
 import { CustomerPaymentMethods } from '@/components/customer/CustomerPaymentMethods';
 import { initiateCustomerPayment } from '@/lib/customer-payments';
+import { navigateToPaymentUrl } from '@/lib/safe-redirect';
 
 interface FormData {
   name: string;
@@ -200,7 +201,7 @@ export default function Cart() {
       }
 
       clearCart();
-      if (payment.checkout_url) { window.location.href = payment.checkout_url; } else { setLocation(`/payment-return?attempt_id=${encodeURIComponent(payment.attempt_id)}&access_token=${encodeURIComponent(payment.access_token)}`); }
+      if (payment.checkout_url) { navigateToPaymentUrl(payment.checkout_url); } else { setLocation(`/payment-return?attempt_id=${encodeURIComponent(payment.attempt_id)}&access_token=${encodeURIComponent(payment.access_token)}`); }
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Something went wrong. Please try again.';
       toast({

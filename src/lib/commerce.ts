@@ -17,6 +17,15 @@ export interface QuotationRequestResult {
   lead_id?: string;
   quotation_id?: string;
   error?: string;
+  code?: string;
+}
+
+/** Thrown when the server throttles enquiries from one email address or phone number. */
+export class QuotationRateLimitedError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'QuotationRateLimitedError';
+  }
 }
 
 /**
@@ -42,7 +51,10 @@ export async function submitQuotationRequest(input: QuotationRequestInput): Prom
 
   if (error) throw error;
   const result = (data ?? {}) as QuotationRequestResult;
-  if (!result.success) throw new Error(result.error || 'Quotation request was not accepted');
+  if (!result.success) {
+    if (result.code === 'rate_limited') throw new QuotationRateLimitedError(result.error || 'Too many enquiries. Please try again later.');
+    throw new Error(result.error || 'Quotation request was not accepted');
+  }
   return result;
 }
 

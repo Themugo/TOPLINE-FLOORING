@@ -5,7 +5,7 @@ import { CustomerLayout } from "@/components/layout/CustomerLayout";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { useToast } from "@/hooks/use-toast";
 import { useSiteSettings } from "@/hooks/use-data";
-import { submitQuotationRequest } from "@/lib/commerce";
+import { QuotationRateLimitedError, submitQuotationRequest } from "@/lib/commerce";
 import { telHref } from "@/lib/utils";
 import { useSeoMeta } from "@/hooks/use-seo";
 import { useImagePreloader } from "@/hooks/use-image-preloader";
@@ -44,8 +44,12 @@ export default function Contact() {
       });
       toast({ title: "Your message has been received", description: "Thank you for contacting TOPLINE. Our team will review your enquiry." });
       setForm({ name: "", email: "", phone: "", subject: "", message: "" });
-    } catch {
-      toast({ title: "We couldn't submit your message", description: "Your enquiry was not confirmed. Please try again or contact us directly.", variant: "destructive" });
+    } catch (error) {
+      toast({
+        title: "We couldn't submit your message",
+        description: error instanceof QuotationRateLimitedError ? error.message : "Your enquiry was not confirmed. Please try again or contact us directly.",
+        variant: "destructive",
+      });
     } finally {
       setSubmitting(false);
     }

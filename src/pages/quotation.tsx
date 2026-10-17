@@ -3,7 +3,7 @@ import { FileText, Send, CheckCircle2, ShieldCheck, Calculator, Sparkles, ArrowR
 import { CustomerLayout } from '@/components/layout/CustomerLayout';
 import { Breadcrumbs } from '@/components/Breadcrumbs';
 import { useToast } from '@/hooks/use-toast';
-import { submitQuotationRequest, quotationRequestReference } from '@/lib/commerce';
+import { QuotationRateLimitedError, submitQuotationRequest, quotationRequestReference } from '@/lib/commerce';
 import { useSeoMeta } from '@/hooks/use-seo';
 import { useImagePreloader } from '@/hooks/use-image-preloader';
 import { useSiteSettings } from '@/hooks/use-data';
@@ -115,10 +115,10 @@ export default function Quotation() {
         title: 'Quotation Request Received',
         description: `${refCode ? `Reference Code: ${refCode}. ` : ''}Our team will review your request and contact you using the details provided.`,
       });
-    } catch {
+    } catch (error) {
       toast({
         title: 'Submission Error',
-        description: 'Failed to submit request. Please check your network or call us directly.',
+        description: error instanceof QuotationRateLimitedError ? error.message : 'Failed to submit request. Please check your network or call us directly.',
         variant: 'destructive',
       });
     } finally {

@@ -19,6 +19,17 @@ function allowedOrigins(): Set<string> {
   return new Set([...DEFAULT_ORIGINS, ...extra]);
 }
 
+/** True only for an https URL whose origin is one of the allowed Topline site origins. */
+export function isAllowedSiteUrl(value: string | null | undefined): boolean {
+  if (!value) return false;
+  try {
+    const url = new URL(value);
+    return url.protocol === "https:" && allowedOrigins().has(url.origin);
+  } catch {
+    return false;
+  }
+}
+
 export function corsHeaders(req: Request): Record<string, string> {
   const origin = req.headers.get("origin");
   const allowed = origin && allowedOrigins().has(origin) ? origin : null;

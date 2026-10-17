@@ -76,7 +76,7 @@ Never put a service-role or worker secret in a `VITE_*` variable.
 
 ## Current active chain (Phases 30–32 verification baseline)
 
-The current production candidate contains 117 uniquely timestamped active migrations, ending with `20261015140000_reconcile_existing_verified_customer_portal_links.sql`. Run the complete verification suite before any linked database deployment.
+The current production candidate contains 119 uniquely timestamped active migrations, ending with `20261016090000_public_write_surface_and_email_abuse_controls_360.sql`. Run the complete verification suite before any linked database deployment.
 
 Current active chain additions: `20260930170000_service_catalog_and_communications_worker_hardening.sql`, `20260930180000_project_documents_private_storage.sql`, `20260930190000_staff_read_inactive_cms_catalog_rows.sql`, `20260930193000_private_document_policy_overlap_hardening.sql`, `20260930200000_project_templates.sql`, `20260930210000_close_legacy_public_read_policies.sql`, `20260930220000_projects_admin_contract_columns.sql`, `20260930230000_move_product_cost_prices_staff_only.sql`, `20260930240000_coupon_validation_throttle.sql`, `20260930250000_finance_permission_resource.sql`, `20261001090000_project_template_persistence_360.sql`, `20261001100000_admin_notification_state_360.sql`, `20261001110000_catalog_product_service_upload_integrity_360.sql`.
 
@@ -153,7 +153,7 @@ Current active chain additions: `20260930170000_service_catalog_and_communicatio
 
 ## Current active chain — payment and communications hardening (2026-10-02)
 
-The current active chain contains 117 uniquely timestamped active migrations. The latest migrations are:
+The current active chain contains 119 uniquely timestamped active migrations. The latest migrations are:
 
 - `20261001110000_catalog_product_service_upload_integrity_360.sql` — catalogue/product/service upload integrity hardening.
 - `20261002130000_customer_registration_and_reconciliation_360.sql` — customer registration, verified identity binding and dashboard reconciliation.
@@ -175,3 +175,38 @@ The current active chain contains 117 uniquely timestamped active migrations. Th
 ## 2026-10-15 email communication closure
 
 - `20261015180000_email_quotation_and_brevo_marketing_sync_360.sql` — queues admin/customer quotation emails and consent-gated Brevo marketing-list synchronization through the existing communication worker.
+
+## Migrations added after the last manifest refresh (audited 2026-10-16)
+
+These files were present in `supabase/migrations/` but not yet listed above. Apply order is the filename timestamp.
+
+- `20260912160000_065_backup_export_operations_360.sql`
+- `20260912170000_066_sales_project_lifecycle_360_hardening.sql`
+- `20260912180000_067_communications_provider_response_360.sql`
+- `20260912190000_068_finance_communications_analytics_360_hardening.sql`
+- `20260912200000_069_reporting_operational_intelligence_360.sql`
+- `20260912220000_071_service_quality_warranty_feedback_360.sql`
+- `20260913010000_074_commercial_lifecycle_360.sql`
+- `20260913030000_076_supply_chain_360.sql`
+- `20260913040000_077_finance_control_360.sql`
+- `20260913050000_078_fulfillment_delivery_control_360.sql`
+- `20260913060000_079_customer_lifecycle_360.sql`
+- `20260913160000_089_production_security_rpc_exposure_hardening_360.sql`
+- `20260913161000_090_sensitive_control_table_rls_baseline_360.sql`
+- `20260913162000_091_function_privilege_boundary_and_search_path_hardening_360.sql`
+- `20260913163000_092_foreign_key_index_architecture_360.sql`
+- `20260913164000_093_index_dedup_and_rls_initplan_hardening_360.sql`
+- `20260913170000_094_application_security_trust_boundary_360.sql`
+- `20260913180000_095_rpc_authorization_certification_360.sql`
+- `20260913181000_096_rls_policy_executor_boundary_repair_360.sql`
+- `20260913183000_097_private_document_storage_boundary_360.sql`
+- `20260913190000_098_production_communications_integration_hardening_360.sql`
+- `20260913195000_099_payment_webhook_reconciliation_360.sql`
+- `20260913200000_100_customer_self_service_experience_360.sql`
+- `20260914081000_db_2_authorization_grants_hardening.sql`
+- `20260914082000_db_3_5_rpc_security_schema_integrity_360.sql`
+- `20260914090000_103_db_6_8_payments_communications_storage_hardening_360.sql`
+- `20260914090100_104_db_7_customer_communications_grant_cleanup.sql`
+- `20261002220000_payment_customer_ux_and_mpesa_hardening_360.sql`
+- `20261003090000_customer_portal_order_payment_fields.sql`
+- `20261016090000_public_write_surface_and_email_abuse_controls_360.sql`

@@ -133,7 +133,8 @@
     "verify:contact-track-palette": "node scripts/verify-contact-track-palette.mjs",
     "verify:cart-brand": "node scripts/verify-cart-navigation-and-brand-uniformity.mjs",
     "verify:shop-cart-end-to-end": "node scripts/verify-shop-cart-end-to-end.mjs",
-    "verify:email-registration-communications": "node scripts/verify-email-registration-communications-360.mjs"
+    "verify:email-registration-communications": "node scripts/verify-email-registration-communications-360.mjs",
+    "verify:public-surface-and-email-abuse-360": "node scripts/verify-public-surface-and-email-abuse-360.mjs"
   },
   "dependencies": {
     "@fontsource-variable/manrope": "^5.3.0",

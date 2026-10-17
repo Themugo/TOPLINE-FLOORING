@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { CustomerLayout } from '@/components/layout/CustomerLayout';
 import { CustomerPaymentMethods } from '@/components/customer/CustomerPaymentMethods';
 import { initiateCustomerPayment } from '@/lib/customer-payments';
+import { navigateToPaymentUrl } from '@/lib/safe-redirect';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -175,8 +176,8 @@ export default function Portal() {
         idempotencyKey: `portal-${kind}-payment:${record.id}:${gatewayKey}:${crypto.randomUUID()}`,
         returnUrl: `${window.location.origin}/payment-return`,
       });
-      if (r.checkout_url) window.location.href = r.checkout_url;
-      else if (r.return_url) window.location.href = r.return_url;
+      if (r.checkout_url) navigateToPaymentUrl(r.checkout_url);
+      else if (r.return_url) navigateToPaymentUrl(r.return_url);
       else setPaymentMessage(r.message || 'Payment started. Check your payment status shortly.');
     } catch (e) {
       setPaymentMessage(e instanceof Error ? e.message : 'Payment could not be started.');
