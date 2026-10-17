@@ -83,4 +83,41 @@ BEGIN
   DELETE FROM public.leads WHERE email = 'regression-guard@example.org';
 END $$;
 
+-- 8. Outbound message and stock-hoarding guards (rolled back by the P0099 marker; assertion failures propagate).
+DO $$
+DECLARE v_pid uuid; v_res jsonb; v_ok int := 0; i int; v_msgs int; v_links int; v_cancelled int;
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = 'communication_outbox_volume_guard' AND tgrelid = 'public.communication_outbox'::regclass AND NOT tgisinternal) THEN
+    RAISE EXCEPTION 'communication_outbox_volume_guard trigger is missing';
+  END IF;
+  BEGIN
+    INSERT INTO public.products(name,slug,price,stock_quantity,is_active,status,unit)
+    VALUES ('Regression Tile','regression-tile-'||gen_random_uuid(),1000,500,true,'active','box') RETURNING id INTO v_pid;
+
+    v_res := public.create_secure_customer_order(E'Click http://evil.example now','reg-order@example.org','0733000001',
+      jsonb_build_array(jsonb_build_object('product_id',v_pid,'quantity',1)),'',NULL,NULL,'Nairobi','mpesa','reg-0');
+    IF NOT coalesce((v_res->>'success')::boolean,false) THEN RAISE EXCEPTION 'baseline guest order was rejected: %', v_res; END IF;
+    SELECT count(*), count(*) FILTER (WHERE message ~* 'http' OR position(E'\n' in message) > 0) INTO v_msgs, v_links
+      FROM public.communication_outbox WHERE recipient IN ('reg-order@example.org','+254733000001');
+    IF v_msgs = 0 THEN RAISE EXCEPTION 'order notifications were not queued'; END IF;
+    IF v_links > 0 THEN RAISE EXCEPTION 'customer name was not sanitized in % notification(s)', v_links; END IF;
+
+    FOR i IN 1..7 LOOP
+      v_res := public.create_secure_customer_order('Hoarder','reg-order@example.org','07330001'||lpad(i::text,2,'0'),
+        jsonb_build_array(jsonb_build_object('product_id',v_pid,'quantity',1)),'',NULL,NULL,'Nairobi','mpesa','reg-'||i);
+      IF coalesce((v_res->>'success')::boolean,false) THEN v_ok := v_ok + 1; END IF;
+    END LOOP;
+    IF v_ok > 4 THEN RAISE EXCEPTION 'unpaid-order cap not enforced (% extra orders accepted)', v_ok; END IF;
+
+    INSERT INTO public.communication_outbox(channel,recipient,message,dedupe_key)
+    SELECT 'sms','+254733999999','m','reg-cap-'||g FROM generate_series(1,15) g;
+    SELECT count(*) INTO v_cancelled FROM public.communication_outbox WHERE recipient = '+254733999999' AND status = 'cancelled';
+    IF v_cancelled < 3 THEN RAISE EXCEPTION 'per-recipient message cap not enforced (% cancelled)', v_cancelled; END IF;
+
+    RAISE EXCEPTION 'regression rollback' USING ERRCODE = 'P0099';
+  EXCEPTION WHEN SQLSTATE 'P0099' THEN
+    NULL; -- test data rolled back
+  END;
+END $$;
+
 SELECT 'ok 1 - public surface regression assertions passed';

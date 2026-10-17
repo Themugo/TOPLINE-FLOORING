@@ -17,10 +17,16 @@ re-tested afterwards, then the complete verification suite.
 | 7 | Medium | `payment-initiate` accepted any https `return_url` (token appended) and did not require https for the gateway `checkout_url`. | Return URL limited to Topline origins; https-only checkout URL; browser navigates via `navigateToPaymentUrl`. |
 | 8 | Low | Worker secrets and the card HMAC compared with `===`/`!==`. | `constantTimeEqual` everywhere. |
 | 9 | Low | Trigger functions and `TRUNCATE/TRIGGER/REFERENCES` were granted to browser roles. | Revoked; asserted by regression test. |
+| 11 | High | Guest orders send email/SMS/WhatsApp to an unverified email and phone, greeting by a visitor-chosen name (links and line breaks allowed): a phishing channel and an SMS-cost vector. | `{{customer_name}}` sanitized; volume guard trigger on `communication_outbox` (12 SMS/WhatsApp and 30 emails per recipient per day, 300 SMS/WhatsApp per hour site-wide; staff messages, conversation replies and staff alerts exempt). |
+| 12 | Medium | Guest orders reserve stock for 24 h with no limit: a script could reserve the catalogue and block real customers. | At most 5 open unpaid orders per email or phone per 24 h (idempotent retries still answered). |
 | 10 | Housekeeping | `.env.example` missing, migration manifest stale (118 files, 89 listed), stale verifier string, `ws`/`dompurify` advisories, duplicate outbox index, no long cache for fingerprinted assets. | Restored/refreshed/updated; production `npm audit` now 0. |
 
+## Reviewed and left unchanged (well built)
+- `track_order_public`: order numbers carry 32 bits of randomness plus an exact phone match, so enumeration is impractical.
+- `create_secure_customer_order` pricing, stock locking and idempotency; `apply_payment_provider_event` (unique event ids, payload-hash replay detection, amount/currency conflict and overpayment checks); payment webhook signature and timestamp handling; storage bucket policies; `save_site_page_block` internal permission check; CSP and security headers.
+
 ## Evidence
-- 119 migrations apply from empty; `security_regression`, `public_surface_regression`, `browser_rpc_grants`,
+- 120 migrations apply from empty; `security_regression`, `public_surface_regression`, `browser_rpc_grants`,
   `plpgsql_static_analysis` (plpgsql_check) and `runtime_contracts` pass.
 - `public_surface_regression.sql` was mutation-tested: re-granting view UPDATE, TRUNCATE, or a public insert policy each fails it.
 - typecheck, lint, 195 smoke tests, production build, and `verify:all` 132/132 pass.

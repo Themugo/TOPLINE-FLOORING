@@ -25,6 +25,18 @@ for (const needle of [
 
 expect(fs.existsSync(path.join(root, 'supabase/tests/public_surface_regression.sql')), 'Public surface SQL regression test is missing.');
 
+
+// Part 2: outbound message guards and stock-hoarding limit.
+const guardsName = '20261016120000_outbound_message_abuse_guards_360.sql';
+expect(fs.existsSync(path.join(root, 'supabase/migrations', guardsName)), `Missing migration ${guardsName}.`);
+const guards = fs.existsSync(path.join(root, 'supabase/migrations', guardsName)) ? read(`supabase/migrations/${guardsName}`) : '';
+for (const needle of [
+  'communication_outbox_volume_guard',
+  'private.sanitize_inline_text(c.name,60)',
+  "code','rate_limited'",
+  'orders_email_created_idx',
+]) expect(guards.includes(needle), `Message-guards migration is missing: ${needle}`);
+
 // Secrets and signatures are compared in constant time.
 for (const file of [
   'supabase/functions/deliver-communications/index.ts',
