@@ -8,4 +8,5 @@ Disallow: /checkout
 Disallow: /checkout-success
 Disallow: /order-confirmation
 Disallow: /track-order
+Disallow: /payment-return
 Sitemap: https://toplineflooringandwaterproofing.co.ke/sitemap.xml

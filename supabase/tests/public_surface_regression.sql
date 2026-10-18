@@ -120,4 +120,54 @@ BEGIN
   END;
 END $$;
 
+-- 9. Unpublished catalogue stays private, internal gates are not browser-callable, public reads are an allow-list.
+DO $$
+DECLARE r record; v_live uuid; v_draft uuid; v_pub uuid; v_conf uuid; v_n int;
+BEGIN
+  IF has_function_privilege('authenticated', 'public.get_payment_provider_release_gate_360(text)', 'EXECUTE')
+     OR has_function_privilege('anon', 'public.get_payment_provider_release_gate_360(text)', 'EXECUTE') THEN
+    RAISE EXCEPTION 'get_payment_provider_release_gate_360 must be service-role only';
+  END IF;
+
+  -- Any browser-readable table with a bare "true" policy must be a deliberate reference table.
+  FOR r IN
+    SELECT tablename, policyname FROM pg_policies
+    WHERE schemaname = 'public' AND permissive = 'PERMISSIVE' AND cmd = 'SELECT'
+      AND roles && ARRAY['anon','authenticated','public']::name[]
+      AND (qual IS NULL OR qual = 'true')
+      AND tablename NOT IN ('cms_content','product_brands','product_tags','seo_pages')
+  LOOP
+    RAISE EXCEPTION 'public.% policy % exposes every row to browser roles; add a visibility condition', r.tablename, r.policyname;
+  END LOOP;
+
+  BEGIN
+    INSERT INTO public.products(name,slug,price,stock_quantity,is_active,status,unit) VALUES ('Reg Live','reg-live-'||gen_random_uuid(),1,1,true,'active','box') RETURNING id INTO v_live;
+    INSERT INTO public.products(name,slug,price,stock_quantity,is_active,status,unit) VALUES ('Reg Draft','reg-draft-'||gen_random_uuid(),1,1,false,'draft','box') RETURNING id INTO v_draft;
+    INSERT INTO public.product_variants(product_id,variant_name,is_active) VALUES (v_live,'v',true),(v_draft,'v',true);
+    INSERT INTO public.product_images(product_id,image_url) VALUES (v_live,'a.jpg'),(v_draft,'b.jpg');
+    INSERT INTO public.product_documents(product_id,document_name,document_url) VALUES (v_live,'a','u'),(v_draft,'b','u');
+    INSERT INTO public.projects(title,slug,is_active) VALUES ('Reg Public','reg-public-'||gen_random_uuid(),true) RETURNING id INTO v_pub;
+    INSERT INTO public.projects(title,slug,is_active) VALUES ('Reg Confidential','reg-conf-'||gen_random_uuid(),false) RETURNING id INTO v_conf;
+    INSERT INTO public.project_images(project_id,image_url) VALUES (v_pub,'a.jpg'),(v_conf,'b.jpg');
+    INSERT INTO public.site_settings(setting_key,setting_value) VALUES ('reg_internal_setting','"x"'::jsonb);
+
+    EXECUTE 'SET LOCAL ROLE anon';
+    SELECT count(*) INTO v_n FROM public.product_variants WHERE product_id IN (v_live, v_draft);
+    IF v_n <> 1 THEN RAISE EXCEPTION 'anon sees % variants (expected 1: live product only)', v_n; END IF;
+    SELECT count(*) INTO v_n FROM public.product_images WHERE product_id IN (v_live, v_draft);
+    IF v_n <> 1 THEN RAISE EXCEPTION 'anon sees % product images (expected 1)', v_n; END IF;
+    SELECT count(*) INTO v_n FROM public.product_documents WHERE product_id IN (v_live, v_draft);
+    IF v_n <> 1 THEN RAISE EXCEPTION 'anon sees % product documents (expected 1)', v_n; END IF;
+    SELECT count(*) INTO v_n FROM public.project_images WHERE project_id IN (v_pub, v_conf);
+    IF v_n <> 1 THEN RAISE EXCEPTION 'anon sees % project images (expected 1: published project only)', v_n; END IF;
+    SELECT count(*) INTO v_n FROM public.site_settings WHERE setting_key = 'reg_internal_setting';
+    IF v_n <> 0 THEN RAISE EXCEPTION 'anon can read a non-allow-listed site setting'; END IF;
+    EXECUTE 'RESET ROLE';
+
+    RAISE EXCEPTION 'regression rollback' USING ERRCODE = 'P0099';
+  EXCEPTION WHEN SQLSTATE 'P0099' THEN
+    NULL;
+  END;
+END $$;
+
 SELECT 'ok 1 - public surface regression assertions passed';

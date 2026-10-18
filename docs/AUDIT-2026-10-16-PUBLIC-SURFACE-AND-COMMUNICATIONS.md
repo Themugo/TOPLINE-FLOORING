@@ -19,14 +19,20 @@ re-tested afterwards, then the complete verification suite.
 | 9 | Low | Trigger functions and `TRUNCATE/TRIGGER/REFERENCES` were granted to browser roles. | Revoked; asserted by regression test. |
 | 11 | High | Guest orders send email/SMS/WhatsApp to an unverified email and phone, greeting by a visitor-chosen name (links and line breaks allowed): a phishing channel and an SMS-cost vector. | `{{customer_name}}` sanitized; volume guard trigger on `communication_outbox` (12 SMS/WhatsApp and 30 emails per recipient per day, 300 SMS/WhatsApp per hour site-wide; staff messages, conversation replies and staff alerts exempt). |
 | 12 | Medium | Guest orders reserve stock for 24 h with no limit: a script could reserve the catalogue and block real customers. | At most 5 open unpaid orders per email or phone per 24 h (idempotent retries still answered). |
+| 13 | Medium | Variants, images, specifications, documents and tag/collection links of inactive products, and photos/services of unpublished projects, were readable by anyone (bare `true` policies). | Child-table read policies follow the parent's visibility; staff keep permission-based read; regression test blocks any new bare-`true` public policy outside a short reference-table allow-list. |
+| 14 | Medium | `get_payment_provider_release_gate_360` (production payment certification evidence and notes) was executable by every logged-in customer. | Service role only; its sole caller is the `payment-initiate` edge function. |
+| 15 | Low | `site_settings` was readable in full by anyone. | Public read limited to an allow-list (`custom_css`). |
+| 16 | Low | Business report CSV did no quoting (a product name containing a comma shifted every following column) and did not neutralise spreadsheet formulas. | `src/lib/csv.ts` (RFC 4180 quoting, formula guard, UTF-8 BOM) with unit tests. |
+| 17 | Low | `robots.txt` did not list `/payment-return`. | Added (page already sets `noindex`). |
 | 10 | Housekeeping | `.env.example` missing, migration manifest stale (118 files, 89 listed), stale verifier string, `ws`/`dompurify` advisories, duplicate outbox index, no long cache for fingerprinted assets. | Restored/refreshed/updated; production `npm audit` now 0. |
 
 ## Reviewed and left unchanged (well built)
+- Data export function and RPC (caller's own JWT, `require_staff_permission('system','read')`, audit event); CSV importer parser; all 15 edge functions authenticate callers (secret, signature, JWT or token); every customer-private page sets `noindex`; no hard-coded credentials or JWTs anywhere in the tree.
 - `track_order_public`: order numbers carry 32 bits of randomness plus an exact phone match, so enumeration is impractical.
 - `create_secure_customer_order` pricing, stock locking and idempotency; `apply_payment_provider_event` (unique event ids, payload-hash replay detection, amount/currency conflict and overpayment checks); payment webhook signature and timestamp handling; storage bucket policies; `save_site_page_block` internal permission check; CSP and security headers.
 
 ## Evidence
-- 120 migrations apply from empty; `security_regression`, `public_surface_regression`, `browser_rpc_grants`,
+- 121 migrations apply from empty; `security_regression`, `public_surface_regression`, `browser_rpc_grants`,
   `plpgsql_static_analysis` (plpgsql_check) and `runtime_contracts` pass.
 - `public_surface_regression.sql` was mutation-tested: re-granting view UPDATE, TRUNCATE, or a public insert policy each fails it.
 - typecheck, lint, 195 smoke tests, production build, and `verify:all` 132/132 pass.
@@ -38,3 +44,7 @@ re-tested afterwards, then the complete verification suite.
 - M-Pesa Daraja callback secret travels in the callback URL (provider limitation); keep it out of logs/analytics.
 - Deploy edge functions: `deliver-communications`, `operations-scheduler`, `expire-reservations`, `payment-callback`, `payment-initiate`.
 - Remaining dev-only advisories (vitest/vite chain) need a major-version upgrade; they do not ship to production.
+
+## Noted, not changed
+- Approved product reviews expose the reviewer's internal `customer_id` UUID. It is not a credential (access is enforced by policy), and hiding it needs a storefront query change, so it is left for a deliberate follow-up.
+- `create_operational_data_export` lets a staff member with `system:read` export all customer contact data in one call. It is audited; consider alerting on it.

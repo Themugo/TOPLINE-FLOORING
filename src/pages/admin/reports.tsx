@@ -4,6 +4,7 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import { AdminLayout } from '@/pages/admin/dashboard';
 import { supabase } from '@/lib/supabase';
 import { formatKES } from '@/lib/utils';
+import { CSV_BOM, toCsv } from '@/lib/csv';
 
 export default function AdminReports() {
   return (
@@ -146,8 +147,7 @@ function ReportsContent() {
       ['Top Products', 'Qty Sold', 'Revenue'],
       ...topProducts.map((p) => [p.name, p.quantity, p.revenue]),
     ];
-    const csv = rows.map((r) => r.join(',')).join('\n');
-    const blob = new Blob([csv], { type: 'text/csv' });
+    const blob = new Blob([CSV_BOM, toCsv(rows)], { type: 'text/csv;charset=utf-8' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;

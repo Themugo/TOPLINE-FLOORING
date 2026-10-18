@@ -37,6 +37,22 @@ for (const needle of [
   'orders_email_created_idx',
 ]) expect(guards.includes(needle), `Message-guards migration is missing: ${needle}`);
 
+
+// Part 3: catalogue visibility, internal function exposure, safe exports.
+const visName = '20261016150000_catalog_visibility_and_internal_function_exposure_360.sql';
+expect(fs.existsSync(path.join(root, 'supabase/migrations', visName)), `Missing migration ${visName}.`);
+const vis = fs.existsSync(path.join(root, 'supabase/migrations', visName)) ? read(`supabase/migrations/${visName}`) : '';
+for (const needle of [
+  'REVOKE ALL ON FUNCTION public.get_payment_provider_release_gate_360(text) FROM PUBLIC, anon, authenticated',
+  'rbac_public_read_project_images',
+  'public.public_projects pp',
+  "setting_key IN ('custom_css')",
+]) expect(vis.includes(needle), `Visibility migration is missing: ${needle}`);
+expect(fs.existsSync(path.join(root, 'src/lib/csv.ts')), 'src/lib/csv.ts is missing.');
+expect(read('src/pages/admin/reports.tsx').includes('toCsv(rows)'), 'Business report export must use the safe CSV helper.');
+expect(!/rows\.map\(\(r\) => r\.join\(','\)\)/.test(read('src/pages/admin/reports.tsx')), 'Business report export joins cells without CSV quoting.');
+expect(read('public/robots.txt').includes('Disallow: /payment-return'), 'robots.txt must disallow /payment-return.');
+
 // Secrets and signatures are compared in constant time.
 for (const file of [
   'supabase/functions/deliver-communications/index.ts',
