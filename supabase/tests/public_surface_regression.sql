@@ -170,4 +170,30 @@ BEGIN
   END;
 END $$;
 
+-- 10. Inbound content is size-bounded (anyone can email or text the inbound addresses).
+DO $$
+DECLARE v_len int; v_marker text; v_normal text;
+BEGIN
+  BEGIN
+    PERFORM set_config('request.jwt.claim.role', 'service_role', true);
+    PERFORM public.record_inbound_communication_worker('brevo_inbound','email', repeat('s',400) || '@example.org', NULL,
+      repeat('subject ', 200), repeat('x', 2000000), 'reg-big', NULL, NULL, jsonb_build_object('blob', repeat('y', 1000000)));
+    SELECT length(message), payload->>'truncated' INTO v_len, v_marker FROM public.communication_inbound WHERE provider_message_id = 'reg-big';
+    IF v_len IS NULL THEN RAISE EXCEPTION 'oversized inbound message was not recorded'; END IF;
+    IF v_len > 20000 THEN RAISE EXCEPTION 'inbound message body is not bounded (% characters stored)', v_len; END IF;
+    IF v_marker IS DISTINCT FROM 'true' THEN RAISE EXCEPTION 'oversized raw payload was stored in full'; END IF;
+    IF (SELECT length(sender) FROM public.communication_inbound WHERE provider_message_id = 'reg-big') > 320 THEN
+      RAISE EXCEPTION 'inbound sender is not bounded';
+    END IF;
+
+    PERFORM public.record_inbound_communication_worker('brevo_inbound','email','reg-normal@example.org', NULL, 'Hello', 'A normal message.', 'reg-normal', NULL, NULL, '{"k":"v"}'::jsonb);
+    SELECT message INTO v_normal FROM public.communication_inbound WHERE provider_message_id = 'reg-normal';
+    IF v_normal IS DISTINCT FROM 'A normal message.' THEN RAISE EXCEPTION 'normal inbound message was altered'; END IF;
+
+    RAISE EXCEPTION 'regression rollback' USING ERRCODE = 'P0099';
+  EXCEPTION WHEN SQLSTATE 'P0099' THEN
+    NULL;
+  END;
+END $$;
+
 SELECT 'ok 1 - public surface regression assertions passed';

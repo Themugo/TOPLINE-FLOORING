@@ -53,6 +53,22 @@ expect(read('src/pages/admin/reports.tsx').includes('toCsv(rows)'), 'Business re
 expect(!/rows\.map\(\(r\) => r\.join\(','\)\)/.test(read('src/pages/admin/reports.tsx')), 'Business report export joins cells without CSV quoting.');
 expect(read('public/robots.txt').includes('Disallow: /payment-return'), 'robots.txt must disallow /payment-return.');
 
+
+// Part 4: hot-path indexes, inbound size limits, sign-in and auth policy.
+for (const [name, needles] of [
+  ['20261016170000_query_path_indexes_360.sql', ['communication_outbox_created_idx', 'brevo_marketing_sync_queue_email_idx']],
+  ['20261016190000_inbound_message_size_limits_360.sql', ['p_message := left(p_message, 20000)', 'original_bytes']],
+]) {
+  const file = path.join(root, 'supabase/migrations', name);
+  expect(fs.existsSync(file), `Missing migration ${name}.`);
+  const text = fs.existsSync(file) ? fs.readFileSync(file, 'utf8') : '';
+  for (const needle of needles) expect(text.includes(needle), `${name} is missing: ${needle}`);
+}
+const portalSource = read('src/pages/portal.tsx');
+const signInInput = portalSource.match(/<Input id="portal-signin-password"[^>]*>/);
+expect(signInInput && !/minLength/.test(signInInput[0]), 'The sign-in password field must not set minLength (existing shorter passwords would be locked out).');
+expect(/enable_confirmations\s*=\s*true/.test(read('supabase/config.toml')), 'supabase/config.toml must keep email confirmations enabled.');
+
 // Secrets and signatures are compared in constant time.
 for (const file of [
   'supabase/functions/deliver-communications/index.ts',

@@ -24,6 +24,10 @@ re-tested afterwards, then the complete verification suite.
 | 15 | Low | `site_settings` was readable in full by anyone. | Public read limited to an allow-list (`custom_css`). |
 | 16 | Low | Business report CSV did no quoting (a product name containing a comma shifted every following column) and did not neutralise spreadsheet formulas. | `src/lib/csv.ts` (RFC 4180 quoting, formula guard, UTF-8 BOM) with unit tests. |
 | 17 | Low | `robots.txt` did not list `/payment-return`. | Added (page already sets `noindex`). |
+| 18 | Medium | Inbound email/SMS/WhatsApp (content anyone can send) was stored with no length cap, including the raw provider payload as a second copy: one oversized email could write megabytes twice. | Sender 320, subject 500, body 20,000, media URL 2,048, payload 64 KB (marker with original size above that); idempotency unchanged. |
+| 19 | Medium | Sign-in password field enforced `minLength=8`, locking out customers whose existing password is 6-7 characters (Supabase default minimum). | Length is enforced at registration only; browser autocomplete hints added. |
+| 20 | Low | Auth policy (email confirmation, password length, redirect allow-list) lived only in the dashboard; a `supabase config push` could reset it to defaults. | Codified in `supabase/config.toml` (confirmations on, 8-character minimum, redirect URLs, double-confirm email change). |
+| 21 | Low | Hot-path queries added by this audit would degrade with table growth (measured at 200k outbox / 60k queue rows: staff-alert cap 23 ms, marketing-queue lookup a full scan); three growing-table foreign keys had no index. | Five indexes: cap query 23 ms to 0.1 ms, lookup 7 ms scan to 0.03 ms index. |
 | 10 | Housekeeping | `.env.example` missing, migration manifest stale (118 files, 89 listed), stale verifier string, `ws`/`dompurify` advisories, duplicate outbox index, no long cache for fingerprinted assets. | Restored/refreshed/updated; production `npm audit` now 0. |
 
 ## Reviewed and left unchanged (well built)
@@ -32,7 +36,7 @@ re-tested afterwards, then the complete verification suite.
 - `create_secure_customer_order` pricing, stock locking and idempotency; `apply_payment_provider_event` (unique event ids, payload-hash replay detection, amount/currency conflict and overpayment checks); payment webhook signature and timestamp handling; storage bucket policies; `save_site_page_block` internal permission check; CSP and security headers.
 
 ## Evidence
-- 121 migrations apply from empty; `security_regression`, `public_surface_regression`, `browser_rpc_grants`,
+- 123 migrations apply from empty; `security_regression`, `public_surface_regression`, `browser_rpc_grants`,
   `plpgsql_static_analysis` (plpgsql_check) and `runtime_contracts` pass.
 - `public_surface_regression.sql` was mutation-tested: re-granting view UPDATE, TRUNCATE, or a public insert policy each fails it.
 - typecheck, lint, 195 smoke tests, production build, and `verify:all` 132/132 pass.
@@ -44,6 +48,9 @@ re-tested afterwards, then the complete verification suite.
 - M-Pesa Daraja callback secret travels in the callback URL (provider limitation); keep it out of logs/analytics.
 - Deploy edge functions: `deliver-communications`, `operations-scheduler`, `expire-reservations`, `payment-callback`, `payment-initiate`.
 - Remaining dev-only advisories (vitest/vite chain) need a major-version upgrade; they do not ship to production.
+
+## Also reviewed this round (no change needed)
+- All 201 logged-in-callable database functions classified: 182 staff-guarded, 11 customer-bound, 3 uid-bound, 5 public by design; the two id-taking customer functions (`submit_service_case_feedback`, `get_customer_payment_status`) verify ownership. Customer-owned tables expose rows only through `get_current_customer_id()` / `auth.uid()` policies. All inbound webhooks authenticate before reading the body.
 
 ## Noted, not changed
 - Approved product reviews expose the reviewer's internal `customer_id` UUID. It is not a credential (access is enforced by policy), and hiding it needs a storefront query change, so it is left for a deliberate follow-up.

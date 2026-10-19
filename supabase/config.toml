@@ -4,6 +4,21 @@ project_id = "zmbsskvnzjdaxuxlauyx"
 
 [auth]
 enabled = true
+# Auth policy is codified here so it can be reviewed and cannot silently fall back to Supabase defaults if
+# `supabase config push` is ever run. The marketing opt-in relies on verified email addresses, so confirmations
+# must stay on. Leaked-password protection is a hosted-project (Pro) dashboard setting and is not available here.
+site_url = "https://toplineflooringandwaterproofing.co.ke"
+additional_redirect_urls = [
+  "https://toplineflooringandwaterproofing.co.ke/portal",
+  "https://toplineflooringandwaterproofing.co.ke/admin/settings",
+]
+minimum_password_length = 8
+
+[auth.email]
+enable_signup = true
+enable_confirmations = true
+double_confirm_changes = true
+secure_password_change = true
 # Email/password authentication is enabled by Supabase Auth by default.
 # Do not use the obsolete [auth.email].enabled key.
 
