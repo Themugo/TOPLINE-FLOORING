@@ -196,4 +196,93 @@ BEGIN
   END;
 END $$;
 
+-- 11. Registration, consent and guest-to-registered continuity (rolled back by the P0099 marker).
+DO $$
+DECLARE
+  v_user uuid := gen_random_uuid(); v_user2 uuid := gen_random_uuid(); v_user3 uuid := gen_random_uuid(); v_user4 uuid := gen_random_uuid();
+  v_pid uuid; v_cust uuid; v_n int; v_portal jsonb; v_q text;
+BEGIN
+  BEGIN
+    -- consent recorded at registration is visible to the portal and an opt-out is always honoured
+    INSERT INTO auth.users(id,email,raw_user_meta_data,email_confirmed_at)
+    VALUES (v_user,'reg-consent@example.org','{"topline_customer_registration":true,"name":"Reg Consent","phone":"0700810810","marketing_email_opt_in":true}'::jsonb, NULL);
+    SELECT count(*) INTO v_n FROM public.brevo_marketing_sync_queue WHERE email = 'reg-consent@example.org';
+    IF v_n <> 0 THEN RAISE EXCEPTION 'unverified signup was queued for marketing'; END IF;
+    UPDATE auth.users SET email_confirmed_at = now() WHERE id = v_user;
+    SELECT customer_id INTO v_cust FROM public.customer_portal_access WHERE auth_user_id = v_user;
+    IF v_cust IS NULL THEN RAISE EXCEPTION 'verified registration was not linked to a customer'; END IF;
+    IF NOT coalesce((SELECT marketing_email_enabled FROM public.customer_notification_preferences WHERE customer_id = v_cust), false) THEN
+      RAISE EXCEPTION 'registration opt-in was not recorded in the customer preferences the portal reads';
+    END IF;
+    SELECT count(*) INTO v_n FROM public.brevo_marketing_sync_queue WHERE email = 'reg-consent@example.org' AND action = 'subscribe' AND status = 'queued';
+    IF v_n <> 1 THEN RAISE EXCEPTION 'expected exactly one queued subscribe, found %', v_n; END IF;
+    -- first-ever preference row saved as "off" after a subscribe must queue an unsubscribe
+    DELETE FROM public.customer_notification_preferences WHERE customer_id = v_cust;
+    INSERT INTO public.customer_notification_preferences(customer_id, marketing_email_enabled) VALUES (v_cust, false);
+    SELECT count(*) INTO v_n FROM public.brevo_marketing_sync_queue WHERE email = 'reg-consent@example.org' AND action = 'unsubscribe' AND status = 'queued';
+    IF v_n <> 1 THEN RAISE EXCEPTION 'explicit opt-out did not queue an unsubscribe (found %)', v_n; END IF;
+    SELECT count(*) INTO v_n FROM public.brevo_marketing_sync_queue WHERE email = 'reg-consent@example.org' AND action = 'subscribe' AND status = 'queued';
+    IF v_n <> 0 THEN RAISE EXCEPTION 'a stale subscribe is still queued after the opt-out'; END IF;
+
+    -- guest who ordered twice then registers: one customer record, linked, orders visible
+    INSERT INTO public.products(name,slug,price,stock_quantity,is_active,status,unit) VALUES ('Reg Cont Tile','reg-cont-'||gen_random_uuid(),500,50,true,'active','box') RETURNING id INTO v_pid;
+    PERFORM public.create_secure_customer_order('Guest Reg','Guest.Reg@Example.org','0700820820',jsonb_build_array(jsonb_build_object('product_id',v_pid,'quantity',1)),'',NULL,NULL,'Nairobi','mpesa','reg-cont-1');
+    PERFORM public.create_secure_customer_order('Guest Reg','guest.reg@example.org','+254700820820',jsonb_build_array(jsonb_build_object('product_id',v_pid,'quantity',1)),'',NULL,NULL,'Nairobi','mpesa','reg-cont-2');
+    SELECT count(*) INTO v_n FROM public.customers WHERE lower(email) = 'guest.reg@example.org';
+    IF v_n <> 1 THEN RAISE EXCEPTION 'returning guest created % customer records (expected 1)', v_n; END IF;
+    PERFORM public.submit_quotation_request('Guest Reg','guest.reg@example.org','0700820820','Nairobi','Flooring','Epoxy','asked before registering','','');
+    INSERT INTO auth.users(id,email,raw_user_meta_data,email_confirmed_at)
+    VALUES (v_user2,'guest.reg@example.org','{"topline_customer_registration":true,"name":"Guest Reg","phone":"0700820820","marketing_email_opt_in":false}'::jsonb, NULL);
+    UPDATE auth.users SET email_confirmed_at = now() WHERE id = v_user2;
+    PERFORM set_config('request.jwt.claim.sub', v_user2::text, true);
+    PERFORM set_config('request.jwt.claim.role', 'authenticated', true);
+    v_portal := public.get_customer_portal_data();
+    IF jsonb_array_length(coalesce(v_portal->'orders','[]'::jsonb)) <> 2 THEN RAISE EXCEPTION 'portal shows % orders (expected 2)', jsonb_array_length(coalesce(v_portal->'orders','[]'::jsonb)); END IF;
+    IF jsonb_array_length(coalesce(v_portal->'quotations','[]'::jsonb)) <> 1 THEN RAISE EXCEPTION 'portal does not show the quotation requested before registering'; END IF;
+
+    -- legacy duplicates of the same person (same email AND phone, created before the order fix) still link
+    PERFORM set_config('request.jwt.claim.sub', '', true); PERFORM set_config('request.jwt.claim.role', 'service_role', true);
+    INSERT INTO public.customers(name,email,phone) VALUES ('Legacy Dup','legacy-dup@example.org','0700860860'),('Legacy Dup','Legacy-Dup@Example.org','+254700860860');
+    INSERT INTO auth.users(id,email,raw_user_meta_data,email_confirmed_at)
+    VALUES (v_user4,'legacy-dup@example.org','{"topline_customer_registration":true,"name":"Legacy Dup","phone":"0700860860","marketing_email_opt_in":false}'::jsonb, NULL);
+    UPDATE auth.users SET email_confirmed_at = now() WHERE id = v_user4;
+    SELECT count(*) INTO v_n FROM public.customer_portal_access WHERE auth_user_id = v_user4;
+    IF v_n <> 1 THEN RAISE EXCEPTION 'same-person legacy duplicate customer records were not linked to the registered account'; END IF;
+
+    -- different people sharing one email (different phones) are not linked automatically
+    PERFORM set_config('request.jwt.claim.sub', '', true); PERFORM set_config('request.jwt.claim.role', 'service_role', true);
+    PERFORM public.create_secure_customer_order('Person One','shared-reg@example.org','0700830830',jsonb_build_array(jsonb_build_object('product_id',v_pid,'quantity',1)),'',NULL,NULL,'Nairobi','mpesa','reg-shared-1');
+    PERFORM public.create_secure_customer_order('Person Two','shared-reg@example.org','0700840840',jsonb_build_array(jsonb_build_object('product_id',v_pid,'quantity',1)),'',NULL,NULL,'Nairobi','mpesa','reg-shared-2');
+    INSERT INTO auth.users(id,email,raw_user_meta_data,email_confirmed_at)
+    VALUES (v_user3,'shared-reg@example.org','{"topline_customer_registration":true,"name":"Person One","phone":"0700830830","marketing_email_opt_in":false}'::jsonb, NULL);
+    UPDATE auth.users SET email_confirmed_at = now() WHERE id = v_user3;
+    SELECT count(*) INTO v_n FROM public.customer_portal_access WHERE auth_user_id = v_user3;
+    IF v_n <> 0 THEN RAISE EXCEPTION 'an ambiguous shared email was linked automatically'; END IF;
+
+    RAISE EXCEPTION 'regression rollback' USING ERRCODE = 'P0099';
+  EXCEPTION WHEN SQLSTATE 'P0099' THEN
+    NULL;
+  END;
+END $$;
+
+-- 12. Customers are not sent internal pipeline states or draft invoices.
+DO $$
+DECLARE v_cust uuid; v_inv uuid; v_n int;
+BEGIN
+  BEGIN
+    INSERT INTO public.customers(name,email,phone) VALUES ('Noise Reg','noise-reg@example.org','0700850850') RETURNING id INTO v_cust;
+    DELETE FROM public.communication_outbox;
+    INSERT INTO public.invoices(customer_id, invoice_number, customer_name, customer_email, customer_phone, subtotal, total_amount, due_date)
+    VALUES (v_cust,'INV-REG-'||substr(gen_random_uuid()::text,1,8),'Noise Reg','noise-reg@example.org','0700850850',100,100,current_date+7) RETURNING id INTO v_inv;
+    SELECT count(*) INTO v_n FROM public.communication_outbox;
+    IF v_n <> 0 THEN RAISE EXCEPTION 'a draft invoice notified the customer (% messages)', v_n; END IF;
+    UPDATE public.invoices SET status = 'sent' WHERE id = v_inv;
+    SELECT count(*) INTO v_n FROM public.communication_outbox;
+    IF v_n < 1 THEN RAISE EXCEPTION 'a sent invoice did not notify the customer'; END IF;
+    RAISE EXCEPTION 'regression rollback' USING ERRCODE = 'P0099';
+  EXCEPTION WHEN SQLSTATE 'P0099' THEN
+    NULL;
+  END;
+END $$;
+
 SELECT 'ok 1 - public surface regression assertions passed';

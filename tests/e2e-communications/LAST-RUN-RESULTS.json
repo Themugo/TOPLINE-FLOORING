@@ -1,0 +1,914 @@
+[
+ {
+  "id": "W-01",
+  "path": "G/H",
+  "name": "Worker rejects wrong secret (401)",
+  "layer": "e2e-real-function",
+  "result": "PASS",
+  "evidence": "status 401"
+ },
+ {
+  "id": "W-02",
+  "path": "G/H",
+  "name": "Worker rejects missing secret (401)",
+  "layer": "e2e-real-function",
+  "result": "PASS",
+  "evidence": "status 401"
+ },
+ {
+  "id": "W-03",
+  "path": "G/H",
+  "name": "Worker rejects non-POST (405)",
+  "layer": "e2e-real-function",
+  "result": "PASS",
+  "evidence": "status 405"
+ },
+ {
+  "id": "W-04",
+  "path": "G/H",
+  "name": "Worker rejects oversized body (413)",
+  "layer": "e2e-real-function",
+  "result": "PASS",
+  "evidence": "status 413"
+ },
+ {
+  "id": "C-01",
+  "path": "C",
+  "name": "Anonymous quotation submit succeeds via REST",
+  "layer": "e2e-postgrest",
+  "result": "PASS",
+  "evidence": "{\"success\":true,\"lead_id\":\"2ff9313d-9174-4866-832f-bdca8f00f705\",\"quotation_id\":\"8716fa05-d428-48fe-8778-7951dd1119bf\"}"
+ },
+ {
+  "id": "C-02",
+  "path": "C",
+  "name": "Customer acknowledgement + staff alert queued (2 rows)",
+  "layer": "e2e-db",
+  "result": "PASS",
+  "evidence": "[[\"amina@example.org\",\"queued\"],[\"sales@topline.example\",\"queued\"]]"
+ },
+ {
+  "id": "C-03",
+  "path": "C",
+  "name": "Durable staff notification event recorded",
+  "layer": "e2e-db",
+  "result": "PASS",
+  "evidence": "1"
+ },
+ {
+  "id": "C-04",
+  "path": "C",
+  "name": "Worker processes both emails",
+  "layer": "e2e-real-function",
+  "result": "PASS",
+  "evidence": "[{\"id\":\"2d22f00d-06fb-4e1c-b5c1-e869f6296cc8\",\"status\":\"sent\",\"provider\":\"brevo\"},{\"id\":\"82242e96-d41a-4ab4-8f64-c5c0610e13b0\",\"status\":\"sent\",\"provider\":\"brevo\"}]"
+ },
+ {
+  "id": "C-05",
+  "path": "C",
+  "name": "Provider received customer ack with real line breaks and RFQ reference",
+  "layer": "e2e-mocked-provider",
+  "result": "PASS",
+  "evidence": "We received your Topline quotation request (RFQ-8716FA05)"
+ },
+ {
+  "id": "C-06",
+  "path": "C",
+  "name": "Staff alert HTML-escapes user-supplied markup",
+  "layer": "e2e-mocked-provider",
+  "result": "PASS",
+  "evidence": "<div style=\"font-family:Arial,sans-serif;line-height:1.6\">A new website quotation request was received.<br /><br />Reference: RFQ-8716FA05<br />Name: Amina Wanj"
+ },
+ {
+  "id": "C-07",
+  "path": "C",
+  "name": "Sender, reply-to and API key used",
+  "layer": "e2e-mocked-provider",
+  "result": "PASS",
+  "evidence": "{\"s\":{\"email\":\"no-reply@topline.example\",\"name\":\"Topline Flooring & Waterproofing\"},\"r\":{\"email\":\"info@topline.example\"}}"
+ },
+ {
+  "id": "C-08",
+  "path": "C",
+  "name": "Outbox marked sent with provider + message id",
+  "layer": "e2e-db",
+  "result": "PASS",
+  "evidence": "[[\"sent\",\"accepted\",\"brevo\",\"t\"],[\"sent\",\"accepted\",\"brevo\",\"t\"]]"
+ },
+ {
+  "id": "C-09",
+  "path": "C",
+  "name": "One audited attempt per message: outcome accepted, HTTP 201, provider ref, request id, completed",
+  "layer": "e2e-db",
+  "result": "PASS",
+  "evidence": "[[\"1\",\"accepted\",\"201\",\"t\",\"t\",\"t\"],[\"1\",\"accepted\",\"201\",\"t\",\"t\",\"t\"]]"
+ },
+ {
+  "id": "C-10",
+  "path": "C",
+  "name": "Second worker run sends nothing (no duplicates)",
+  "layer": "e2e-real-function",
+  "result": "PASS",
+  "evidence": "{\"processed\":0,\"results\":[],\"marketing_sync\":{\"processed\":0,\"configured\":true,\"results\":[]}}"
+ },
+ {
+  "id": "C-11",
+  "path": "C/D",
+  "name": "Double-submit returns same record (no duplicate business record)",
+  "layer": "e2e-postgrest",
+  "result": "PASS",
+  "evidence": "{\"success\":true,\"lead_id\":\"2ff9313d-9174-4866-832f-bdca8f00f705\",\"quotation_id\":\"8716fa05-d428-48fe-8778-7951dd1119bf\",\"duplicate\":true}"
+ },
+ {
+  "id": "C-12",
+  "path": "C/D",
+  "name": "Server rejects invalid name/email/phone with message",
+  "layer": "e2e-postgrest",
+  "result": "PASS",
+  "evidence": "{\"success\":false,\"error\":\"Invalid name\"}"
+ },
+ {
+  "id": "C-13",
+  "path": "C/D",
+  "name": "Per-email throttle triggers after 3/hour (2 of 5 throttled)",
+  "layer": "e2e-postgrest",
+  "result": "PASS",
+  "evidence": "throttled 2"
+ },
+ {
+  "id": "C-14",
+  "path": "C/H",
+  "name": "Direct anonymous table insert (RPC bypass) is denied",
+  "layer": "e2e-postgrest",
+  "result": "PASS",
+  "evidence": "status 401"
+ },
+ {
+  "id": "E-01",
+  "path": "E",
+  "name": "Anonymous guest order created via REST (server-priced)",
+  "layer": "e2e-postgrest",
+  "result": "PASS",
+  "evidence": "{\"total\":4500,\"success\":true,\"order_id\":\"1d1d3aa2-de41-4442-a097-863bf50c6755\",\"subtotal\":4500,\"order_number\":\"TOP-20261022-2A903FB1\",\"payment_status\":\"pending\",\"stock_reserved\":true,\"delivery_charge\""
+ },
+ {
+  "id": "E-02",
+  "path": "E",
+  "name": "Order confirmation queued on email, SMS and WhatsApp",
+  "layer": "e2e-db",
+  "result": "PASS",
+  "evidence": "[[\"email\",\"brian@example.org\",\"queued\"],[\"sms\",\"+254722333444\",\"queued\"],[\"whatsapp\",\"+254722333444\",\"queued\"]]"
+ },
+ {
+  "id": "E-03",
+  "path": "E",
+  "name": "Worker delivers all three channels",
+  "layer": "e2e-real-function",
+  "result": "PASS",
+  "evidence": "[{\"id\":\"614f45c0-126e-4fc7-b04f-6bb3269bb81d\",\"status\":\"sent\",\"provider\":\"brevo\"},{\"id\":\"c78bb515-6dc9-41c1-aae5-73b9b1c194f8\",\"status\":\"sent\",\"provider\":\"africastalking\"},{\"id\":\"c0483196-c7b8-477c-b54b-a24e0506aeb9\",\"status\":\"sent\",\"provider\":\"meta_whatsapp\"}]"
+ },
+ {
+  "id": "E-04",
+  "path": "E",
+  "name": "Recipients normalised per channel (email, +254 SMS, digits-only WhatsApp)",
+  "layer": "e2e-mocked-provider",
+  "result": "PASS",
+  "evidence": "[\"brian@example.org\",\"+254722333444\",\"254722333444\"]"
+ },
+ {
+  "id": "E-05",
+  "path": "E",
+  "name": "No unrendered {{placeholders}}; customer name rendered",
+  "layer": "e2e-mocked-provider",
+  "result": "PASS",
+  "evidence": "Hello Brian Otieno, your Topline order is now pending. You can track your order or sign in to your customer account for the latest details."
+ },
+ {
+  "id": "E-06",
+  "path": "E",
+  "name": "Each message stored with provider + provider message id",
+  "layer": "e2e-db",
+  "result": "PASS",
+  "evidence": "[[\"email\",\"brevo\",\"t\"],[\"sms\",\"africastalking\",\"t\"],[\"whatsapp\",\"meta_whatsapp\",\"t\"]]"
+ },
+ {
+  "id": "E-07",
+  "path": "E",
+  "name": "SMS outbox row carries a delivery status and provider reference after submission",
+  "layer": "e2e-db",
+  "result": "PASS",
+  "evidence": "[\"submitted\",\"t\"]"
+ },
+ {
+  "id": "E-08",
+  "path": "E",
+  "name": "Order status change queues a new notification on every channel",
+  "layer": "e2e-db",
+  "result": "PASS",
+  "evidence": "queued 3"
+ },
+ {
+  "id": "E-09",
+  "path": "E",
+  "name": "Status notification renders {{status}} and has no leftover placeholders",
+  "layer": "e2e-mocked-provider",
+  "result": "PASS",
+  "evidence": "Your Topline order is now processing"
+ },
+ {
+  "id": "E-10",
+  "path": "E",
+  "name": "Re-saving the same status does not send a duplicate notification",
+  "layer": "e2e-db",
+  "result": "PASS",
+  "evidence": "queued 0"
+ },
+ {
+  "id": "E-11",
+  "path": "E",
+  "name": "Customer SMS opt-out is honoured (email + WhatsApp only)",
+  "layer": "e2e-db",
+  "result": "PASS",
+  "evidence": "[\"email\",\"whatsapp\"]"
+ },
+ {
+  "id": "E-12",
+  "path": "G",
+  "name": "Hard-bounced address: queued email cancelled at send time, provider never called",
+  "layer": "e2e-real-function",
+  "result": "PASS",
+  "evidence": "emails sent 0, cancelled 1"
+ },
+ {
+  "id": "E-13",
+  "path": "E",
+  "name": "All 9 notification rules render without leftover placeholders",
+  "layer": "e2e-db",
+  "result": "PASS",
+  "evidence": "unrendered 0 of 14 messages"
+ },
+ {
+  "id": "G-01",
+  "path": "G",
+  "name": "Provider 400 (bad recipient): fails immediately, no retry, never marked sent",
+  "layer": "e2e-real-function",
+  "result": "PASS",
+  "evidence": "[\"failed\",\"failed\",\"1\",\"f\",\"Brevo 400: {\\\"code\\\":\\\"invalid_parameter\\\",\\\"message\\\":\\\"Invalid recipient\\\"}\",\"f\"]"
+ },
+ {
+  "id": "G-02",
+  "path": "G",
+  "name": "A terminally failed message is never re-sent",
+  "layer": "e2e-real-function",
+  "result": "PASS",
+  "evidence": "provider calls after re-run: 0"
+ },
+ {
+  "id": "G-03-401",
+  "path": "G",
+  "name": "Provider 401: stays queued with backoff, error recorded, not marked sent",
+  "layer": "e2e-real-function",
+  "result": "PASS",
+  "evidence": "[\"queued\",\"pending\",\"1\",\"t\",\"Brevo 401: {\\\"code\\\":\\\"unauthorized\\\",\\\"message\\\":\\\"Key not found\\\"}\",\"f\"]"
+ },
+ {
+  "id": "G-03-429",
+  "path": "G",
+  "name": "Provider 429: stays queued with backoff, error recorded, not marked sent",
+  "layer": "e2e-real-function",
+  "result": "PASS",
+  "evidence": "[\"queued\",\"pending\",\"1\",\"t\",\"Brevo 429: {\\\"code\\\":\\\"too_many_requests\\\",\\\"message\\\":\\\"rate limit\\\"}\",\"f\"]"
+ },
+ {
+  "id": "G-03-503",
+  "path": "G",
+  "name": "Provider 503: stays queued with backoff, error recorded, not marked sent",
+  "layer": "e2e-real-function",
+  "result": "PASS",
+  "evidence": "[\"queued\",\"pending\",\"1\",\"t\",\"Brevo 503: {\\\"message\\\":\\\"unavailable\\\"}\",\"f\"]"
+ },
+ {
+  "id": "G-04",
+  "path": "G",
+  "name": "Retry exhaustion: terminal failed after max_attempts (3), exactly 3 provider calls, error retained",
+  "layer": "e2e-real-function",
+  "result": "PASS",
+  "evidence": "{\"s\":[\"failed\",\"failed\",\"3\",\"f\",\"Brevo 503: {\\\"message\\\":\\\"unavailable\\\"}\",\"f\"],\"providerCalls\":3}"
+ },
+ {
+  "id": "G-05",
+  "path": "G",
+  "name": "Brevo accepts without messageId: message recorded sent but cannot be correlated (documented risk)",
+  "layer": "e2e-real-function",
+  "result": "PASS",
+  "evidence": "[\"sent\",\"accepted\",\"1\",\"f\",\"\",\"f\"]"
+ },
+ {
+  "id": "G-06",
+  "path": "G",
+  "name": "Worker crash after provider accepted: stale lease reclaimed, message completed WITHOUT re-sending",
+  "layer": "e2e-real-function",
+  "result": "PASS",
+  "evidence": "{\"s\":[\"sent\",\"accepted\",\"2\",\"f\",\"\",\"t\"],\"providerCalls\":0}"
+ },
+ {
+  "id": "G-07",
+  "path": "G",
+  "name": "Message locked 2 minutes ago is not claimed by another worker",
+  "layer": "e2e-real-function",
+  "result": "PASS",
+  "evidence": "[\"queued\",\"pending\",\"1\",\"f\",\"\",\"f\"]"
+ },
+ {
+  "id": "G-08",
+  "path": "G",
+  "name": "Two concurrent workers over 30 messages: each sent exactly once (30 calls, 30 unique)",
+  "layer": "e2e-real-function",
+  "result": "PASS",
+  "evidence": "calls 30, unique 30, processed 30+0"
+ },
+ {
+  "id": "G-09",
+  "path": "G",
+  "name": "Provider accepted but local completion failed: marked uncertain (failed/unknown), audited, NOT retried",
+  "layer": "e2e-real-function",
+  "result": "PASS",
+  "evidence": "{\"s\":[\"failed\",\"unknown\",\"1\",\"f\",\"simulated database failure\",\"f\"],\"att\":\"uncertain\",\"trn\":\"1\",\"resendCalls\":0}"
+ },
+ {
+  "id": "G-10",
+  "path": "G",
+  "name": "Provider ACCEPTED the email but the response timed out: must not be re-sent",
+  "layer": "e2e-real-function",
+  "result": "PASS",
+  "evidence": "{\"timeoutAfterSecs\":20,\"statusAfterTimeout\":[\"failed\",\"unknown\",\"1\"],\"providerAcceptedCopies\":1,\"finalStatus\":[\"failed\",\"unknown\"],\"httpIdempotencyKeyHeader\":null,\"emailHeaderOnly\":{\"Idempotency-Key\":\"topline-outbox-7e7d943d-9ab3-469b-8073-1b95e91274c7\"}}"
+ },
+ {
+  "id": "G-11",
+  "path": "G",
+  "name": "Connection reset after the request was sent: parked uncertain, not re-sent (1 provider copy)",
+  "layer": "e2e-real-function",
+  "result": "PASS",
+  "evidence": "{\"s\":[\"failed\",\"unknown\",\"1\"],\"copies\":1}"
+ },
+ {
+  "id": "G-12",
+  "path": "G",
+  "name": "Connection failed BEFORE sending: stays queued, retried, delivered once",
+  "layer": "e2e-real-function",
+  "result": "PASS",
+  "evidence": "{\"afterFail\":[\"queued\",\"pending\",\"1\",\"t\"],\"final\":[\"sent\",\"accepted\"],\"copies\":1}"
+ },
+ {
+  "id": "G-13",
+  "path": "G",
+  "name": "SMS response timeout: parked uncertain, no second (billable) SMS",
+  "layer": "e2e-real-function",
+  "result": "PASS",
+  "evidence": "{\"s\":[\"failed\",\"unknown\",\"1\"],\"smsCopies\":1}"
+ },
+ {
+  "id": "G-14",
+  "path": "G",
+  "name": "Staff can deliberately re-queue an uncertain message; it is then delivered",
+  "layer": "e2e-real-function",
+  "result": "PASS",
+  "evidence": "{\"rpc\":200,\"copies\":1,\"final\":[\"sent\",\"accepted\"]}"
+ },
+ {
+  "id": "G-15",
+  "path": "H",
+  "name": "Anonymous caller cannot re-queue messages",
+  "layer": "e2e-postgrest",
+  "result": "PASS",
+  "evidence": "status 401"
+ },
+ {
+  "id": "A-01",
+  "path": "A",
+  "name": "Signup creates one pending customer profile from registration metadata",
+  "layer": "e2e-db",
+  "result": "PASS",
+  "evidence": "[[\"Amina Reg\",\"0711000111\",\"amina.reg@example.org\",\"Self-registered customer account; pending email verification.\"]]"
+ },
+ {
+  "id": "A-02",
+  "path": "A/F",
+  "name": "Unverified signup with marketing opt-in is NOT enrolled in marketing",
+  "layer": "e2e-db",
+  "result": "PASS",
+  "evidence": "[]"
+ },
+ {
+  "id": "A-03",
+  "path": "A",
+  "name": "Unverified user has no portal access link yet",
+  "layer": "e2e-db",
+  "result": "PASS",
+  "evidence": "0"
+ },
+ {
+  "id": "A-04",
+  "path": "A/H",
+  "name": "Unverified account cannot load customer data",
+  "layer": "e2e-postgrest",
+  "result": "PASS",
+  "evidence": "status 400 {\"code\":\"P0001\",\"details\":null,\"hint\":null,\"message\":\"Customer portal access is not available for this account\"}"
+ },
+ {
+  "id": "A-05",
+  "path": "A",
+  "name": "Email verification links the auth user to the customer record",
+  "layer": "e2e-db",
+  "result": "PASS",
+  "evidence": "1"
+ },
+ {
+  "id": "A-06",
+  "path": "A",
+  "name": "Verified customer loads their own profile via REST",
+  "layer": "e2e-postgrest",
+  "result": "PASS",
+  "evidence": "{\"orders\":[],\"customer\":{\"id\":\"3eb9fe21-ff38-4d05-93f4-a319160e5b4f\",\"city\":null,\"name\":\"Amina Reg\",\"email\":\"amina.reg@example.org\",\"notes\":\"Self-registered cus"
+ },
+ {
+  "id": "F-01",
+  "path": "F",
+  "name": "Verification of an opted-in account queues exactly one subscribe",
+  "layer": "e2e-db",
+  "result": "PASS",
+  "evidence": "[[\"subscribe\",\"queued\"]]"
+ },
+ {
+  "id": "F-02",
+  "path": "F",
+  "name": "Repeated verification updates do not queue a second subscribe",
+  "layer": "e2e-db",
+  "result": "PASS",
+  "evidence": "[[\"subscribe\",\"queued\"]]"
+ },
+ {
+  "id": "F-03",
+  "path": "F",
+  "name": "Worker subscribes the verified opt-in to the configured Brevo list",
+  "layer": "e2e-real-function",
+  "result": "PASS",
+  "evidence": "{\"email\":\"amina.reg@example.org\",\"listIds\":[7],\"updateEnabled\":true}"
+ },
+ {
+  "id": "F-04",
+  "path": "F",
+  "name": "Registration WITHOUT consent never enters marketing queue (even after verification)",
+  "layer": "e2e-db",
+  "result": "PASS",
+  "evidence": "[]"
+ },
+ {
+  "id": "F-05",
+  "path": "F",
+  "name": "Customer opt-out via portal RPC queues an unsubscribe",
+  "layer": "e2e-postgrest",
+  "result": "PASS",
+  "evidence": "{\"status\":200,\"q\":[[\"subscribe\",\"synced\"],[\"unsubscribe\",\"queued\"],[\"unsubscribe\",\"superseded\"]]}"
+ },
+ {
+  "id": "F-06",
+  "path": "F",
+  "name": "Worker unlinks the contact from the marketing list",
+  "layer": "e2e-real-function",
+  "result": "PASS",
+  "evidence": "[[\"PUT\",\"/contacts/amina.reg%40example.org\",{\"unlinkListIds\":[7]}]]"
+ },
+ {
+  "id": "F-07",
+  "path": "F",
+  "name": "Failed subscribe then opt-out: the stale subscribe is never re-sent (no resurrected consent)",
+  "layer": "e2e-real-function",
+  "result": "PASS",
+  "evidence": "{\"afterFirstFailure\":[[\"subscribe\",\"queued\"]],\"finalQueue\":[[\"subscribe\",\"superseded\"],[\"unsubscribe\",\"queued\"],[\"unsubscribe\",\"superseded\"]],\"subscribePostsAfterOptOut\":0}"
+ },
+ {
+  "id": "F-08",
+  "path": "F",
+  "name": "Spam complaint recorded in suppression list",
+  "layer": "e2e-postgrest",
+  "result": "PASS",
+  "evidence": "[[\"spam_complaint\"]]"
+ },
+ {
+  "id": "F-09",
+  "path": "F",
+  "name": "Re-opt-in after a spam complaint does not re-enrol the address",
+  "layer": "e2e-real-function",
+  "result": "PASS",
+  "evidence": "[[\"unsubscribe\",\"queued\"],[\"unsubscribe\",\"superseded\"]]"
+ },
+ {
+  "id": "F-10",
+  "path": "A",
+  "name": "Guest who later registers (same email) sees their earlier orders in the portal",
+  "layer": "e2e-postgrest",
+  "result": "PASS",
+  "evidence": "customer rows 1; portal orders 2; status 200"
+ },
+ {
+  "id": "F-11",
+  "path": "A/C",
+  "name": "Quotation requested BEFORE registering appears in the portal after verification",
+  "layer": "e2e-postgrest",
+  "result": "PASS",
+  "evidence": "portal quotations 1"
+ },
+ {
+  "id": "F-12",
+  "path": "A",
+  "name": "Returning guest (case/phone-format differences) reuses one customer record",
+  "layer": "e2e-postgrest",
+  "result": "PASS",
+  "evidence": "customer rows 1"
+ },
+ {
+  "id": "F-13",
+  "path": "A/H",
+  "name": "Ambiguous email shared by different phones is not auto-linked (no cross-person exposure)",
+  "layer": "e2e-postgrest",
+  "result": "PASS",
+  "evidence": "links 0, portal status 400"
+ },
+ {
+  "id": "F-14",
+  "path": "C",
+  "name": "Quotation submitted while signed in is attached to the customer record",
+  "layer": "e2e-postgrest",
+  "result": "PASS",
+  "evidence": "quotation.customer_id 3eb9fe21-ff38-4d05-93f4-a319160e5b4f expected 3eb9fe21-ff38-4d05-93f4-a319160e5b4f"
+ },
+ {
+  "id": "H-01",
+  "path": "H",
+  "name": "Customer A's portal contains A's order and none of B's orders/quotations",
+  "layer": "e2e-postgrest",
+  "result": "PASS",
+  "evidence": "{\"aOrders\":1,\"leaksB\":false}"
+ },
+ {
+  "id": "H-02",
+  "path": "H",
+  "name": "Direct REST read of orders returns only the caller's rows",
+  "layer": "e2e-postgrest",
+  "result": "PASS",
+  "evidence": "1"
+ },
+ {
+  "id": "H-03",
+  "path": "H",
+  "name": "Direct REST read of customers cannot see other customers",
+  "layer": "e2e-postgrest",
+  "result": "PASS",
+  "evidence": "[\"alice.authz@example.org\"]"
+ },
+ {
+  "id": "H-04b",
+  "path": "H",
+  "name": "Customer sees only their own customer-facing notifications (never staff-audience events)",
+  "layer": "e2e-postgrest",
+  "result": "PASS",
+  "evidence": "[\"both\"]"
+ },
+ {
+  "id": "H-04",
+  "path": "H",
+  "name": "Customer cannot read internal tables (outbox, staff, marketing queue, suppressions, payments)",
+  "layer": "e2e-postgrest",
+  "result": "PASS",
+  "evidence": "none readable"
+ },
+ {
+  "id": "H-05",
+  "path": "H",
+  "name": "Forged customer id: A cannot read B's communications via get_customer_communications_360",
+  "layer": "e2e-postgrest",
+  "result": "PASS",
+  "evidence": "status 400 {\"code\":\"P0001\",\"details\":null,\"hint\":null,\"message\":\"Permission denied: customers.read\"}"
+ },
+ {
+  "id": "H-06",
+  "path": "H",
+  "name": "Forged customer id: A cannot change B's notification preferences",
+  "layer": "e2e-postgrest",
+  "result": "PASS",
+  "evidence": "status 400; B marketing flag [[\"t\",\"f\"]]"
+ },
+ {
+  "id": "H-07",
+  "path": "H",
+  "name": "Forged order id: A cannot read the payment status of B's order",
+  "layer": "e2e-postgrest",
+  "result": "PASS",
+  "evidence": "status 400 {\"code\":\"P0001\",\"details\":null,\"hint\":null,\"message\":\"Payment target not found\"}"
+ },
+ {
+  "id": "H-08",
+  "path": "H",
+  "name": "Direct insert into B's preferences is denied",
+  "layer": "e2e-postgrest",
+  "result": "PASS",
+  "evidence": "status 403"
+ },
+ {
+  "id": "H-09",
+  "path": "H",
+  "name": "Staff-only RPCs reject customers and anonymous callers",
+  "layer": "e2e-postgrest",
+  "result": "PASS",
+  "evidence": "all denied"
+ },
+ {
+  "id": "H-10",
+  "path": "H",
+  "name": "Anonymous: no private reads, cannot write products, cannot open the portal",
+  "layer": "e2e-postgrest",
+  "result": "PASS",
+  "evidence": "{\"anonReads\":[],\"postStatus\":401,\"portalStatus\":401}"
+ },
+ {
+  "id": "H-11",
+  "path": "H",
+  "name": "Registration metadata cannot create staff access or grant admin rights",
+  "layer": "e2e-postgrest",
+  "result": "PASS",
+  "evidence": "{\"staffProfile\":\"0\",\"roleAssignments\":\"0\",\"staffRpcStatus\":400}"
+ },
+ {
+  "id": "H-12",
+  "path": "H",
+  "name": "Positive control: an active owner can reach the staff RPC and read orders",
+  "layer": "e2e-postgrest",
+  "result": "PASS",
+  "evidence": "rpc 200, orders visible 2"
+ },
+ {
+  "id": "WH-01",
+  "path": "G/H",
+  "name": "Webhook rejects a wrong secret (401)",
+  "layer": "e2e-real-function",
+  "result": "PASS",
+  "evidence": "401"
+ },
+ {
+  "id": "WH-02",
+  "path": "G/H",
+  "name": "Webhook rejects a missing secret (401)",
+  "layer": "e2e-real-function",
+  "result": "PASS",
+  "evidence": "401"
+ },
+ {
+  "id": "WH-03",
+  "path": "G/H",
+  "name": "Webhook rejects GET (405)",
+  "layer": "e2e-real-function",
+  "result": "PASS",
+  "evidence": "405"
+ },
+ {
+  "id": "WH-04",
+  "path": "G",
+  "name": "Webhook returns 400 for malformed JSON",
+  "layer": "e2e-real-function",
+  "result": "PASS",
+  "evidence": "400"
+ },
+ {
+  "id": "WH-05",
+  "path": "G",
+  "name": "Webhook rejects a >1 MB payload (413)",
+  "layer": "e2e-real-function",
+  "result": "PASS",
+  "evidence": "413"
+ },
+ {
+  "id": "WH-06",
+  "path": "G",
+  "name": "Worker stored the provider message id returned by Brevo",
+  "layer": "e2e-real-function",
+  "result": "PASS",
+  "evidence": "[\"<mock-44@smtp-relay.mailin.fr>\",\"accepted\"]"
+ },
+ {
+  "id": "WH-07",
+  "path": "G",
+  "name": "A delivered event correlates to the sent message and marks it delivered",
+  "layer": "e2e-real-function",
+  "result": "PASS",
+  "evidence": "{\"http\":200,\"st\":[\"sent\",\"delivered\"]}"
+ },
+ {
+  "id": "WH-08",
+  "path": "G",
+  "name": "Replaying the identical event is idempotent (no extra event row, status unchanged)",
+  "layer": "e2e-real-function",
+  "result": "PASS",
+  "evidence": "{\"before\":\"1\",\"after\":\"1\",\"st\":[\"sent\",\"delivered\"]}"
+ },
+ {
+  "id": "WH-09",
+  "path": "G",
+  "name": "A late/out-of-order \"request\" event cannot regress delivered to an earlier state",
+  "layer": "e2e-real-function",
+  "result": "PASS",
+  "evidence": "[\"delivered\"]"
+ },
+ {
+  "id": "WH-10",
+  "path": "G",
+  "name": "Event for an unknown message id is accepted without error or state change",
+  "layer": "e2e-real-function",
+  "result": "PASS",
+  "evidence": "200"
+ },
+ {
+  "id": "WH-11",
+  "path": "G",
+  "name": "Hard bounce: message flagged failed and the address is suppressed",
+  "layer": "e2e-real-function",
+  "result": "PASS",
+  "evidence": "{\"st\":[\"failed\"],\"sup\":[\"hard_bounce\"]}"
+ },
+ {
+  "id": "WH-12",
+  "path": "F",
+  "name": "Brevo \"unsubscribed\" event is recorded in the suppression list",
+  "layer": "e2e-real-function",
+  "result": "PASS",
+  "evidence": "[\"unsubscribed\"]"
+ },
+ {
+  "id": "IN-01",
+  "path": "H",
+  "name": "Inbound email rejects a wrong secret (401)",
+  "layer": "e2e-real-function",
+  "result": "PASS",
+  "evidence": "401"
+ },
+ {
+  "id": "IN-02",
+  "path": "G",
+  "name": "Inbound customer email is recorded for staff",
+  "layer": "e2e-real-function",
+  "result": "PASS",
+  "evidence": "[\"client@example.org\",\"Quote\",\"Please call me about flooring.\"]"
+ },
+ {
+  "id": "IN-03",
+  "path": "G",
+  "name": "A 3 MB inbound email is accepted but stored bounded (<= 20,000 chars)",
+  "layer": "e2e-real-function",
+  "result": "PASS",
+  "evidence": "http 200, stored length 20000"
+ },
+ {
+  "id": "IN-04",
+  "path": "G",
+  "name": "Inbound email without a body is rejected (400)",
+  "layer": "e2e-real-function",
+  "result": "PASS",
+  "evidence": "400"
+ },
+ {
+  "id": "SC-01",
+  "path": "G/H",
+  "name": "Scheduler rejects a wrong secret (401)",
+  "layer": "e2e-real-function",
+  "result": "PASS",
+  "evidence": "401"
+ },
+ {
+  "id": "SC-02",
+  "path": "G",
+  "name": "Scheduler accepts the secret as a Bearer token too",
+  "layer": "e2e-real-function",
+  "result": "PASS",
+  "evidence": "200"
+ },
+ {
+  "id": "SC-03",
+  "path": "G",
+  "name": "Scheduler rejects an unsupported job request (400)",
+  "layer": "e2e-real-function",
+  "result": "PASS",
+  "evidence": "400"
+ },
+ {
+  "id": "SC-04",
+  "path": "G",
+  "name": "One scheduler call runs all four jobs and all succeed",
+  "layer": "e2e-real-function",
+  "result": "PASS",
+  "evidence": "{\"deliver_communications\":\"succeeded\",\"expire_inventory_reservations\":\"succeeded\",\"reconcile_payment_provider_events\":\"succeeded\",\"reconcile_communications\":\"succeeded\"}"
+ },
+ {
+  "id": "SC-05",
+  "path": "G",
+  "name": "Scheduler -> worker chain delivered the queued email",
+  "layer": "e2e-real-function",
+  "result": "PASS",
+  "evidence": "[[\"sent\"]]"
+ },
+ {
+  "id": "SC-06",
+  "path": "G",
+  "name": "Every job run is recorded with its outcome",
+  "layer": "e2e-db",
+  "result": "PASS",
+  "evidence": "[[\"deliver_communications\",\"succeeded\"],[\"expire_inventory_reservations\",\"succeeded\"],[\"reconcile_communications\",\"succeeded\"],[\"reconcile_payment_provider_events\",\"succeeded\"]]"
+ },
+ {
+  "id": "SC-07",
+  "path": "G",
+  "name": "Overlapping scheduler run is skipped while the first holds the lock (no double processing)",
+  "layer": "e2e-real-function",
+  "result": "PASS",
+  "evidence": "[{\"job\":\"deliver_communications\",\"status\":\"skipped\",\"reason\":\"already_running\",\"run_id\":\"60f63422-6bbc-4977-978d-05a4b4705bc5\"}]"
+ },
+ {
+  "id": "SC-08",
+  "path": "G",
+  "name": "The first run completes and releases the lock",
+  "layer": "e2e-real-function",
+  "result": "PASS",
+  "evidence": "\"succeeded\""
+ },
+ {
+  "id": "SC-09",
+  "path": "G",
+  "name": "Crashed scheduler: expired lock is recovered, dead run marked timed_out, queued mail still delivered",
+  "layer": "e2e-real-function",
+  "result": "PASS",
+  "evidence": "{\"job\":\"succeeded\",\"deadRun\":\"timed_out\"}"
+ },
+ {
+  "id": "P-01",
+  "path": "E",
+  "name": "Recording an invoice payment queues a payment-received notice on each enabled channel",
+  "layer": "e2e-db",
+  "result": "PASS",
+  "evidence": "[\"email\",\"sms\",\"whatsapp\"]"
+ },
+ {
+  "id": "P-02",
+  "path": "E",
+  "name": "Payment-received email is delivered with a rendered message (no placeholders)",
+  "layer": "e2e-real-function",
+  "result": "PASS",
+  "evidence": "Payment received — thank you"
+ },
+ {
+  "id": "N-01",
+  "path": "C",
+  "name": "Signed-in quotation sends exactly the acknowledgement + staff alert (no extra \"quotation is new\")",
+  "layer": "e2e-db",
+  "result": "PASS",
+  "evidence": "[\"We received your Topline quotation request (RFQ-7AD0AE7\",\"New Topline quotation request (RFQ-7AD0AE77)\"]"
+ },
+ {
+  "id": "N-02",
+  "path": "C",
+  "name": "Internal pipeline states (contacted, negotiating, lost, won, converted) send nothing to the customer",
+  "layer": "e2e-db",
+  "result": "PASS",
+  "evidence": "none sent"
+ },
+ {
+  "id": "N-03",
+  "path": "C",
+  "name": "Customer-meaningful quotation states (quoted, accepted, rejected) still notify (>=1 channel)",
+  "layer": "e2e-db",
+  "result": "PASS",
+  "evidence": "{\"quoted\":2,\"accepted\":2,\"rejected\":2}"
+ },
+ {
+  "id": "N-04",
+  "path": "E",
+  "name": "Creating a DRAFT invoice sends nothing to the customer",
+  "layer": "e2e-db",
+  "result": "PASS",
+  "evidence": "0"
+ },
+ {
+  "id": "N-05",
+  "path": "E",
+  "name": "Marking the invoice SENT notifies the customer; delivered email is clean",
+  "layer": "e2e-real-function",
+  "result": "PASS",
+  "evidence": "Your Topline invoice is sent"
+ },
+ {
+  "id": "N-06",
+  "path": "E",
+  "name": "Marking the invoice PAID notifies the customer",
+  "layer": "e2e-db",
+  "result": "PASS",
+  "evidence": "Your Topline invoice is paid / Your Topline invoice is paid"
+ }
+]

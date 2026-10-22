@@ -1,0 +1,11 @@
+import { sql, rows, worker, calls, reset, scenario, record, resetDb } from './lib.mjs';
+resetDb(); await reset(); await scenario({ email: 'ok', sms: 'ok', wa: 'ok' });
+const cid = sql(`INSERT INTO public.customers(name,email,phone) VALUES ('Pay Customer','pay.customer@example.org','0700123123') RETURNING id;`).split('\n')[0];
+const inv = sql(`INSERT INTO public.invoices(customer_id, invoice_number, customer_name, customer_email, customer_phone, subtotal, total_amount, due_date) VALUES ('${cid}','INV-E2E-1','Pay Customer','pay.customer@example.org','0700123123',10000,10000,current_date+7) RETURNING id;`).split('\n')[0];
+const before = rows(`SELECT count(*) FROM public.communication_outbox`)[0][0];
+sql(`INSERT INTO public.payments(invoice_id, amount, method, reference) VALUES ('${inv}', 4000, 'mpesa', 'E2EREF1');`);
+const q = rows(`SELECT channel FROM public.communication_outbox WHERE dedupe_key LIKE '%' ORDER BY channel`).map((x) => x[0]);
+record('P-01', 'E', 'Recording an invoice payment queues a payment-received notice on each enabled channel', 'e2e-db', q.length === 3 && q.includes('email'), JSON.stringify(q));
+await worker(10);
+const em = (await calls()).find((x) => x.kind === 'email');
+record('P-02', 'E', 'Payment-received email is delivered with a rendered message (no placeholders)', 'e2e-real-function', !!em && !em.text.includes('{{') && /payment/i.test(em.subject + em.text), em ? em.subject : 'none');

@@ -51,6 +51,8 @@ async function sendEmail(item: OutboxMessage) {
       subject: item.subject ?? "Topline Flooring & Waterproofing",
       textContent: item.message,
       htmlContent: `<div style="font-family:Arial,sans-serif;line-height:1.6">${textToHtml(item.message)}</div>`,
+      // Informational email header only. Brevo does not de-duplicate on it, so duplicate protection relies on the
+      // attempt log and the ambiguous-failure handling above, not on this value.
       headers: { "Idempotency-Key": `topline-outbox-${item.id}` },
     }),
   });
@@ -220,6 +222,19 @@ function isPermanentFailure(message: string): boolean {
   return [400, 404, 410, 422].includes(status);
 }
 
+// A request that was SENT but whose outcome we never saw (timeout, connection dropped mid-flight) may already
+// have been accepted by the provider. Retrying it would deliver a second copy (and a second SMS/WhatsApp charge),
+// so these are parked as "uncertain" for a deliberate manual retry instead of being re-sent automatically.
+// Failures before the request left this machine (DNS, connection refused/failed) are safe to retry.
+function isAmbiguousSendFailure(error: unknown): boolean {
+  if (!(error instanceof Error)) return false;
+  if (error.name === "TimeoutError" || error.name === "AbortError") return true;
+  if (error instanceof TypeError && /error sending request|connection (closed|reset|error)|broken pipe|unexpected eof|incomplete message/i.test(error.message)) {
+    return !/\(Connect\)|dns error|failed to lookup|connection refused|tcp connect error/i.test(error.message);
+  }
+  return false;
+}
+
 // At-least-once safety: if an earlier attempt for this message was already ACCEPTED by the
 // provider (worker died before completing the outbox row), never send it again.
 async function findAcceptedAttempt(item: OutboxMessage): Promise<{ reference: string | null; provider: string } | null> {
@@ -285,6 +300,13 @@ async function processItem(item: OutboxMessage) {
     return { id: item.id, status: "sent", provider: result.provider };
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
+    if (!prior && isAmbiguousSendFailure(error)) {
+      const note = `Provider response not received (${message}). The message may already have been delivered; verify with the provider before re-sending.`;
+      await recordAttempt(item, requestId, "uncertain", { error: message });
+      const { error: uncertainError } = await admin.rpc("mark_communication_delivery_uncertain_worker", { p_outbox_id: item.id, p_error_message: note });
+      if (uncertainError) throw uncertainError;
+      return { id: item.id, status: "uncertain", error: note };
+    }
     await recordAttempt(item, requestId, "failed", { error: message });
     const { error: failError } = await admin.rpc("fail_communication_delivery_worker", {
       p_outbox_id: item.id,

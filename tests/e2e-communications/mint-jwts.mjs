@@ -1,0 +1,10 @@
+import crypto from 'node:crypto';
+import fs from 'node:fs';
+import { WORK, JWT_SECRET } from './config.mjs';
+const b = (o) => Buffer.from(JSON.stringify(o)).toString('base64url');
+const mint = (claims) => { const h = b({ alg: 'HS256', typ: 'JWT' }), p = b(claims); return `${h}.${p}.${crypto.createHmac('sha256', JWT_SECRET).update(`${h}.${p}`).digest('base64url')}`; };
+const exp = Math.floor(Date.now() / 1000) + 7 * 86400;
+fs.mkdirSync(WORK, { recursive: true });
+fs.writeFileSync(`${WORK}/service.jwt`, mint({ role: 'service_role', iss: 'e2e', exp }));
+fs.writeFileSync(`${WORK}/anon.jwt`, mint({ role: 'anon', iss: 'e2e', exp }));
+console.log('test JWTs written to', WORK);

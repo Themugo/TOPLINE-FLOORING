@@ -69,6 +69,27 @@ const signInInput = portalSource.match(/<Input id="portal-signin-password"[^>]*>
 expect(signInInput && !/minLength/.test(signInInput[0]), 'The sign-in password field must not set minLength (existing shorter passwords would be locked out).');
 expect(/enable_confirmations\s*=\s*true/.test(read('supabase/config.toml')), 'supabase/config.toml must keep email confirmations enabled.');
 
+
+// Part 5 (2026-10-20 end-to-end audit): consent consistency, guest-to-registered continuity, notification guard,
+// ambiguous-send protection, customer verification resend, and the reproducible end-to-end harness.
+for (const [name, needles] of [
+  ['20261020090000_marketing_consent_consistency_360.sql', ['customer_registration_form', "TG_OP = 'INSERT'", 'consent_repair_2026_10_20']],
+  ['20261020110000_guest_to_registered_continuity_360.sql', ['matched_phones', 'right(regexp_replace', 'public.get_current_customer_id()']],
+  ['20261020130000_customer_notification_status_guard_360.sql', ["'quotation.status'", "'invoice.status'", "'quoted', 'sent', 'accepted', 'rejected'"]],
+]) {
+  const file = path.join(root, 'supabase/migrations', name);
+  expect(fs.existsSync(file), `Missing migration ${name}.`);
+  const text = fs.existsSync(file) ? fs.readFileSync(file, 'utf8') : '';
+  for (const needle of needles) expect(text.includes(needle), `${name} is missing: ${needle}`);
+}
+const deliver = read('supabase/functions/deliver-communications/index.ts');
+expect(deliver.includes('isAmbiguousSendFailure') && deliver.includes('mark_communication_delivery_uncertain_worker'), 'The delivery worker must park timed-out/ambiguous sends as uncertain instead of re-sending them.');
+expect(/export async function resendCustomerVerification/.test(read('src/lib/customer-portal.ts')), 'Customers must be able to resend their verification email.');
+expect(read('src/pages/portal.tsx').includes('Resend verification email'), 'The portal must offer a resend of the verification email.');
+for (const file of ['tests/e2e-communications/README.md', 'tests/e2e-communications/setup.sh', 'tests/e2e-communications/start.sh', 'tests/e2e-communications/run-all.mjs', 'tests/e2e-communications/03-delivery-failures.mjs']) {
+  expect(fs.existsSync(path.join(root, file)), `Missing end-to-end harness file ${file}.`);
+}
+
 // Secrets and signatures are compared in constant time.
 for (const file of [
   'supabase/functions/deliver-communications/index.ts',

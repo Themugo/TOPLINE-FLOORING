@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { CheckCircle2, Clock, FileText, LogOut, Package, RefreshCw, ShieldCheck, Truck } from 'lucide-react';
 import { supabase, isSupabaseConfigured } from '@/lib/supabase';
-import { registerCustomerAccount, requestCustomerMagicLink, signInCustomer, signOutCustomer } from '@/lib/customer-portal';
+import { friendlyAuthError, isUnverifiedEmailError, registerCustomerAccount, requestCustomerMagicLink, resendCustomerVerification, signInCustomer, signOutCustomer } from '@/lib/customer-portal';
 import { getCustomerPortal360, type CustomerPortal360Data } from '@/lib/customer-portal-360';
 import { getCustomerJourney, type CustomerJourneyEvent } from '@/lib/customer-journey';
 import { useSeoMeta } from '@/hooks/use-seo';
@@ -45,8 +45,24 @@ function SignIn() {
   const [registered, setRegistered] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [unverified, setUnverified] = useState(false);
+  const [resendNote, setResendNote] = useState<string | null>(null);
+  const [resendCooldown, setResendCooldown] = useState(0);
+  useEffect(() => {
+    if (resendCooldown <= 0) return;
+    const timer = setTimeout(() => setResendCooldown((c) => c - 1), 1000);
+    return () => clearTimeout(timer);
+  }, [resendCooldown]);
+  const resend = async () => {
+    setResendNote(null);
+    try {
+      await resendCustomerVerification(email);
+      setResendNote('A new verification link is on its way. It can take a minute to arrive, so check your spam folder too.');
+      setResendCooldown(60);
+    } catch (err) { setResendNote(friendlyAuthError(err)); }
+  };
   const submit = async (e: React.FormEvent) => {
-    e.preventDefault(); setLoading(true); setError(null);
+    e.preventDefault(); setLoading(true); setError(null); setUnverified(false); setResendNote(null);
     try {
       if (mode === 'register') {
         const result = await registerCustomerAccount({ name, email, phone, company, password, marketingEmailOptIn });
@@ -57,11 +73,11 @@ function SignIn() {
         await requestCustomerMagicLink(email);
         setSent(true);
       }
-    } catch (err) { setError(err instanceof Error ? err.message : 'Unable to complete your request.'); }
+    } catch (err) { setError(friendlyAuthError(err)); setUnverified(isUnverifiedEmailError(err)); }
     finally { setLoading(false); }
   };
   if (sent || registered) return (
-    <section className="min-h-[65vh] bg-slate-50/80 py-16 md:py-20"><div className="container mx-auto max-w-md px-6"><Card className="rounded-2xl border-slate-200 shadow-sm"><CardContent className="p-8 text-center space-y-3"><CheckCircle2 className="mx-auto h-10 w-10 text-green-600" /><h2 className="font-semibold">{registered ? 'Check your email to finish registration' : 'Check your email'}</h2><p className="text-sm text-muted-foreground">{registered ? <>We sent a verification link to <strong>{email}</strong>. Verify your email, then return here to access your customer dashboard.</> : <>We sent a secure sign-in link to <strong>{email}</strong>.</>}</p><Button variant="outline" onClick={() => { setSent(false); setRegistered(false); setMode('signin'); }}>Back to sign in</Button></CardContent></Card></div></section>
+    <section className="min-h-[65vh] bg-slate-50/80 py-16 md:py-20"><div className="container mx-auto max-w-md px-6"><Card className="rounded-2xl border-slate-200 shadow-sm"><CardContent className="p-8 text-center space-y-3"><CheckCircle2 className="mx-auto h-10 w-10 text-green-600" /><h2 className="font-semibold">{registered ? 'Check your email to finish registration' : 'Check your email'}</h2><p className="text-sm text-muted-foreground">{registered ? <>We sent a verification link to <strong>{email}</strong>. Verify your email, then return here to access your customer dashboard.</> : <>We sent a secure sign-in link to <strong>{email}</strong>.</>}</p>{registered && <div className="space-y-2"><p className="text-xs text-muted-foreground">Nothing arrived? Check your spam folder or resend it. If you already have an account, go back and sign in or request a sign-in link instead.</p><Button type="button" variant="secondary" disabled={resendCooldown > 0} onClick={resend}>{resendCooldown > 0 ? `Resend available in ${resendCooldown}s` : 'Resend verification email'}</Button>{resendNote && <p role="status" className="text-xs text-muted-foreground">{resendNote}</p>}</div>}<Button variant="outline" onClick={() => { setSent(false); setRegistered(false); setMode('signin'); }}>Back to sign in</Button></CardContent></Card></div></section>
   );
   return (
     <section className="min-h-[65vh] bg-slate-50/80 py-16 md:py-20"><div className="container mx-auto max-w-md px-6"><Card className="rounded-2xl border-slate-200 shadow-sm">
@@ -79,7 +95,8 @@ function SignIn() {
           </label>
         </> : <><div><Label htmlFor="portal-email">Email address</Label><Input id="portal-email" type="email" required value={email} onChange={e => setEmail(e.target.value)} placeholder="you@company.co.ke" /></div>{signInMethod === 'password' ? <div><Label htmlFor="portal-signin-password">Password</Label><Input id="portal-signin-password" type="password" required autoComplete="current-password" value={password} onChange={e=>setPassword(e.target.value)} /></div> : null}</>}
         {mode === 'signin' && <Button type="button" variant="link" className="px-0" onClick={()=>setSignInMethod(signInMethod === 'password' ? 'link' : 'password')}>{signInMethod === 'password' ? 'Use email sign-in link instead' : 'Use password instead'}</Button>}
-        {error && <p className="text-sm text-destructive">{error}</p>}
+        {error && <p className="text-sm text-destructive" role="alert">{error}</p>}
+        {unverified && <div className="space-y-1"><Button type="button" variant="secondary" size="sm" disabled={resendCooldown > 0} onClick={resend}>{resendCooldown > 0 ? `Resend available in ${resendCooldown}s` : 'Resend verification email'}</Button>{resendNote && <p role="status" className="text-xs text-muted-foreground">{resendNote}</p>}</div>}
         <Button className="w-full" disabled={loading || !isSupabaseConfigured}>{loading ? 'Please wait…' : mode === 'register' ? 'Create account' : signInMethod === 'password' ? 'Sign in' : 'Email me a sign-in link'}</Button>
         <Button type="button" variant="ghost" className="w-full" onClick={() => { setMode(mode === 'register' ? 'signin' : 'register'); setError(null); }}>{mode === 'register' ? 'Already have an account? Sign in' : 'New customer? Create an account'}</Button>
         {!isSupabaseConfigured && <p className="text-xs text-muted-foreground">The customer portal becomes available after the production Supabase environment is configured.</p>}
