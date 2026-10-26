@@ -54,5 +54,6 @@ Stop the services with `pkill -f postgrest; pkill -f "deno run"`.
 | `07-scheduler.mjs` | Scheduler authentication, job chain, overlapping runs, crashed-run lock recovery |
 | `08-payment-notification.mjs` | Payment-received notification |
 | `09-notification-status-guard.mjs` | Customers are not sent internal pipeline states or draft invoices |
+| `10-buyer-onboarding-and-enquiry-emails.mjs` | Contact vs quotation wording, several owner mailboxes, reply-to routing, branded HTML and link safety, free text never echoed, welcome email and its guards |
 
 Each assertion prints `PASS`/`FAIL` with its evidence and is written to `results.json`.

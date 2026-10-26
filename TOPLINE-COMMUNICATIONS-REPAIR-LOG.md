@@ -85,3 +85,40 @@ their own customer-facing rows; verified). One figure in the matrix ("90/90") wa
 ## Known limitations
 GoTrue and Brevo were not run; no mailbox; no production access; no git history. The mocks encode this repository's assumptions
 about provider behaviour.
+
+---
+
+# Phase 2 (2026-10-22): buyer onboarding and communications
+
+## R-07 (P2): Contact messages labelled as quotation requests
+* **Reproduced:** mutation run of the previous intake function: a Contact-page message produced "We received your Topline quotation request (RFQ-...)".
+* **Root cause:** `queue_quotation_intake_emails` ignored the `General Contact Message` marker the Contact page already stores.
+* **Change:** `supabase/migrations/20261022090000_buyer_onboarding_and_enquiry_emails_360.sql` (contact wording, `MSG-` reference).
+* **Protection:** `10-buyer...` B-01, B-02, B-05; SQL regression block 13.
+
+## R-08 (P2): Owner Reply went to the shared inbox; one owner address only
+* **Change:** `communication_outbox.reply_to` column, worker support (`deliver-communications`), staff alerts reply to the buyer; `private.parse_notification_recipients` accepts up to five owner addresses; the volume guard now exempts every `:admin...` copy.
+* **Protection:** B-03, B-04, B-10, B-22.
+
+## R-09 (P3): Plain, unbranded emails
+* **Change:** `supabase/functions/_shared/email-template.ts` (branded responsive HTML, plain-text footer, own-domain links only), used by the worker.
+* **Protection:** `tests/smoke/email-template.test.tsx` (6), B-11..B-13.
+
+## R-10 (P2): No welcome email; thin acknowledgement
+* **Change:** `queue_customer_welcome_email` trigger on `customer_portal_access` (one per customer; only for a verification in the last day; skipped for bounced/complaining addresses); richer acknowledgement that never echoes free text.
+* **Protection:** B-07, B-08, B-15..B-21; SQL regression block 13.
+
+## R-11 (P1/P2): No customer password reset; expired links unexplained and easily consumed by scanners
+* **Change:** `src/pages/portal.tsx`, `src/lib/customer-portal.ts`, `src/lib/supabase.ts`: forgot-password flow, new-password screen, link-problem banner, scanner-proof `token_hash` confirmation; `docs/email-templates/` (four branded Auth templates).
+* **Protection:** `tests/smoke/customer-password-recovery.test.tsx` (8).
+* **Remaining:** the templates must be installed in the Supabase dashboard; reset and confirmation emails themselves were not generated here.
+
+## R-12: Success-screen copy
+* Quotation and contact success messages state a confirmation email is on its way and (quotation) invite account creation.
+
+## Test mistakes corrected in phase 2 (transparency)
+Three first-run failures in `10-buyer...` were errors in my test, not product defects: reading a multi-line email body through a
+newline-splitting helper (B-09, B-16, B-17), choosing the first of two notification events for one quotation (B-05), and
+building an "old verified account" in a way that never created the portal link (B-20). A first attempt to rerun also failed only
+because earlier test services still held the database open. A matrix cell (COM-05) briefly implied the magic-link type was tested;
+it was corrected to say it shares a code path with the tested types.

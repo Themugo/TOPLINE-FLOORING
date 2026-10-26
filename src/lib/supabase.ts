@@ -1,3 +1,5 @@
+// Must be first: captures the auth redirect parameters before the client below can read and remove them.
+import '@/lib/auth-url';
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 
 const TOPLINE_SUPABASE_URL = 'https://zmbsskvnzjdaxuxlauyx.supabase.co';

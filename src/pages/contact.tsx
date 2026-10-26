@@ -42,7 +42,7 @@ export default function Contact() {
         service: clean.subject || "General Contact Message",
         message: clean.message,
       });
-      toast({ title: "Your message has been received", description: "Thank you for contacting TOPLINE. Our team will review your enquiry." });
+      toast({ title: "Your message has been received", description: `Thank you for contacting TOPLINE. We have emailed a confirmation to ${clean.email}; check your spam folder if it does not arrive. Our team will reply to you there.` });
       setForm({ name: "", email: "", phone: "", subject: "", message: "" });
     } catch (error) {
       toast({

@@ -1,6 +1,7 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { constantTimeEqual } from "../_shared/security.ts";
+import { renderTransactionalEmail } from "../_shared/email-template.ts";
 
 type JsonValue = null | boolean | number | string | JsonValue[] | { [key:string]: JsonValue };
 type JsonRecord = { [key:string]: JsonValue };
@@ -10,6 +11,7 @@ type OutboxMessage = {
   recipient: string;
   subject: string | null;
   message: string;
+  reply_to?: string | null;
   attempt_count: number;
 };
 
@@ -19,6 +21,7 @@ const brevoApiKey = Deno.env.get("BREVO_API_KEY");
 const brevoSenderEmail = Deno.env.get("BREVO_SENDER_EMAIL");
 const brevoSenderName = Deno.env.get("BREVO_SENDER_NAME") ?? "Topline Flooring & Waterproofing";
 const brevoReplyToEmail = Deno.env.get("BREVO_REPLY_TO_EMAIL");
+const siteUrl = (Deno.env.get("TOPLINE_SITE_URL") ?? "https://toplineflooringandwaterproofing.co.ke").replace(/\/+$/, "");
 const brevoMarketingListId = Number(Deno.env.get("BREVO_MARKETING_LIST_ID") ?? "");
 const whatsappProvider = Deno.env.get("WHATSAPP_PROVIDER") ?? "meta";
 const whatsappAccessToken = Deno.env.get("WHATSAPP_ACCESS_TOKEN");
@@ -34,12 +37,12 @@ const PROVIDER_TIMEOUT_MS = 20_000;
 if (!supabaseUrl || !serviceRoleKey) throw new Error("Missing Supabase service configuration");
 const admin = createClient(supabaseUrl, serviceRoleKey, { auth: { persistSession: false, autoRefreshToken: false } });
 
-function textToHtml(text: string) {
-  return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/\n/g, "<br />");
-}
-
 async function sendEmail(item: OutboxMessage) {
   if (!brevoApiKey || !brevoSenderEmail) throw new Error("Email provider is not configured");
+  const subject = item.subject ?? "Topline Flooring & Waterproofing";
+  const rendered = renderTransactionalEmail({ subject, message: item.message, brand: { name: brevoSenderName, siteUrl, supportEmail: brevoReplyToEmail } });
+  // A message may carry its own reply-to (for example staff alerts reply straight to the buyer); otherwise the default.
+  const replyTo = item.reply_to || brevoReplyToEmail;
   const response = await fetch("https://api.brevo.com/v3/smtp/email", {
     method: "POST",
     signal: AbortSignal.timeout(PROVIDER_TIMEOUT_MS),
@@ -47,10 +50,10 @@ async function sendEmail(item: OutboxMessage) {
     body: JSON.stringify({
       sender: { email: brevoSenderEmail, name: brevoSenderName },
       to: [{ email: item.recipient }],
-      ...(brevoReplyToEmail ? { replyTo: { email: brevoReplyToEmail } } : {}),
-      subject: item.subject ?? "Topline Flooring & Waterproofing",
-      textContent: item.message,
-      htmlContent: `<div style="font-family:Arial,sans-serif;line-height:1.6">${textToHtml(item.message)}</div>`,
+      ...(replyTo ? { replyTo: { email: replyTo } } : {}),
+      subject: rendered.subject,
+      textContent: rendered.text,
+      htmlContent: rendered.html,
       // Informational email header only. Brevo does not de-duplicate on it, so duplicate protection relies on the
       // attempt log and the ambiguous-failure handling above, not on this value.
       headers: { "Idempotency-Key": `topline-outbox-${item.id}` },

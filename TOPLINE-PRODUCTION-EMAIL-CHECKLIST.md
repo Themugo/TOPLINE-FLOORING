@@ -7,9 +7,9 @@ provider message ids, redacted headers). **Never paste a key, password or token 
 ## 0. Deploy order (do not skip)
 
 1. Back up: take a Supabase database backup or confirm point-in-time recovery is on.
-2. Compare history: `supabase migration list` against `supabase/MIGRATION_MANIFEST.md` (126 files). Investigate any drift first.
+2. Compare history: `supabase migration list` against `supabase/MIGRATION_MANIFEST.md` (127 files). Investigate any drift first.
 3. Run in the SQL editor and keep the result: `select grantee, privilege_type from information_schema.role_table_grants where table_schema='public' and table_name='public_projects' and grantee in ('anon','authenticated');` Expect only `SELECT`. If anything else appears, apply the REVOKE from `docs/AUDIT-2026-10-16-PUBLIC-SURFACE-AND-COMMUNICATIONS.md` before anything else.
-4. `supabase db push` (applies new migrations in order). The last three of this audit are `20261020090000`, `20261020110000`, `20261020130000`.
+4. `supabase db push` (applies new migrations in order). The last four of this audit are `20261020090000`, `20261020110000`, `20261020130000` and `20261022090000` (buyer onboarding and enquiry emails; adds the reply-to column, owner recipients, welcome email).
 5. **Before the worker next runs**, inspect the consent repair: `select email, action, status from brevo_marketing_sync_queue where consent_source = 'consent_repair_2026_10_20';` These are unsubscribe requests for customers who had opted out. Confirm they are expected.
 6. Deploy Edge Functions: `deliver-communications`, `communication-provider-webhook`, `operations-scheduler`, `expire-reservations`, `payment-initiate`, `payment-callback`, `email-inbound` (and `sms-inbound`, `whatsapp-webhook`, `sms-delivery-report` if used).
 7. Deploy the web app (Vercel).
@@ -29,7 +29,8 @@ The repository contains no timer. `operations-scheduler` must be called on a sch
 - [ ] Secure email change / double-confirm ON (matches `supabase/config.toml`).
 - [ ] **URL Configuration:** Site URL `https://toplineflooringandwaterproofing.co.ke`; Redirect URLs include `https://toplineflooringandwaterproofing.co.ke/portal` and `https://toplineflooringandwaterproofing.co.ke/admin/settings` (add staging origins deliberately; the codified list in `config.toml` replaces the dashboard list if you ever run `supabase config push`).
 - [ ] **SMTP Settings:** custom SMTP enabled (Supabase's built-in sender is heavily rate-limited and not for production). Use the Brevo SMTP relay with a dedicated SMTP key and a sender on your authenticated domain.
-- [ ] **Email Templates:** Confirm signup, Magic link, Reset password and Change email all use `{{ .ConfirmationURL }}` and show the TOPLINE name; subject lines make sense.
+- [ ] **Email Templates:** paste the four branded templates from `docs/email-templates/` (confirm signup, magic link, reset password, change email) and set the subjects listed in that folder's README. They link to `/portal?token_hash=...` so email security scanners cannot use up the one-time link. Until installed, the default links still work and the portal explains an expired link.
+- [ ] Customer password reset exists in the portal ("Forgot your password?"); test it with a controlled mailbox (section 5, test 6b).
 - [ ] **Rate limits:** note the current per-hour email limit; it must exceed your expected registrations.
 
 ## 3. Brevo
@@ -48,7 +49,8 @@ The repository contains no timer. `operations-scheduler` must be called on a sch
 `TOPLINE_WORKER_SECRET`, `COMMUNICATION_WEBHOOK_SECRET`, `EMAIL_INBOUND_SECRET`, `TOPLINE_WEB_ORIGIN` (extra allowed browser origins, comma separated),
 `AT_USERNAME`, `AT_API_KEY`, `AT_SENDER_ID` (SMS), `WHATSAPP_ACCESS_TOKEN`, `WHATSAPP_PHONE_NUMBER_ID` (WhatsApp), payment provider secrets (M-Pesa and card).
 - [ ] Each secret exists; none appears in source, logs or screenshots.
-- [ ] Staff alert address: in Admin Site Control, `communications.email` has `quotation_admin_email` set to a monitored mailbox.
+- [ ] Staff alert addresses: in Admin Site Control, `communications.email` has `quotation_admin_email` set to every owner mailbox, separated by commas (up to five). Each address receives its own copy and **Reply answers the buyer directly**.
+- [ ] Optional secret `TOPLINE_SITE_URL` (defaults to the production domain) if the site address ever changes; the welcome and acknowledgement emails use the same address.
 - [ ] Set a provider-side daily spending cap for SMS and WhatsApp (the database also limits automated sends).
 
 ## 5. Controlled inbox acceptance tests
@@ -63,7 +65,9 @@ Use a mailbox you own and a dedicated test identity. Do not use a real customer.
 | 4 | Reuse the same link | Safe, understandable result (no error page leaking details) |
 | 5 | Sign out, use "Email me a sign-in link" | Link arrives and signs in |
 | 6 | Administrator "forgot password" | Reset email arrives; link lands on `/admin/settings`; new password works |
-| 7 | Submit a quotation and a contact message on the live site | Customer acknowledgement arrives with RFQ reference, correct line breaks, no stray characters; staff alert arrives at the configured mailbox |
+| 6b | "Forgot your password?" on the customer sign-in | Reset email arrives; the button opens the portal; choosing a new password signs you in; the old password no longer works |
+| 7 | Submit a quotation and a contact message on the live site | Quotation: buyer gets "We received your quotation request (RFQ-...)" in branded layout; Contact: buyer gets "We received your message (MSG-...)". Every owner mailbox gets its alert, **Reply addresses the buyer**, and the Admin link works |
+| 7b | Register a new test account after verifying | A welcome email arrives after the confirmation email, exactly once; its portal link is clickable |
 | 8 | Place a test order (small amount, test product) | Order confirmation by email (and SMS/WhatsApp if enabled) shows correct name and details |
 | 9 | Turn marketing OFF in the portal | Within a few minutes the contact is removed from the Brevo list; no marketing arrives |
 | 10 | Send a message to a deliberately invalid address you control the domain of | Provider reports a bounce; the address appears in `communication_suppressions`; later messages to it are cancelled |

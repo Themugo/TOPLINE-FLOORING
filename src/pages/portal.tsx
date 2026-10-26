@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { CheckCircle2, Clock, FileText, LogOut, Package, RefreshCw, ShieldCheck, Truck } from 'lucide-react';
 import { supabase, isSupabaseConfigured } from '@/lib/supabase';
-import { friendlyAuthError, isUnverifiedEmailError, registerCustomerAccount, requestCustomerMagicLink, resendCustomerVerification, signInCustomer, signOutCustomer } from '@/lib/customer-portal';
+import { confirmEmailLink, friendlyAuthError, isRecoveryLink, isUnverifiedEmailError, readAuthLinkProblem, readEmailLinkToken, type EmailLinkType, registerCustomerAccount, requestCustomerMagicLink, requestCustomerPasswordReset, resendCustomerVerification, signInCustomer, signOutCustomer, updateCustomerPassword } from '@/lib/customer-portal';
 import { getCustomerPortal360, type CustomerPortal360Data } from '@/lib/customer-portal-360';
 import { getCustomerJourney, type CustomerJourneyEvent } from '@/lib/customer-journey';
 import { useSeoMeta } from '@/hooks/use-seo';
@@ -48,6 +48,12 @@ function SignIn() {
   const [unverified, setUnverified] = useState(false);
   const [resendNote, setResendNote] = useState<string | null>(null);
   const [resendCooldown, setResendCooldown] = useState(0);
+  const [forgot, setForgot] = useState(false);
+  const [resetSent, setResetSent] = useState(false);
+  const [linkProblem] = useState<string | null>(() => readAuthLinkProblem());
+  useEffect(() => {
+    if (linkProblem) window.history.replaceState(null, '', window.location.pathname);
+  }, [linkProblem]);
   useEffect(() => {
     if (resendCooldown <= 0) return;
     const timer = setTimeout(() => setResendCooldown((c) => c - 1), 1000);
@@ -60,6 +66,14 @@ function SignIn() {
       setResendNote('A new verification link is on its way. It can take a minute to arrive, so check your spam folder too.');
       setResendCooldown(60);
     } catch (err) { setResendNote(friendlyAuthError(err)); }
+  };
+  const submitReset = async (e: React.FormEvent) => {
+    e.preventDefault(); setLoading(true); setError(null);
+    try {
+      await requestCustomerPasswordReset(email);
+      setResetSent(true);
+    } catch (err) { setError(friendlyAuthError(err)); }
+    finally { setLoading(false); }
   };
   const submit = async (e: React.FormEvent) => {
     e.preventDefault(); setLoading(true); setError(null); setUnverified(false); setResendNote(null);
@@ -76,13 +90,19 @@ function SignIn() {
     } catch (err) { setError(friendlyAuthError(err)); setUnverified(isUnverifiedEmailError(err)); }
     finally { setLoading(false); }
   };
+  if (resetSent) return (
+    <section className="min-h-[65vh] bg-slate-50/80 py-16 md:py-20"><div className="container mx-auto max-w-md px-6"><Card className="rounded-2xl border-slate-200 shadow-sm"><CardContent className="p-8 text-center space-y-3"><CheckCircle2 className="mx-auto h-10 w-10 text-green-600" /><h2 className="font-semibold">Check your email</h2><p className="text-sm text-muted-foreground">If an account exists for <strong>{email}</strong>, we have sent a link to choose a new password. It can take a minute to arrive, so check your spam folder too.</p><Button variant="outline" onClick={() => { setResetSent(false); setForgot(false); }}>Back to sign in</Button></CardContent></Card></div></section>
+  );
+  if (forgot) return (
+    <section className="min-h-[65vh] bg-slate-50/80 py-16 md:py-20"><div className="container mx-auto max-w-md px-6"><Card className="rounded-2xl border-slate-200 shadow-sm"><CardHeader className="text-center"><ShieldCheck className="mx-auto mb-3 h-8 w-8 text-primary" /><CardTitle>Reset your password</CardTitle><p className="text-sm text-muted-foreground">Enter the email address you registered with and we will send you a link to choose a new password.</p></CardHeader><CardContent><form onSubmit={submitReset} className="space-y-4"><div><Label htmlFor="portal-reset-email">Email address</Label><Input id="portal-reset-email" type="email" required autoComplete="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="you@company.co.ke" /></div>{error && <p className="text-sm text-destructive" role="alert">{error}</p>}<Button className="w-full" disabled={loading || !isSupabaseConfigured}>{loading ? 'Please wait…' : 'Email me a reset link'}</Button><Button type="button" variant="ghost" className="w-full" onClick={() => { setForgot(false); setError(null); }}>Back to sign in</Button></form></CardContent></Card></div></section>
+  );
   if (sent || registered) return (
-    <section className="min-h-[65vh] bg-slate-50/80 py-16 md:py-20"><div className="container mx-auto max-w-md px-6"><Card className="rounded-2xl border-slate-200 shadow-sm"><CardContent className="p-8 text-center space-y-3"><CheckCircle2 className="mx-auto h-10 w-10 text-green-600" /><h2 className="font-semibold">{registered ? 'Check your email to finish registration' : 'Check your email'}</h2><p className="text-sm text-muted-foreground">{registered ? <>We sent a verification link to <strong>{email}</strong>. Verify your email, then return here to access your customer dashboard.</> : <>We sent a secure sign-in link to <strong>{email}</strong>.</>}</p>{registered && <div className="space-y-2"><p className="text-xs text-muted-foreground">Nothing arrived? Check your spam folder or resend it. If you already have an account, go back and sign in or request a sign-in link instead.</p><Button type="button" variant="secondary" disabled={resendCooldown > 0} onClick={resend}>{resendCooldown > 0 ? `Resend available in ${resendCooldown}s` : 'Resend verification email'}</Button>{resendNote && <p role="status" className="text-xs text-muted-foreground">{resendNote}</p>}</div>}<Button variant="outline" onClick={() => { setSent(false); setRegistered(false); setMode('signin'); }}>Back to sign in</Button></CardContent></Card></div></section>
+    <section className="min-h-[65vh] bg-slate-50/80 py-16 md:py-20"><div className="container mx-auto max-w-md px-6"><Card className="rounded-2xl border-slate-200 shadow-sm"><CardContent className="p-8 text-center space-y-3"><CheckCircle2 className="mx-auto h-10 w-10 text-green-600" /><h2 className="font-semibold">{registered ? 'Check your email to finish registration' : 'Check your email'}</h2><p className="text-sm text-muted-foreground">{registered ? <>We sent a verification link to <strong>{email}</strong>. Open the link in that email to verify your address, then return here to access your customer dashboard. The link can be used once; if it says it has expired (some work email filters open links first), request a new one below.</> : <>We sent a secure sign-in link to <strong>{email}</strong>.</>}</p>{registered && <div className="space-y-2"><p className="text-xs text-muted-foreground">Nothing arrived? Check your spam folder or resend it. If you already have an account, go back and sign in or request a sign-in link instead.</p><Button type="button" variant="secondary" disabled={resendCooldown > 0} onClick={resend}>{resendCooldown > 0 ? `Resend available in ${resendCooldown}s` : 'Resend verification email'}</Button>{resendNote && <p role="status" className="text-xs text-muted-foreground">{resendNote}</p>}</div>}<Button variant="outline" onClick={() => { setSent(false); setRegistered(false); setMode('signin'); }}>Back to sign in</Button></CardContent></Card></div></section>
   );
   return (
     <section className="min-h-[65vh] bg-slate-50/80 py-16 md:py-20"><div className="container mx-auto max-w-md px-6"><Card className="rounded-2xl border-slate-200 shadow-sm">
       <CardHeader className="text-center"><ShieldCheck className="mx-auto mb-3 h-8 w-8 text-primary" /><CardTitle>{mode === 'register' ? 'Create your customer account' : 'Customer Portal'}</CardTitle><p className="text-sm text-muted-foreground">{mode === 'register' ? 'Create a secure account to track quotations, orders, projects and invoices.' : 'Access your quotations and orders securely.'}</p></CardHeader>
-      <CardContent><form onSubmit={submit} className="space-y-4">
+      <CardContent>{linkProblem && <p role="alert" className="mb-4 rounded-md border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900">{linkProblem}</p>}<form onSubmit={submit} className="space-y-4">
         {mode === 'register' ? <>
           <div><Label htmlFor="portal-name">Full name</Label><Input id="portal-name" required value={name} onChange={e=>setName(e.target.value)} /></div>
           <div><Label htmlFor="portal-phone">Phone number</Label><Input id="portal-phone" required value={phone} onChange={e=>setPhone(e.target.value)} /></div>
@@ -94,6 +114,7 @@ function SignIn() {
             <span>Yes, send me occasional Topline offers, project inspiration and marketing updates by email. I can unsubscribe at any time. This is optional and is separate from account, quotation and order emails.</span>
           </label>
         </> : <><div><Label htmlFor="portal-email">Email address</Label><Input id="portal-email" type="email" required value={email} onChange={e => setEmail(e.target.value)} placeholder="you@company.co.ke" /></div>{signInMethod === 'password' ? <div><Label htmlFor="portal-signin-password">Password</Label><Input id="portal-signin-password" type="password" required autoComplete="current-password" value={password} onChange={e=>setPassword(e.target.value)} /></div> : null}</>}
+        {mode === 'signin' && signInMethod === 'password' && <div><Button type="button" variant="link" className="h-auto px-0 py-0 text-sm" onClick={() => { setForgot(true); setError(null); }}>Forgot your password?</Button></div>}
         {mode === 'signin' && <Button type="button" variant="link" className="px-0" onClick={()=>setSignInMethod(signInMethod === 'password' ? 'link' : 'password')}>{signInMethod === 'password' ? 'Use email sign-in link instead' : 'Use password instead'}</Button>}
         {error && <p className="text-sm text-destructive" role="alert">{error}</p>}
         {unverified && <div className="space-y-1"><Button type="button" variant="secondary" size="sm" disabled={resendCooldown > 0} onClick={resend}>{resendCooldown > 0 ? `Resend available in ${resendCooldown}s` : 'Resend verification email'}</Button>{resendNote && <p role="status" className="text-xs text-muted-foreground">{resendNote}</p>}</div>}
@@ -104,12 +125,70 @@ function SignIn() {
   );
 }
 
+function ConfirmEmailLink({ link, onConfirmed }: { link: { tokenHash: string; type: EmailLinkType }; onConfirmed: () => void }) {
+  const [working, setWorking] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const copy = {
+    signup: { title: 'Confirm your email address', body: 'Press the button to confirm your email and open your TOPLINE customer account.', action: 'Confirm my email' },
+    recovery: { title: 'Reset your password', body: 'Press the button to continue and choose a new password.', action: 'Continue' },
+    magiclink: { title: 'Sign in to your account', body: 'Press the button to sign in to your TOPLINE customer account.', action: 'Sign me in' },
+    email_change: { title: 'Confirm your new email address', body: 'Press the button to confirm the change to your email address.', action: 'Confirm change' },
+  }[link.type];
+  const confirm = async () => {
+    setWorking(true); setError(null);
+    try { await confirmEmailLink(link.tokenHash, link.type); onConfirmed(); }
+    catch (err) { setError(friendlyAuthError(err)); }
+    finally { setWorking(false); }
+  };
+  return (
+    <section className="min-h-[65vh] bg-slate-50/80 py-16 md:py-20"><div className="container mx-auto max-w-md px-6"><Card className="rounded-2xl border-slate-200 shadow-sm">
+      <CardHeader className="text-center"><ShieldCheck className="mx-auto mb-3 h-8 w-8 text-primary" /><CardTitle>{copy.title}</CardTitle><p className="text-sm text-muted-foreground">{copy.body}</p></CardHeader>
+      <CardContent className="space-y-3">
+        {error && <p className="text-sm text-destructive" role="alert">{error} If the link has expired, go back to sign in and request a new one.</p>}
+        <Button className="w-full" disabled={working} onClick={confirm}>{working ? 'Please wait…' : copy.action}</Button>
+        {error && <Button variant="outline" className="w-full" onClick={() => { window.history.replaceState(null, '', window.location.pathname); onConfirmed(); }}>Back to sign in</Button>}
+      </CardContent>
+    </Card></div></section>
+  );
+}
+
+function SetNewPassword({ onDone }: { onDone: () => void }) {
+  const [password, setPassword] = useState('');
+  const [confirm, setConfirm] = useState('');
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [done, setDone] = useState(false);
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault(); setError(null);
+    if (password.length < 8) { setError('Use at least 8 characters.'); return; }
+    if (password !== confirm) { setError('The two passwords do not match.'); return; }
+    setSaving(true);
+    try { await updateCustomerPassword(password); setDone(true); }
+    catch (err) { setError(friendlyAuthError(err)); }
+    finally { setSaving(false); }
+  };
+  return (
+    <section className="min-h-[65vh] bg-slate-50/80 py-16 md:py-20"><div className="container mx-auto max-w-md px-6"><Card className="rounded-2xl border-slate-200 shadow-sm">
+      {done ? <CardContent className="p-8 text-center space-y-3"><CheckCircle2 className="mx-auto h-10 w-10 text-green-600" /><h2 className="font-semibold">Password updated</h2><p className="text-sm text-muted-foreground">Your new password is saved. You are signed in.</p><Button onClick={onDone}>Continue to my account</Button></CardContent> : <>
+        <CardHeader className="text-center"><ShieldCheck className="mx-auto mb-3 h-8 w-8 text-primary" /><CardTitle>Choose a new password</CardTitle><p className="text-sm text-muted-foreground">Enter a new password for your TOPLINE customer account.</p></CardHeader>
+        <CardContent><form onSubmit={submit} className="space-y-4">
+          <div><Label htmlFor="portal-new-password">New password</Label><Input id="portal-new-password" type="password" required minLength={8} autoComplete="new-password" value={password} onChange={e => setPassword(e.target.value)} /><p className="mt-1 text-xs text-muted-foreground">At least 8 characters.</p></div>
+          <div><Label htmlFor="portal-confirm-password">Confirm new password</Label><Input id="portal-confirm-password" type="password" required autoComplete="new-password" value={confirm} onChange={e => setConfirm(e.target.value)} /></div>
+          {error && <p className="text-sm text-destructive" role="alert">{error}</p>}
+          <Button className="w-full" disabled={saving}>{saving ? 'Saving…' : 'Save new password'}</Button>
+        </form></CardContent></>}
+    </Card></div></section>
+  );
+}
+
 export default function Portal() {
   useSeoMeta('customer-portal', null, { noIndex: true });
   const { settings } = useSiteSettings();
   const [data, setData] = useState<CustomerPortal360Data | null>(null);
   const [loading, setLoading] = useState(true);
   const [signedIn, setSignedIn] = useState(false);
+  const [recovering, setRecovering] = useState(() => isRecoveryLink());
+  const [emailLink, setEmailLink] = useState<{ tokenHash: string; type: EmailLinkType } | null>(() => readEmailLinkToken());
   const [authenticatedError, setAuthenticatedError] = useState(false);
   const [selectedRecord, setSelectedRecord] = useState<PortalRecord | null>(null);
   const [invoicePaymentMethod, setInvoicePaymentMethod] = useState<'mpesa'|'card'|'bank_transfer'|null>(null);
@@ -232,12 +311,24 @@ export default function Portal() {
   useEffect(() => {
     if (!isSupabaseConfigured) { setLoading(false); return; }
     void loadDashboard();
-    const { data: listener } = supabase.auth.onAuthStateChange(() => { void loadDashboard(); });
+    const { data: listener } = supabase.auth.onAuthStateChange((event) => { if (event === 'PASSWORD_RECOVERY') setRecovering(true); void loadDashboard(); });
     return () => listener.subscription.unsubscribe();
   }, [loadDashboard]);
 
+  if (emailLink) return (
+    <CustomerLayout>
+      <ConfirmEmailLink link={emailLink} onConfirmed={() => {
+        window.history.replaceState(null, '', window.location.pathname);
+        if (emailLink.type === 'recovery') setRecovering(true);
+        setEmailLink(null);
+        void loadDashboard();
+      }} />
+    </CustomerLayout>
+  );
+
   if (loading) return <CustomerLayout><div className="min-h-[55vh] bg-slate-50/80 flex items-center justify-center text-sm text-muted-foreground" role="status" aria-live="polite">Loading your secure customer portal…</div></CustomerLayout>;
   if (!signedIn) return <CustomerLayout><SignIn /></CustomerLayout>;
+  if (recovering) return <CustomerLayout><SetNewPassword onDone={() => { setRecovering(false); window.history.replaceState(null, '', window.location.pathname); }} /></CustomerLayout>;
   if (authenticatedError || !data) return <CustomerLayout><section className="min-h-[65vh] bg-slate-50/80 py-16 md:py-20"><div className="container mx-auto max-w-md px-6"><Card className="rounded-2xl border-slate-200 shadow-sm"><CardContent className="p-8 text-center space-y-4"><ShieldCheck className="mx-auto h-10 w-10 text-primary" /><h2 className="text-xl font-semibold">We couldn't load your dashboard</h2><p className="text-sm text-muted-foreground">Your account is signed in, but your customer information is temporarily unavailable.</p>{error && <p className="text-sm text-destructive">{error}</p>}<div className="flex justify-center gap-3"><Button onClick={()=>void loadDashboard()}><RefreshCw className="h-4 w-4 mr-2"/>Try again</Button><Button variant="outline" onClick={()=>void signOutCustomer()}>Sign out</Button></div></CardContent></Card></div></section></CustomerLayout>;
 
   return <CustomerLayout>

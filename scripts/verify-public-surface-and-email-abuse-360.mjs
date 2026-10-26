@@ -90,6 +90,28 @@ for (const file of ['tests/e2e-communications/README.md', 'tests/e2e-communicati
   expect(fs.existsSync(path.join(root, file)), `Missing end-to-end harness file ${file}.`);
 }
 
+
+// Part 6 (2026-10-22 buyer onboarding and communications): enquiry wording, reply-to, owner recipients, welcome, template,
+// password recovery and scanner-proof email links.
+{
+  const name = '20261022090000_buyer_onboarding_and_enquiry_emails_360.sql';
+  const file = path.join(root, 'supabase/migrations', name);
+  expect(fs.existsSync(file), `Missing migration ${name}.`);
+  const text = fs.existsSync(file) ? fs.readFileSync(file, 'utf8') : '';
+  for (const needle of ['ADD COLUMN IF NOT EXISTS reply_to', 'parse_notification_recipients', 'general contact message', 'trg_customer_welcome_email', ":admin%'"]) {
+    expect(text.includes(needle), `${name} is missing: ${needle}`);
+  }
+}
+expect(fs.existsSync(path.join(root, 'supabase/functions/_shared/email-template.ts')), 'The branded email template module is missing.');
+expect(read('supabase/functions/deliver-communications/index.ts').includes('renderTransactionalEmail') && read('supabase/functions/deliver-communications/index.ts').includes('item.reply_to'), 'The delivery worker must use the branded template and honour a per-message reply-to.');
+const portalSrc = read('src/pages/portal.tsx');
+expect(portalSrc.includes('Forgot your password?') && portalSrc.includes('SetNewPassword') && portalSrc.includes('ConfirmEmailLink'), 'The portal must offer password reset, a new-password screen and scanner-proof link confirmation.');
+expect(fs.existsSync(path.join(root, 'src/lib/auth-url.ts')) && /^import '@\/lib\/auth-url';/m.test(read('src/lib/supabase.ts')), 'The initial auth URL hash must be captured by src/lib/auth-url.ts, imported first by the Supabase client.');
+for (const f of ['confirm-signup', 'magic-link', 'reset-password', 'change-email']) {
+  expect(fs.existsSync(path.join(root, `docs/email-templates/${f}.html`)) && read(`docs/email-templates/${f}.html`).includes('{{ .TokenHash }}'), `docs/email-templates/${f}.html must exist and use the token hash.`);
+}
+expect(fs.existsSync(path.join(root, 'tests/e2e-communications/10-buyer-onboarding-and-enquiry-emails.mjs')), 'The buyer onboarding end-to-end test is missing.');
+
 // Secrets and signatures are compared in constant time.
 for (const file of [
   'supabase/functions/deliver-communications/index.ts',

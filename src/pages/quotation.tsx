@@ -173,6 +173,11 @@ export default function Quotation() {
                 </ul>
               </div>
 
+              <p className="text-xs text-gray-500 leading-relaxed" data-testid="quotation-confirmation-note">
+                A confirmation email with your reference is on its way to <strong>{form.email}</strong>; check your spam folder if it does not arrive. You can reply to it to add details.{' '}
+                <Link href="/portal" className="font-semibold text-primary-600 underline">Create a free account with this email</Link> to follow this request online.
+              </p>
+
               <div className="pt-2 flex flex-col sm:flex-row gap-3">
                 <button
                   onClick={() => {

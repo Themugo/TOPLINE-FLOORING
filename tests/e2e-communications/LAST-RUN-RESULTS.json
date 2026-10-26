@@ -37,7 +37,7 @@
   "name": "Anonymous quotation submit succeeds via REST",
   "layer": "e2e-postgrest",
   "result": "PASS",
-  "evidence": "{\"success\":true,\"lead_id\":\"2ff9313d-9174-4866-832f-bdca8f00f705\",\"quotation_id\":\"8716fa05-d428-48fe-8778-7951dd1119bf\"}"
+  "evidence": "{\"success\":true,\"lead_id\":\"cba6d49f-6e63-4b70-9910-4c6292679eaf\",\"quotation_id\":\"cd3172dc-d014-424e-8ceb-cd8aeb62f844\"}"
  },
  {
   "id": "C-02",
@@ -61,7 +61,7 @@
   "name": "Worker processes both emails",
   "layer": "e2e-real-function",
   "result": "PASS",
-  "evidence": "[{\"id\":\"2d22f00d-06fb-4e1c-b5c1-e869f6296cc8\",\"status\":\"sent\",\"provider\":\"brevo\"},{\"id\":\"82242e96-d41a-4ab4-8f64-c5c0610e13b0\",\"status\":\"sent\",\"provider\":\"brevo\"}]"
+  "evidence": "[{\"id\":\"b6752581-93b8-45c8-88ec-e877f8193512\",\"status\":\"sent\",\"provider\":\"brevo\"},{\"id\":\"a73c4ffe-0e25-4062-bd2a-5aae2908c658\",\"status\":\"sent\",\"provider\":\"brevo\"}]"
  },
  {
   "id": "C-05",
@@ -69,7 +69,7 @@
   "name": "Provider received customer ack with real line breaks and RFQ reference",
   "layer": "e2e-mocked-provider",
   "result": "PASS",
-  "evidence": "We received your Topline quotation request (RFQ-8716FA05)"
+  "evidence": "We received your quotation request (RFQ-CD3172DC)"
  },
  {
   "id": "C-06",
@@ -77,7 +77,7 @@
   "name": "Staff alert HTML-escapes user-supplied markup",
   "layer": "e2e-mocked-provider",
   "result": "PASS",
-  "evidence": "<div style=\"font-family:Arial,sans-serif;line-height:1.6\">A new website quotation request was received.<br /><br />Reference: RFQ-8716FA05<br />Name: Amina Wanj"
+  "evidence": "<!doctype html>\n<html lang=\"en\"><head><meta charset=\"utf-8\" /><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" /><meta name=\"color-scheme\" co"
  },
  {
   "id": "C-07",
@@ -117,7 +117,7 @@
   "name": "Double-submit returns same record (no duplicate business record)",
   "layer": "e2e-postgrest",
   "result": "PASS",
-  "evidence": "{\"success\":true,\"lead_id\":\"2ff9313d-9174-4866-832f-bdca8f00f705\",\"quotation_id\":\"8716fa05-d428-48fe-8778-7951dd1119bf\",\"duplicate\":true}"
+  "evidence": "{\"success\":true,\"lead_id\":\"cba6d49f-6e63-4b70-9910-4c6292679eaf\",\"quotation_id\":\"cd3172dc-d014-424e-8ceb-cd8aeb62f844\",\"duplicate\":true}"
  },
  {
   "id": "C-12",
@@ -149,7 +149,7 @@
   "name": "Anonymous guest order created via REST (server-priced)",
   "layer": "e2e-postgrest",
   "result": "PASS",
-  "evidence": "{\"total\":4500,\"success\":true,\"order_id\":\"1d1d3aa2-de41-4442-a097-863bf50c6755\",\"subtotal\":4500,\"order_number\":\"TOP-20261022-2A903FB1\",\"payment_status\":\"pending\",\"stock_reserved\":true,\"delivery_charge\""
+  "evidence": "{\"total\":4500,\"success\":true,\"order_id\":\"c4ff68d9-563e-4c0f-9f1c-58c754ad78ee\",\"subtotal\":4500,\"order_number\":\"TOP-20261025-2F9A98EA\",\"payment_status\":\"pending\",\"stock_reserved\":true,\"delivery_charge\""
  },
  {
   "id": "E-02",
@@ -165,7 +165,7 @@
   "name": "Worker delivers all three channels",
   "layer": "e2e-real-function",
   "result": "PASS",
-  "evidence": "[{\"id\":\"614f45c0-126e-4fc7-b04f-6bb3269bb81d\",\"status\":\"sent\",\"provider\":\"brevo\"},{\"id\":\"c78bb515-6dc9-41c1-aae5-73b9b1c194f8\",\"status\":\"sent\",\"provider\":\"africastalking\"},{\"id\":\"c0483196-c7b8-477c-b54b-a24e0506aeb9\",\"status\":\"sent\",\"provider\":\"meta_whatsapp\"}]"
+  "evidence": "[{\"id\":\"7388efc6-f708-4d23-816a-2cdecb64e8b1\",\"status\":\"sent\",\"provider\":\"brevo\"},{\"id\":\"9ecb5d08-2e95-4ff2-a1dd-24936f3b4958\",\"status\":\"sent\",\"provider\":\"africastalking\"},{\"id\":\"2c04c8a1-5290-4753-a5ec-497ec4e99a13\",\"status\":\"sent\",\"provider\":\"meta_whatsapp\"}]"
  },
  {
   "id": "E-04",
@@ -181,7 +181,7 @@
   "name": "No unrendered {{placeholders}}; customer name rendered",
   "layer": "e2e-mocked-provider",
   "result": "PASS",
-  "evidence": "Hello Brian Otieno, your Topline order is now pending. You can track your order or sign in to your customer account for the latest details."
+  "evidence": "Hello Brian Otieno, your Topline order is now pending. You can track your order or sign in to your customer account for the latest details.\n"
  },
  {
   "id": "E-06",
@@ -341,7 +341,7 @@
   "name": "Provider ACCEPTED the email but the response timed out: must not be re-sent",
   "layer": "e2e-real-function",
   "result": "PASS",
-  "evidence": "{\"timeoutAfterSecs\":20,\"statusAfterTimeout\":[\"failed\",\"unknown\",\"1\"],\"providerAcceptedCopies\":1,\"finalStatus\":[\"failed\",\"unknown\"],\"httpIdempotencyKeyHeader\":null,\"emailHeaderOnly\":{\"Idempotency-Key\":\"topline-outbox-7e7d943d-9ab3-469b-8073-1b95e91274c7\"}}"
+  "evidence": "{\"timeoutAfterSecs\":20,\"statusAfterTimeout\":[\"failed\",\"unknown\",\"1\"],\"providerAcceptedCopies\":1,\"finalStatus\":[\"failed\",\"unknown\"],\"httpIdempotencyKeyHeader\":null,\"emailHeaderOnly\":{\"Idempotency-Key\":\"topline-outbox-97ff0f70-1e0c-4edd-a7a2-830e644903bf\"}}"
  },
  {
   "id": "G-11",
@@ -429,7 +429,7 @@
   "name": "Verified customer loads their own profile via REST",
   "layer": "e2e-postgrest",
   "result": "PASS",
-  "evidence": "{\"orders\":[],\"customer\":{\"id\":\"3eb9fe21-ff38-4d05-93f4-a319160e5b4f\",\"city\":null,\"name\":\"Amina Reg\",\"email\":\"amina.reg@example.org\",\"notes\":\"Self-registered cus"
+  "evidence": "{\"orders\":[],\"customer\":{\"id\":\"ca23d730-2f1b-4477-9eb0-1e2be1c1ed3f\",\"city\":null,\"name\":\"Amina Reg\",\"email\":\"amina.reg@example.org\",\"notes\":\"Self-registered cus"
  },
  {
   "id": "F-01",
@@ -541,7 +541,7 @@
   "name": "Quotation submitted while signed in is attached to the customer record",
   "layer": "e2e-postgrest",
   "result": "PASS",
-  "evidence": "quotation.customer_id 3eb9fe21-ff38-4d05-93f4-a319160e5b4f expected 3eb9fe21-ff38-4d05-93f4-a319160e5b4f"
+  "evidence": "quotation.customer_id ca23d730-2f1b-4477-9eb0-1e2be1c1ed3f expected ca23d730-2f1b-4477-9eb0-1e2be1c1ed3f"
  },
  {
   "id": "H-01",
@@ -693,7 +693,7 @@
   "name": "Worker stored the provider message id returned by Brevo",
   "layer": "e2e-real-function",
   "result": "PASS",
-  "evidence": "[\"<mock-44@smtp-relay.mailin.fr>\",\"accepted\"]"
+  "evidence": "[\"<mock-47@smtp-relay.mailin.fr>\",\"accepted\"]"
  },
  {
   "id": "WH-07",
@@ -829,7 +829,7 @@
   "name": "Overlapping scheduler run is skipped while the first holds the lock (no double processing)",
   "layer": "e2e-real-function",
   "result": "PASS",
-  "evidence": "[{\"job\":\"deliver_communications\",\"status\":\"skipped\",\"reason\":\"already_running\",\"run_id\":\"60f63422-6bbc-4977-978d-05a4b4705bc5\"}]"
+  "evidence": "[{\"job\":\"deliver_communications\",\"status\":\"skipped\",\"reason\":\"already_running\",\"run_id\":\"519df46d-964b-448c-9123-e741e24296df\"}]"
  },
  {
   "id": "SC-08",
@@ -869,7 +869,7 @@
   "name": "Signed-in quotation sends exactly the acknowledgement + staff alert (no extra \"quotation is new\")",
   "layer": "e2e-db",
   "result": "PASS",
-  "evidence": "[\"We received your Topline quotation request (RFQ-7AD0AE7\",\"New Topline quotation request (RFQ-7AD0AE77)\"]"
+  "evidence": "[\"We received your quotation request (RFQ-23502F94)\",\"New quotation request RFQ-23502F94: Flooring - Noise Te\"]"
  },
  {
   "id": "N-02",
@@ -910,5 +910,181 @@
   "layer": "e2e-db",
   "result": "PASS",
   "evidence": "Your Topline invoice is paid / Your Topline invoice is paid"
+ },
+ {
+  "id": "B-01",
+  "path": "D",
+  "name": "Contact message: buyer is told \"We received your message (MSG-...)\", not a quotation request",
+  "layer": "e2e-db",
+  "result": "PASS",
+  "evidence": "We received your message (MSG-5669BE12)"
+ },
+ {
+  "id": "B-02",
+  "path": "D",
+  "name": "Contact message: owner alert is \"New website message MSG-... from <name>\"",
+  "layer": "e2e-db",
+  "result": "PASS",
+  "evidence": "[\"New website message MSG-5669BE12 from Wanjiru Kamau\",\"New website message MSG-5669BE12 from Wanjiru Kamau\",\"New website message MSG-5669BE12 from Wanjiru Kamau\"]"
+ },
+ {
+  "id": "B-03",
+  "path": "D",
+  "name": "Alerts go to every valid owner address once (3 of 5 tokens: invalid and duplicate ignored)",
+  "layer": "e2e-db",
+  "result": "PASS",
+  "evidence": "[[\"owner1@topline.example\",\"admin\"],[\"owner2@topline.example\",\"admin-2\"],[\"owner3@topline.example\",\"admin-3\"]]"
+ },
+ {
+  "id": "B-04",
+  "path": "D",
+  "name": "Every owner alert replies directly to the buyer",
+  "layer": "e2e-db",
+  "result": "PASS",
+  "evidence": "{\"staffReplyTo\":[\"wanjiru@example.org\",\"wanjiru@example.org\",\"wanjiru@example.org\"],\"customerReplyTo\":\"\"}"
+ },
+ {
+  "id": "B-05",
+  "path": "D",
+  "name": "Admin notification feed labels it a website message and counts recipients",
+  "layer": "e2e-db",
+  "result": "PASS",
+  "evidence": "[\"New website message\",\"true\",\"3\"]"
+ },
+ {
+  "id": "B-06",
+  "path": "C",
+  "name": "Quotation: buyer subject \"We received your quotation request (RFQ-...)\" and owner subject names project and buyer",
+  "layer": "e2e-db",
+  "result": "PASS",
+  "evidence": "[\"We received your quotation request (RFQ-EF07C10C)\",\"New quotation request RFQ-EF07C10C: Industrial Flooring - Otieno Builders\"]"
+ },
+ {
+  "id": "B-07",
+  "path": "C",
+  "name": "Acknowledgement lists reference, project, location, timeline, follow-up link and how to add details",
+  "layer": "e2e-db",
+  "result": "PASS",
+  "evidence": "Hello Otieno Builders,\n\nThank you for your quotation request. We have received it and our team will review the details a"
+ },
+ {
+  "id": "B-08",
+  "path": "C/H",
+  "name": "Acknowledgement never echoes the buyer's free text (no attacker-written content or links sent to the typed address)",
+  "layer": "e2e-db",
+  "result": "PASS",
+  "evidence": "free text absent"
+ },
+ {
+  "id": "B-09",
+  "path": "C",
+  "name": "Owner alert has full details, reply instruction and a link to the admin quotations page",
+  "layer": "e2e-db",
+  "result": "PASS",
+  "evidence": " buyer directly; your reply goes to otieno@example.org.\nReview and assign follow-up in the admin dashboard: https://toplineflooringandwaterproofing.co.ke/admin/quotations"
+ },
+ {
+  "id": "B-10",
+  "path": "E",
+  "name": "Brevo receives replyTo = the buyer for owner alerts and the default support address for the buyer copy",
+  "layer": "e2e-mocked-provider",
+  "result": "PASS",
+  "evidence": "{\"owner\":{\"email\":\"otieno@example.org\"},\"buyer\":{\"email\":\"info@topline.example\"}}"
+ },
+ {
+  "id": "B-11",
+  "path": "E",
+  "name": "Buyer email is branded HTML (header, footer, responsive width) with a plain-text alternative and footer",
+  "layer": "e2e-mocked-provider",
+  "result": "PASS",
+  "evidence": "<!doctype html>\n<html lang=\"en\"><head><meta charset=\"utf-8\" /><meta name=\"viewport\" conten"
+ },
+ {
+  "id": "B-12",
+  "path": "E",
+  "name": "Own-site links are clickable",
+  "layer": "e2e-mocked-provider",
+  "result": "PASS",
+  "evidence": "portal link anchored"
+ },
+ {
+  "id": "B-13",
+  "path": "E/H",
+  "name": "A third-party link inside the buyer's text is NOT made clickable in the owner alert",
+  "layer": "e2e-mocked-provider",
+  "result": "PASS",
+  "evidence": "plain text only"
+ },
+ {
+  "id": "B-14",
+  "path": "E",
+  "name": "All five messages (1 buyer + 3 owners + earlier contact set cleared) delivered with provider ids",
+  "layer": "e2e-db",
+  "result": "PASS",
+  "evidence": "sent 4"
+ },
+ {
+  "id": "B-15",
+  "path": "A",
+  "name": "No welcome email before the address is verified",
+  "layer": "e2e-db",
+  "result": "PASS",
+  "evidence": "none queued"
+ },
+ {
+  "id": "B-16",
+  "path": "A",
+  "name": "Verification queues exactly one welcome email to the verified address (keyed to the customer)",
+  "layer": "e2e-db",
+  "result": "PASS",
+  "evidence": "[[\"welcome.new@example.org\",\"Welcome to TOPLINE Flooring & Waterproofing\",\"welcome:6034a0aa-4469-4098-b8e5-548762694dd6\"]]"
+ },
+ {
+  "id": "B-17",
+  "path": "A",
+  "name": "Welcome explains what the account does and links to sign in and to request a quotation",
+  "layer": "e2e-db",
+  "result": "PASS",
+  "evidence": "Hello Amina Welcome,\n\nYour TOPLINE customer account is ready. Thank you for regi"
+ },
+ {
+  "id": "B-18",
+  "path": "A",
+  "name": "Repeated verification updates never send a second welcome",
+  "layer": "e2e-db",
+  "result": "PASS",
+  "evidence": "still one"
+ },
+ {
+  "id": "B-19",
+  "path": "A",
+  "name": "Worker delivers the welcome with a clickable portal link",
+  "layer": "e2e-real-function",
+  "result": "PASS",
+  "evidence": "Welcome to TOPLINE Flooring & Waterproofing"
+ },
+ {
+  "id": "B-20",
+  "path": "A",
+  "name": "An account verified days ago and linked later gets no welcome",
+  "layer": "e2e-db",
+  "result": "PASS",
+  "evidence": "linked, no welcome"
+ },
+ {
+  "id": "B-21",
+  "path": "A/G",
+  "name": "No welcome is queued for an address that previously bounced",
+  "layer": "e2e-db",
+  "result": "PASS",
+  "evidence": "suppressed"
+ },
+ {
+  "id": "B-22",
+  "path": "G",
+  "name": "Owner alert copies (\":admin-2\", \":admin-3\") are exempt from the per-recipient volume guard",
+  "layer": "e2e-db",
+  "result": "PASS",
+  "evidence": "queued:45"
  }
 ]

@@ -285,4 +285,55 @@ BEGIN
   END;
 END $$;
 
+-- 13. Buyer onboarding and enquiry emails (rolled back by the P0099 marker).
+DO $$
+DECLARE
+  v_user uuid := gen_random_uuid(); v_old uuid := gen_random_uuid();
+  v_q uuid; v_n int; v_subject text; v_reply text; v_msg text;
+BEGIN
+  BEGIN
+    INSERT INTO public.site_integration_configs(integration_key,channel,provider,public_config)
+    VALUES ('communications.email','email','brevo','{"quotation_admin_email":"own1@topline.example, own2@topline.example; bad-address"}'::jsonb)
+    ON CONFLICT (integration_key) DO UPDATE SET public_config = EXCLUDED.public_config;
+    DELETE FROM public.communication_outbox;
+
+    -- a plain contact message gets contact wording, a MSG- reference and one alert per owner address
+    v_q := (public.submit_quotation_request('Contact Buyer','contact-buyer@example.org','0700910910','General Inquiry','General Contact Message','Delivery question','Do you deliver?','','')->>'quotation_id')::uuid;
+    SELECT subject INTO v_subject FROM public.communication_outbox WHERE recipient = 'contact-buyer@example.org';
+    IF v_subject NOT LIKE 'We received your message (MSG-%' THEN RAISE EXCEPTION 'contact acknowledgement has the wrong wording: %', v_subject; END IF;
+    SELECT count(*) INTO v_n FROM public.communication_outbox WHERE dedupe_key LIKE 'quotation-intake:' || v_q || ':admin%';
+    IF v_n <> 2 THEN RAISE EXCEPTION 'expected one owner alert per valid address (2), found %', v_n; END IF;
+    SELECT subject, reply_to INTO v_subject, v_reply FROM public.communication_outbox WHERE recipient = 'own2@topline.example';
+    IF v_subject NOT LIKE 'New website message MSG-%' THEN RAISE EXCEPTION 'owner alert for a contact message has the wrong subject: %', v_subject; END IF;
+    IF v_reply IS DISTINCT FROM 'contact-buyer@example.org' THEN RAISE EXCEPTION 'owner alert does not reply to the buyer (reply_to = %)', v_reply; END IF;
+
+    -- a quotation keeps quotation wording and never echoes the buyer's free text in the acknowledgement
+    DELETE FROM public.communication_outbox;
+    PERFORM public.submit_quotation_request('Quote Buyer','quote-buyer@example.org','0700920920','Nairobi','Epoxy Flooring','Epoxy','PHISHING http://evil.example/login','','Within 2 Weeks');
+    SELECT subject, message INTO v_subject, v_msg FROM public.communication_outbox WHERE recipient = 'quote-buyer@example.org';
+    IF v_subject NOT LIKE 'We received your quotation request (RFQ-%' THEN RAISE EXCEPTION 'quotation acknowledgement has the wrong wording: %', v_subject; END IF;
+    IF v_msg LIKE '%evil.example%' OR v_msg LIKE '%PHISHING%' THEN RAISE EXCEPTION 'the acknowledgement echoes the buyer''s free text'; END IF;
+
+    -- welcome: one after verification, none for an old verification, none for a bounced address
+    DELETE FROM public.communication_outbox;
+    INSERT INTO auth.users(id,email,raw_user_meta_data,email_confirmed_at)
+    VALUES (v_user,'welcome-reg@example.org','{"topline_customer_registration":true,"name":"Welcome Reg","phone":"0700930930","marketing_email_opt_in":false}'::jsonb, NULL);
+    SELECT count(*) INTO v_n FROM public.communication_outbox WHERE subject LIKE 'Welcome%';
+    IF v_n <> 0 THEN RAISE EXCEPTION 'a welcome was queued before verification'; END IF;
+    UPDATE auth.users SET email_confirmed_at = now() WHERE id = v_user;
+    UPDATE auth.users SET email_confirmed_at = now() WHERE id = v_user;
+    SELECT count(*) INTO v_n FROM public.communication_outbox WHERE subject LIKE 'Welcome%' AND recipient = 'welcome-reg@example.org';
+    IF v_n <> 1 THEN RAISE EXCEPTION 'expected exactly one welcome after verification, found %', v_n; END IF;
+    INSERT INTO auth.users(id,email,raw_user_meta_data,email_confirmed_at)
+    VALUES (v_old,'welcome-old@example.org','{"topline_customer_registration":true,"name":"Welcome Old","phone":"0700940940","marketing_email_opt_in":false}'::jsonb, NULL);
+    UPDATE auth.users SET email_confirmed_at = now() - interval '3 days' WHERE id = v_old;
+    SELECT count(*) INTO v_n FROM public.communication_outbox WHERE recipient = 'welcome-old@example.org';
+    IF v_n <> 0 THEN RAISE EXCEPTION 'a welcome was sent for a verification that happened days ago'; END IF;
+
+    RAISE EXCEPTION 'regression rollback' USING ERRCODE = 'P0099';
+  EXCEPTION WHEN SQLSTATE 'P0099' THEN
+    NULL;
+  END;
+END $$;
+
 SELECT 'ok 1 - public surface regression assertions passed';
