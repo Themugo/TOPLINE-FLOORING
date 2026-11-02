@@ -74,11 +74,11 @@ export default function AdminPartners() {
       </div>
 
       {loading ? (
-        <div className="text-center py-12 text-navy-400">Loading partners...</div>
+        <div className="text-center py-12 text-gray-600">Loading partners...</div>
       ) : partners.length === 0 ? (
         <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
           <Handshake className="w-10 h-10 text-gray-300 mx-auto mb-3" />
-          <p className="text-navy-500 mb-4">No partners yet.</p>
+          <p className="text-gray-700 mb-4">No partners yet.</p>
           <button onClick={() => setShowForm(true)} className="btn-primary">Add Your First Partner</button>
         </div>
       ) : (
@@ -86,9 +86,9 @@ export default function AdminPartners() {
           <table className="w-full">
             <thead className="bg-gray-50 border-b">
               <tr>
-                <th className="text-left px-6 py-3 text-xs font-medium text-navy-400 uppercase">Name</th>
-                <th className="text-left px-6 py-3 text-xs font-medium text-navy-400 uppercase">Website</th>
-                <th className="text-left px-6 py-3 text-xs font-medium text-navy-400 uppercase">Actions</th>
+                <th className="text-left px-6 py-3 text-xs font-medium text-gray-600 uppercase">Name</th>
+                <th className="text-left px-6 py-3 text-xs font-medium text-gray-600 uppercase">Website</th>
+                <th className="text-left px-6 py-3 text-xs font-medium text-gray-600 uppercase">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y">
@@ -100,10 +100,10 @@ export default function AdminPartners() {
                       <span className="font-medium text-navy-900">{p.name}</span>
                     </div>
                   </td>
-                  <td className="px-6 py-4 text-sm text-navy-500">{p.website_url || '-'}</td>
+                  <td className="px-6 py-4 text-sm text-gray-700">{p.website_url || '-'}</td>
                   <td className="px-6 py-4">
-                    <button onClick={() => { setEditing(p); setForm({ ...p }); setShowForm(true); }} className="p-2 text-navy-500 hover:text-primary-600" title="Edit"><Pencil className="w-4 h-4" /></button>
-                    <button onClick={() => handleDelete(p.id)} className="p-2 text-navy-500 hover:text-red-600" title="Delete"><Trash2 className="w-4 h-4" /></button>
+                    <button onClick={() => { setEditing(p); setForm({ ...p }); setShowForm(true); }} className="p-2 text-gray-700 hover:text-primary-600" title="Edit"><Pencil className="w-4 h-4" /></button>
+                    <button onClick={() => handleDelete(p.id)} className="p-2 text-gray-700 hover:text-red-600" title="Delete"><Trash2 className="w-4 h-4" /></button>
                   </td>
                 </tr>
               ))}
@@ -117,7 +117,7 @@ export default function AdminPartners() {
           <div className="bg-white rounded-xl max-w-md w-full p-6" onClick={(e) => e.stopPropagation()}>
             <div className="flex justify-between items-center mb-4">
               <h2 className="font-semibold text-lg text-navy-900">{editing ? 'Edit Partner' : 'Add Partner'}</h2>
-              <button onClick={resetForm}><X className="w-5 h-5 text-navy-400" /></button>
+              <button onClick={resetForm}><X className="w-5 h-5 text-gray-600" /></button>
             </div>
             <form onSubmit={handleSubmit} className="space-y-4">
               <input required placeholder="Name *" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="input" />

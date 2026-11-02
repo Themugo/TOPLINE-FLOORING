@@ -130,7 +130,7 @@ export default function ProductSpecifications() {
 
   return (
     <AdminLayout>
-      <div className="flex items-end justify-between mb-8">
+      <div className="flex flex-wrap items-end justify-between gap-3 mb-8">
         <div>
           <p className="text-[10px] uppercase tracking-[0.2em] text-primary font-sans font-medium mb-1">Catalog</p>
           <h1 className="font-display text-3xl font-semibold text-foreground">Product Specifications</h1>

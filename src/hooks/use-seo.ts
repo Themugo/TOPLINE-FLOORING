@@ -137,7 +137,7 @@ export function useSeoMeta(
       if (pageType === 'home') {
         pageTitle = siteInfo.tagline ? `${companyName} | ${siteInfo.tagline}` : companyName;
       } else {
-        const formattedType = pageType.charAt(0).toUpperCase() + pageType.slice(1);
+        const formattedType = pageType.split('-').filter(Boolean).map((word) => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
         pageTitle = `${formattedType} | ${companyName}`;
       }
     }

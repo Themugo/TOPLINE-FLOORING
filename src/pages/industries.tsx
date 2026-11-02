@@ -116,7 +116,7 @@ export default function Industries() {
       </section>
       <section className="bg-navy-950 text-white py-16 md:py-20">
         <div className="container mx-auto px-6 md:px-12 text-center">
-          <p className="section-label text-primary-300">Project-specific engineering</p>
+          <p className="section-label text-primary-200">Project-specific engineering</p>
           <h2 className="font-display text-3xl md:text-4xl font-bold text-white mt-2">Need a system specified for your site?</h2>
           <p className="text-navy-200 max-w-2xl mx-auto mt-4">
             Tell us about your substrate, traffic, chemical exposure, moisture conditions and programme. We will help identify the appropriate flooring or waterproofing approach.

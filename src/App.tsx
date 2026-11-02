@@ -1,3 +1,4 @@
+import { PwaPrompts } from '@/components/pwa/PwaPrompts';
 import { CMSProvider, useCMS } from '@/context/CMSContext';
 import { CartProvider } from '@/hooks/use-cart';
 import { AdminAuthGuard, AdminPublicRoute } from '@/components/admin/AdminGuard';
@@ -127,7 +128,9 @@ function PublicLoading() {
 }
 
 function Router() {
-  const [location] = useLocation();
+  const [rawLocation] = useLocation();
+  // Treat /shop/ and /shop alike so typed or externally linked URLs with a trailing slash do not 404.
+  const location = rawLocation.length > 1 ? (rawLocation.replace(/\/+$/, '') || '/') : rawLocation;
 
   // Scroll to top on route change
   useEffect(() => {
@@ -406,14 +409,8 @@ function Router() {
 function useCMSInitializer() {
   const { cms, loading, error, refetch } = useCMS();
 
-  useEffect(() => {
-    // Dynamically synchronize HTML document title with CMS site settings
-    const siteTitle =
-      cms?.website_settings?.site_info?.name || document.title;
-    if (siteTitle) {
-      document.title = siteTitle;
-    }
-  }, [cms]);
+  // The document title is owned by useSeoMeta (per page, with the company name). Do not overwrite it here:
+  // doing so on every CMS update raced with the page title and left pages with a generic title.
 
   return {
     cms,
@@ -434,6 +431,7 @@ function AppContent() {
     <ErrorBoundary>
       <ThemeApplier />
       <Router />
+      <PwaPrompts />
       <ToastContainer />
     </ErrorBoundary>
   );

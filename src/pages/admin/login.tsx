@@ -94,7 +94,7 @@ export default function AdminLogin() {
             <h1 className="font-display text-2xl font-bold text-primary-600">
               Reset Password
             </h1>
-            <p className="text-navy-500 mt-1">Enter your email to receive a reset link</p>
+            <p className="text-navy-600 mt-1">Enter your email to receive a reset link</p>
           </div>
 
           <div className="bg-white rounded-xl p-8 border border-gray-200 shadow-sm">
@@ -175,7 +175,7 @@ export default function AdminLogin() {
           <button
             type="button"
             onClick={goBack}
-            className="inline-flex items-center gap-1.5 text-sm text-navy-400 hover:text-navy-600 mb-4 transition-colors"
+            className="inline-flex items-center gap-1.5 text-sm text-navy-600 hover:text-navy-800 mb-4 transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
             Back
@@ -186,7 +186,7 @@ export default function AdminLogin() {
           <h1 className="font-display text-2xl font-bold text-primary-600">
             Admin Portal
           </h1>
-          <p className="text-navy-500 mt-1">Topline Flooring & Waterproofing</p>
+          <p className="text-navy-600 mt-1">Topline Flooring & Waterproofing</p>
         </div>
 
         <div className="bg-white rounded-xl p-8 border border-gray-200 shadow-sm">
@@ -297,7 +297,7 @@ export default function AdminLogin() {
           </form>
         </div>
 
-        <p className="text-center text-navy-400 text-xs mt-6">
+        <p className="text-center text-navy-600 text-xs mt-6">
           Access restricted to authorized personnel only
         </p>
       </div>

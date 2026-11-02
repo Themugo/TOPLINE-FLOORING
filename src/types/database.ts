@@ -6167,6 +6167,7 @@ export type Database = {
           results: string | null
           service_type: string | null
           slug: string
+          show_client_name: boolean
           solution: string | null
           start_date: string | null
           status: string
@@ -6214,6 +6215,7 @@ export type Database = {
           results?: string | null
           service_type?: string | null
           slug: string
+          show_client_name?: boolean
           solution?: string | null
           start_date?: string | null
           status?: string
@@ -6261,6 +6263,7 @@ export type Database = {
           results?: string | null
           service_type?: string | null
           slug?: string
+          show_client_name?: boolean
           solution?: string | null
           start_date?: string | null
           status?: string

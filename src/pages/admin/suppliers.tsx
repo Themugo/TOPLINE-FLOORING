@@ -23,13 +23,13 @@ export default function AdminSuppliers() {
       <div className="flex gap-1 mb-6 border-b border-gray-200">
         <button
           onClick={() => setTab('purchase-orders')}
-          className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${tab === 'purchase-orders' ? 'border-primary-500 text-primary-600' : 'border-transparent text-navy-400 hover:text-navy-600'}`}
+          className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${tab === 'purchase-orders' ? 'border-primary-500 text-primary-600' : 'border-transparent text-gray-600 hover:text-navy-600'}`}
         >
           Purchase Orders
         </button>
         <button
           onClick={() => setTab('suppliers')}
-          className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${tab === 'suppliers' ? 'border-primary-500 text-primary-600' : 'border-transparent text-navy-400 hover:text-navy-600'}`}
+          className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${tab === 'suppliers' ? 'border-primary-500 text-primary-600' : 'border-transparent text-gray-600 hover:text-navy-600'}`}
         >
           Suppliers
         </button>
@@ -92,11 +92,11 @@ function SuppliersTab() {
       </div>
 
       {loading ? (
-        <div className="text-center py-12 text-navy-400">Loading suppliers...</div>
+        <div className="text-center py-12 text-gray-600">Loading suppliers...</div>
       ) : suppliers.length === 0 ? (
         <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
           <Truck className="w-10 h-10 text-gray-300 mx-auto mb-3" />
-          <p className="text-navy-500 mb-4">No suppliers yet.</p>
+          <p className="text-gray-700 mb-4">No suppliers yet.</p>
           <button onClick={() => setShowForm(true)} className="btn-primary">Add Your First Supplier</button>
         </div>
       ) : (
@@ -105,21 +105,21 @@ function SuppliersTab() {
             <table className="w-full">
               <thead className="bg-gray-50 border-b">
                 <tr>
-                  <th className="text-left px-6 py-3 text-xs font-medium text-navy-400 uppercase">Name</th>
-                  <th className="text-left px-6 py-3 text-xs font-medium text-navy-400 uppercase">Contact</th>
-                  <th className="text-left px-6 py-3 text-xs font-medium text-navy-400 uppercase">Phone / Email</th>
-                  <th className="text-left px-6 py-3 text-xs font-medium text-navy-400 uppercase">Actions</th>
+                  <th className="text-left px-6 py-3 text-xs font-medium text-gray-600 uppercase">Name</th>
+                  <th className="text-left px-6 py-3 text-xs font-medium text-gray-600 uppercase">Contact</th>
+                  <th className="text-left px-6 py-3 text-xs font-medium text-gray-600 uppercase">Phone / Email</th>
+                  <th className="text-left px-6 py-3 text-xs font-medium text-gray-600 uppercase">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y">
                 {suppliers.map((s) => (
                   <tr key={s.id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 font-medium text-navy-900">{s.name}</td>
-                    <td className="px-6 py-4 text-sm text-navy-500">{s.contact_person || '-'}</td>
-                    <td className="px-6 py-4 text-sm text-navy-500">{s.phone || s.email || '-'}</td>
+                    <td className="px-6 py-4 text-sm text-gray-700">{s.contact_person || '-'}</td>
+                    <td className="px-6 py-4 text-sm text-gray-700">{s.phone || s.email || '-'}</td>
                     <td className="px-6 py-4">
-                      <button onClick={() => { setEditing(s); setForm({ name: s.name, contact_person: s.contact_person || '', email: s.email || '', phone: s.phone || '', address: s.address || '', notes: s.notes || '' }); setShowForm(true); }} className="p-2 text-navy-500 hover:text-primary-600" title="Edit"><Pencil className="w-4 h-4" /></button>
-                      <button onClick={() => handleDelete(s.id)} className="p-2 text-navy-500 hover:text-red-600" title="Delete"><Trash2 className="w-4 h-4" /></button>
+                      <button onClick={() => { setEditing(s); setForm({ name: s.name, contact_person: s.contact_person || '', email: s.email || '', phone: s.phone || '', address: s.address || '', notes: s.notes || '' }); setShowForm(true); }} className="p-2 text-gray-700 hover:text-primary-600" title="Edit"><Pencil className="w-4 h-4" /></button>
+                      <button onClick={() => handleDelete(s.id)} className="p-2 text-gray-700 hover:text-red-600" title="Delete"><Trash2 className="w-4 h-4" /></button>
                     </td>
                   </tr>
                 ))}
@@ -134,7 +134,7 @@ function SuppliersTab() {
           <div className="bg-white rounded-xl max-w-md w-full p-6" onClick={(e) => e.stopPropagation()}>
             <div className="flex justify-between items-center mb-4">
               <h2 className="font-semibold text-lg text-navy-900">{editing ? 'Edit Supplier' : 'Add Supplier'}</h2>
-              <button onClick={resetForm}><X className="w-5 h-5 text-navy-400" /></button>
+              <button onClick={resetForm}><X className="w-5 h-5 text-gray-600" /></button>
             </div>
             <form onSubmit={handleSubmit} className="space-y-3">
               <input required placeholder="Supplier name *" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="input" />
@@ -195,11 +195,11 @@ function PurchaseOrdersTab() {
       </div>
 
       {loading ? (
-        <div className="text-center py-12 text-navy-400">Loading purchase orders...</div>
+        <div className="text-center py-12 text-gray-600">Loading purchase orders...</div>
       ) : purchaseOrders.length === 0 ? (
         <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
           <PackageCheck className="w-10 h-10 text-gray-300 mx-auto mb-3" />
-          <p className="text-navy-500 mb-4">No purchase orders yet.</p>
+          <p className="text-gray-700 mb-4">No purchase orders yet.</p>
           <button onClick={() => setShowForm(true)} className="btn-primary">Create Your First PO</button>
         </div>
       ) : (
@@ -208,18 +208,18 @@ function PurchaseOrdersTab() {
             <table className="w-full">
               <thead className="bg-gray-50 border-b">
                 <tr>
-                  <th className="text-left px-6 py-3 text-xs font-medium text-navy-400 uppercase">PO #</th>
-                  <th className="text-left px-6 py-3 text-xs font-medium text-navy-400 uppercase">Supplier</th>
-                  <th className="text-left px-6 py-3 text-xs font-medium text-navy-400 uppercase">Status</th>
-                  <th className="text-left px-6 py-3 text-xs font-medium text-navy-400 uppercase">Expected</th>
-                  <th className="text-left px-6 py-3 text-xs font-medium text-navy-400 uppercase">Created</th>
-                  <th className="text-left px-6 py-3 text-xs font-medium text-navy-400 uppercase">Actions</th>
+                  <th className="text-left px-6 py-3 text-xs font-medium text-gray-600 uppercase">PO #</th>
+                  <th className="text-left px-6 py-3 text-xs font-medium text-gray-600 uppercase">Supplier</th>
+                  <th className="text-left px-6 py-3 text-xs font-medium text-gray-600 uppercase">Status</th>
+                  <th className="text-left px-6 py-3 text-xs font-medium text-gray-600 uppercase">Expected</th>
+                  <th className="text-left px-6 py-3 text-xs font-medium text-gray-600 uppercase">Created</th>
+                  <th className="text-left px-6 py-3 text-xs font-medium text-gray-600 uppercase">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y">
                 {purchaseOrders.map((po) => (
                   <tr key={po.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 text-sm font-mono text-navy-500">{po.po_number}</td>
+                    <td className="px-6 py-4 text-sm font-mono text-gray-700">{po.po_number}</td>
                     <td className="px-6 py-4 font-medium text-navy-900">{po.supplier?.name || 'No supplier'}</td>
                     <td className="px-6 py-4">
                       <select
@@ -234,8 +234,8 @@ function PurchaseOrdersTab() {
                         <option value="cancelled">cancelled</option>
                       </select>
                     </td>
-                    <td className="px-6 py-4 text-sm text-navy-500">{po.expected_date ? new Date(po.expected_date).toLocaleDateString() : '-'}</td>
-                    <td className="px-6 py-4 text-sm text-navy-400">{formatDateTime(po.created_at)}</td>
+                    <td className="px-6 py-4 text-sm text-gray-700">{po.expected_date ? new Date(po.expected_date).toLocaleDateString() : '-'}</td>
+                    <td className="px-6 py-4 text-sm text-gray-600">{formatDateTime(po.created_at)}</td>
                     <td className="px-6 py-4">
                       <button onClick={() => setSelected(po)} className="text-sm text-primary-600 hover:underline font-medium">Manage</button>
                     </td>
@@ -252,7 +252,7 @@ function PurchaseOrdersTab() {
           <div className="bg-white rounded-xl max-w-md w-full p-6" onClick={(e) => e.stopPropagation()}>
             <div className="flex justify-between items-center mb-4">
               <h2 className="font-semibold text-lg text-navy-900">New Purchase Order</h2>
-              <button onClick={() => setShowForm(false)}><X className="w-5 h-5 text-navy-400" /></button>
+              <button onClick={() => setShowForm(false)}><X className="w-5 h-5 text-gray-600" /></button>
             </div>
             <form onSubmit={handleCreate} className="space-y-3">
               <select required value={form.warehouse_id} onChange={(e) => setForm({ ...form, warehouse_id: e.target.value })} className="input">
@@ -266,7 +266,7 @@ function PurchaseOrdersTab() {
               <input type="date" placeholder="Expected date" value={form.expected_date} onChange={(e) => setForm({ ...form, expected_date: e.target.value })} className="input" />
               <textarea placeholder="Notes" value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} className="input min-h-[60px]" />
               <button type="submit" disabled={saving} className="btn-primary w-full">{saving ? 'Creating...' : 'Create PO'}</button>
-              <p className="text-xs text-navy-400 text-center">You'll add line items next.</p>
+              <p className="text-xs text-gray-600 text-center">You'll add line items next.</p>
             </form>
           </div>
         </div>
@@ -333,8 +333,8 @@ function PurchaseOrderDetail({ po, onClose }: { po: PurchaseOrder; onClose: () =
       <div className="bg-white rounded-xl max-w-2xl w-full p-6 max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
         <div className="flex justify-between items-center mb-4">
           <h2 className="font-semibold text-lg text-navy-900">PO {current.po_number} - {current.supplier?.name}</h2>
-          <p className="text-xs text-navy-400">Receiving: {current.warehouse_id ? 'Assigned warehouse' : 'Not assigned'}</p>
-          <button onClick={onClose}><X className="w-5 h-5 text-navy-400" /></button>
+          <p className="text-xs text-gray-600">Receiving: {current.warehouse_id ? 'Assigned warehouse' : 'Not assigned'}</p>
+          <button onClick={onClose}><X className="w-5 h-5 text-gray-600" /></button>
         </div>
 
         <div className="mb-4">
@@ -344,7 +344,7 @@ function PurchaseOrderDetail({ po, onClose }: { po: PurchaseOrder; onClose: () =
               <div key={item.id} className="flex items-center justify-between bg-gray-50 rounded-lg px-3 py-2 text-sm">
                 <div>
                   <p className="font-medium">{item.description}</p>
-                  <p className="text-xs text-navy-400">
+                  <p className="text-xs text-gray-600">
                     Ordered: {item.quantity_ordered} · Received: {item.quantity_received} · {formatKES(item.unit_cost)}/unit
                   </p>
                 </div>
@@ -356,7 +356,7 @@ function PurchaseOrderDetail({ po, onClose }: { po: PurchaseOrder; onClose: () =
                 </div>
               </div>
             ))}
-            {items.length === 0 && <p className="text-xs text-navy-400">No line items yet.</p>}
+            {items.length === 0 && <p className="text-xs text-gray-600">No line items yet.</p>}
           </div>
 
           <div className="grid grid-cols-4 gap-2">
@@ -382,7 +382,7 @@ function PurchaseOrderDetail({ po, onClose }: { po: PurchaseOrder; onClose: () =
           </p>
         )}
 
-        <p className="text-xs text-navy-400 mt-4 bg-blue-50 rounded-lg p-3">
+        <p className="text-xs text-gray-600 mt-4 bg-blue-50 rounded-lg p-3">
           Marking items as received automatically increases stock and logs an inventory movement - no manual stock adjustment needed.
         </p>
       </div>

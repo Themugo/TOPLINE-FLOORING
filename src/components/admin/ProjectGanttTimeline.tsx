@@ -418,10 +418,10 @@ export function ProjectGanttTimeline({ projects, onSelectProject }: ProjectGantt
                           </div>
 
                           <div className="flex items-center gap-3 text-xs">
-                            <span className="text-slate-400">
+                            <span className="text-slate-300">
                               Start Date: <strong className="text-white">{p.startDate.toLocaleDateString()}</strong>
                             </span>
-                            <span className="text-slate-400">
+                            <span className="text-slate-300">
                               Deadline / End: <strong className="text-white">{p.endDate.toLocaleDateString()}</strong>
                             </span>
                             {onSelectProject && (
@@ -448,7 +448,7 @@ export function ProjectGanttTimeline({ projects, onSelectProject }: ProjectGantt
                                 className={`p-2.5 rounded-xl border text-xs transition-colors ${
                                   phaseCompleted
                                     ? 'bg-emerald-950/60 border-emerald-500/40 text-emerald-200'
-                                    : 'bg-slate-800/80 border-slate-700 text-slate-400'
+                                    : 'bg-slate-800/80 border-slate-700 text-slate-300'
                                 }`}
                               >
                                 <div className="flex items-center justify-between mb-1.5">

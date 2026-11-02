@@ -84,12 +84,12 @@ export default function AdminSiteSettings() {
     <AdminLayout title="Site Settings">
       <div className="max-w-4xl">
         {/* Tabs */}
-        <div className="flex gap-1 mb-6 bg-gray-100 p-1 rounded-lg">
+        <div className="flex gap-1 mb-6 bg-gray-100 p-1 rounded-lg overflow-x-auto">
           {tabs.map((tab) => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-md transition-colors ${
+              className={`flex shrink-0 whitespace-nowrap items-center gap-2 px-4 py-2 text-sm font-medium rounded-md transition-colors ${
                 activeTab === tab.id ? 'bg-white shadow text-gray-900' : 'text-gray-500 hover:text-gray-700'
               }`}
             >
@@ -153,7 +153,7 @@ export default function AdminSiteSettings() {
           <div className="space-y-6">
             <div className="bg-white rounded-xl border border-gray-200 p-6 space-y-4">
               <h2 className="font-semibold text-gray-900">Contact Information</h2>
-              <div className="grid sm:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Primary Email</label>
                   <input
@@ -210,7 +210,7 @@ export default function AdminSiteSettings() {
 
             <div className="bg-white rounded-xl border border-gray-200 p-6 space-y-4">
               <h2 className="font-semibold text-gray-900">Business Hours</h2>
-              <div className="grid sm:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Weekdays Open</label>
                   <input
@@ -354,7 +354,7 @@ export default function AdminSiteSettings() {
           <div className="space-y-6">
             <div className="bg-white rounded-xl border border-gray-200 p-6 space-y-4">
               <h2 className="font-semibold text-gray-900">Logo & Favicon Asset Selection</h2>
-              <div className="grid md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Header Logo</label>
                   <ImageUpload

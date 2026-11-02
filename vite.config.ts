@@ -20,5 +20,8 @@ export default defineConfig({
     cssCodeSplit: true,
     sourcemap: false,
     chunkSizeWarningLimit: 1000,
+    // Never inline fonts as data: URIs. The production CSP (vercel.json) allows fonts only from 'self'
+    // and Google Fonts, so an inlined font subset is blocked and silently falls back to a system font.
+    assetsInlineLimit: (file) => (/\.(woff2?|ttf|otf|eot)$/i.test(file) ? false : undefined),
   },
 });

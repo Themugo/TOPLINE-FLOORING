@@ -117,14 +117,14 @@ export default function AdminTheme() {
 
         <section className="bg-white rounded-xl border p-6">
           <h2 className="font-semibold mb-1">Custom Colors</h2><p className="text-sm text-gray-500 mb-4">All three brand colors are live and governed.</p>
-          <div className="grid sm:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
             {([['Primary Color','primary_color','#12396D'],['Secondary / Gold Accent','secondary_color','#8DBA17'],['Supporting Accent','accent_color','#0E6B78']] as const).map(([label,key,fallback]) => <div key={key}><label className="block text-sm font-medium text-gray-700 mb-2">{label}</label><div className="flex gap-3"><input type="color" value={theme[key] || fallback} onChange={(e) => updateTheme({ [key]: e.target.value })} className="w-12 h-12 rounded border cursor-pointer" /><input type="text" value={theme[key] || fallback} onChange={(e) => updateTheme({ [key]: e.target.value })} className="input flex-1 font-mono text-sm" /></div></div>)}
           </div>
         </section>
 
         <section className="bg-white rounded-xl border p-6">
           <h2 className="font-semibold mb-4">Typography & Layout</h2>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
             <label className="text-sm font-medium text-gray-700">Heading Font<select value={theme.heading_font} onChange={(e) => updateTheme({ heading_font: e.target.value })} className="input mt-2 w-full">{fonts.map((font) => <option key={font}>{font}</option>)}</select></label>
             <label className="text-sm font-medium text-gray-700">Body Font<select value={theme.body_font} onChange={(e) => updateTheme({ body_font: e.target.value })} className="input mt-2 w-full">{fonts.map((font) => <option key={font}>{font}</option>)}</select></label>
             <label className="text-sm font-medium text-gray-700">Button Style<select value={theme.button_style} onChange={(e) => updateTheme({ button_style: e.target.value })} className="input mt-2 w-full">{buttonStyles.map((style) => <option key={style}>{style}</option>)}</select></label>

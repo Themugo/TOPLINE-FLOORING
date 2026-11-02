@@ -27,7 +27,7 @@ export function CustomerLayout({ children }: CustomerLayoutProps) {
           <Link href="/portal" className="inline-flex items-center gap-1.5 font-semibold text-[#0C2D57] hover:text-slate-600">Customer account <ArrowRight className="w-3.5 h-3.5" /></Link>
         </div>
       </div>
-      <main id="main-content" tabIndex={-1} className="flex-1 pt-16 pb-20 md:pb-0 md:pt-0">{children}</main>
+      <main id="main-content" tabIndex={-1} className="flex-1 pt-16 pb-[calc(5rem+env(safe-area-inset-bottom))] md:pb-0 md:pt-0">{children}</main>
       <Footer />
       <WhatsAppButton />
       <MobileActionBar />

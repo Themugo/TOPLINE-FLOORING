@@ -252,13 +252,24 @@ const RADIUS_BY_BUTTON_STYLE: Record<string, string> = {
 const FONT_FAMILY: Record<string, string> = { Sora: '"Sora Variable", "Sora"', Manrope: '"Manrope Variable", "Manrope"' };
 const fontStack = (name: string) => `${FONT_FAMILY[name] ?? `"${name}"`}, system-ui, sans-serif`;
 
+/** Darkest-needed shade of the accent that still reads as body-size text (>= 5:1) on white/cream surfaces. */
+function readableAccentText(baseHex: string): string {
+  let hex = generateColorRamp(baseHex)['700'];
+  let hsl = rgbToHsl(hexToRgb(hex));
+  for (let i = 0; i < 40 && contrastRatio(hex, '#ffffff') < 5.2; i++) {
+    hsl = { ...hsl, l: Math.max(0, hsl.l - 2) };
+    hex = hslToHex(hsl);
+  }
+  return hex;
+}
+
 export function applyTheme(theme: AppliedTheme) {
   if (typeof document === 'undefined') return;
   const safeTheme = normalizeAppliedTheme(theme);
   const root = document.documentElement;
   root.style.setProperty('--topline-brand-primary', safeTheme.primary_color);
   root.style.setProperty('--topline-brand-accent', safeTheme.secondary_color);
-  root.style.setProperty('--topline-brand-accent-strong', generateColorRamp(safeTheme.secondary_color)['700']);
+  root.style.setProperty('--topline-brand-accent-strong', readableAccentText(safeTheme.secondary_color));
   root.style.setProperty('--theme-secondary', safeTheme.secondary_color);
   root.style.setProperty('--theme-accent', safeTheme.accent_color);
   root.style.setProperty('--topline-focus', safeTheme.primary_color);

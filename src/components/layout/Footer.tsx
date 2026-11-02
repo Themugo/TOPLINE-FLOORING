@@ -125,7 +125,7 @@ export function Footer() {
             </nav>
           </div>
 
-          <div>
+          <div className="min-w-0">
             <h3 className="font-semibold text-primary-600 mb-4">Contact Info</h3>
             <div className="space-y-4">
               {phone && (
@@ -134,7 +134,7 @@ export function Footer() {
                   className="flex items-start gap-3 text-sm text-navy-600 hover:text-primary-600 transition-colors"
                 >
                   <Phone className="w-4 h-4 mt-0.5 flex-shrink-0" />
-                  <span>{phone}</span>
+                  <span className="min-w-0 [overflow-wrap:anywhere]">{phone}</span>
                 </a>
               )}
               {email && (
@@ -143,13 +143,13 @@ export function Footer() {
                   className="flex items-start gap-3 text-sm text-navy-600 hover:text-primary-600 transition-colors"
                 >
                   <Mail className="w-4 h-4 mt-0.5 flex-shrink-0" />
-                  <span>{email}</span>
+                  <span className="min-w-0 [overflow-wrap:anywhere]">{email}</span>
                 </a>
               )}
               {address && (
                 <div className="flex items-start gap-3 text-sm text-navy-600">
                   <MapPin className="w-4 h-4 mt-0.5 flex-shrink-0" />
-                  <span>{address}</span>
+                  <span className="min-w-0 [overflow-wrap:anywhere]">{address}</span>
                 </div>
               )}
               <div className="text-sm text-navy-500">

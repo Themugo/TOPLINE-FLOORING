@@ -21,6 +21,8 @@
     "typecheck": "node ./node_modules/typescript/bin/tsc -p tsconfig.app.json --noEmit",
     "validate:local-db": "node scripts/validate-local-supabase.mjs",
     "verify-application-security-trust-boundary": "node scripts/verify-application-security-trust-boundary.mjs",
+    "verify:accessibility-seo-contract": "node scripts/verify-accessibility-seo-contract.mjs",
+    "verify:admin-shell-and-pwa": "node scripts/verify-admin-shell-and-pwa.mjs",
     "verify:admin-auth-360": "node scripts/verify-admin-authentication-authorization-360.mjs",
     "verify:admin-control-plane-360": "node scripts/verify-admin-control-plane-privileged-operations-360.mjs",
     "verify:admin-feedback-contract": "node scripts/verify-admin-feedback-contract.mjs",
@@ -53,6 +55,7 @@
     "verify:email-registration-communications": "node scripts/verify-email-registration-communications-360.mjs",
     "verify:fulfillment-operations-360": "node scripts/verify-fulfillment-operations-360.mjs",
     "verify:generated-types": "node scripts/verify-generated-types.mjs",
+    "verify:guest-payment-resume": "node scripts/verify-guest-payment-resume.mjs",
     "verify:invoice-hook-contract": "node scripts/verify-invoice-hook-contract.mjs",
     "verify:launch-gap": "node scripts/verify-launch-gap.mjs",
     "verify:launch-repair": "node scripts/verify-launch-repair.mjs",
@@ -138,8 +141,7 @@
     "verify:supabase": "node scripts/verify-supabase-target.mjs",
     "verify:theme-unification": "node scripts/verify-theme-unification.mjs",
     "verify:vercel": "node scripts/verify-vercel-deployment.mjs",
-    "verify:vercel-production-contract": "node scripts/verify-vercel-production-contract.mjs",
-    "verify:guest-payment-resume": "node scripts/verify-guest-payment-resume.mjs"
+    "verify:vercel-production-contract": "node scripts/verify-vercel-production-contract.mjs"
   },
   "dependencies": {
     "@fontsource-variable/manrope": "^5.3.0",

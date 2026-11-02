@@ -74,11 +74,11 @@ export default function AdminTestimonials() {
       </div>
 
       {loading ? (
-        <div className="text-center py-12 text-navy-400">Loading testimonials...</div>
+        <div className="text-center py-12 text-gray-600">Loading testimonials...</div>
       ) : testimonials.length === 0 ? (
         <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
           <MessageSquareQuote className="w-10 h-10 text-gray-300 mx-auto mb-3" />
-          <p className="text-navy-500 mb-4">No testimonials yet.</p>
+          <p className="text-gray-700 mb-4">No testimonials yet.</p>
           <button onClick={() => setShowForm(true)} className="btn-primary">Add Your First Testimonial</button>
         </div>
       ) : (
@@ -86,25 +86,25 @@ export default function AdminTestimonials() {
           <table className="w-full">
             <thead className="bg-gray-50 border-b">
               <tr>
-                <th className="text-left px-6 py-3 text-xs font-medium text-navy-400 uppercase">Name</th>
-                <th className="text-left px-6 py-3 text-xs font-medium text-navy-400 uppercase">Role</th>
-                <th className="text-left px-6 py-3 text-xs font-medium text-navy-400 uppercase">Rating</th>
-                <th className="text-left px-6 py-3 text-xs font-medium text-navy-400 uppercase">Actions</th>
+                <th className="text-left px-6 py-3 text-xs font-medium text-gray-600 uppercase">Name</th>
+                <th className="text-left px-6 py-3 text-xs font-medium text-gray-600 uppercase">Role</th>
+                <th className="text-left px-6 py-3 text-xs font-medium text-gray-600 uppercase">Rating</th>
+                <th className="text-left px-6 py-3 text-xs font-medium text-gray-600 uppercase">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y">
               {testimonials.map((t) => (
                 <tr key={t.id} className="hover:bg-gray-50">
                   <td className="px-6 py-4 font-medium text-navy-900">{t.name}</td>
-                  <td className="px-6 py-4 text-sm text-navy-500">{t.role}{t.company && `, ${t.company}`}</td>
+                  <td className="px-6 py-4 text-sm text-gray-700">{t.role}{t.company && `, ${t.company}`}</td>
                   <td className="px-6 py-4 text-sm">
                     <span className="inline-flex items-center gap-1 text-primary-600">
                       <Star className="w-3.5 h-3.5 fill-primary-500" /> {t.rating}/5
                     </span>
                   </td>
                   <td className="px-6 py-4">
-                    <button onClick={() => { setEditing(t); setForm({ ...t }); setShowForm(true); }} className="p-2 text-navy-500 hover:text-primary-600" title="Edit"><Pencil className="w-4 h-4" /></button>
-                    <button onClick={() => handleDelete(t.id)} className="p-2 text-navy-500 hover:text-red-600" title="Delete"><Trash2 className="w-4 h-4" /></button>
+                    <button onClick={() => { setEditing(t); setForm({ ...t }); setShowForm(true); }} className="p-2 text-gray-700 hover:text-primary-600" title="Edit"><Pencil className="w-4 h-4" /></button>
+                    <button onClick={() => handleDelete(t.id)} className="p-2 text-gray-700 hover:text-red-600" title="Delete"><Trash2 className="w-4 h-4" /></button>
                   </td>
                 </tr>
               ))}
@@ -118,7 +118,7 @@ export default function AdminTestimonials() {
           <div className="bg-white rounded-xl max-w-md w-full p-6 max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
             <div className="flex justify-between items-center mb-4">
               <h2 className="font-semibold text-lg text-navy-900">{editing ? 'Edit Testimonial' : 'Add Testimonial'}</h2>
-              <button onClick={resetForm}><X className="w-5 h-5 text-navy-400" /></button>
+              <button onClick={resetForm}><X className="w-5 h-5 text-gray-600" /></button>
             </div>
             <form onSubmit={handleSubmit} className="space-y-4">
               <input required placeholder="Name *" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="input" />

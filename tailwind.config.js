@@ -15,7 +15,7 @@ export default {
           100: '#f1efeb',
           200: '#e3dfd8',
           300: '#cfcac1',
-          400: '#7b8591',
+          400: '#66717d',
           500: '#5f6b78',
           600: '#475360',
           700: '#343f4b',
@@ -26,7 +26,7 @@ export default {
         // Cool 'slate' utilities used by the services, contact, tracking and account pages follow the same warm concrete
         // neutrals as 'gray', so every page shares one neutral family.
         slate: {
-          50: '#f7f6f3', 100: '#f1efeb', 200: '#e3dfd8', 300: '#cfcac1', 400: '#7b8591', 500: '#5f6b78',
+          50: '#f7f6f3', 100: '#f1efeb', 200: '#e3dfd8', 300: '#cfcac1', 400: '#66717d', 500: '#5f6b78',
           600: '#475360', 700: '#343f4b', 800: '#232c36', 900: '#17212b', 950: '#0e151c'
         },
         primary: {

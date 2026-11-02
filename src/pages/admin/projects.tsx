@@ -1,3 +1,4 @@
+import { uniqueSlug } from '@/lib/slug';
 import { useState, useEffect } from 'react';
 import { dbFailure } from '@/lib/db';
 import { Plus, Pencil, Trash2, X, Star, Images, Eye, ZoomIn, Sparkles, CheckCircle2, GripVertical, ArrowUp, ArrowDown, Save, FileSpreadsheet, MapPin, Table as TableIcon, Columns, Kanban, DollarSign, Layers, FileText } from 'lucide-react';
@@ -46,6 +47,7 @@ export default function AdminProjects() {
     results: '',
     featured: false,
     is_active: true,
+    show_client_name: false,
     project_date: '',
     completion_date: '',
     area_size: '',
@@ -62,7 +64,7 @@ export default function AdminProjects() {
   };
 
   const resetForm = () => {
-    setForm({ title: '', client_name: '', service_type: '', category: '', location: '', description: '', materials_used: '', challenge: '', solution: '', results: '', featured: false, is_active: true, project_date: '', completion_date: '', area_size: '', estimated_budget: '' });
+    setForm({ title: '', client_name: '', service_type: '', category: '', location: '', description: '', materials_used: '', challenge: '', solution: '', results: '', featured: false, is_active: true, show_client_name: false, project_date: '', completion_date: '', area_size: '', estimated_budget: '' });
     setEditing(null);
     setShowForm(false);
   };
@@ -106,7 +108,8 @@ export default function AdminProjects() {
       return;
     }
     setSavingProject(true);
-    const slug = form.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/-+/g, '-');
+    // Slugs are public URLs and unique in the database (see uniqueSlug).
+    const slug = uniqueSlug(form.title, projects.filter((p) => p.id !== editing?.id).map((p) => p.slug), editing?.slug, 'project');
     const data = {
       ...form,
       slug,
@@ -163,6 +166,7 @@ export default function AdminProjects() {
       results: project.results || '',
       featured: project.featured,
       is_active: project.is_active,
+      show_client_name: project.show_client_name ?? false,
       project_date: project.project_date || '',
       completion_date: project.completion_date || '',
       area_size: project.area_size || '',
@@ -246,7 +250,7 @@ export default function AdminProjects() {
           <p className="text-xs text-gray-500">Drag rows or use arrow handles to reorder gallery display position on the homepage.</p>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
           {/* View Mode Toggle Controls */}
           <div className="bg-gray-100 p-1 rounded-xl flex items-center gap-1 border border-gray-200">
             <button
@@ -547,19 +551,19 @@ export default function AdminProjects() {
               <button onClick={resetForm} className="p-1.5 rounded-full hover:bg-gray-100 text-gray-400 hover:text-gray-700"><X className="w-5 h-5" /></button>
             </div>
             <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="grid sm:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <input required placeholder="Project Title *" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} className="input text-xs" />
                 <input placeholder="Client Name (e.g. Metro Logistics Park)" value={form.client_name} onChange={(e) => setForm({ ...form, client_name: e.target.value })} className="input text-xs" />
               </div>
 
-              <div className="grid sm:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <input placeholder="Service Type (e.g., Epoxy Flooring)" value={form.service_type} onChange={(e) => setForm({ ...form, service_type: e.target.value })} className="input text-xs" />
                 <input placeholder="Category (e.g., Industrial, Waterproofing)" value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} className="input text-xs" />
               </div>
 
               <input placeholder="Location (e.g. Central District, Metro Area)" value={form.location} onChange={(e) => setForm({ ...form, location: e.target.value })} className="input text-xs" />
 
-              <div className="grid sm:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div>
                   <label className="block text-[11px] font-semibold text-gray-500 mb-1">Start Date</label>
                   <input type="date" value={form.project_date} onChange={(e) => setForm({ ...form, project_date: e.target.value })} className="input text-xs" />
@@ -590,7 +594,7 @@ export default function AdminProjects() {
                 <input placeholder="e.g. Solvent-Free Epoxy Resin (3mm), Quartz Aggregate, Polyurethane Topcoat" value={form.materials_used} onChange={(e) => setForm({ ...form, materials_used: e.target.value })} className="input text-xs" />
               </div>
 
-              <div className="grid sm:grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <textarea placeholder="Challenge faced..." value={form.challenge} onChange={(e) => setForm({ ...form, challenge: e.target.value })} className="input min-h-[50px] text-xs" />
                 <textarea placeholder="Solution implemented..." value={form.solution} onChange={(e) => setForm({ ...form, solution: e.target.value })} className="input min-h-[50px] text-xs" />
                 <textarea placeholder="Results & impact..." value={form.results} onChange={(e) => setForm({ ...form, results: e.target.value })} className="input min-h-[50px] text-xs" />
@@ -604,6 +608,10 @@ export default function AdminProjects() {
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input type="checkbox" checked={form.is_active} onChange={(e) => setForm({ ...form, is_active: e.target.checked })} className="rounded text-primary-600 focus:ring-primary-500" />
                   <span className="text-xs font-semibold text-gray-700">Visible on Frontend</span>
+                </label>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input type="checkbox" checked={form.show_client_name} onChange={(e) => setForm({ ...form, show_client_name: e.target.checked })} className="rounded text-primary-600 focus:ring-primary-500" />
+                  <span className="text-xs font-semibold text-gray-700">Show client name publicly (client has agreed)</span>
                 </label>
               </div>
 
@@ -870,7 +878,7 @@ function ProjectGalleryModal({ project, onClose }: { project: Project; onClose: 
                 <span className="text-xs font-bold text-primary-400 uppercase tracking-wider flex items-center gap-1">
                   <Eye className="w-3.5 h-3.5" /> Live Thumbnail Quality Preview
                 </span>
-                <span className="text-[10px] text-gray-400">Matches client gallery appearance</span>
+                <span className="text-[10px] text-gray-300">Matches client gallery appearance</span>
               </div>
 
               <div className="flex flex-col sm:flex-row gap-4 items-center">
@@ -904,7 +912,7 @@ function ProjectGalleryModal({ project, onClose }: { project: Project; onClose: 
                     <CheckCircle2 className="w-4 h-4" />
                     <span>Thumbnail Ready for Save</span>
                   </div>
-                  <p className="text-[11px] text-gray-400 leading-normal">
+                  <p className="text-[11px] text-gray-300 leading-normal">
                     This photo will be displayed under <strong>{typeLabels[newImageType]}</strong> tab on the project gallery view.
                   </p>
                   {newCaption && (

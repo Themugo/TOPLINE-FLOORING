@@ -20,7 +20,7 @@ check('Cart retains local persistence and variant-aware cart identity', cartHook
 check('Cart uses authoritative secure order RPC wrapper', cart.includes('createCustomerOrder(') && commerce.includes("supabase.rpc('create_secure_customer_order'"));
 check('Cart requires available payment method before order creation', cart.indexOf('if (!paymentMethod || !paymentGatewayKey)') > -1 && cart.indexOf('if (!paymentMethod || !paymentGatewayKey)') < cart.indexOf('const result = await createCustomerOrder('));
 check('Cart coupon validation remains server-backed and invalidates after subtotal changes', cart.includes('validateCoupon(couponCode, totalPrice)') && cart.includes('Your cart changed. Please reapply the coupon'));
-check('Cart payment initiation retains idempotency and return route', cart.includes('checkout-payment:${checkoutIdempotencyKey}') && cart.includes('/payment-return'));
+check('Cart payment initiation retains idempotency and return route', cart.includes("checkout-payment:${checkoutKey}") && cart.includes('/payment-return'));
 check('Quotation submission preserves canonical quotation RPC', quote.includes('submitQuotationRequest(') && commerce.includes("supabase.rpc('submit_quotation_request'"));
 check('Quotation validates positive area and project location', quote.includes('area <= 0') && quote.includes("if (!form.location.trim())"));
 check('Quotation budget clearly labels itself indicative and avoids unsupported guarantees', quote.includes('Indicative Budget Range (KES)') && !quote.includes('Guaranteed 24h Turnaround') && !quote.includes('within 24h'));

@@ -181,7 +181,7 @@ export default function AdminSiteControl() {
       {tab === 'design' && <div className="space-y-6">
         <section className="bg-white border rounded-xl p-6">
           <h2 className="font-semibold mb-1">Design Tokens</h2><p className="text-sm text-gray-500 mb-5">Change global spacing, width, radius and surface behavior without rebuilding the application.</p>
-          <div className="grid md:grid-cols-2 gap-4">{tokens.map((token) => <div key={token.id} className="border rounded-lg p-4"><label className="text-sm font-medium">{token.token_key}</label><p className="text-xs text-gray-500 mb-2">{token.description}</p><div className="flex gap-2"><input value={token.token_value} onChange={e=>setTokens(prev=>prev.map(x=>x.id===token.id?{...x,token_value:e.target.value}:x))} className="input flex-1"/><button disabled={saving} onClick={()=>void saveToken(token)} className="btn-secondary"><Save className="w-4 h-4"/></button></div></div>)}</div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">{tokens.map((token) => <div key={token.id} className="border rounded-lg p-4"><label className="text-sm font-medium">{token.token_key}</label><p className="text-xs text-gray-500 mb-2">{token.description}</p><div className="flex gap-2"><input value={token.token_value} onChange={e=>setTokens(prev=>prev.map(x=>x.id===token.id?{...x,token_value:e.target.value}:x))} className="input flex-1"/><button disabled={saving} onClick={()=>void saveToken(token)} className="btn-secondary"><Save className="w-4 h-4"/></button></div></div>)}</div>
         </section>
         <section className="bg-white border rounded-xl p-6">
           <h2 className="font-semibold mb-1">Advanced Custom CSS</h2><p className="text-sm text-gray-500 mb-3">For advanced visual redesign. External resource loading and executable CSS constructs are blocked.</p>
@@ -202,7 +202,7 @@ export default function AdminSiteControl() {
                 <div><h3 className="font-semibold">{item.display_name}</h3><p className="text-xs text-gray-500 mt-1">{item.gateway_key} · {item.provider} · health: {item.health_status}</p></div>
                 <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={item.is_enabled} onChange={e=>setPaymentGateways(prev=>prev.map(x=>x.id===item.id?{...x,is_enabled:e.target.checked}:x))}/> Enabled</label>
               </div>
-              <div className="grid md:grid-cols-2 gap-4 mt-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                 <label className="text-sm font-medium">Customer display name<input className="input mt-1" value={item.display_name} onChange={e=>setPaymentGateways(prev=>prev.map(x=>x.id===item.id?{...x,display_name:e.target.value}:x))}/></label>
                 <label className="text-sm font-medium">Provider key<input className="input mt-1" value={item.provider} onChange={e=>setPaymentGateways(prev=>prev.map(x=>x.id===item.id?{...x,provider:e.target.value}:x))}/></label>
                 <label className="text-sm font-medium md:col-span-2">Customer description<textarea className="input mt-1 min-h-[70px]" value={item.customer_description || ''} onChange={e=>setPaymentGateways(prev=>prev.map(x=>x.id===item.id?{...x,customer_description:e.target.value}:x))}/></label>
@@ -224,7 +224,7 @@ export default function AdminSiteControl() {
           <div className="space-y-4">
             {integrations.map(item => <section key={item.id} className="bg-white border rounded-xl p-6">
               <div className="flex items-start justify-between gap-4"><div><h2 className="font-semibold capitalize">{item.channel}: {item.integration_key}</h2><p className="text-sm text-gray-500 mt-1">Provider configuration is editable here; secret values are intentionally kept outside the browser.</p></div><span className={`text-xs rounded-full px-3 py-1 ${item.is_enabled?'bg-green-100 text-green-700':'bg-gray-100 text-gray-600'}`}>{item.is_enabled?'ENABLED':'DISABLED'}</span></div>
-              <div className="grid md:grid-cols-3 gap-4 mt-5">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-5">
                 <label className="text-sm font-medium">Provider<input value={item.provider} onChange={e=>setIntegrations(prev=>prev.map(x=>x.id===item.id?{...x,provider:e.target.value}:x))} className="input mt-1"/></label>
                 <label className="text-sm font-medium">Required secret<input value={item.required_secret_env || ''} readOnly className="input mt-1 bg-gray-50 font-mono text-xs"/></label>
                 <label className="flex items-center gap-2 text-sm mt-7"><input type="checkbox" checked={item.is_enabled} onChange={e=>setIntegrations(prev=>prev.map(x=>x.id===item.id?{...x,is_enabled:e.target.checked}:x))}/><span>Enable provider</span></label>
@@ -236,7 +236,7 @@ export default function AdminSiteControl() {
         </section>
       </div>}
 
-      {tab === 'features' && <div className="grid md:grid-cols-2 gap-4">{flags.map(item=><section key={item.id} className="bg-white border rounded-xl p-5"><div className="flex items-center justify-between gap-4"><div><h2 className="font-semibold">{item.label}</h2><p className="text-sm text-gray-500 mt-1">{item.description}</p></div><label className="relative inline-flex items-center cursor-pointer"><input type="checkbox" className="sr-only peer" checked={item.is_enabled} onChange={e=>{const next={...item,is_enabled:e.target.checked};setFlags(prev=>prev.map(x=>x.id===item.id?next:x));void saveFlag(next);}}/><span className="w-11 h-6 bg-gray-200 rounded-full peer peer-checked:bg-primary-600 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-full"/></label></div></section>)}</div>}
+      {tab === 'features' && <div className="grid grid-cols-1 md:grid-cols-2 gap-4">{flags.map(item=><section key={item.id} className="bg-white border rounded-xl p-5"><div className="flex items-center justify-between gap-4"><div><h2 className="font-semibold">{item.label}</h2><p className="text-sm text-gray-500 mt-1">{item.description}</p></div><label className="relative inline-flex items-center cursor-pointer"><input type="checkbox" className="sr-only peer" checked={item.is_enabled} onChange={e=>{const next={...item,is_enabled:e.target.checked};setFlags(prev=>prev.map(x=>x.id===item.id?next:x));void saveFlag(next);}}/><span className="w-11 h-6 bg-gray-200 rounded-full peer peer-checked:bg-primary-600 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-full"/></label></div></section>)}</div>}
     </div>
   </AdminLayout>;
 }

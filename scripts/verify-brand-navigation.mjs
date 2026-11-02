@@ -15,7 +15,7 @@ check('Logo mark includes house/roof and flooring geometry', /<path/.test(mark) 
 check('Desktop primary navigation remains responsive', /hidden lg:flex[^>]*aria-label="Main navigation"/.test(header));
 check('Mobile navigation retains an accessible menu control', /aria-controls="mobile-menu"/.test(header) && /aria-expanded=\{mobileMenuOpen\}/.test(header));
 check('Mobile menu includes a dedicated quotation call to action', /href="\/quotation"[\s\S]*?Request a quotation/.test(header));
-check('Navigation closes on route changes', /useEffect\(\(\) => \{\s*setMobileMenuOpen\(false\);\s*setMoreMenuOpen\(false\);\s*\}, \[location\]\)/.test(header));
+check('Navigation closes on route changes', /setMobileMenuOpen\(false\);\s*setMoreMenuOpen\(false\);[\s\S]{0,80}\}, \[location\]\)/.test(header));
 check('Escape closes open navigation menus', /event\.key === 'Escape'[\s\S]*setMobileMenuOpen\(false\)[\s\S]*setMoreMenuOpen\(false\)/.test(header));
 check('Header actions expose keyboard focus styling', /focus-visible:ring-2/.test(header));
 

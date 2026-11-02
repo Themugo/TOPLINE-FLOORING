@@ -30,7 +30,10 @@ function trackRecentlyViewed(slug: string) {
 
 export default function ShopDetail() {
   const [location, setLocation] = useLocation();
-  const slug = location.replace('/product/', '');
+  const slug = (() => {
+    const raw = location.replace(/^\/product\//, '').split(/[?#]/)[0].replace(/\/+$/, '');
+    try { return decodeURIComponent(raw); } catch { return raw; }
+  })();
   const [qty, setQty] = useState(1);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [added, setAdded] = useState(false);
@@ -371,14 +374,14 @@ export default function ShopDetail() {
 
               {/* Logistics & Support Callout */}
               <div className="p-4 rounded-xl bg-navy-950 text-white text-xs space-y-2">
-                <div className="flex items-center gap-2 font-bold text-primary-300">
+                <div className="flex items-center gap-2 font-bold text-primary-200">
                   <Truck className="w-4 h-4" />
                   <span>Site Delivery & Technical Field Assistance</span>
                 </div>
                 <p className="text-gray-300 leading-relaxed text-[11px]">
                   Orders placed online are dispatched from our central fulfillment hub. Our technical engineers can perform on-site substrate testing and application supervision.
                 </p>
-                <div className="flex items-center gap-3 pt-1 text-[10px] text-gray-400 font-medium">
+                <div className="flex items-center gap-3 pt-1 text-[10px] text-gray-300 font-medium">
                   <span className="flex items-center gap-1">
                     <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
                     <span>Manufacturer Warranty</span>

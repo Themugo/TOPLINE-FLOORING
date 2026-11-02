@@ -30,7 +30,7 @@ check(!hero.includes('slide-${Date.now()}'), 'Hero slides must not fabricate loc
 const app = read('src/App.tsx');
 const routeBlock = app.slice(app.indexOf('const adminRoutes'), app.indexOf('const AdminComponent'));
 const routed = [...routeBlock.matchAll(/'(\/admin\/[a-z0-9-]+)':/g)].map((m) => m[1]);
-const guard = read('src/components/admin/AdminGuard.tsx');
+const guard = read('src/components/admin/AdminGuard.tsx') + read('src/lib/admin-permissions.ts');
 for (const route of routed) check(guard.includes(`'${route}':`), `Admin route ${route} has no entry in AdminGuard ROUTE_PERMISSIONS`);
 
 // ---- Round: catalogue admin, load-failure visibility and no fabricated public contact data ----

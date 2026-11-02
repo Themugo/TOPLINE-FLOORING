@@ -22,7 +22,7 @@ interface OrderSummary {
 export default function OrderConfirmation() {
   useSeoMeta('order-confirmation', null, { breadcrumbs: [{ label: 'Materials Shop', href: '/shop' }, { label: 'Order Confirmation' }], noIndex: true });
   const [location] = useLocation();
-  const orderId = location.split('/order-confirmation/')[1] || '';
+  const orderId = (location.split('/order-confirmation/')[1] || '').replace(/\/+$/, '');
   const [summary, setSummary] = useState<OrderSummary | null>(null);
 
   useEffect(() => {

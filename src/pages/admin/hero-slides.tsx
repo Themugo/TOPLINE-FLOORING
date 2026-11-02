@@ -103,11 +103,11 @@ export default function AdminHeroSlides() {
       </div>
 
       {loading ? (
-        <div className="text-center py-12 text-navy-400">Loading slides...</div>
+        <div className="text-center py-12 text-gray-600">Loading slides...</div>
       ) : slides.length === 0 ? (
         <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
           <ImageIcon className="w-10 h-10 text-gray-300 mx-auto mb-3" />
-          <p className="text-navy-500 mb-4">No hero slides yet.</p>
+          <p className="text-gray-700 mb-4">No hero slides yet.</p>
           <button onClick={() => setShowForm(true)} className="btn-primary">Add Your First Slide</button>
         </div>
       ) : (
@@ -117,12 +117,12 @@ export default function AdminHeroSlides() {
               <img src={slide.image_url} alt="" loading="lazy" className="w-32 h-20 object-cover rounded flex-shrink-0" />
               <div className="flex-1 min-w-0">
                 <h3 className="font-medium text-navy-900 truncate">{slide.title}</h3>
-                <p className="text-sm text-navy-400 truncate">{slide.subtitle}</p>
-                {!slide.is_active && <span className="inline-block mt-1 text-xs px-2 py-0.5 rounded-full bg-gray-100 text-navy-500">Hidden</span>}
+                <p className="text-sm text-gray-600 truncate">{slide.subtitle}</p>
+                {!slide.is_active && <span className="inline-block mt-1 text-xs px-2 py-0.5 rounded-full bg-gray-100 text-gray-700">Hidden</span>}
               </div>
               <div className="flex items-center gap-1 flex-shrink-0">
-                <button onClick={() => { setEditing(slide); setForm({ ...slide }); setShowForm(true); }} className="p-2 text-navy-500 hover:text-primary-600" title="Edit"><Pencil className="w-4 h-4" /></button>
-                <button onClick={() => handleDelete(slide.id)} className="p-2 text-navy-500 hover:text-red-600" title="Delete"><Trash2 className="w-4 h-4" /></button>
+                <button onClick={() => { setEditing(slide); setForm({ ...slide }); setShowForm(true); }} className="p-2 text-gray-700 hover:text-primary-600" title="Edit"><Pencil className="w-4 h-4" /></button>
+                <button onClick={() => handleDelete(slide.id)} className="p-2 text-gray-700 hover:text-red-600" title="Delete"><Trash2 className="w-4 h-4" /></button>
               </div>
             </div>
           ))}
@@ -134,7 +134,7 @@ export default function AdminHeroSlides() {
           <div className="bg-white rounded-xl max-w-lg w-full p-6 max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
             <div className="flex justify-between items-center mb-4">
               <h2 className="font-semibold text-lg text-navy-900">{editing ? 'Edit Slide' : 'Add Slide'}</h2>
-              <button onClick={resetForm}><X className="w-5 h-5 text-navy-400" /></button>
+              <button onClick={resetForm}><X className="w-5 h-5 text-gray-600" /></button>
             </div>
             <form onSubmit={handleSubmit} className="space-y-4">
               <input required placeholder="Title *" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} className="input" />

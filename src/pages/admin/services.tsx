@@ -156,7 +156,7 @@ export default function AdminServices() {
           <button onClick={openCreate} className="btn-primary">Add your first service</button>
         </div>
       ) : (
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {services.map((service) => (
             <div key={service.id} className={`card overflow-hidden ${!service.is_active ? 'opacity-50' : ''}`}>
               <div className="aspect-video overflow-hidden bg-gray-100">

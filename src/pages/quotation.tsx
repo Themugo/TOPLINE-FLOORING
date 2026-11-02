@@ -232,7 +232,7 @@ export default function Quotation() {
 
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
             <div className="max-w-3xl space-y-4">
-              <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-primary-500/20 text-primary-300 border border-primary-400/30 text-xs font-bold uppercase tracking-wider">
+              <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-primary-500/20 text-primary-200 border border-primary-400/30 text-xs font-bold uppercase tracking-wider">
                 <FileText className="w-3.5 h-3.5" />
                 Official Bill of Quantities & Scope Assessment
               </span>
@@ -270,7 +270,7 @@ export default function Quotation() {
                       Instant Budget Estimator
                     </h3>
                   </div>
-                  <span className="text-[10px] font-bold uppercase tracking-wider bg-primary-500/20 text-primary-300 border border-primary-400/30 px-2 py-0.5 rounded">
+                  <span className="text-[10px] font-bold uppercase tracking-wider bg-primary-500/20 text-primary-200 border border-primary-400/30 px-2 py-0.5 rounded">
                     Guide Rates
                   </span>
                 </div>
@@ -280,7 +280,7 @@ export default function Quotation() {
                     <label className="block font-bold text-gray-300 mb-1">
                       Selected System
                     </label>
-                    <p className="font-semibold text-primary-300 bg-white/5 p-2.5 rounded-xl border border-white/10">
+                    <p className="font-semibold text-primary-100 bg-white/5 p-2.5 rounded-xl border border-white/10">
                       {estimatedBudget?.systemName || form.project_type}
                     </p>
                   </div>
@@ -306,7 +306,7 @@ export default function Quotation() {
 
                   {estimatedBudget && estimatedBudget.min > 0 ? (
                     <div className="p-4 rounded-xl bg-gradient-to-br from-primary-950/80 to-navy-900 border border-primary-500/30 mt-4 space-y-1">
-                      <p className="text-[10px] font-bold uppercase tracking-wider text-primary-300">
+                      <p className="text-[10px] font-bold uppercase tracking-wider text-primary-200">
                         Indicative Budget Range (KES)
                       </p>
                       <p className="font-display text-2xl font-bold text-white">
@@ -443,10 +443,11 @@ export default function Quotation() {
 
                     <div className="grid sm:grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-xs font-bold uppercase tracking-wider text-navy-950 mb-1.5">
+                        <label htmlFor="quote-project-type" className="block text-xs font-bold uppercase tracking-wider text-navy-950 mb-1.5">
                           Project System / Category <span className="text-red-500">*</span>
                         </label>
                         <select
+                          id="quote-project-type"
                           required
                           value={form.project_type}
                           onChange={(e) => setForm({ ...form, project_type: e.target.value })}
@@ -508,10 +509,11 @@ export default function Quotation() {
 
                     <div className="grid sm:grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-xs font-bold uppercase tracking-wider text-navy-950 mb-1.5">
+                        <label htmlFor="quote-substrate-condition" className="block text-xs font-bold uppercase tracking-wider text-navy-950 mb-1.5">
                           Current Substrate State
                         </label>
                         <select
+                          id="quote-substrate-condition"
                           value={form.substrate_condition}
                           onChange={(e) => setForm({ ...form, substrate_condition: e.target.value })}
                           className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:bg-white text-xs font-semibold text-navy-950 transition-all cursor-pointer"
@@ -525,10 +527,11 @@ export default function Quotation() {
                       </div>
 
                       <div>
-                        <label className="block text-xs font-bold uppercase tracking-wider text-navy-950 mb-1.5">
+                        <label htmlFor="quote-timeline" className="block text-xs font-bold uppercase tracking-wider text-navy-950 mb-1.5">
                           Expected Timeline
                         </label>
                         <select
+                          id="quote-timeline"
                           value={form.timeline}
                           onChange={(e) => setForm({ ...form, timeline: e.target.value })}
                           className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:bg-white text-xs font-semibold text-navy-950 transition-all cursor-pointer"

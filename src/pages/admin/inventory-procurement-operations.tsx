@@ -55,8 +55,8 @@ export default function InventoryProcurementOperations() {
     <AdminLayout title="Inventory & Procurement 360">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
         <div>
-          <p className="text-sm text-navy-500">30-day operational control across stock, warehouses and supplier commitments</p>
-          <h1 className="text-2xl font-display font-bold text-navy-900">Inventory & Procurement Operations</h1>
+          <p className="text-sm text-gray-700">30-day operational control across stock, warehouses and supplier commitments</p>
+          <h2 className="text-2xl font-display font-bold text-navy-900">Inventory & Procurement Operations</h2>
         </div>
         <div className="flex gap-2">
           <button onClick={() => void reconcile()} disabled={reconciling} className="btn-secondary flex items-center gap-2">
@@ -69,23 +69,23 @@ export default function InventoryProcurementOperations() {
         </div>
       </div>
 
-      <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
         {cards.map(([label, value, Icon]) => (
           <div key={label} className="bg-white border border-gray-200 rounded-xl p-5">
-            <div className="flex justify-between"><p className="text-sm text-navy-500">{label}</p><Icon className="w-4 h-4 text-navy-400" /></div>
+            <div className="flex justify-between"><p className="text-sm text-gray-700">{label}</p><Icon className="w-4 h-4 text-gray-600" /></div>
             <p className="text-2xl font-display font-bold text-navy-900 mt-2">{loading ? '—' : count(value)}</p>
           </div>
         ))}
       </div>
 
-      <div className="grid lg:grid-cols-3 gap-5 mt-5">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 mt-5">
         <section className="lg:col-span-2 bg-white border rounded-xl p-5">
           <h2 className="font-semibold text-navy-900">Procurement exposure</h2>
-          <div className="grid sm:grid-cols-2 gap-4 mt-4">
-            <div className="rounded-lg bg-gray-50 p-4"><p className="text-xs text-navy-500">30-day procurement value</p><p className="text-xl font-semibold text-navy-900 mt-1">{loading ? '—' : money(data.procurement_value)}</p></div>
-            <div className="rounded-lg bg-gray-50 p-4"><p className="text-xs text-navy-500">30-day received value</p><p className="text-xl font-semibold text-navy-900 mt-1">{loading ? '—' : money(data.received_value)}</p></div>
-            <div className="rounded-lg bg-gray-50 p-4"><p className="text-xs text-navy-500">Current stock units</p><p className="text-xl font-semibold text-navy-900 mt-1">{loading ? '—' : count(data.stock_units)}</p></div>
-            <div className="rounded-lg bg-gray-50 p-4"><p className="text-xs text-navy-500">Inventory movements</p><p className="text-xl font-semibold text-navy-900 mt-1">{loading ? '—' : count(data.movement_count)}</p></div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
+            <div className="rounded-lg bg-gray-50 p-4"><p className="text-xs text-gray-700">30-day procurement value</p><p className="text-xl font-semibold text-navy-900 mt-1">{loading ? '—' : money(data.procurement_value)}</p></div>
+            <div className="rounded-lg bg-gray-50 p-4"><p className="text-xs text-gray-700">30-day received value</p><p className="text-xl font-semibold text-navy-900 mt-1">{loading ? '—' : money(data.received_value)}</p></div>
+            <div className="rounded-lg bg-gray-50 p-4"><p className="text-xs text-gray-700">Current stock units</p><p className="text-xl font-semibold text-navy-900 mt-1">{loading ? '—' : count(data.stock_units)}</p></div>
+            <div className="rounded-lg bg-gray-50 p-4"><p className="text-xs text-gray-700">Inventory movements</p><p className="text-xl font-semibold text-navy-900 mt-1">{loading ? '—' : count(data.movement_count)}</p></div>
           </div>
         </section>
 
@@ -93,9 +93,9 @@ export default function InventoryProcurementOperations() {
           <h2 className="font-semibold text-navy-900">PO status</h2>
           <div className="space-y-3 mt-4">
             {Object.entries((data.status_breakdown || {}) as Record<string, unknown>).length === 0
-              ? <p className="text-sm text-navy-500">No purchase orders.</p>
+              ? <p className="text-sm text-gray-700">No purchase orders.</p>
               : Object.entries((data.status_breakdown || {}) as Record<string, unknown>).map(([status, value]) => (
-                <div key={status} className="flex justify-between text-sm"><span className="text-navy-500 capitalize">{status.replaceAll('_',' ')}</span><span className="font-semibold text-navy-900">{count(value)}</span></div>
+                <div key={status} className="flex justify-between text-sm"><span className="text-gray-700 capitalize">{status.replaceAll('_',' ')}</span><span className="font-semibold text-navy-900">{count(value)}</span></div>
               ))}
           </div>
         </section>

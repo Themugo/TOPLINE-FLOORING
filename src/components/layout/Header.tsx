@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useBodyScrollLock } from '@/hooks/use-body-scroll-lock';
 import { Link, useLocation } from 'wouter';
 import { Menu, X, ShoppingCart, Phone, Mail, MapPin, LogIn, Facebook, Instagram, Linkedin, UserRound, ClipboardCheck, ChevronDown, Home, Wrench, Briefcase, ShoppingBag, MessageSquareQuote, ChevronRight, Search } from 'lucide-react';
 import { useCart } from '@/hooks/use-cart';
@@ -31,11 +32,6 @@ export function Header() {
   }, [location]);
 
   useEffect(() => {
-    setMobileMenuOpen(false);
-    setMoreMenuOpen(false);
-  }, [location]);
-
-  useEffect(() => {
     if (!mobileMenuOpen && !moreMenuOpen) return;
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
@@ -46,6 +42,7 @@ export function Header() {
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
   }, [mobileMenuOpen, moreMenuOpen]);
+  useBodyScrollLock(mobileMenuOpen);
   const { totalItems } = useCart();
   const { settings } = useSiteSettings();
   const { menus } = useNavigationMenus('header');
@@ -284,6 +281,16 @@ export function Header() {
             <button type="submit" className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-[#0C2D57] px-4 text-sm font-bold text-white"><Search className="h-4 w-4" />Search</button>
           </div>
         </form>
+      )}
+
+      {mobileMenuOpen && (
+        <button
+          type="button"
+          tabIndex={-1}
+          aria-hidden="true"
+          onClick={() => setMobileMenuOpen(false)}
+          className="fixed inset-0 -z-10 cursor-default bg-[#0C2D57]/40 lg:hidden"
+        />
       )}
 
       {mobileMenuOpen && (

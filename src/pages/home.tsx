@@ -442,10 +442,10 @@ export default function Home() {
                     <ServiceToneBar service={service} />
                     <div className="absolute inset-0 bg-gradient-to-t from-navy-950 via-navy-900/50 to-transparent opacity-90 group-hover:opacity-80 transition-opacity" />
                     <div className="absolute bottom-0 left-0 right-0 p-6">
-                      <span className="inline-block text-[11px] font-semibold tracking-widest uppercase text-primary-300 mb-1.5">
+                      <span className="inline-block text-[11px] font-semibold tracking-widest uppercase text-primary-200 mb-1.5">
                         Specialized Service
                       </span>
-                      <h3 className="font-display text-lg lg:text-xl font-bold text-white mb-2 leading-tight group-hover:text-primary-300 transition-colors">
+                      <h3 className="font-display text-lg lg:text-xl font-bold text-white mb-2 leading-tight group-hover:text-primary-200 transition-colors">
                         {service.name}
                       </h3>
                       <p className="text-xs lg:text-sm text-gray-200 line-clamp-2 leading-relaxed">{service.short_description || service.description}</p>
@@ -473,7 +473,7 @@ export default function Home() {
                       <ArrowRight className="w-4 h-4 text-white" />
                     </div>
                     <div className="absolute bottom-0 left-0 right-0 p-4 lg:p-5">
-                      <h3 className="font-display text-base lg:text-lg font-bold text-white leading-snug group-hover:text-primary-300 transition-colors">
+                      <h3 className="font-display text-base lg:text-lg font-bold text-white leading-snug group-hover:text-primary-200 transition-colors">
                         {service.name}
                       </h3>
                       <p className="text-xs text-gray-200 line-clamp-1 mt-1 hidden sm:block">{service.short_description || service.description}</p>

@@ -206,13 +206,29 @@ export function ProjectDocumentManager({
 
   const openDocument = async (doc: ProjectDocument, download: boolean) => {
     setBusyDocId(doc.id);
+    // Open the tab synchronously inside the click so Safari/mobile popup blockers allow it;
+    // the signed URL is assigned once it has been created.
+    const viewer = download ? null : window.open('', '_blank');
+    if (viewer) viewer.opener = null;
     try {
       const { data, error } = await supabase.storage
         .from(DOCUMENT_BUCKET)
         .createSignedUrl(doc.storage_path, SIGNED_URL_TTL_SECONDS, download ? { download: doc.file_name } : undefined);
       if (error || !data?.signedUrl) throw error ?? new Error('Could not create a secure link.');
-      window.open(data.signedUrl, '_blank', 'noopener,noreferrer');
+      if (viewer) {
+        viewer.location.href = data.signedUrl;
+      } else {
+        // Downloads (and blocked popups) navigate via a temporary anchor click.
+        const anchor = document.createElement('a');
+        anchor.href = data.signedUrl;
+        anchor.rel = 'noopener noreferrer';
+        if (download) anchor.download = doc.file_name; else anchor.target = '_blank';
+        document.body.appendChild(anchor);
+        anchor.click();
+        anchor.remove();
+      }
     } catch (err) {
+      viewer?.close();
       toast({ title: 'Could not open document', description: errorMessage(err), variant: 'destructive' });
     } finally {
       setBusyDocId(null);

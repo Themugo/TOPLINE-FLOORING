@@ -15,7 +15,7 @@ const all=required.filter(f=>f.endsWith('.sql')).map(f=>fs.readFileSync(path.joi
 for(const marker of ['installation_assignments','project_cost_entries','service_cases','assign_installation_staff','add_project_cost_entry','create_service_case']) if(!all.includes(marker)) throw new Error(`Missing contract marker ${marker}`);
 const app=fs.readFileSync(path.join(root,'src/App.tsx'),'utf8');
 for(const route of ['/admin/installation-workforce','/admin/project-profitability','/admin/service-cases']) if(!app.includes(route)) throw new Error(`Missing route ${route}`);
-const nav=fs.readFileSync(path.join(root,'src/pages/admin/dashboard.tsx'),'utf8');
+const nav=fs.readFileSync(path.join(root,'src/lib/admin-nav.ts'),'utf8');
 for(const route of ['/admin/installation-workforce','/admin/project-profitability','/admin/service-cases']) if(!nav.includes(route)) throw new Error(`Missing navigation ${route}`);
 console.log('Phase 45–47 source verification passed.');
 console.log(`Active migrations: ${migrations.length}`);

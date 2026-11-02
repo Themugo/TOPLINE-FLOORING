@@ -73,6 +73,8 @@ function escXml(s) {
   return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
+const fetchFailures = [];
+
 async function fetchSlugs(table, slugCol = 'slug', activeCol = 'is_active') {
   if (!supabase) {
     return [];
@@ -86,6 +88,7 @@ async function fetchSlugs(table, slugCol = 'slug', activeCol = 'is_active') {
     return (data || []).map((r) => r[slugCol]).filter(Boolean);
   } catch (err) {
     console.warn(`  Warning: could not fetch ${table}: ${err.message}`);
+    fetchFailures.push(table);
     return [];
   }
 }
@@ -103,6 +106,13 @@ async function main() {
   ]);
 
   console.log(`  Products: ${productSlugs.length}, Services: ${serviceSlugs.length}`);
+
+  // A production deploy must never silently ship a sitemap that is missing every product/service URL
+  // because a catalogue query failed. Preview/local builds keep the lenient behaviour.
+  if (hasSupabase && fetchFailures.length && process.env.VERCEL_ENV === 'production') {
+    console.error(`Refusing to publish an incomplete production sitemap: could not read ${fetchFailures.join(', ')}. Check the Supabase variables and retry the deploy.`);
+    process.exit(1);
+  }
 
   const urls = [...staticUrls];
 

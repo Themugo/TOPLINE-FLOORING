@@ -82,6 +82,7 @@ export function LeadList({ leads, loading, onEdit, onDelete, onAddNew }: LeadLis
         <div className="flex items-center gap-2">
           <Filter className="w-4 h-4 text-gray-400" />
           <select
+            aria-label="Filter by stage"
             value={stageFilter}
             onChange={(e) => setStageFilter(e.target.value)}
             className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"

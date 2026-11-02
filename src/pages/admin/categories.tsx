@@ -130,7 +130,7 @@ export default function AdminCategories() {
       ) : filteredCategories.length === 0 ? (
         <div className="bg-white rounded-xl border border-gray-200 p-12 text-center shadow-2xs">
           <FolderOpen className="w-10 h-10 text-gray-300 mx-auto mb-3" />
-          <h3 className="font-semibold text-gray-900 text-sm mb-1">No Categories Found</h3>
+          <h2 className="font-semibold text-gray-900 text-sm mb-1">No Categories Found</h2>
           <p className="text-xs text-gray-500 mb-4 max-w-sm mx-auto">
             {search ? `No categories matching "${search}".` : 'Get started by creating your first product category.'}
           </p>

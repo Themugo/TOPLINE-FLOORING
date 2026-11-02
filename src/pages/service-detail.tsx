@@ -215,7 +215,7 @@ export default function ServiceDetail() {
       {/* CTA */}
       <section className="relative isolate overflow-hidden bg-[#0A2548] py-14 text-white sm:py-16 lg:py-20">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
-          <p className="text-xs font-bold uppercase tracking-[.18em] text-[#C8F26A]">Next step</p><h2 className="mb-3 mt-3 font-display text-3xl font-semibold tracking-tight sm:text-4xl">Ready to begin your project?</h2>
+          <p className="text-xs font-bold uppercase tracking-[.18em] text-[#C8F26A]">Next step</p><h2 className="mb-3 mt-3 font-display text-3xl font-semibold tracking-tight text-white sm:text-4xl">Ready to begin your project?</h2>
           <p className="text-navy-100/90 text-base mb-8 max-w-xl mx-auto">
             Tell us about your site and requirements so we can discuss the scope and quotation for your {service.name.toLowerCase()} project.
           </p>

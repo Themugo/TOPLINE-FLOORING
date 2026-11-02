@@ -99,8 +99,8 @@ export function RecentProjects() {
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-6">
           <div className="max-w-2xl">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary-500/15 border border-primary-500/30 text-primary-300 text-xs font-semibold tracking-wider uppercase mb-3">
-              <Sparkles className="w-3.5 h-3.5 text-primary-300" />
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary-500/15 border border-primary-500/30 text-primary-200 text-xs font-semibold tracking-wider uppercase mb-3">
+              <Sparkles className="w-3.5 h-3.5 text-primary-200" />
               <span>Proven Track Record</span>
             </div>
             <h2 className="font-display text-3xl sm:text-4xl font-bold text-white tracking-tight">
@@ -113,7 +113,7 @@ export function RecentProjects() {
 
           <Link
             href="/portfolio"
-            className="inline-flex items-center gap-2 text-sm font-semibold text-primary-300 hover:text-primary-200 transition-colors group self-start md:self-auto"
+            className="inline-flex items-center gap-2 text-sm font-semibold text-primary-200 hover:text-primary-100 transition-colors group self-start md:self-auto"
           >
             <span>View Full Portfolio</span>
             <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
@@ -123,7 +123,7 @@ export function RecentProjects() {
         {/* Category Filter Pills Bar */}
         <div className="flex items-center gap-2 mb-10 pb-3 overflow-x-auto border-b border-navy-700/60 scrollbar-none">
           <div className="flex items-center gap-1.5 text-xs text-navy-200 pr-3 font-semibold uppercase tracking-wider flex-shrink-0">
-            <Filter className="w-3.5 h-3.5 text-primary-300" /> Filter:
+            <Filter className="w-3.5 h-3.5 text-primary-200" /> Filter:
           </div>
           {categories.map((cat) => {
             const count = cat === 'All' ? projects.length : projects.filter((p) => {
@@ -209,7 +209,7 @@ export function RecentProjects() {
 
                     {/* Top Badges */}
                     <div className="absolute top-4 left-4 right-4 flex items-center justify-between gap-2 z-10">
-                      <span className="px-3 py-1 bg-navy-900/90 backdrop-blur-md text-primary-300 text-xs font-semibold rounded-full border border-navy-700/80">
+                      <span className="px-3 py-1 bg-navy-900/90 backdrop-blur-md text-primary-200 text-xs font-semibold rounded-full border border-navy-700/80">
                         {project.service_type || project.category || 'Flooring'}
                       </span>
                       {project.featured && (
@@ -239,7 +239,7 @@ export function RecentProjects() {
                   {/* Card Content Body */}
                   <div className="p-5 flex-1 flex flex-col justify-between">
                     <div>
-                      <h3 className="font-display font-bold text-lg text-white group-hover:text-primary-300 transition-colors line-clamp-1 mb-2">
+                      <h3 className="font-display font-bold text-lg text-white group-hover:text-primary-200 transition-colors line-clamp-1 mb-2">
                         {project.title}
                       </h3>
                       {project.description && (
@@ -250,7 +250,7 @@ export function RecentProjects() {
                     </div>
 
                     {/* Bottom CTA trigger inside card */}
-                    <div className="pt-3 border-t border-navy-800/80 flex items-center justify-between text-xs font-semibold text-primary-300 group-hover:text-primary-200">
+                    <div className="pt-3 border-t border-navy-800/80 flex items-center justify-between text-xs font-semibold text-primary-200 group-hover:text-primary-100">
                       <span className="inline-flex items-center gap-1.5">
                         <ExternalLink className="w-3.5 h-3.5" />
                         View Full Specifications
@@ -267,7 +267,7 @@ export function RecentProjects() {
         {/* Bottom Callout Bar */}
         <div className="mt-12 p-6 rounded-2xl bg-gradient-to-r from-navy-950/90 via-navy-800/80 to-navy-950/90 border border-navy-700/80 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-primary-500/20 text-primary-300 flex items-center justify-center flex-shrink-0">
+            <div className="w-10 h-10 rounded-xl bg-primary-500/20 text-primary-200 flex items-center justify-center flex-shrink-0">
               <CheckCircle2 className="w-5 h-5" />
             </div>
             <div>
@@ -345,7 +345,7 @@ export function RecentProjects() {
                   </span>
                 )}
                 {selectedProject.client_name && (
-                  <span className="px-3 py-1 rounded-full bg-gray-800/60 text-gray-400 text-xs font-medium">
+                  <span className="px-3 py-1 rounded-full bg-gray-800/60 text-gray-300 text-xs font-medium">
                     Client: {selectedProject.client_name}
                   </span>
                 )}
@@ -408,7 +408,7 @@ export function RecentProjects() {
               {/* Detailed Description */}
               {selectedProject.description && (
                 <div className="mb-6">
-                  <h4 className="font-semibold text-xs text-gray-400 uppercase tracking-wider mb-2">Project Overview</h4>
+                  <h4 className="font-semibold text-xs text-gray-300 uppercase tracking-wider mb-2">Project Overview</h4>
                   <p className="text-gray-300 text-sm leading-relaxed">
                     {selectedProject.description}
                   </p>

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { isSupabaseConfigured, supabase } from '@/lib/supabase';
 import { loadPublicProjects } from '@/lib/public-projects';
 import { useCMS } from '@/context/CMSContext';
@@ -253,9 +253,18 @@ export function useProduct(slug: string) {
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  // Only the most recent request may update state, so quickly moving between products
+  // can never show a slower, earlier response for the wrong slug.
+  const latestRequest = useRef(0);
 
   const fetchProduct = useCallback(async () => {
-    if (!slug) return;
+    const requestId = ++latestRequest.current;
+    if (!slug) {
+      setProduct(null);
+      setError(null);
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     setError(null);
     try {
@@ -266,12 +275,14 @@ export function useProduct(slug: string) {
         .eq('is_active', true)
         .maybeSingle();
       if (err) throw err;
+      if (requestId !== latestRequest.current) return;
       setProduct(data ?? null);
     } catch (err) {
+      if (requestId !== latestRequest.current) return;
       setProduct(null);
       setError(errorMessage(err, 'Failed to load product'));
     } finally {
-      setLoading(false);
+      if (requestId === latestRequest.current) setLoading(false);
     }
   }, [slug]);
 

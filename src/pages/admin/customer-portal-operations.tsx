@@ -37,7 +37,7 @@ export default function CustomerPortalOperations() {
   ] as const;
 
   return <AdminLayout title="Customer Portal Operations" subtitle="Monitor the customer self-service surface and the lifecycle data exposed through the secure portal boundary.">
-    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
       {cards.map(([label, value, Icon]) => <Card key={label}><CardHeader className="pb-2"><CardTitle className="text-sm font-medium flex items-center gap-2"><Icon className="h-4 w-4" />{label}</CardTitle></CardHeader><CardContent><p className="text-3xl font-bold">{loading ? '—' : value}</p></CardContent></Card>)}
     </div>
     <Card className="mt-6"><CardContent className="p-6"><div className="flex gap-3"><ShieldCheck className="h-5 w-5 text-primary mt-0.5"/><div><p className="font-semibold">Secure portal boundary</p><p className="text-sm text-muted-foreground mt-1">Customer-facing lifecycle data is served through the dedicated portal RPC and remains scoped to the authenticated customer identity. Staff continue to use the existing admin surfaces for operational mutations.</p></div></div></CardContent></Card>

@@ -15,7 +15,7 @@ const STATUS_STYLES: Record<InvoiceStatus, string> = {
   paid: 'bg-green-100 text-green-700',
   partial: 'bg-yellow-100 text-yellow-700',
   overdue: 'bg-red-100 text-red-700',
-  cancelled: 'bg-gray-100 text-navy-400',
+  cancelled: 'bg-gray-100 text-gray-600',
 };
 
 const STATUS_OPTIONS: InvoiceStatus[] = ['draft', 'sent', 'paid', 'partial', 'overdue', 'cancelled'];
@@ -103,11 +103,11 @@ export default function AdminInvoices() {
       <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="flex gap-6">
           <div>
-            <p className="text-sm text-navy-500">Outstanding Balance</p>
+            <p className="text-sm text-gray-700">Outstanding Balance</p>
             <p className="text-2xl font-display font-bold text-navy-900">{formatKES(totalOutstanding)}</p>
           </div>
           <div>
-            <p className="text-sm text-navy-500">Total Invoices</p>
+            <p className="text-sm text-gray-700">Total Invoices</p>
             <p className="text-2xl font-display font-bold text-navy-900">{invoices.length}</p>
           </div>
         </div>
@@ -117,11 +117,11 @@ export default function AdminInvoices() {
       </div>
 
       {loading ? (
-        <div className="text-center py-12 text-navy-400">Loading invoices...</div>
+        <div className="text-center py-12 text-gray-600">Loading invoices...</div>
       ) : invoices.length === 0 ? (
         <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
           <FileText className="w-10 h-10 text-gray-300 mx-auto mb-3" />
-          <p className="text-navy-500 mb-4">No invoices yet.</p>
+          <p className="text-gray-700 mb-4">No invoices yet.</p>
           <button onClick={() => setShowCreate(true)} className="btn-primary">Create your first invoice</button>
         </div>
       ) : (
@@ -130,13 +130,13 @@ export default function AdminInvoices() {
             <table className="w-full">
               <thead className="bg-gray-50 border-b">
                 <tr>
-                  <th className="text-left px-6 py-3 text-xs font-medium text-navy-400 uppercase">Invoice #</th>
-                  <th className="text-left px-6 py-3 text-xs font-medium text-navy-400 uppercase">Customer</th>
-                  <th className="text-left px-6 py-3 text-xs font-medium text-navy-400 uppercase">Total</th>
-                  <th className="text-left px-6 py-3 text-xs font-medium text-navy-400 uppercase">Balance</th>
-                  <th className="text-left px-6 py-3 text-xs font-medium text-navy-400 uppercase">Status</th>
-                  <th className="text-left px-6 py-3 text-xs font-medium text-navy-400 uppercase">Date</th>
-                  <th className="text-left px-6 py-3 text-xs font-medium text-navy-400 uppercase">Actions</th>
+                  <th className="text-left px-6 py-3 text-xs font-medium text-gray-600 uppercase">Invoice #</th>
+                  <th className="text-left px-6 py-3 text-xs font-medium text-gray-600 uppercase">Customer</th>
+                  <th className="text-left px-6 py-3 text-xs font-medium text-gray-600 uppercase">Total</th>
+                  <th className="text-left px-6 py-3 text-xs font-medium text-gray-600 uppercase">Balance</th>
+                  <th className="text-left px-6 py-3 text-xs font-medium text-gray-600 uppercase">Status</th>
+                  <th className="text-left px-6 py-3 text-xs font-medium text-gray-600 uppercase">Date</th>
+                  <th className="text-left px-6 py-3 text-xs font-medium text-gray-600 uppercase">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y">
@@ -144,10 +144,10 @@ export default function AdminInvoices() {
                   const balance = inv.total_amount - inv.amount_paid;
                   return (
                     <tr key={inv.id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 text-sm font-mono text-navy-500">{inv.invoice_number}</td>
+                      <td className="px-6 py-4 text-sm font-mono text-gray-700">{inv.invoice_number}</td>
                       <td className="px-6 py-4">
                         <p className="font-medium text-navy-900">{inv.customer_name}</p>
-                        {inv.customer_email && <p className="text-xs text-navy-400">{inv.customer_email}</p>}
+                        {inv.customer_email && <p className="text-xs text-gray-600">{inv.customer_email}</p>}
                       </td>
                       <td className="px-6 py-4 text-sm font-medium text-navy-900">{formatKES(inv.total_amount)}</td>
                       <td className="px-6 py-4 text-sm font-medium">
@@ -162,12 +162,12 @@ export default function AdminInvoices() {
                           {STATUS_OPTIONS.map((s) => <option key={s} value={s}>{s}</option>)}
                         </select>
                       </td>
-                      <td className="px-6 py-4 text-sm text-navy-400">{formatDateTime(inv.created_at)}</td>
+                      <td className="px-6 py-4 text-sm text-gray-600">{formatDateTime(inv.created_at)}</td>
                       <td className="px-6 py-4 flex items-center gap-1">
-                        <button onClick={() => setSelected(inv)} className="p-2 text-navy-500 hover:text-primary-600" title="Open invoice">
+                        <button onClick={() => setSelected(inv)} className="p-2 text-gray-700 hover:text-primary-600" title="Open invoice">
                           <FileText className="w-4 h-4" />
                         </button>
-                        <button onClick={() => handleDownloadPdf(inv)} className="p-2 text-navy-500 hover:text-primary-600" title="Download invoice PDF">
+                        <button onClick={() => handleDownloadPdf(inv)} className="p-2 text-gray-700 hover:text-primary-600" title="Download invoice PDF">
                           <Download className="w-4 h-4" />
                         </button>
                       </td>
@@ -185,7 +185,7 @@ export default function AdminInvoices() {
           <div className="bg-white rounded-xl max-w-lg w-full p-6 max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
             <div className="flex justify-between items-center mb-4">
               <h2 className="font-semibold text-lg text-navy-900">New invoice</h2>
-              <button onClick={() => setShowCreate(false)}><X className="w-5 h-5 text-navy-400" /></button>
+              <button onClick={() => setShowCreate(false)}><X className="w-5 h-5 text-gray-600" /></button>
             </div>
             <form onSubmit={handleCreate} className="space-y-3">
               <select value={form.customer_id} onChange={(e) => handleCustomerPick(e.target.value)} className="input">
@@ -204,7 +204,7 @@ export default function AdminInvoices() {
               <button type="submit" disabled={saving} className="btn-primary w-full">
                 {saving ? 'Creating...' : 'Create Invoice'}
               </button>
-              <p className="text-xs text-navy-400 text-center">You'll add line items and record payments next.</p>
+              <p className="text-xs text-gray-600 text-center">You'll add line items and record payments next.</p>
             </form>
           </div>
         </div>
@@ -303,14 +303,14 @@ function InvoiceDetail({
       <div className="bg-white rounded-xl max-w-2xl w-full p-6 max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
         <div className="flex justify-between items-center mb-4">
           <h2 className="font-semibold text-lg text-navy-900">Invoice {current.invoice_number}</h2>
-          <button onClick={onClose}><X className="w-5 h-5 text-navy-400" /></button>
+          <button onClick={onClose}><X className="w-5 h-5 text-gray-600" /></button>
         </div>
 
         <div className="grid grid-cols-2 gap-3 text-sm mb-6">
-          <div><span className="text-navy-400">Customer:</span> <span className="font-medium">{current.customer_name}</span></div>
-          <div><span className="text-navy-400">Status:</span> <span className="font-medium capitalize">{current.status}</span></div>
-          {current.customer_email && <div><span className="text-navy-400">Email:</span> {current.customer_email}</div>}
-          {current.due_date && <div><span className="text-navy-400">Due:</span> {new Date(current.due_date).toLocaleDateString()}</div>}
+          <div><span className="text-gray-600">Customer:</span> <span className="font-medium">{current.customer_name}</span></div>
+          <div><span className="text-gray-600">Status:</span> <span className="font-medium capitalize">{current.status}</span></div>
+          {current.customer_email && <div><span className="text-gray-600">Email:</span> {current.customer_email}</div>}
+          {current.due_date && <div><span className="text-gray-600">Due:</span> {new Date(current.due_date).toLocaleDateString()}</div>}
         </div>
 
         <div className="mb-4">
@@ -320,7 +320,7 @@ function InvoiceDetail({
               <div key={item.id} className="flex items-center justify-between bg-gray-50 rounded-lg px-3 py-2 text-sm">
                 <div>
                   <p className="font-medium">{item.description}</p>
-                  <p className="text-xs text-navy-400">{item.quantity} × {formatKES(item.unit_price)}</p>
+                  <p className="text-xs text-gray-600">{item.quantity} × {formatKES(item.unit_price)}</p>
                 </div>
                 <div className="flex items-center gap-3">
                   <span className="font-medium">{formatKES(item.line_total)}</span>
@@ -328,7 +328,7 @@ function InvoiceDetail({
                 </div>
               </div>
             ))}
-            {items.length === 0 && <p className="text-xs text-navy-400">No line items yet - add products/services below.</p>}
+            {items.length === 0 && <p className="text-xs text-gray-600">No line items yet - add products/services below.</p>}
           </div>
 
           <div className="grid grid-cols-4 gap-2">
@@ -346,7 +346,7 @@ function InvoiceDetail({
             <p>Subtotal: {formatKES(current.subtotal)}</p>
             <p>VAT ({current.tax_rate}%): {formatKES(current.tax_amount)}</p>
             <p className="font-semibold text-base">Total: {formatKES(current.total_amount)}</p>
-            <p className="text-navy-500">Paid: {formatKES(current.amount_paid)}</p>
+            <p className="text-gray-700">Paid: {formatKES(current.amount_paid)}</p>
             <p className={`font-semibold ${balance > 0 ? 'text-red-600' : 'text-green-600'}`}>
               {balance > 0 ? `Balance Due: ${formatKES(balance)}` : 'Paid in Full'}
             </p>
@@ -360,7 +360,7 @@ function InvoiceDetail({
           {payments.length > 0 && (
             <div className="space-y-1 mb-3">
               {payments.map((p) => (
-                <div key={p.id} className="flex justify-between text-xs text-navy-500 bg-gray-50 rounded px-3 py-1.5">
+                <div key={p.id} className="flex justify-between text-xs text-gray-700 bg-gray-50 rounded px-3 py-1.5">
                   <span>{new Date(p.paid_at).toLocaleDateString()} - {p.method}{p.reference ? ` (${p.reference})` : ''}</span>
                   <span className="font-medium">{formatKES(p.amount)}</span>
                 </div>

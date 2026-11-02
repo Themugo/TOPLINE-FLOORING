@@ -25,6 +25,14 @@ checks.push(
   ['server charges only the outstanding order balance', /settledTotal/.test(initiateSrc) && /Number\(order\.total_amount\) - settledTotal/.test(initiateSrc)],
   ['server blocks a second live charge while another attempt is in flight', /already in progress/.test(initiateSrc) && /neq\("method", "bank_transfer"\)/.test(initiateSrc)],
 );
+const cartSrc = fs.readFileSync(path.join(root, 'src/pages/cart.tsx'), 'utf8');
+const appSrc = fs.readFileSync(path.join(root, 'src/App.tsx'), 'utf8');
+const portalSrc = fs.readFileSync(path.join(root, 'src/pages/portal.tsx'), 'utf8');
+checks.push(
+  ['checkout retry key is bound to a cart fingerprint (no stale order replay)', /resolveCheckoutKey\(/.test(cartSrc) && /checkoutFingerprint\(/.test(cartSrc) && /idempotencyKey: checkoutKey,/.test(cartSrc) && /previous !== fingerprint/.test(fs.readFileSync(path.join(root, 'src/lib/checkout-key.ts'), 'utf8'))],
+  ['router tolerates trailing slashes', /rawLocation\.replace\(\/\\\/\+\$\//.test(appSrc)],
+  ['portal hides Pay Now for refunded/cancelled orders', /'completed','refunded'\]/.test(portalSrc) && /!== 'cancelled'/.test(portalSrc)],
+);
 let failed = 0;
 for (const [name, ok] of checks) { console.log(`${ok ? 'PASS' : 'FAIL'} ${name}`); if (!ok) failed++; }
 console.log(`\nGuest payment resume checks: ${checks.length - failed}/${checks.length} passed.`);

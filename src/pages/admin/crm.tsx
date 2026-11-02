@@ -12,7 +12,7 @@ const PIPELINE: { status: LeadStatus; label: string; color: string }[] = [
   { status: 'contacted', label: 'Contacted', color: 'bg-accent-100 text-accent-700' },
   { status: 'qualified', label: 'Qualified', color: 'bg-primary-100 text-primary-700' },
   { status: 'proposal', label: 'Proposal Sent', color: 'bg-primary-200 text-primary-800' },
-  { status: 'negotiating', label: 'Negotiating', color: 'bg-primary-300 text-primary-900' },
+  { status: 'negotiating', label: 'Negotiating', color: 'bg-primary-200 text-primary-900' },
   { status: 'won', label: 'Won', color: 'bg-green-100 text-green-700' },
   { status: 'lost', label: 'Lost', color: 'bg-red-100 text-red-700' },
 ];

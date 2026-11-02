@@ -176,7 +176,7 @@ export function ProjectTemplateLibrary({
             <div>
               <h3 className="font-bold text-base flex items-center gap-2">
                 Project Template Library
-                <span className="text-[10px] bg-primary-500/30 text-primary-300 font-extrabold px-2 py-0.5 rounded-full border border-primary-500/40">
+                <span className="text-[10px] bg-primary-500/30 text-primary-200 font-extrabold px-2 py-0.5 rounded-full border border-primary-500/40">
                   Standard Specifications
                 </span>
               </h3>

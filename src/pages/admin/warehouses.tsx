@@ -16,19 +16,19 @@ export default function AdminWarehouses() {
       <div className="flex gap-1 mb-6 border-b border-gray-200">
         <button
           onClick={() => setTab('warehouses')}
-          className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${tab === 'warehouses' ? 'border-primary-500 text-primary-600' : 'border-transparent text-navy-400 hover:text-navy-600'}`}
+          className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${tab === 'warehouses' ? 'border-primary-500 text-primary-600' : 'border-transparent text-gray-600 hover:text-navy-600'}`}
         >
           Warehouses
         </button>
         <button
           onClick={() => setTab('stock')}
-          className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${tab === 'stock' ? 'border-primary-500 text-primary-600' : 'border-transparent text-navy-400 hover:text-navy-600'}`}
+          className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${tab === 'stock' ? 'border-primary-500 text-primary-600' : 'border-transparent text-gray-600 hover:text-navy-600'}`}
         >
           Stock by Location
         </button>
         <button
           onClick={() => setTab('transfers')}
-          className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${tab === 'transfers' ? 'border-primary-500 text-primary-600' : 'border-transparent text-navy-400 hover:text-navy-600'}`}
+          className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${tab === 'transfers' ? 'border-primary-500 text-primary-600' : 'border-transparent text-gray-600 hover:text-navy-600'}`}
         >
           Transfers
         </button>
@@ -93,11 +93,11 @@ function WarehousesTab() {
       </div>
 
       {loading ? (
-        <div className="text-center py-12 text-navy-400">Loading warehouses...</div>
+        <div className="text-center py-12 text-gray-600">Loading warehouses...</div>
       ) : warehouses.length === 0 ? (
         <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
           <Building2 className="w-10 h-10 text-gray-300 mx-auto mb-3" />
-          <p className="text-navy-500 mb-4">No warehouses yet.</p>
+          <p className="text-gray-700 mb-4">No warehouses yet.</p>
           <button onClick={() => setShowForm(true)} className="btn-primary">Add Your First Warehouse</button>
         </div>
       ) : (
@@ -106,12 +106,12 @@ function WarehousesTab() {
             <table className="w-full">
               <thead className="bg-gray-50 border-b">
                 <tr>
-                  <th className="text-left px-6 py-3 text-xs font-medium text-navy-400 uppercase">Name</th>
-                  <th className="text-left px-6 py-3 text-xs font-medium text-navy-400 uppercase">Code</th>
-                  <th className="text-left px-6 py-3 text-xs font-medium text-navy-400 uppercase">Manager</th>
-                  <th className="text-left px-6 py-3 text-xs font-medium text-navy-400 uppercase">Phone</th>
-                  <th className="text-left px-6 py-3 text-xs font-medium text-navy-400 uppercase">Status</th>
-                  <th className="text-left px-6 py-3 text-xs font-medium text-navy-400 uppercase">Actions</th>
+                  <th className="text-left px-6 py-3 text-xs font-medium text-gray-600 uppercase">Name</th>
+                  <th className="text-left px-6 py-3 text-xs font-medium text-gray-600 uppercase">Code</th>
+                  <th className="text-left px-6 py-3 text-xs font-medium text-gray-600 uppercase">Manager</th>
+                  <th className="text-left px-6 py-3 text-xs font-medium text-gray-600 uppercase">Phone</th>
+                  <th className="text-left px-6 py-3 text-xs font-medium text-gray-600 uppercase">Status</th>
+                  <th className="text-left px-6 py-3 text-xs font-medium text-gray-600 uppercase">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y">
@@ -121,11 +121,11 @@ function WarehousesTab() {
                       {w.name}
                       {w.is_default && <span className="ml-2 text-xs px-2 py-0.5 rounded-full bg-primary-100 text-primary-700">Default</span>}
                     </td>
-                    <td className="px-6 py-4 text-sm font-mono text-navy-500">{w.code || '-'}</td>
-                    <td className="px-6 py-4 text-sm text-navy-500">{w.manager_name || '-'}</td>
-                    <td className="px-6 py-4 text-sm text-navy-500">{w.phone || '-'}</td>
+                    <td className="px-6 py-4 text-sm font-mono text-gray-700">{w.code || '-'}</td>
+                    <td className="px-6 py-4 text-sm text-gray-700">{w.manager_name || '-'}</td>
+                    <td className="px-6 py-4 text-sm text-gray-700">{w.phone || '-'}</td>
                     <td className="px-6 py-4">
-                      <span className={`text-xs px-2 py-1 rounded font-medium ${w.is_active ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-navy-500'}`}>
+                      <span className={`text-xs px-2 py-1 rounded font-medium ${w.is_active ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'}`}>
                         {w.is_active ? 'Active' : 'Inactive'}
                       </span>
                     </td>
@@ -136,11 +136,11 @@ function WarehousesTab() {
                           setForm({ name: w.name, code: w.code || '', address: w.address || '', phone: w.phone || '', manager_name: w.manager_name || '', is_default: w.is_default, is_active: w.is_active });
                           setShowForm(true);
                         }}
-                        className="p-2 text-navy-500 hover:text-primary-600" title="Edit"
+                        className="p-2 text-gray-700 hover:text-primary-600" title="Edit"
                       >
                         <Pencil className="w-4 h-4" />
                       </button>
-                      <button onClick={() => handleDelete(w.id)} className="p-2 text-navy-500 hover:text-red-600" title="Delete"><Trash2 className="w-4 h-4" /></button>
+                      <button onClick={() => handleDelete(w.id)} className="p-2 text-gray-700 hover:text-red-600" title="Delete"><Trash2 className="w-4 h-4" /></button>
                     </td>
                   </tr>
                 ))}
@@ -155,7 +155,7 @@ function WarehousesTab() {
           <div className="bg-white rounded-xl max-w-md w-full p-6" onClick={(e) => e.stopPropagation()}>
             <div className="flex justify-between items-center mb-4">
               <h2 className="font-semibold text-lg text-navy-900">{editing ? 'Edit Warehouse' : 'Add Warehouse'}</h2>
-              <button onClick={resetForm}><X className="w-5 h-5 text-navy-400" /></button>
+              <button onClick={resetForm}><X className="w-5 h-5 text-gray-600" /></button>
             </div>
             <form onSubmit={handleSubmit} className="space-y-3">
               <input required placeholder="Warehouse name *" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="input" />
@@ -230,11 +230,11 @@ function StockTab() {
       </div>
 
       {loading ? (
-        <div className="text-center py-12 text-navy-400">Loading stock...</div>
+        <div className="text-center py-12 text-gray-600">Loading stock...</div>
       ) : stock.length === 0 ? (
         <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
           <PackageSearch className="w-10 h-10 text-gray-300 mx-auto mb-3" />
-          <p className="text-navy-500">No stock allocated to a warehouse yet.</p>
+          <p className="text-gray-700">No stock allocated to a warehouse yet.</p>
         </div>
       ) : (
         <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
@@ -242,21 +242,21 @@ function StockTab() {
             <table className="w-full">
               <thead className="bg-gray-50 border-b">
                 <tr>
-                  <th className="text-left px-6 py-3 text-xs font-medium text-navy-400 uppercase">Product</th>
-                  <th className="text-left px-6 py-3 text-xs font-medium text-navy-400 uppercase">SKU</th>
-                  <th className="text-left px-6 py-3 text-xs font-medium text-navy-400 uppercase">Warehouse</th>
-                  <th className="text-left px-6 py-3 text-xs font-medium text-navy-400 uppercase">Quantity</th>
-                  <th className="text-left px-6 py-3 text-xs font-medium text-navy-400 uppercase">Updated</th>
+                  <th className="text-left px-6 py-3 text-xs font-medium text-gray-600 uppercase">Product</th>
+                  <th className="text-left px-6 py-3 text-xs font-medium text-gray-600 uppercase">SKU</th>
+                  <th className="text-left px-6 py-3 text-xs font-medium text-gray-600 uppercase">Warehouse</th>
+                  <th className="text-left px-6 py-3 text-xs font-medium text-gray-600 uppercase">Quantity</th>
+                  <th className="text-left px-6 py-3 text-xs font-medium text-gray-600 uppercase">Updated</th>
                 </tr>
               </thead>
               <tbody className="divide-y">
                 {stock.map((row) => (
                   <tr key={row.id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 font-medium text-navy-900">{row.product?.name || 'Unknown product'}</td>
-                    <td className="px-6 py-4 text-sm text-navy-400">{row.product?.sku || '-'}</td>
+                    <td className="px-6 py-4 text-sm text-gray-600">{row.product?.sku || '-'}</td>
                     <td className="px-6 py-4 text-sm text-navy-600">{row.warehouse?.name || '-'}</td>
                     <td className="px-6 py-4 text-navy-700">{row.quantity}</td>
-                    <td className="px-6 py-4 text-sm text-navy-400">{formatDateTime(row.updated_at)}</td>
+                    <td className="px-6 py-4 text-sm text-gray-600">{formatDateTime(row.updated_at)}</td>
                   </tr>
                 ))}
               </tbody>
@@ -270,7 +270,7 @@ function StockTab() {
           <div className="bg-white rounded-xl max-w-md w-full p-6" onClick={(e) => e.stopPropagation()}>
             <div className="flex justify-between items-center mb-4">
               <h2 className="font-semibold text-lg text-navy-900">Set Warehouse Stock</h2>
-              <button onClick={() => setShowForm(false)}><X className="w-5 h-5 text-navy-400" /></button>
+              <button onClick={() => setShowForm(false)}><X className="w-5 h-5 text-gray-600" /></button>
             </div>
             <form onSubmit={handleSetStock} className="space-y-3">
               <select required value={form.warehouse_id} onChange={(e) => setForm({ ...form, warehouse_id: e.target.value })} className="input">
@@ -283,7 +283,7 @@ function StockTab() {
               </select>
               <input type="number" required min={0} placeholder="Quantity" value={form.quantity || ''} onChange={(e) => setForm({ ...form, quantity: parseInt(e.target.value) || 0 })} className="input" />
               <textarea placeholder="Notes (optional)" value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} className="input min-h-[60px]" />
-              <p className="text-xs text-navy-400 bg-blue-50 rounded-lg p-3">
+              <p className="text-xs text-gray-600 bg-blue-50 rounded-lg p-3">
                 This sets the exact quantity held at this location and logs an inventory movement. It does not change the product's total stock used storefront-wide - use Transfers to move stock between warehouses, or the main Inventory page to adjust total stock.
               </p>
               <div className="flex gap-3">
@@ -339,15 +339,15 @@ function TransfersTab() {
         <button onClick={() => setShowForm(true)} className="btn-primary flex items-center gap-2" disabled={warehouses.length < 2}>
           <ArrowLeftRight className="w-4 h-4" /> Transfer Stock
         </button>
-        {warehouses.length < 2 && <p className="text-xs text-navy-400 mt-2">Add at least two warehouses to transfer stock between them.</p>}
+        {warehouses.length < 2 && <p className="text-xs text-gray-600 mt-2">Add at least two warehouses to transfer stock between them.</p>}
       </div>
 
       {loading ? (
-        <div className="text-center py-12 text-navy-400">Loading transfers...</div>
+        <div className="text-center py-12 text-gray-600">Loading transfers...</div>
       ) : transfers.length === 0 ? (
         <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
           <ArrowLeftRight className="w-10 h-10 text-gray-300 mx-auto mb-3" />
-          <p className="text-navy-500">No stock transfers recorded yet.</p>
+          <p className="text-gray-700">No stock transfers recorded yet.</p>
         </div>
       ) : (
         <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
@@ -355,23 +355,23 @@ function TransfersTab() {
             <table className="w-full">
               <thead className="bg-gray-50 border-b">
                 <tr>
-                  <th className="text-left px-6 py-3 text-xs font-medium text-navy-400 uppercase">Transfer #</th>
-                  <th className="text-left px-6 py-3 text-xs font-medium text-navy-400 uppercase">Product</th>
-                  <th className="text-left px-6 py-3 text-xs font-medium text-navy-400 uppercase">From</th>
-                  <th className="text-left px-6 py-3 text-xs font-medium text-navy-400 uppercase">To</th>
-                  <th className="text-left px-6 py-3 text-xs font-medium text-navy-400 uppercase">Qty</th>
-                  <th className="text-left px-6 py-3 text-xs font-medium text-navy-400 uppercase">Date</th>
+                  <th className="text-left px-6 py-3 text-xs font-medium text-gray-600 uppercase">Transfer #</th>
+                  <th className="text-left px-6 py-3 text-xs font-medium text-gray-600 uppercase">Product</th>
+                  <th className="text-left px-6 py-3 text-xs font-medium text-gray-600 uppercase">From</th>
+                  <th className="text-left px-6 py-3 text-xs font-medium text-gray-600 uppercase">To</th>
+                  <th className="text-left px-6 py-3 text-xs font-medium text-gray-600 uppercase">Qty</th>
+                  <th className="text-left px-6 py-3 text-xs font-medium text-gray-600 uppercase">Date</th>
                 </tr>
               </thead>
               <tbody className="divide-y">
                 {transfers.map((t) => (
                   <tr key={t.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 text-sm font-mono text-navy-500">{t.transfer_number}</td>
+                    <td className="px-6 py-4 text-sm font-mono text-gray-700">{t.transfer_number}</td>
                     <td className="px-6 py-4 font-medium text-navy-900">{t.product?.name || '-'}</td>
                     <td className="px-6 py-4 text-sm text-navy-600">{t.from_warehouse?.name || '-'}</td>
                     <td className="px-6 py-4 text-sm text-navy-600">{t.to_warehouse?.name || '-'}</td>
                     <td className="px-6 py-4 text-navy-700">{t.quantity}</td>
-                    <td className="px-6 py-4 text-sm text-navy-400">{formatDateTime(t.created_at)}</td>
+                    <td className="px-6 py-4 text-sm text-gray-600">{formatDateTime(t.created_at)}</td>
                   </tr>
                 ))}
               </tbody>
@@ -385,7 +385,7 @@ function TransfersTab() {
           <div className="bg-white rounded-xl max-w-md w-full p-6" onClick={(e) => e.stopPropagation()}>
             <div className="flex justify-between items-center mb-4">
               <h2 className="font-semibold text-lg text-navy-900">Transfer Stock</h2>
-              <button onClick={() => setShowForm(false)}><X className="w-5 h-5 text-navy-400" /></button>
+              <button onClick={() => setShowForm(false)}><X className="w-5 h-5 text-gray-600" /></button>
             </div>
             <form onSubmit={handleTransfer} className="space-y-3">
               <select required value={form.product_id} onChange={(e) => setForm({ ...form, product_id: e.target.value })} className="input">

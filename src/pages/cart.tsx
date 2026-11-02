@@ -1,3 +1,4 @@
+import { checkoutFingerprint, resolveCheckoutKey, CHECKOUT_FINGERPRINT_STORAGE } from '@/lib/checkout-key';
 import { useState, useMemo, useEffect } from 'react';
 import { Link, useLocation } from 'wouter';
 import { Trash2, ShoppingCart, ArrowLeft, Minus, Plus, Tag, X, Truck } from 'lucide-react';
@@ -145,6 +146,18 @@ export default function Cart() {
 
     setSubmitting(true);
     try {
+      // Reuse the retry key only for an identical checkout (see resolveCheckoutKey): a changed cart,
+      // zone, coupon or contact detail must never be answered with a stale, previously created order.
+      const checkoutKey = resolveCheckoutKey(
+        checkoutIdempotencyKey,
+        checkoutFingerprint({
+          lines: items.map((item) => ({ productId: item.product.id, variantId: item.variant?.id, quantity: item.quantity })),
+          deliveryZoneId: selectedZoneId, couponId: appliedCoupon?.id, email: form.email, phone: form.phone, deliveryAddress: form.deliveryAddress,
+        }),
+        window.localStorage,
+      );
+      if (checkoutKey !== checkoutIdempotencyKey) setCheckoutIdempotencyKey(checkoutKey);
+
       // Places the customer + order + order_items atomically via a
       // SECURITY DEFINER RPC. This lets an anonymous shopper check out
       // without needing SELECT/UPDATE/DELETE rights on customer data,
@@ -166,12 +179,12 @@ export default function Cart() {
         deliveryZoneId: selectedZoneId || null,
         deliveryAddress: form.deliveryAddress || null,
         paymentMethod,
-        idempotencyKey: checkoutIdempotencyKey,
+        idempotencyKey: checkoutKey,
       });
 
       const orderId = result.order_id;
       if (!orderId) throw new Error('Order was created without an order reference');
-      const payment = await initiateCustomerPayment({ targetType: 'order', targetId: orderId, email: form.email.trim(), phone: form.phone.trim(), paymentMethod, gatewayKey: paymentGatewayKey, idempotencyKey: `checkout-payment:${checkoutIdempotencyKey}:${paymentGatewayKey}`, returnUrl: `${window.location.origin}/payment-return` });
+      const payment = await initiateCustomerPayment({ targetType: 'order', targetId: orderId, email: form.email.trim(), phone: form.phone.trim(), paymentMethod, gatewayKey: paymentGatewayKey, idempotencyKey: `checkout-payment:${checkoutKey}:${paymentGatewayKey}`, returnUrl: `${window.location.origin}/payment-return` });
 
       // Stash a summary for the confirmation page to display. We don't
       // grant anon a SELECT policy on `orders` (it would let anyone read
@@ -216,7 +229,7 @@ export default function Cart() {
       // If the browser closes before this point, the same cart/order idempotency key can safely resume.
       const nextCheckoutKey = crypto.randomUUID();
       setCheckoutIdempotencyKey(nextCheckoutKey);
-      try { window.localStorage.setItem('topline-checkout-idempotency-key', nextCheckoutKey); } catch { /* storage may be unavailable */ }
+      try { window.localStorage.setItem('topline-checkout-idempotency-key', nextCheckoutKey); window.localStorage.removeItem(CHECKOUT_FINGERPRINT_STORAGE); } catch { /* storage may be unavailable */ }
       clearCart();
       if (payment.checkout_url) { navigateToPaymentUrl(payment.checkout_url); } else { setLocation(`/payment-return?attempt_id=${encodeURIComponent(payment.attempt_id)}&access_token=${encodeURIComponent(payment.access_token)}`); }
     } catch (error) {

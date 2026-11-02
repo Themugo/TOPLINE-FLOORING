@@ -159,7 +159,7 @@ function ReportsContent() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between flex-wrap gap-4">
-        <select
+        <select aria-label="Date range"
           value={dateRange}
           onChange={(e) => setDateRange(e.target.value)}
           className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
@@ -179,31 +179,31 @@ function ReportsContent() {
         <div className="text-center py-12 text-gray-500">Loading statistics...</div>
       ) : (
         <>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <StatCard title="Revenue" value={formatKES(stats.totalRevenue)} change={revenueChange} icon={<DollarSign className="w-5 h-5" />} color="bg-green-500" />
             <StatCard title="Orders" value={stats.totalOrders} icon={<ShoppingCart className="w-5 h-5" />} color="bg-primary-500" />
             <StatCard title="Quotations" value={stats.totalQuotations} icon={<FileText className="w-5 h-5" />} color="bg-accent-600" />
             <StatCard title="New Customers" value={stats.newCustomers} icon={<Users className="w-5 h-5" />} color="bg-navy-700" />
           </div>
 
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <StatCard title="Pending Orders" value={stats.pendingOrders} icon={<ShoppingCart className="w-5 h-5" />} color="bg-yellow-700" />
             <StatCard title="Low Stock Items" value={stats.lowStockCount} icon={<AlertTriangle className="w-5 h-5" />} color="bg-red-500" />
             <StatCard title="Quote Conversion" value={`${stats.conversionRate}%`} icon={<TrendingUp className="w-5 h-5" />} color="bg-green-600" />
             <StatCard title="Avg Order Value" value={formatKES(stats.avgOrderValue)} icon={<BarChart3 className="w-5 h-5" />} color="bg-lime-600" />
           </div>
 
-          <div className="grid sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <StatCard title="Inventory Valuation" value={formatKES(stats.inventoryValuation)} icon={<Package className="w-5 h-5" />} color="bg-accent-700" />
             <StatCard title="Outstanding Invoices" value={formatKES(stats.outstandingBalance)} icon={<Wallet className="w-5 h-5" />} color="bg-yellow-700" />
           </div>
 
           {/* Revenue Trend */}
           <div className="bg-white rounded-xl p-6 border border-gray-200">
-            <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
+            <h2 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
               <TrendingUp className="w-5 h-5 text-primary-500" />
               Revenue Trend
-            </h3>
+            </h2>
             {revenueTrend.every((p) => p.revenue === 0) ? (
               <p className="text-gray-500 text-sm">No revenue in this period yet</p>
             ) : (
@@ -219,12 +219,12 @@ function ReportsContent() {
             )}
           </div>
 
-          <div className="grid lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <div className="bg-white rounded-xl p-6 border border-gray-200">
-              <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
+              <h2 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
                 <PieChart className="w-5 h-5 text-primary-500" />
                 Orders by Status
-              </h3>
+              </h2>
               {ordersByStatus.length === 0 ? (
                 <p className="text-gray-500 text-sm">No orders in this period</p>
               ) : (
@@ -257,10 +257,10 @@ function ReportsContent() {
             </div>
 
             <div className="bg-white rounded-xl p-6 border border-gray-200">
-              <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
+              <h2 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
                 <FileText className="w-5 h-5 text-primary-500" />
                 Quote Pipeline
-              </h3>
+              </h2>
               {quotesByStage.length === 0 ? (
                 <p className="text-gray-500 text-sm">No quotations in this period</p>
               ) : (
@@ -294,10 +294,10 @@ function ReportsContent() {
           </div>
 
           <div className="bg-white rounded-xl p-6 border border-gray-200">
-            <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
+            <h2 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
               <BarChart3 className="w-5 h-5 text-primary-500" />
               Top Products by Revenue
-            </h3>
+            </h2>
             {topProducts.length === 0 ? (
               <p className="text-gray-500 text-sm">No product sales in this period</p>
             ) : (
@@ -319,7 +319,7 @@ function ReportsContent() {
           </div>
 
           <div className="bg-white rounded-xl p-6 border border-gray-200">
-            <h3 className="font-semibold text-gray-900 mb-4">Recent Activity</h3>
+            <h2 className="font-semibold text-gray-900 mb-4">Recent Activity</h2>
             {recentActivity.length === 0 ? (
               <p className="text-gray-500 text-sm">No recent activity</p>
             ) : (

@@ -432,6 +432,8 @@ export interface Project {
   title: string;
   slug: string;
   client_name: string | null;
+  /** Explicit consent: when false the client name is withheld from the public portfolio view. */
+  show_client_name?: boolean;
   service_type: string | null;
   category: string | null;
   location: string | null;

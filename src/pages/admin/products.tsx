@@ -180,15 +180,15 @@ export default function AdminProducts() {
             />
           </div>
         </div>
-        <p className="text-sm text-navy-400">{total} product{total !== 1 ? 's' : ''}</p>
+        <p className="text-sm text-gray-600">{total} product{total !== 1 ? 's' : ''}</p>
       </div>
 
       {loading ? (
-        <div className="text-center py-12 text-navy-400">Loading products...</div>
+        <div className="text-center py-12 text-gray-600">Loading products...</div>
       ) : products.length === 0 ? (
         <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
           <Package className="w-10 h-10 text-gray-300 mx-auto mb-3" />
-          <p className="text-navy-500 mb-4">No products yet.</p>
+          <p className="text-gray-700 mb-4">No products yet.</p>
           <button onClick={() => setShowForm(true)} className="btn-primary">Add Your First Product</button>
         </div>
       ) : (
@@ -197,12 +197,12 @@ export default function AdminProducts() {
             <table className="w-full">
               <thead className="bg-gray-50 border-b">
                 <tr>
-                  <th className="text-left px-6 py-3 text-xs font-medium text-navy-400 uppercase">Product</th>
-                  <th className="text-left px-6 py-3 text-xs font-medium text-navy-400 uppercase">Category</th>
-                  <th className="text-left px-6 py-3 text-xs font-medium text-navy-400 uppercase">Price</th>
-                  <th className="text-left px-6 py-3 text-xs font-medium text-navy-400 uppercase">Sellable Stock</th>
-                  <th className="text-left px-6 py-3 text-xs font-medium text-navy-400 uppercase">Status</th>
-                  <th className="text-left px-6 py-3 text-xs font-medium text-navy-400 uppercase">Actions</th>
+                  <th className="text-left px-6 py-3 text-xs font-medium text-gray-600 uppercase">Product</th>
+                  <th className="text-left px-6 py-3 text-xs font-medium text-gray-600 uppercase">Category</th>
+                  <th className="text-left px-6 py-3 text-xs font-medium text-gray-600 uppercase">Price</th>
+                  <th className="text-left px-6 py-3 text-xs font-medium text-gray-600 uppercase">Sellable Stock</th>
+                  <th className="text-left px-6 py-3 text-xs font-medium text-gray-600 uppercase">Status</th>
+                  <th className="text-left px-6 py-3 text-xs font-medium text-gray-600 uppercase">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y">
@@ -220,11 +220,11 @@ export default function AdminProducts() {
                         </div>
                         <div>
                           <p className="font-medium text-navy-900">{product.name}</p>
-                          <p className="text-xs text-navy-400">{product.slug}{product.sku ? ` · ${product.sku}` : ''}</p>
+                          <p className="text-xs text-gray-600">{product.slug}{product.sku ? ` · ${product.sku}` : ''}</p>
                         </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4 text-sm text-navy-500">
+                    <td className="px-6 py-4 text-sm text-gray-700">
                       {product.category?.name || '-'}
                     </td>
                     <td className="px-6 py-4 text-sm">{formatKES(product.price)}/{product.unit}</td>
@@ -240,13 +240,13 @@ export default function AdminProducts() {
                       )}
                     </td>
                     <td className="px-6 py-4">
-                      <button onClick={() => setGalleryProduct(product)} className="p-2 text-navy-500 hover:text-primary-600" title="Manage product photos">
+                      <button onClick={() => setGalleryProduct(product)} className="p-2 text-gray-700 hover:text-primary-600" title="Manage product photos">
                         <Images className="w-4 h-4" />
                       </button>
-                      <button onClick={() => editProduct(product)} className="p-2 text-navy-500 hover:text-primary-600" title="Edit product">
+                      <button onClick={() => editProduct(product)} className="p-2 text-gray-700 hover:text-primary-600" title="Edit product">
                         <Pencil className="w-4 h-4" />
                       </button>
-                      <button onClick={() => handleDelete(product.id)} className="p-2 text-navy-500 hover:text-red-600" title="Archive product">
+                      <button onClick={() => handleDelete(product.id)} className="p-2 text-gray-700 hover:text-red-600" title="Archive product">
                         <Trash2 className="w-4 h-4" />
                       </button>
                     </td>
@@ -265,7 +265,7 @@ export default function AdminProducts() {
           <div className="bg-white rounded-xl max-w-lg w-full p-6 max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
             <div className="flex justify-between items-center mb-4">
               <h2 className="font-semibold text-lg text-navy-900">{editing ? 'Edit Product' : 'Add Product'}</h2>
-              <button onClick={resetForm}><X className="w-5 h-5 text-navy-400" /></button>
+              <button onClick={resetForm}><X className="w-5 h-5 text-gray-600" /></button>
             </div>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
@@ -347,7 +347,7 @@ export default function AdminProducts() {
                 <button type="submit" disabled={saving} className="btn-primary flex-1">{saving ? 'Saving...' : editing ? 'Update' : 'Create'}</button>
               </div>
               {editing && (
-                <p className="text-xs text-navy-400 text-center">
+                <p className="text-xs text-gray-600 text-center">
                   Need to add more photos or captions? Close this and use the gallery icon on the product row.
                 </p>
               )}
@@ -433,13 +433,13 @@ function ProductGalleryModal({ product, onClose, onChanged }: { product: Product
         <div className="flex justify-between items-center mb-4">
           <div>
             <h2 className="font-semibold text-lg text-navy-900">Photos - {product.name}</h2>
-            <p className="text-xs text-navy-400">Add multiple photos and captions - the story behind each shot (site prep, application, finished result, close-up detail).</p>
+            <p className="text-xs text-gray-600">Add multiple photos and captions - the story behind each shot (site prep, application, finished result, close-up detail).</p>
           </div>
-          <button onClick={onClose}><X className="w-5 h-5 text-navy-400" /></button>
+          <button onClick={onClose}><X className="w-5 h-5 text-gray-600" /></button>
         </div>
 
         {loading ? (
-          <div className="text-center py-8 text-navy-400">Loading photos...</div>
+          <div className="text-center py-8 text-gray-600">Loading photos...</div>
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-6">
             {images.map((img) => (
@@ -466,7 +466,7 @@ function ProductGalleryModal({ product, onClose, onChanged }: { product: Product
               </div>
             ))}
             {images.length === 0 && (
-              <p className="col-span-full text-center text-sm text-navy-400 py-6">No gallery photos yet - add the first one below.</p>
+              <p className="col-span-full text-center text-sm text-gray-600 py-6">No gallery photos yet - add the first one below.</p>
             )}
           </div>
         )}

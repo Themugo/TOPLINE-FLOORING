@@ -254,11 +254,11 @@ export default function Shop() {
 
                 {/* Technical Help Box */}
                 <div className="mt-8 p-4 rounded-xl bg-navy-950 text-white text-xs space-y-2">
-                  <p className="font-bold text-primary-300 uppercase tracking-wider text-[10px]">Need Technical Guidance?</p>
+                  <p className="font-bold text-primary-200 uppercase tracking-wider text-[10px]">Need Technical Guidance?</p>
                   <p className="text-gray-300 leading-relaxed text-[11px]">
                     Unsure about coverage rates or primer compatibility? Speak with our floor engineers.
                   </p>
-                  <Link href="/contact" className="inline-flex items-center gap-1 text-primary-400 font-bold hover:underline text-[11px] pt-1">
+                  <Link href="/contact" className="inline-flex items-center gap-1 text-primary-200 font-bold hover:underline text-[11px] pt-1">
                     <span>Contact Technical Team</span>
                     <ArrowRight className="w-3 h-3" />
                   </Link>

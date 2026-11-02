@@ -603,7 +603,7 @@ export function BulkCsvImportModal({
                 <h3 className="text-xs font-bold uppercase text-gray-500 tracking-wider mb-3">
                   Map CSV Columns to Project Database Schema
                 </h3>
-                <div className="grid sm:grid-cols-2 gap-3 max-h-[380px] overflow-y-auto pr-2">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[380px] overflow-y-auto pr-2">
                   {SCHEMA_FIELDS.map((field) => (
                     <div
                       key={field.key}

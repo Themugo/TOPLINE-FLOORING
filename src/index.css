@@ -42,6 +42,21 @@
 @layer base {
   html {
     scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+    /* Anchor jumps and focus() land below the fixed header instead of underneath it. */
+    scroll-padding-top: 5rem;
+    /* No sideways rubber-banding / accidental back-swipe while panning wide tables. */
+    overscroll-behavior-x: none;
+  }
+
+  body {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Removes the legacy 300ms tap delay and double-tap-zoom on controls (pinch-zoom of content stays available). */
+  a, button, [role="button"], input, select, textarea, label, summary {
+    touch-action: manipulation;
   }
 
   :focus-visible {
@@ -240,7 +255,7 @@
   .page-hero::after { content:""; position:absolute; inset:auto -10% -55% 35%; height:24rem; background: radial-gradient(circle,color-mix(in srgb, var(--topline-brand-accent, #b4e33d) 18%, transparent),transparent 65%); pointer-events:none; }
   .page-hero-inner { @apply relative z-10 mx-auto px-4 sm:px-6 lg:px-8 py-14 sm:py-18 lg:py-20; max-width: var(--container-max-width, 80rem); }
   .eyebrow { @apply inline-flex items-center gap-2 text-[11px] font-bold uppercase tracking-[.22em]; color: var(--topline-brand-accent-strong, #566f0d); }
-  .eyebrow-light { @apply text-primary-300; }
+  .eyebrow-light { @apply text-primary-200; }
   .display-title { @apply font-display text-4xl sm:text-5xl lg:text-6xl font-bold tracking-[-.035em] text-navy-950; }
   .display-title-light { @apply text-white; }
   .lead-copy { @apply text-base sm:text-lg text-navy-500 leading-8 max-w-2xl; }

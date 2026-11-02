@@ -222,7 +222,7 @@ export default function Portfolio() {
                       {project.featured && <span className="absolute left-3 top-3 inline-flex items-center gap-1.5 rounded-lg bg-primary-600 px-2.5 py-1.5 text-[10px] font-bold uppercase tracking-wider text-white"><Sparkles className="h-3 w-3" aria-hidden="true" /> Featured</span>}
                       {project.area_size && <span className="absolute right-3 top-3 rounded-lg border border-white/20 bg-navy-950/75 px-2.5 py-1.5 text-[11px] font-semibold text-white backdrop-blur">{project.area_size}</span>}
                       <span className="absolute bottom-3 left-3 right-3 flex items-end justify-between gap-3 text-white">
-                        <span className="min-w-0 truncate text-xs font-medium">{project.location ? <><MapPin className="mr-1 inline h-3.5 w-3.5 text-primary-300" aria-hidden="true" />{project.location}</> : 'Project location not published'}</span>
+                        <span className="min-w-0 truncate text-xs font-medium">{project.location ? <><MapPin className="mr-1 inline h-3.5 w-3.5 text-primary-200" aria-hidden="true" />{project.location}</> : 'Project location not published'}</span>
                         <span className="inline-flex shrink-0 items-center gap-1 text-xs font-bold text-primary-200">View case <ArrowRight className="h-3.5 w-3.5 transition group-hover:translate-x-1" aria-hidden="true" /></span>
                       </span>
                     </div>
@@ -246,7 +246,7 @@ export default function Portfolio() {
       <section className="relative overflow-hidden bg-gradient-to-br from-navy-950 via-navy-900 to-slate-900 py-14 text-white sm:py-16 lg:py-20">
         <div className="pointer-events-none absolute -left-24 -top-24 h-72 w-72 rounded-full bg-primary-500/10 blur-3xl" />
         <div className="relative z-10 mx-auto max-w-4xl px-4 text-center sm:px-6 lg:px-8">
-          <Building2 className="mx-auto mb-4 h-10 w-10 text-primary-300" aria-hidden="true" />
+          <Building2 className="mx-auto mb-4 h-10 w-10 text-primary-200" aria-hidden="true" />
           <p className="text-xs font-bold uppercase tracking-[0.18em] text-primary-200">Your site. Your specification.</p>
           <h2 className="mt-3 font-display text-3xl font-bold tracking-tight sm:text-4xl">Planning a similar flooring or waterproofing project?</h2>
           <p className="mx-auto mt-4 max-w-2xl text-sm leading-relaxed text-slate-200 sm:text-base">Tell us about your facility, surface condition and performance requirements. Our team can help you identify the right next step and prepare a project-specific proposal.</p>

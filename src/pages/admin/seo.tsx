@@ -209,7 +209,7 @@ function SeoContent() {
               Meta Tags
             </h3>
 
-            <div className="grid md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Meta Title
@@ -277,7 +277,7 @@ function SeoContent() {
           <div className="p-6">
             <h3 className="font-semibold text-gray-900 mb-4">Open Graph (Social Sharing)</h3>
 
-            <div className="grid md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   OG Title
@@ -323,7 +323,7 @@ function SeoContent() {
           <div className="p-6">
             <h3 className="font-semibold text-gray-900 mb-4">Advanced Settings</h3>
 
-            <div className="grid md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Canonical URL

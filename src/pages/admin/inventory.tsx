@@ -80,36 +80,36 @@ export default function AdminInventory() {
 
   const lowStockProducts = products.filter(p => p.stock_quantity <= p.low_stock_threshold);
 
-  if (loading) return <AdminLayout title="Inventory"><div className="text-center py-12 text-navy-400">Loading inventory...</div></AdminLayout>;
+  if (loading) return <AdminLayout title="Inventory"><div className="text-center py-12 text-gray-600">Loading inventory...</div></AdminLayout>;
 
   return (
     <AdminLayout title="Inventory" subtitle="See stock levels, handle low-stock alerts and record stock changes safely.">
       {/* Stats */}
-      <div className="grid sm:grid-cols-4 gap-4 mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 mb-8">
         <div className="bg-white rounded-xl p-4 border border-gray-200 shadow-sm">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-sm text-navy-500">Total Products</span>
+            <span className="text-sm text-gray-700">Total Products</span>
             <Package className="w-4 h-4 text-navy-300" />
           </div>
           <p className="text-2xl font-bold text-navy-900">{products.length}</p>
         </div>
         <div className="bg-white rounded-xl p-4 border border-gray-200 shadow-sm">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-sm text-navy-500">Low Stock</span>
+            <span className="text-sm text-gray-700">Low Stock</span>
             <TrendingDown className="w-4 h-4 text-yellow-500" />
           </div>
           <p className="text-2xl font-bold text-yellow-600">{lowStockProducts.length}</p>
         </div>
         <div className="bg-white rounded-xl p-4 border border-gray-200 shadow-sm">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-sm text-navy-500">Active Alerts</span>
+            <span className="text-sm text-gray-700">Active Alerts</span>
             <AlertTriangle className="w-4 h-4 text-red-500" />
           </div>
           <p className="text-2xl font-bold text-red-600">{alerts.length}</p>
         </div>
         <div className="bg-white rounded-xl p-4 border border-gray-200 shadow-sm">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-sm text-navy-500">Recent Movements</span>
+            <span className="text-sm text-gray-700">Recent Movements</span>
             <History className="w-4 h-4 text-navy-300" />
           </div>
           <p className="text-2xl font-bold text-navy-900">{movements.length}</p>
@@ -123,15 +123,15 @@ export default function AdminInventory() {
       {/* Alerts */}
       {alerts.length > 0 && (
         <div className="bg-red-50 border border-red-200 rounded-xl p-4 mb-6">
-          <h3 className="font-semibold text-red-800 mb-3 flex items-center gap-2">
+          <h2 className="font-semibold text-red-800 mb-3 flex items-center gap-2">
             <AlertTriangle className="w-5 h-5" /> Low Stock Alerts
-          </h3>
+          </h2>
           <div className="space-y-2">
             {alerts.map((alert) => (
               <div key={alert.id} className="flex items-center justify-between bg-white p-3 rounded-lg">
                 <div>
                   <p className="font-medium text-navy-900">{alert.product?.name}</p>
-                  <p className="text-sm text-navy-400">Stock: {alert.current_stock} / Threshold: {alert.threshold}</p>
+                  <p className="text-sm text-gray-600">Stock: {alert.current_stock} / Threshold: {alert.threshold}</p>
                 </div>
                 <button onClick={() => resolveAlert(alert.id)} className="text-sm text-red-600 hover:underline font-medium">Resolve</button>
               </div>
@@ -143,20 +143,20 @@ export default function AdminInventory() {
       {/* Stock Overview */}
       <div className="bg-white rounded-xl border border-gray-200 overflow-hidden mb-6">
         <div className="px-6 py-4 border-b bg-gray-50">
-          <h3 className="font-semibold text-navy-900">Stock Overview</h3>
+          <h2 className="font-semibold text-navy-900">Stock Overview</h2>
         </div>
         {products.length === 0 ? (
-          <p className="text-navy-400 text-sm text-center py-12">No products yet - add products first to track their stock here.</p>
+          <p className="text-gray-600 text-sm text-center py-12">No products yet - add products first to track their stock here.</p>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead className="border-b">
                 <tr>
-                  <th className="text-left px-6 py-3 text-xs font-medium text-navy-400 uppercase">Product</th>
-                  <th className="text-left px-6 py-3 text-xs font-medium text-navy-400 uppercase">SKU</th>
-                  <th className="text-left px-6 py-3 text-xs font-medium text-navy-400 uppercase">Stock</th>
-                  <th className="text-left px-6 py-3 text-xs font-medium text-navy-400 uppercase">Threshold</th>
-                  <th className="text-left px-6 py-3 text-xs font-medium text-navy-400 uppercase">Status</th>
+                  <th className="text-left px-6 py-3 text-xs font-medium text-gray-600 uppercase">Product</th>
+                  <th className="text-left px-6 py-3 text-xs font-medium text-gray-600 uppercase">SKU</th>
+                  <th className="text-left px-6 py-3 text-xs font-medium text-gray-600 uppercase">Stock</th>
+                  <th className="text-left px-6 py-3 text-xs font-medium text-gray-600 uppercase">Threshold</th>
+                  <th className="text-left px-6 py-3 text-xs font-medium text-gray-600 uppercase">Status</th>
                 </tr>
               </thead>
               <tbody className="divide-y">
@@ -165,9 +165,9 @@ export default function AdminInventory() {
                   return (
                     <tr key={product.id} className="hover:bg-gray-50">
                       <td className="px-6 py-4 font-medium text-navy-900">{product.name}</td>
-                      <td className="px-6 py-4 text-sm text-navy-400">{product.sku || '-'}</td>
+                      <td className="px-6 py-4 text-sm text-gray-600">{product.sku || '-'}</td>
                       <td className="px-6 py-4 text-navy-700">{product.stock_quantity}</td>
-                      <td className="px-6 py-4 text-navy-500">{product.low_stock_threshold}</td>
+                      <td className="px-6 py-4 text-gray-700">{product.low_stock_threshold}</td>
                       <td className="px-6 py-4">
                         <span className={`text-xs px-2 py-1 rounded font-medium ${isLow ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>
                           {isLow ? 'Low Stock' : 'In Stock'}
@@ -185,27 +185,27 @@ export default function AdminInventory() {
       {/* Recent Movements */}
       <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
         <div className="px-6 py-4 border-b bg-gray-50">
-          <h3 className="font-semibold text-navy-900">Recent Movements</h3>
+          <h2 className="font-semibold text-navy-900">Recent Movements</h2>
         </div>
         {movements.length === 0 ? (
-          <p className="text-navy-400 text-sm text-center py-12">No stock movements recorded yet.</p>
+          <p className="text-gray-600 text-sm text-center py-12">No stock movements recorded yet.</p>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead className="border-b">
                 <tr>
-                  <th className="text-left px-6 py-3 text-xs font-medium text-navy-400 uppercase">Date</th>
-                  <th className="text-left px-6 py-3 text-xs font-medium text-navy-400 uppercase">Product</th>
-                  <th className="text-left px-6 py-3 text-xs font-medium text-navy-400 uppercase">Type</th>
-                  <th className="text-left px-6 py-3 text-xs font-medium text-navy-400 uppercase">Qty</th>
-                  <th className="text-left px-6 py-3 text-xs font-medium text-navy-400 uppercase">Stock</th>
-                  <th className="text-left px-6 py-3 text-xs font-medium text-navy-400 uppercase">Notes</th>
+                  <th className="text-left px-6 py-3 text-xs font-medium text-gray-600 uppercase">Date</th>
+                  <th className="text-left px-6 py-3 text-xs font-medium text-gray-600 uppercase">Product</th>
+                  <th className="text-left px-6 py-3 text-xs font-medium text-gray-600 uppercase">Type</th>
+                  <th className="text-left px-6 py-3 text-xs font-medium text-gray-600 uppercase">Qty</th>
+                  <th className="text-left px-6 py-3 text-xs font-medium text-gray-600 uppercase">Stock</th>
+                  <th className="text-left px-6 py-3 text-xs font-medium text-gray-600 uppercase">Notes</th>
                 </tr>
               </thead>
               <tbody className="divide-y">
                 {movements.slice(0, 20).map((mov) => (
                   <tr key={mov.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 text-sm text-navy-500">{formatDateTime(mov.created_at)}</td>
+                    <td className="px-6 py-4 text-sm text-gray-700">{formatDateTime(mov.created_at)}</td>
                     <td className="px-6 py-4 font-medium text-navy-900">{mov.product?.name}</td>
                     <td className="px-6 py-4">
                       <span className={`text-xs px-2 py-1 rounded font-medium ${
@@ -216,8 +216,8 @@ export default function AdminInventory() {
                       </span>
                     </td>
                     <td className="px-6 py-4 text-navy-700">{mov.movement_type === 'out' ? '-' : '+'}{mov.quantity}</td>
-                    <td className="px-6 py-4 text-sm text-navy-500">{mov.previous_stock} → {mov.new_stock}</td>
-                    <td className="px-6 py-4 text-sm text-navy-400">{mov.notes || '-'}</td>
+                    <td className="px-6 py-4 text-sm text-gray-700">{mov.previous_stock} → {mov.new_stock}</td>
+                    <td className="px-6 py-4 text-sm text-gray-600">{mov.notes || '-'}</td>
                   </tr>
                 ))}
               </tbody>
