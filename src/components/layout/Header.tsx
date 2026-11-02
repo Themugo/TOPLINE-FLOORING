@@ -229,6 +229,7 @@ export function Header() {
                 aria-label={`Shopping cart${totalItems > 0 ? `, ${totalItems} items` : ''}`}
               >
                 <ShoppingCart className="w-5 h-5" />
+                <span className="hidden sm:inline text-xs font-semibold">Cart</span>
                 {totalItems > 0 && (
                   <span className="absolute -top-1 -right-1 w-5 h-5 bg-[#0C2D57] text-white text-xs font-medium rounded-full flex items-center justify-center" aria-hidden="true">
                     {totalItems}

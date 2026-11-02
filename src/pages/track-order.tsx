@@ -10,6 +10,9 @@ import { useSiteSettings } from "@/hooks/use-data";
 import { useSeoMeta } from "@/hooks/use-seo";
 import { trackOrder } from "@/lib/delivery";
 import { telHref } from "@/lib/utils";
+import { CustomerPaymentMethods } from "@/components/customer/CustomerPaymentMethods";
+import { initiateCustomerPayment } from "@/lib/customer-payments";
+import { navigateToPaymentUrl } from "@/lib/safe-redirect";
 
 interface OrderResult {
   id: string;
@@ -59,6 +62,11 @@ export default function TrackOrder() {
   const { settings } = useSiteSettings();
   const [orderId, setOrderId] = useState("");
   const [phone, setPhone] = useState("");
+  const [email, setEmail] = useState("");
+  const [paymentMethod, setPaymentMethod] = useState<"mpesa"|"card"|"bank_transfer"|null>(null);
+  const [paymentGatewayKey, setPaymentGatewayKey] = useState<string|null>(null);
+  const [startingPayment, setStartingPayment] = useState(false);
+  const [paymentError, setPaymentError] = useState<string|null>(null);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<OrderResult | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -97,6 +105,37 @@ export default function TrackOrder() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleResumePayment = async () => {
+    if (!result || startingPayment || !paymentMethod || !paymentGatewayKey) return;
+    const normalizedEmail = email.trim().toLowerCase();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) {
+      setPaymentError("Enter the email address used when placing this order.");
+      return;
+    }
+    setStartingPayment(true);
+    setPaymentError(null);
+    try {
+      const keyName = `topline-order-payment:${result.id}:${paymentGatewayKey}`;
+      let idempotencyKey = "";
+      try {
+        idempotencyKey = window.sessionStorage.getItem(keyName) || "";
+        if (!/^[0-9a-f-]{36}$/i.test(idempotencyKey)) {
+          idempotencyKey = crypto.randomUUID();
+          window.sessionStorage.setItem(keyName, idempotencyKey);
+        }
+      } catch { idempotencyKey = crypto.randomUUID(); }
+      const payment = await initiateCustomerPayment({
+        targetType: "order", targetId: result.id, email: normalizedEmail, phone: phone.trim(),
+        paymentMethod, gatewayKey: paymentGatewayKey, idempotencyKey,
+        returnUrl: `${window.location.origin}/payment-return`,
+      });
+      if (payment.checkout_url) navigateToPaymentUrl(payment.checkout_url);
+      else window.location.assign(`/payment-return?attempt_id=${encodeURIComponent(payment.attempt_id)}&access_token=${encodeURIComponent(payment.access_token)}`);
+    } catch (error) {
+      setPaymentError(error instanceof Error ? error.message : "Payment could not be resumed. Please try again.");
+    } finally { setStartingPayment(false); }
   };
 
   const status = (result?.status || "pending").toLowerCase();
@@ -157,6 +196,11 @@ export default function TrackOrder() {
                     <Input id="checkoutPhone" name="phone" type="tel" autoComplete="tel" required maxLength={30} value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="Use the number entered at checkout" className="h-12 rounded-lg border-[#868D95] bg-white px-4 text-sm placeholder:text-[#5F6B78] focus-visible:border-[#0E6B78] focus-visible:ring-[#0E6B78]/30" />
                     <p className="text-xs leading-5 text-slate-500">Enter the number in the same format used when you placed the order.</p>
                   </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="checkoutEmail" className="text-sm font-semibold text-[#0C2D57]">Checkout email (for payment recovery)</Label>
+                    <Input id="checkoutEmail" name="email" type="email" autoComplete="email" maxLength={254} value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Email address used at checkout" className="h-12 rounded-lg border-[#868D95] bg-white px-4 text-sm placeholder:text-[#5F6B78] focus-visible:border-[#0E6B78] focus-visible:ring-[#0E6B78]/30" />
+                    <p className="text-xs leading-5 text-slate-500">Required only if you need to resume an unpaid order.</p>
+                  </div>
                   {error && <p id="track-order-error" role="alert" className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm leading-6 text-red-800">{error}</p>}
                   <Button type="submit" disabled={loading} className="h-12 w-full rounded-lg bg-[#0C2D57] text-sm font-semibold text-white hover:bg-[#0A2548] disabled:opacity-60">
                     {loading ? <><span className="mr-2 inline-block h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white" />Looking up order…</> : <><Search className="mr-2 h-4 w-4" /> Track order</>}
@@ -188,6 +232,14 @@ export default function TrackOrder() {
                       <div><p className="text-xs text-slate-500">Payment status</p><p className={`mt-1 inline-flex rounded-full px-3 py-1 text-sm font-semibold capitalize ${paymentTone}`}>{(result.payment_status || "unknown").replace(/_/g, " ")}</p></div>
                       <div><p className="text-xs text-slate-500">Order total</p><p className="mt-1 font-display text-xl font-semibold text-[#0C2D57]">{money(result.total_amount)}</p></div>
                     </div>
+                    {!cancelled && !["paid", "completed", "succeeded", "success", "refunded"].includes(paymentState) && <div className="mt-6 border-t border-[#E3DFD8] pt-5">
+                      <div className="mb-4"><p className="text-xs font-bold uppercase tracking-[0.16em] text-[#566F0D]">Secure payment recovery</p><h3 className="mt-2 font-display text-lg font-semibold text-[#0C2D57]">Complete payment for this order</h3><p className="mt-1 text-sm leading-6 text-slate-600">Your order is already saved. You do not need to rebuild your cart. Confirm the checkout email and choose a payment method to continue.</p></div>
+                      <div className="mb-4 space-y-2"><Label htmlFor="resumePaymentEmail">Checkout email</Label><Input id="resumePaymentEmail" type="email" autoComplete="email" maxLength={254} value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Email used when ordering" /></div>
+                      <CustomerPaymentMethods context="order" value={paymentMethod} gatewayValue={paymentGatewayKey} onChange={setPaymentMethod} onGatewayChange={setPaymentGatewayKey} />
+                      {paymentError && <p role="alert" className="mt-3 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-800">{paymentError}</p>}
+                      <Button type="button" onClick={handleResumePayment} disabled={startingPayment || !paymentMethod || !paymentGatewayKey} className="mt-4 h-12 w-full rounded-lg bg-[#0C2D57] font-semibold text-white hover:bg-[#0A2548] disabled:opacity-60">{startingPayment ? "Preparing secure payment…" : "Resume payment"}</Button>
+                      <p className="mt-3 text-xs leading-5 text-slate-500">Your email must match the order record. Payment status is confirmed by the provider callback, not by this page.</p>
+                    </div>}
                     {result.delivery_address && <div className="mt-4 flex items-start gap-3 border-t border-[#E3DFD8] pt-4"><MapPin className="mt-0.5 h-4 w-4 shrink-0 text-slate-500" /><div><p className="text-xs text-slate-500">Delivery address</p><p className="mt-1 break-words text-sm font-medium text-[#0C2D57]">{result.delivery_address}</p></div></div>}
                   </section>
                   {result.items && result.items.length > 0 && <section className="rounded-2xl border border-[#DDD9D2] bg-white p-5 sm:p-7"><h3 className="font-display text-lg font-semibold text-[#0C2D57]">Items in this order</h3><div className="mt-4 divide-y divide-[#E3DFD8]">{result.items.map((item, index) => <div key={`${item.product_name}-${index}`} className="flex items-start justify-between gap-4 py-3 text-sm"><div className="min-w-0"><p className="font-medium text-[#0C2D57]">{item.product_name}</p><p className="mt-1 text-xs text-slate-500">Quantity: {item.quantity}</p></div><p className="shrink-0 font-semibold text-[#0C2D57]">{money(Number(item.unit_price) * Number(item.quantity))}</p></div>)}</div></section>}

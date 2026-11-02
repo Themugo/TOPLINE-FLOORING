@@ -4,8 +4,20 @@ const email=(process.env.PAYMENT_UAT_EMAIL||'').trim().toLowerCase();
 const phone=(process.env.PAYMENT_UAT_PHONE||'').trim();
 const gatewayKey=(process.env.PAYMENT_UAT_GATEWAY_KEY||'mpesa').trim();
 const amount=Number(process.env.PAYMENT_UAT_EXPECTED_AMOUNT||'0');
-const fail=m=>{console.error(`FAIL: ${m}`);process.exit(1)};
-if(!endpoint||!orderId||!email||!phone){ console.log('M-Pesa provider UAT: PENDING (requires isolated UAT endpoint, order, customer email and test phone).'); process.exit(0); }
+const uatEnvironment=(process.env.MPESA_UAT_ENV||'').trim().toLowerCase();
+const expectedHost=(process.env.MPESA_UAT_EXPECTED_HOST||'').trim().toLowerCase();
+const allowMutation=process.env.MPESA_UAT_ALLOW_MUTATION==='true';
+const fail=m=>{console.error(`BLOCKED: ${m}`);process.exit(2)};
+if(!endpoint||!orderId||!email||!phone){ fail('M-Pesa UAT requires an isolated endpoint, test order, test customer email and test phone.'); }
+let endpointUrl;
+try { endpointUrl=new URL(endpoint); } catch { fail('PAYMENT_INITIATE_URL must be an absolute URL.'); }
+const blockedHosts=new Set(['toplineflooringandwaterproofing.co.ke','www.toplineflooringandwaterproofing.co.ke','zmbsskvnzjdaxuxlauyx.supabase.co']);
+if(blockedHosts.has(endpointUrl.hostname.toLowerCase())) fail('M-Pesa UAT cannot target a known production host.');
+if(!['sandbox','staging','local'].includes(uatEnvironment)) fail('MPESA_UAT_ENV must be sandbox, staging or local.');
+if(!expectedHost||endpointUrl.host.toLowerCase()!==expectedHost) fail('MPESA_UAT_EXPECTED_HOST must exactly match the payment initiation endpoint host.');
+if(uatEnvironment==='local'&&!['localhost','127.0.0.1','[::1]'].includes(endpointUrl.hostname)) fail('Local M-Pesa UAT must target a loopback hostname.');
+if(uatEnvironment!=='local'&&endpointUrl.protocol!=='https:') fail('Remote sandbox/staging M-Pesa endpoints must use HTTPS.');
+if(!allowMutation) fail('Set MPESA_UAT_ALLOW_MUTATION=true only for a confirmed isolated test order.');
 const idempotency=`mpesa-uat-${orderId}`;
 const body={target_type:'order',target_id:orderId,email,phone,payment_method:'mpesa',gateway_key:gatewayKey,idempotency_key:idempotency,return_url:process.env.PAYMENT_UAT_RETURN_URL||undefined};
 const r=await fetch(endpoint,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(body)});

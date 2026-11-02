@@ -29,7 +29,7 @@ function trackRecentlyViewed(slug: string) {
 }
 
 export default function ShopDetail() {
-  const [location] = useLocation();
+  const [location, setLocation] = useLocation();
   const slug = location.replace('/product/', '');
   const [qty, setQty] = useState(1);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
@@ -120,7 +120,8 @@ export default function ShopDetail() {
     if (!product || !isProductPurchasable(product, selectedVariant)) return;
     addToCart(product, qty, selectedVariant);
     setAdded(true);
-    setTimeout(() => setAdded(false), 2000);
+    // Complete the purchase action by opening the shared cart page.
+    setLocation('/cart');
   };
 
   if (loading) {

@@ -122,3 +122,14 @@ Apply it only after the canonical schema and migrations 39–47 have been valida
 ## 8. Legacy migration rule
 
 WordPress remains online during ecommerce rollout. Product and service data should be imported only after client approval. Existing email, DNS and cPanel services are not prerequisites for the new database and should be migrated independently.
+
+## Local database reset safety
+
+The repository's local Supabase validation script performs a destructive reset of the **local** database before linting and running SQL tests. It now stops before invoking the Supabase CLI unless the operator explicitly sets:
+
+```bash
+TOPLINE_ALLOW_LOCAL_DB_RESET=true npm run validate:local-db
+```
+
+Only set this variable after confirming the local Supabase instance is disposable. This opt-in is not permission to reset, link, or mutate a remote or production database. Never run `supabase db reset --linked` against production.
+

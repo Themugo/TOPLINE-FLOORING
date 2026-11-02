@@ -200,6 +200,7 @@ export default function AdminProducts() {
                   <th className="text-left px-6 py-3 text-xs font-medium text-navy-400 uppercase">Product</th>
                   <th className="text-left px-6 py-3 text-xs font-medium text-navy-400 uppercase">Category</th>
                   <th className="text-left px-6 py-3 text-xs font-medium text-navy-400 uppercase">Price</th>
+                  <th className="text-left px-6 py-3 text-xs font-medium text-navy-400 uppercase">Sellable Stock</th>
                   <th className="text-left px-6 py-3 text-xs font-medium text-navy-400 uppercase">Status</th>
                   <th className="text-left px-6 py-3 text-xs font-medium text-navy-400 uppercase">Actions</th>
                 </tr>
@@ -227,8 +228,9 @@ export default function AdminProducts() {
                       {product.category?.name || '-'}
                     </td>
                     <td className="px-6 py-4 text-sm">{formatKES(product.price)}/{product.unit}</td>
+                    <td className="px-6 py-4 text-sm font-semibold text-navy-800">{product.stock_quantity ?? 0}</td>
                     <td className="px-6 py-4">
-                      {product.in_stock ? (
+                      {product.in_stock && product.stock_quantity > 0 ? (
                         <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded">In Stock</span>
                       ) : (
                         <span className="text-xs bg-red-100 text-red-700 px-2 py-1 rounded">Out of Stock</span>
@@ -335,10 +337,10 @@ export default function AdminProducts() {
                   <input type="checkbox" checked={form.featured} onChange={(e) => setForm({ ...form, featured: e.target.checked })} />
                   <span className="text-sm text-navy-700">Featured</span>
                 </label>
-                <label className="flex items-center gap-2">
-                  <input type="checkbox" checked={form.in_stock} onChange={(e) => setForm({ ...form, in_stock: e.target.checked })} />
-                  <span className="text-sm text-navy-700">In Stock</span>
-                </label>
+              </div>
+              <div role="note" className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-3 text-sm text-amber-900">
+                <strong className="block mb-1">Product stock is managed separately</strong>
+                This form does not add or change inventory. New products start with zero sellable stock. Saving product details does not add inventory. After saving, open <a href="/admin/inventory" className="font-semibold underline underline-offset-2">Inventory</a> and record the actual received quantity. The customer Add to Cart button remains unavailable until stock is recorded.
               </div>
               <div className="flex gap-3 pt-4">
                 <button type="button" onClick={resetForm} className="btn-secondary flex-1">Cancel</button>

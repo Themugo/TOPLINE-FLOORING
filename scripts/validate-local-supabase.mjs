@@ -3,6 +3,13 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 const root = process.cwd();
+
+// This command performs a destructive reset of the local Supabase database.
+// Require an explicit opt-in before even starting the local Supabase stack.
+if (process.env.TOPLINE_ALLOW_LOCAL_DB_RESET !== 'true') {
+  console.error('BLOCKED: local database reset requires TOPLINE_ALLOW_LOCAL_DB_RESET=true. No Supabase CLI command was executed.');
+  process.exit(2);
+}
 const migrationsDir = path.join(root, 'supabase', 'migrations');
 const typesTarget = path.join(root, 'src', 'types', 'database.ts');
 const migrations = fs.readdirSync(migrationsDir).filter((f) => f.endsWith('.sql')).sort();

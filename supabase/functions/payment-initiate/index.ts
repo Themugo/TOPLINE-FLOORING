@@ -185,11 +185,23 @@ Deno.serve(async (req: Request) => {
     if (String(order.customer_email ?? "").toLowerCase() !== email.toLowerCase()) {
       return reply(403, { success: false, error: "Payment customer does not match the order" });
     }
+    // Never start a provider charge for money that is already settled or returned. The
+    // reconciliation RPC would reject the late payment, but the customer would already be charged.
+    if (order.payment_status === "paid") return reply(409, { success: false, error: "This order is already paid" });
+    if (order.payment_status === "refunded") return reply(409, { success: false, error: "This order has been refunded and can no longer be paid. Please contact Topline support." });
+    // Charge only the outstanding balance so a part-paid order cannot be overcharged.
+    const { data: settledRows, error: settledError } = await db
+      .from("payment_transactions")
+      .select("amount")
+      .eq("order_id", order.id)
+      .eq("status", "successful");
+    if (settledError) return reply(503, { success: false, error: "Unable to verify the order balance. Please try again shortly." });
+    const settledTotal = (settledRows ?? []).reduce((sum: number, row: { amount: number | string | null }) => sum + Number(row.amount ?? 0), 0);
     target = {
       reference: order.order_number,
       email: order.customer_email,
       phone: order.customer_phone,
-      amount: Number(order.total_amount),
+      amount: Math.max(Number(order.total_amount) - settledTotal, 0),
     };
   } else {
     const { data, error } = await db
@@ -222,64 +234,127 @@ Deno.serve(async (req: Request) => {
     return reply(400, { success: false, error: "A customer phone number is required for this payment method" });
   }
 
-  // 4. Idempotency: a retry with the same key returns the original attempt instead of charging twice.
+  // 4. Idempotency: retries reuse the same attempt. A known pre-dispatch failure may
+  // safely retry that attempt; an uncertain/provider-dispatched attempt is never charged again.
   const { data: existing } = await db
     .from("payment_attempts")
-    .select("id,payment_transaction_id,status")
+    .select("id,payment_transaction_id,status,target_type,target_id,gateway_key,payment_method")
     .eq("idempotency_key", idempotency)
     .maybeSingle();
-  if (existing) {
-    return reply(200, {
-      success: true,
-      attempt_id: existing.id,
-      payment_transaction_id: existing.payment_transaction_id,
-      status: existing.status,
-      idempotent_replay: true,
-    });
-  }
-
   const accessToken = crypto.randomUUID();
   const customerReturnUrl = returnUrl
     ? `${returnUrl}${returnUrl.includes("?") ? "&" : "?"}attempt_id=__ATTEMPT__&access_token=${encodeURIComponent(accessToken)}`
     : null;
+  let tx: { id: string };
+  let attempt: { id: string };
 
-  const { data: tx, error: txError } = await db
-    .from("payment_transactions")
-    .insert({
-      order_id: targetType === "order" ? targetId : null,
-      invoice_id: targetType === "invoice" ? targetId : null,
-      amount,
-      currency: "KES",
-      method,
-      provider: gateway.provider,
-      status: "pending",
-      idempotency_key: `attempt:${idempotency}`,
-      metadata: { gateway_key: gatewayKey, target_type: targetType },
-      customer_phone: customerPhone,
-      initiated_at: nowIso(),
-    })
-    .select("id")
-    .single();
-  if (txError || !tx) return reply(500, { success: false, error: "Unable to create payment transaction" });
+  if (existing) {
+    if (existing.target_type !== targetType || existing.target_id !== targetId || existing.gateway_key !== gatewayKey || existing.payment_method !== method) {
+      return reply(409, { success: false, error: "This checkout retry key belongs to a different payment target or gateway. Refresh checkout and start a new payment attempt." });
+    }
+    const { data: replayTx } = await db.from("payment_transactions")
+      .select("amount,currency,method,checkout_url,metadata")
+      .eq("id", existing.payment_transaction_id).maybeSingle();
+    const replayMetadata = (replayTx?.metadata || {}) as { initiation_outcome?: string; instructions?: Record<string, unknown> };
+    if (existing.status === "failed" && replayMetadata.initiation_outcome === "not_dispatched") {
+      // This attempt is known not to have reached the provider, so retrying it cannot
+      // create a duplicate charge. Keep the original ledger IDs and idempotency key.
+      const { error: txRetryError } = await db.from("payment_transactions").update({
+        status: "pending", failure_reason: null, completed_at: null, initiated_at: nowIso(),
+        metadata: { gateway_key: gatewayKey, target_type: targetType, initiation_outcome: "retrying" }, updated_at: nowIso(),
+      }).eq("id", existing.payment_transaction_id);
+      const { error: attemptRetryError } = await db.from("payment_attempts").update({
+        status: "initiated", failure_reason: null, public_token_hash: await tokenHash(accessToken),
+        return_url: returnUrl, updated_at: nowIso(),
+      }).eq("id", existing.id);
+      if (txRetryError || attemptRetryError) return reply(503, { success: false, error: "The previous payment attempt could not be safely resumed. Please contact Topline support." });
+      tx = { id: existing.payment_transaction_id };
+      attempt = { id: existing.id };
+    } else {
+      // The original response may have been lost when the browser closed or the network
+      // disconnected. Reissue a fresh one-time status token for the same ledger attempt;
+      // never initiate a second provider charge for an idempotent replay.
+      const { error: tokenUpdateError } = await db.from("payment_attempts")
+        .update({ public_token_hash: await tokenHash(accessToken), return_url: returnUrl, updated_at: nowIso() })
+        .eq("id", existing.id);
+      if (tokenUpdateError) return reply(503, { success: false, error: "Existing payment was found but its secure recovery link could not be refreshed. Please contact Topline support." });
+      const replayReturnUrl = returnUrl
+        ? `${returnUrl}${returnUrl.includes("?") ? "&" : "?"}attempt_id=${encodeURIComponent(existing.id)}&access_token=${encodeURIComponent(accessToken)}`
+        : null;
+      return reply(200, {
+        success: true, attempt_id: existing.id, payment_transaction_id: existing.payment_transaction_id,
+        status: existing.status, payment_method: replayTx?.method || method,
+        amount: Number(replayTx?.amount ?? amount), currency: replayTx?.currency || "KES",
+        checkout_url: replayTx?.checkout_url || undefined,
+        instructions: replayMetadata.instructions || undefined,
+        access_token: accessToken, return_url: replayReturnUrl, idempotent_replay: true,
+        message: existing.status === "pending" ? "Your existing payment attempt is being checked. Do not start another payment." : undefined,
+      });
+    }
+  } else {
+    // A fresh idempotency key (new browser session, second device, different gateway) must not
+    // start a second live provider charge while an earlier attempt for the same target is still
+    // awaiting its callback. Bank-transfer instructions are excluded: they do not move money here.
+    const { data: inflightRows, error: inflightError } = await db
+      .from("payment_transactions")
+      .select("id,created_at,checkout_expires_at,method")
+      .eq(targetType === "order" ? "order_id" : "invoice_id", targetId)
+      .eq("status", "pending")
+      .neq("method", "bank_transfer")
+      .order("created_at", { ascending: false })
+      .limit(10);
+    if (inflightError) return reply(503, { success: false, error: "Unable to verify existing payment attempts. Please try again shortly." });
+    const nowMs = Date.now();
+    const inflight = (inflightRows ?? []).some((row: { created_at: string; checkout_expires_at: string | null }) => {
+      const expiresAt = row.checkout_expires_at ? Date.parse(row.checkout_expires_at) : Date.parse(row.created_at) + 3 * 60_000;
+      return Number.isFinite(expiresAt) && expiresAt > nowMs;
+    });
+    if (inflight) {
+      return reply(409, { success: false, error: `A payment for this ${targetType} is already in progress. Please wait a few minutes for the provider confirmation before trying again.` });
+    }
 
-  const { data: attempt, error: attemptError } = await db
-    .from("payment_attempts")
-    .insert({
-      payment_transaction_id: tx.id,
-      target_type: targetType,
-      target_id: targetId,
-      gateway_key: gatewayKey,
-      payment_method: method,
-      idempotency_key: idempotency,
-      public_token_hash: await tokenHash(accessToken),
-      status: "initiated",
-      return_url: returnUrl,
-    })
-    .select("id")
-    .single();
-  if (attemptError || !attempt) return reply(500, { success: false, error: "Unable to create payment attempt" });
+    const { data: createdTx, error: txError } = await db
+      .from("payment_transactions")
+      .insert({
+        order_id: targetType === "order" ? targetId : null,
+        invoice_id: targetType === "invoice" ? targetId : null,
+        amount,
+        currency: "KES",
+        method,
+        provider: gateway.provider,
+        status: "pending",
+        idempotency_key: `attempt:${idempotency}`,
+        metadata: { gateway_key: gatewayKey, target_type: targetType, initiation_outcome: "not_dispatched" },
+        customer_phone: customerPhone,
+        initiated_at: nowIso(),
+      })
+      .select("id")
+      .single();
+    if (txError || !createdTx) return reply(500, { success: false, error: "Unable to create payment transaction" });
+    tx = { id: createdTx.id };
 
-  // 5. Start the payment with the provider. Any failure closes both ledger rows.
+    const { data: createdAttempt, error: attemptError } = await db
+      .from("payment_attempts")
+      .insert({
+        payment_transaction_id: tx.id,
+        target_type: targetType,
+        target_id: targetId,
+        gateway_key: gatewayKey,
+        payment_method: method,
+        idempotency_key: idempotency,
+        public_token_hash: await tokenHash(accessToken),
+        status: "initiated",
+        return_url: returnUrl,
+      })
+      .select("id")
+      .single();
+    if (attemptError || !createdAttempt) return reply(500, { success: false, error: "Unable to create payment attempt" });
+    attempt = { id: createdAttempt.id };
+  }
+
+  // 5. Start the payment with the provider. Once a charge request is dispatched, a timeout
+  // is an unknown outcome (the provider may have accepted it), not proof of failure.
+  let providerRequestDispatched = false;
   try {
     const resolvedReturnUrl = customerReturnUrl?.replace("__ATTEMPT__", attempt.id) ?? null;
 
@@ -348,6 +423,7 @@ Deno.serve(async (req: Request) => {
         AccountReference: target.reference,
         TransactionDesc: `Topline ${targetType} payment`,
       };
+      providerRequestDispatched = true;
       const response = await fetch(`${base}/mpesa/stkpush/v1/processrequest`, {
         method: "POST",
         headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
@@ -408,6 +484,7 @@ Deno.serve(async (req: Request) => {
     }
     const callback =
       Deno.env.get("PAYMENT_CARD_CALLBACK_URL") || Deno.env.get("PAYMENT_CALLBACK_URL") || `${url}/functions/v1/payment-callback`;
+    providerRequestDispatched = true;
     const response = await fetch(cardUrl, {
       method: "POST",
       headers: { Authorization: `Bearer ${cardSecret}`, "Content-Type": "application/json" },
@@ -459,14 +536,22 @@ Deno.serve(async (req: Request) => {
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Payment initiation failed";
-    await db
-      .from("payment_transactions")
-      .update({ status: "failed", failure_reason: message, completed_at: nowIso(), updated_at: nowIso() })
-      .eq("id", tx.id);
-    await db
-      .from("payment_attempts")
-      .update({ status: "failed", failure_reason: message, updated_at: nowIso() })
-      .eq("id", attempt.id);
+    if (providerRequestDispatched) {
+      const recoveryMessage = "The provider response was not confirmed. Your payment may still be processing; do not start another payment. Check your payment status or contact Topline support.";
+      await db.from("payment_transactions").update({
+        status: "pending", failure_reason: recoveryMessage, updated_at: nowIso(),
+        metadata: { gateway_key: gatewayKey, target_type: targetType, initiation_outcome: "unknown", initiation_error: message },
+      }).eq("id", tx.id);
+      await db.from("payment_attempts").update({ status: "pending", failure_reason: recoveryMessage, updated_at: nowIso() }).eq("id", attempt.id);
+      return reply(200, {
+        success: true, status: "pending", initiation_uncertain: true,
+        message: recoveryMessage, attempt_id: attempt.id, payment_transaction_id: tx.id,
+        payment_method: method, amount, currency: "KES", access_token: accessToken,
+        return_url: customerReturnUrl?.replace("__ATTEMPT__", attempt.id) ?? null,
+      });
+    }
+    await db.from("payment_transactions").update({ status: "failed", failure_reason: message, completed_at: nowIso(), metadata: { gateway_key: gatewayKey, target_type: targetType, initiation_outcome: "not_dispatched", initiation_error: message }, updated_at: nowIso() }).eq("id", tx.id);
+    await db.from("payment_attempts").update({ status: "failed", failure_reason: message, updated_at: nowIso() }).eq("id", attempt.id);
     return reply(502, { success: false, error: message, attempt_id: attempt.id });
   }
 });

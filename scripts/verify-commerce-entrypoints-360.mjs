@@ -23,7 +23,7 @@ expect(dataHook.includes("variants:product_variants(*)"), 'Product listing query
 expect(cart.includes('item.variant?.id === action.variant?.id'), 'Cart identity is not product + variant aware.');
 expect(cart.includes('item.variant.sale_price'), 'Cart total is not variant-price aware.');
 expect(shop.includes('ProductVariantSelector') && shop.includes('addToCart(product, 1, variant)'), 'Shop entry point is not variant-aware.');
-expect(home.includes('ProductVariantSelector') && home.includes('addItem(product, variant)'), 'Homepage featured-product entry point is not variant-aware.');
+expect(home.includes('ProductVariantSelector') && home.includes('addToCart(product, 1, variant)'), 'Homepage featured-product entry point is not variant-aware.');
 expect(detail.includes('ProductVariantSelector') && detail.includes('addToCart(rp, 1, selectedRpVariant)'), 'Related-product entry point is not variant-aware.');
 expect(checkout.includes('variant_id: item.variant?.id || null'), 'Checkout does not carry canonical variant identity.');
 expect(commerce.includes('variant_id?: string | null'), 'Order item commerce contract lacks variant identity.');

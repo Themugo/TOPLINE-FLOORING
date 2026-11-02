@@ -9,7 +9,8 @@ const files = (await readdir(root))
     name.startsWith('verify-') &&
     name.endsWith('.mjs') &&
     name !== 'verify-all.mjs' &&
-    name !== 'verify-payment-provider-uat.mjs'
+    name !== 'verify-payment-provider-uat.mjs' &&
+    name !== 'verify-mpesa-provider-uat.mjs'
   )
   .sort();
 

@@ -26,6 +26,7 @@ interface FormErrors {
   name?: string;
   email?: string;
   phone?: string;
+  deliveryAddress?: string;
 }
 
 interface AppliedCoupon {
@@ -51,7 +52,15 @@ export default function Cart() {
   });
   const [errors, setErrors] = useState<FormErrors>({});
   const [submitting, setSubmitting] = useState(false);
-  const [checkoutIdempotencyKey] = useState(() => crypto.randomUUID());
+  const [checkoutIdempotencyKey, setCheckoutIdempotencyKey] = useState(() => {
+    try {
+      const existing = window.localStorage.getItem('topline-checkout-idempotency-key');
+      if (existing && /^[0-9a-f-]{36}$/i.test(existing)) return existing;
+      const next = crypto.randomUUID();
+      window.localStorage.setItem('topline-checkout-idempotency-key', next);
+      return next;
+    } catch { return crypto.randomUUID(); }
+  });
   const [paymentMethod, setPaymentMethod] = useState<'mpesa' | 'bank_transfer' | 'card' | null>(null);
   const [paymentGatewayKey, setPaymentGatewayKey] = useState<string | null>(null);
 
@@ -120,6 +129,9 @@ export default function Cart() {
     if (!form.email.trim()) e.email = 'Email is required';
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) e.email = 'Invalid email';
     if (!form.phone.trim()) e.phone = 'Phone is required';
+    if (selectedZoneId && !form.deliveryAddress.trim()) {
+      e.deliveryAddress = 'Enter a delivery address or nearby landmark for the selected delivery area';
+    }
     setErrors(e);
     return Object.keys(e).length === 0;
   };
@@ -159,7 +171,7 @@ export default function Cart() {
 
       const orderId = result.order_id;
       if (!orderId) throw new Error('Order was created without an order reference');
-      const payment = await initiateCustomerPayment({ targetType: 'order', targetId: orderId, email: form.email.trim(), phone: form.phone.trim(), paymentMethod, gatewayKey: paymentGatewayKey, idempotencyKey: `checkout-payment:${checkoutIdempotencyKey}`, returnUrl: `${window.location.origin}/payment-return` });
+      const payment = await initiateCustomerPayment({ targetType: 'order', targetId: orderId, email: form.email.trim(), phone: form.phone.trim(), paymentMethod, gatewayKey: paymentGatewayKey, idempotencyKey: `checkout-payment:${checkoutIdempotencyKey}:${paymentGatewayKey}`, returnUrl: `${window.location.origin}/payment-return` });
 
       // Stash a summary for the confirmation page to display. We don't
       // grant anon a SELECT policy on `orders` (it would let anyone read
@@ -200,6 +212,11 @@ export default function Cart() {
         // generic message if the summary isn't there.
       }
 
+      // Rotate the checkout key only after the server has returned a recoverable payment attempt.
+      // If the browser closes before this point, the same cart/order idempotency key can safely resume.
+      const nextCheckoutKey = crypto.randomUUID();
+      setCheckoutIdempotencyKey(nextCheckoutKey);
+      try { window.localStorage.setItem('topline-checkout-idempotency-key', nextCheckoutKey); } catch { /* storage may be unavailable */ }
       clearCart();
       if (payment.checkout_url) { navigateToPaymentUrl(payment.checkout_url); } else { setLocation(`/payment-return?attempt_id=${encodeURIComponent(payment.attempt_id)}&access_token=${encodeURIComponent(payment.access_token)}`); }
     } catch (error) {
@@ -365,10 +382,22 @@ export default function Cart() {
                       <input
                         type="text"
                         value={form.deliveryAddress}
-                        onChange={(e) => setForm({ ...form, deliveryAddress: e.target.value })}
-                        placeholder="Delivery address / landmark"
-                        className="input text-sm mt-2" aria-label="Delivery address or landmark"
+                        onChange={(e) => {
+                          setForm({ ...form, deliveryAddress: e.target.value });
+                          if (errors.deliveryAddress) setErrors((current) => ({ ...current, deliveryAddress: undefined }));
+                        }}
+                        placeholder="Delivery address / landmark *"
+                        className={`input text-sm mt-2 ${errors.deliveryAddress ? 'border-red-500' : ''}`}
+                        aria-label="Delivery address or landmark"
+                        aria-required="true"
+                        aria-invalid={Boolean(errors.deliveryAddress)}
                       />
+                    )}
+                    {selectedZone && errors.deliveryAddress && (
+                      <p className="text-red-500 text-xs mt-1" role="alert">{errors.deliveryAddress}</p>
+                    )}
+                    {selectedZone && !errors.deliveryAddress && (
+                      <p className="text-xs text-gray-500 mt-1">Required when a delivery area is selected.</p>
                     )}
                   </div>
                 )}
@@ -484,7 +513,7 @@ export default function Cart() {
                   </div>
 
                   <div>
-                    <CustomerPaymentMethods context="checkout" value={paymentMethod} onChange={setPaymentMethod} onGatewayChange={setPaymentGatewayKey} />
+                    <CustomerPaymentMethods context="checkout" value={paymentMethod} gatewayValue={paymentGatewayKey} onChange={setPaymentMethod} onGatewayChange={setPaymentGatewayKey} />
                   </div>
 
                   <div>

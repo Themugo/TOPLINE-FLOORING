@@ -4,7 +4,10 @@ import { makeStub, type CallContext } from './supabase-stub';
 
 // Guest checkout: server-side pricing, idempotency, payment start, and honest failure messages.
 const PRODUCT = { id: 'p-1', name: 'Epoxy Kit', slug: 'epoxy-kit', price: 2500, sale_price: null, unit: 'unit', image_url: '', in_stock: true, stock_quantity: 50, is_active: true, category_id: null, brand_id: null, description: '', short_description: '', sku: 'EK1', featured: false, display_order: 0 };
-const GATEWAYS = [{ gateway_key: 'mpesa-main', provider: 'mpesa', payment_method: 'mpesa', display_name: 'M-Pesa', customer_description: null, icon_key: null, requires_customer_phone: true, public_config: {} }];
+const GATEWAYS = [
+  { gateway_key: 'mpesa-main', provider: 'mpesa', payment_method: 'mpesa', display_name: 'M-Pesa', customer_description: null, icon_key: null, requires_customer_phone: true, public_config: {} },
+  { gateway_key: 'mpesa-backup', provider: 'mpesa', payment_method: 'mpesa', display_name: 'M-Pesa Backup', customer_description: null, icon_key: null, requires_customer_phone: true, public_config: {} },
+];
 
 const state = {
   invokeResult: null as { data: unknown; error: unknown } | null,
@@ -30,7 +33,7 @@ vi.mock('@/lib/supabase', () => {
 
 const orderArgs = () => state.calls.find((c) => c.kind === 'rpc' && c.name === 'create_secure_customer_order')?.ops[0].args[0] as Record<string, unknown> | undefined;
 
-async function checkout() {
+async function checkout(selectGateway = false) {
   localStorage.setItem('flooring_app_cart', JSON.stringify([{ product: PRODUCT, quantity: 2 }]));
   window.history.pushState({}, '', '/cart');
   const { default: App } = await import('@/App');
@@ -42,6 +45,11 @@ async function checkout() {
   // wait for the payment method to be auto-selected
   await waitFor(() => expect(screen.getByText('M-Pesa')).toBeTruthy(), { timeout: 5000 });
   await new Promise((r) => setTimeout(r, 100));
+  if (selectGateway) {
+    const backupOption = screen.getByText('M-Pesa Backup').closest('label');
+    if (!backupOption) throw new Error('Backup payment option label was not rendered');
+    fireEvent.click(backupOption);
+  }
   fireEvent.submit(document.querySelector('form') as HTMLFormElement);
 }
 
@@ -73,6 +81,12 @@ describe('guest checkout', () => {
     expect(state.invoked[0].body).toMatchObject({ target_type: 'order', target_id: 'o-1', payment_method: 'mpesa', gateway_key: 'mpesa-main' });
     await waitFor(() => expect(window.location.pathname).toBe('/payment-return'));
     expect(JSON.parse(localStorage.getItem('flooring_app_cart') || '[]')).toEqual([]);
+  });
+
+  it('uses the exact gateway selected when multiple gateways share one payment method', async () => {
+    await checkout(true);
+    await waitFor(() => expect(state.invoked.length).toBe(1), { timeout: 8000 });
+    expect(state.invoked[0].body).toMatchObject({ payment_method: 'mpesa', gateway_key: 'mpesa-backup' });
   });
 
   it('shows the payment function\'s real reason when payment cannot start, and keeps the cart', async () => {

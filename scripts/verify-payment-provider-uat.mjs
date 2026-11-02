@@ -8,9 +8,20 @@ const amount = Number(process.env.PAYMENT_UAT_AMOUNT || '1');
 const currency = process.env.PAYMENT_UAT_CURRENCY || 'KES';
 const eventId = process.env.PAYMENT_UAT_EVENT_ID || `uat-${Date.now()}`;
 const allowMutation = process.env.PAYMENT_UAT_ALLOW_MUTATION === 'true';
+const uatEnvironment = (process.env.PAYMENT_UAT_ENV || '').trim().toLowerCase();
+const expectedHost = (process.env.PAYMENT_UAT_EXPECTED_HOST || '').trim().toLowerCase();
 
-const fail = (m) => { console.error(`FAIL: ${m}`); process.exit(1); };
+const fail = (m) => { console.error(`BLOCKED: ${m}`); process.exit(2); };
 if (!endpoint) fail('PAYMENT_WEBHOOK_URL is required.');
+let endpointUrl;
+try { endpointUrl = new URL(endpoint); } catch { fail('PAYMENT_WEBHOOK_URL must be an absolute URL.'); }
+const blockedHosts = new Set(['toplineflooringandwaterproofing.co.ke', 'www.toplineflooringandwaterproofing.co.ke', 'zmbsskvnzjdaxuxlauyx.supabase.co']);
+if (blockedHosts.has(endpointUrl.hostname.toLowerCase())) fail('Provider UAT cannot target a known production host.');
+if (!['sandbox', 'staging', 'local'].includes(uatEnvironment)) fail('PAYMENT_UAT_ENV must be sandbox, staging or local.');
+if (!expectedHost || endpointUrl.host.toLowerCase() !== expectedHost) fail('PAYMENT_UAT_EXPECTED_HOST must exactly match the webhook endpoint host.');
+if (uatEnvironment === 'local' && !['localhost', '127.0.0.1', '[::1]'].includes(endpointUrl.hostname)) fail('Local UAT must target a loopback hostname.');
+if (uatEnvironment !== 'local' && endpointUrl.protocol !== 'https:') fail('Remote sandbox/staging UAT endpoints must use HTTPS.');
+if (!allowMutation) fail('Set PAYMENT_UAT_ALLOW_MUTATION=true only for an isolated provider UAT order after confirming the endpoint and test order.');
 if (!secret) fail('PAYMENT_WEBHOOK_SECRET is required.');
 if (!orderId) fail('PAYMENT_UAT_ORDER_ID is required.');
 if (!Number.isFinite(amount) || amount <= 0) fail('PAYMENT_UAT_AMOUNT must be positive.');

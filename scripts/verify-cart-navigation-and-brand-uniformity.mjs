@@ -16,9 +16,12 @@ assert.match(detail, /addToCart\(product,\s*qty,\s*selectedVariant\)/, 'Product 
 assert.match(detail, /Math\.min\(selectedVariant \? selectedVariant\.stock_quantity : product\.stock_quantity,\s*q \+ 1\)/, 'Product detail quantity cannot exceed available stock');
 assert.match(shop, /Out of Stock/, 'Unavailable shop materials explain why the add action is disabled');
 assert.match(shop, /setLocation\('\/cart'\)/, 'Add to cart opens the cart route');
+const declaresSetLocation = /const\s*\[\s*\w*\s*,\s*setLocation\s*\]\s*=\s*useLocation\(\)/;
+assert.match(shop, declaresSetLocation, 'Shop declares setLocation from useLocation');
+assert.match(detail, declaresSetLocation, 'Product detail declares setLocation from useLocation (prevents add-to-cart ReferenceError)');
 assert.match(shop, /type="button"[\s\S]{0,160}handleAddToCart/, 'Add-to-cart control cannot submit a surrounding form');
 assert.match(header, /src="\/topline-brand-mark\.svg"/, 'Navbar uses the canonical logo asset');
 assert.match(footer, /src="\/topline-brand-mark\.svg"/, 'Footer reuses the canonical navbar logo asset');
 assert.match(footer, /href="\/"[\s\S]{0,120}aria-label="Topline Flooring and Waterproofing home"/, 'Footer logo links home accessibly');
 assert.match(app, /location\s*===\s*'\/cart'[\s\S]{0,180}<Cart\s*\/>/, 'App retains the cart route');
-console.log('PASS: shop/cart reliability and brand uniformity (13 assertions)');
+console.log('PASS: shop/cart reliability and brand uniformity (15 assertions)');

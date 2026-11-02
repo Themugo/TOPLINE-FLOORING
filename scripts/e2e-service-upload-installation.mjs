@@ -35,7 +35,6 @@ loadEnvFile('.env');
 const URL = (process.env.VITE_SUPABASE_URL || '').replace(/\/$/, '');
 const KEY = process.env.VITE_SUPABASE_PUBLISHABLE_KEY || process.env.VITE_SUPABASE_ANON_KEY || '';
 const RUN_MUTATIONS = process.env.E2E_RUN_MUTATIONS === 'true';
-const ALLOW_PROD = process.env.E2E_ALLOW_PRODUCTION_MUTATIONS === 'true';
 const EXPECTED_MUTATION_URL = (process.env.E2E_EXPECTED_SUPABASE_URL || '').replace(/\/$/, '');
 const EMAIL = process.env.E2E_ADMIN_EMAIL || '';
 const PASSWORD = process.env.E2E_ADMIN_PASSWORD || '';
@@ -75,12 +74,22 @@ let assignmentId = '';
 async function main() {
   requireValue(URL, 'VITE_SUPABASE_URL');
   requireValue(KEY, 'VITE_SUPABASE_PUBLISHABLE_KEY');
-  if (URL === CANONICAL) {
-    pass('Supabase target', CANONICAL);
-  } else if (RUN_MUTATIONS && EXPECTED_MUTATION_URL === URL) {
-    pass('Supabase target', `Explicitly confirmed mutation target: ${URL}`);
+  if (RUN_MUTATIONS) {
+    if (URL === CANONICAL) {
+      throw new Error('Mutation mode is permanently blocked against the canonical production Supabase project.');
+    }
+    if (!EXPECTED_MUTATION_URL || EXPECTED_MUTATION_URL !== URL) {
+      throw new Error(`Mutation mode requires E2E_EXPECTED_SUPABASE_URL to exactly match the isolated staging/local target. Received ${URL}.`);
+    }
+    const target = new globalThis.URL(URL);
+    if (target.protocol !== 'https:' && !['localhost', '127.0.0.1', '[::1]'].includes(target.hostname)) {
+      throw new Error('Mutation mode requires HTTPS for remote staging targets or loopback for local targets.');
+    }
+    pass('Supabase target', `Explicitly confirmed isolated mutation target: ${target.origin}`);
+  } else if (URL === CANONICAL) {
+    pass('Supabase target', `Canonical read-only target: ${CANONICAL}`);
   } else {
-    fail('Supabase target', `Expected ${CANONICAL}; got ${URL}. For isolated staging mutations only, set E2E_EXPECTED_SUPABASE_URL to this exact URL.`);
+    fail('Supabase target', `Expected canonical read-only target ${CANONICAL}; got ${URL}. For isolated staging mutations only, set E2E_RUN_MUTATIONS=true and E2E_EXPECTED_SUPABASE_URL to this exact URL.`);
     throw new Error('Supabase target mismatch; stopped before any catalogue or storage request.');
   }
 
@@ -122,7 +131,7 @@ async function main() {
 
   requireValue(EMAIL, 'E2E_ADMIN_EMAIL');
   requireValue(PASSWORD, 'E2E_ADMIN_PASSWORD');
-  if (URL === CANONICAL && !ALLOW_PROD) throw new Error('Mutation mode is blocked against the canonical production Supabase project. Use an isolated staging project and set E2E_EXPECTED_SUPABASE_URL to its exact URL. Production mutations require the separate E2E_ALLOW_PRODUCTION_MUTATIONS=true override.');
+  if (URL === CANONICAL) throw new Error('Production mutations are not supported by this test under any configuration.');
 
   const session = await request('/auth/v1/token?grant_type=password', { method: 'POST', body: JSON.stringify({ email: EMAIL, password: PASSWORD }) });
   accessToken = session?.access_token;

@@ -16,7 +16,8 @@ if(!init.includes('payment ledger could not be updated')) fail('Provider accepta
 const callback=read('supabase/functions/payment-callback/index.ts');
 if(!callback.includes('rawBody=await req.text()')) fail('Card callback signature verification does not use the raw request body.');
 if(!callback.includes('merchantRequest&&tx.provider_reference!==merchantRequest')) fail('M-Pesa callback does not bind MerchantRequestID to the initiated transaction.');
-if(!callback.includes("payment_attempts').update({status:'failed'")) fail('M-Pesa failure fallback does not close the payment attempt.');
+if(!callback.includes("status==='successful'?'payment.success':'payment.failed'") || !callback.includes('if(applyError||data?.success===false)')) fail('M-Pesa failure/success callbacks must reconcile through the atomic payment RPC and fail closed when it rejects.');
+if(callback.includes("payment_attempts').update({status:'failed'")) fail('M-Pesa callback must not bypass atomic payment reconciliation with a direct failure mutation.');
 if(portal.includes('idempotencyKey:`portal-order-payment:${selectedRecord.value.id}:${orderPaymentGatewayKey}`')) fail('Portal order Pay Now still reuses a deterministic retry key.');
 if(portal.includes('idempotencyKey:`portal-invoice-payment:${selectedRecord.value.id}:${invoicePaymentGatewayKey}`')) fail('Portal invoice Pay Now still reuses a deterministic retry key.');
 if(!gateway.includes("find(f=>f.startsWith('20261002190000_payment_gateway_customer_visibility_admin_control_360.sql'))")) fail('Gateway verifier still assumes its migration must be latest.');

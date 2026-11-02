@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { Link } from 'wouter';
+import { Link, useLocation } from 'wouter';
 import { ChevronLeft, ChevronRight, Star, ArrowRight, Phone, Megaphone } from 'lucide-react';
 import { CustomerLayout } from '@/components/layout/CustomerLayout';
 import { RecentProjects } from '@/components/home/RecentProjects';
@@ -59,7 +59,8 @@ export default function Home() {
   const phone = settings.contact?.phone || '';
   const { theme } = useThemeSettings();
   const layoutStyle = theme?.layout_style || 'classic';
-  const { addItem } = useCart();
+  const { addToCart } = useCart();
+  const [, setLocation] = useLocation();
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isSliderPaused, setIsSliderPaused] = useState(false);
   const [touchStartX, setTouchStartX] = useState<number | null>(null);
@@ -224,7 +225,10 @@ export default function Home() {
     const variants = getActiveProductVariants(product);
     const variant = variants.length ? variants.find((v) => v.id === variantId) || getDefaultProductVariant(product) : undefined;
     if (!isProductPurchasable(product, variant)) return;
-    addItem(product, variant);
+    addToCart(product, 1, variant);
+    // Public homepage purchase actions must lead to the same visible cart
+    // experience as the Materials Shop instead of silently changing only the badge.
+    setLocation('/cart');
   };
 
   return (

@@ -112,3 +112,17 @@ All rights reserved. Topline Flooring & Waterproofing.
 
 ### Engineering track
 The current application also includes the Phase 45–47 field workforce, project cost ledger, and warranty/after-sales service foundation documented in `docs/PHASES_45_47_FIELD_COSTS_AFTER_SALES.md`.
+
+## Client handover and release evidence
+
+The current source assessment and handover materials are maintained in:
+
+- `docs/operations/client-handover-guide.md`
+- `docs/operations/environment-and-deployment-parity.md`
+- `docs/releases/client-acceptance-report.md`
+- `docs/releases/service-lifecycle-acceptance.md`
+- `docs/releases/payment-and-communications-acceptance.md`
+- `docs/database/schema-integrity-report.md`
+
+These documents distinguish source-level verification from external staging and production acceptance. Do not treat a static verification pass as proof of live database, provider, email or deployment operation.
+
