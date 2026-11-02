@@ -101,3 +101,21 @@ The existing `deliver-communications` worker processes both the transactional ou
 9. Test password reset, signup verification, and magic-link email from Supabase Auth.
 
 Do not bulk-import historic customer addresses into the marketing list unless there is documented, valid marketing consent for each address. A quotation request or account registration alone is not marketing consent. This repository change cannot verify Brevo account/domain state or prove live delivery until the above UAT is completed.
+
+## Email-first activation checklist (SMS and WhatsApp later)
+
+Email is the only required channel at launch. SMS (Africa's Talking) and WhatsApp (Meta) can be configured any time later: until then their queued messages simply wait (they are not failed or lost), and anything still waiting after 72 hours is cancelled with a clear reason.
+
+1. **Brevo**: verify the sending domain (SPF + DKIM + DMARC) and a sender address; create an API key.
+2. **Supabase Edge secrets** (never Vite/SQL/browser): `BREVO_API_KEY`, `BREVO_SENDER_EMAIL`, `BREVO_SENDER_NAME`, `BREVO_REPLY_TO_EMAIL`, `TOPLINE_WORKER_SECRET`, `COMMUNICATION_WEBHOOK_SECRET`; optional `BREVO_MARKETING_LIST_ID`.
+3. **Deploy** `deliver-communications`, `communication-provider-webhook`, `communication-provider-readiness`, `payment-initiate`; apply migrations `20261102180000` and `20261102190000`.
+4. **Scheduler**: call `deliver-communications` every minute with header `x-topline-worker-secret: <TOPLINE_WORKER_SECRET>`. The response lists `channels_active` and `channels_waiting_for_setup`.
+5. **Brevo webhook** (bounces, spam, unsubscribes): point it at `https://<project>.supabase.co/functions/v1/communication-provider-webhook`, authenticated with any one of: header `x-topline-webhook-secret`, `Authorization: Bearer <secret>`, or `?secret=<secret>` (use the query form when Brevo cannot send custom headers). Arrays of up to 200 events are accepted.
+6. **Supabase Auth mail** (sign-up, magic link, password reset): Dashboard > Auth > SMTP = `smtp-relay.brevo.com`, then paste the branded templates from `docs/email-templates`.
+7. **Check**: call `communication-provider-readiness`; email must show ready. Send a real test to a mailbox you own (quotation request, order confirmation, password reset).
+
+Enabling SMS later: set `AT_USERNAME` / `AT_API_KEY` (and WhatsApp `WHATSAPP_*` secrets); the next worker run picks the channel up automatically.
+
+## Bank and payment details
+
+Staff maintain these in **Admin > Business Settings > Bank & payment details** (bank accounts, M-Pesa Paybill, Till, Send Money). Inputs are validated (database CHECK constraints mirror the form), changes are audit-logged, and only users with the `settings` permission can edit them. Active accounts marked "Show to customers" appear in the customer portal ("How to pay" card, signed-in customers only) and in bank-transfer payment instructions. If no managed accounts exist, bank transfer falls back to the legacy gateway `public_config`.

@@ -38,6 +38,7 @@ export default function AdminProducts() {
     image_url: '',
     featured: false,
     in_stock: true,
+    stock_to_add: '',
   });
 
   const fetchProducts = useCallback(async () => {
@@ -72,7 +73,7 @@ export default function AdminProducts() {
   const resetForm = () => {
     setForm({
       name: '', slug: '', category_id: '', brand_id: '', description: '', short_description: '',
-      sku: '', price: '', unit: 'sqm', image_url: '', featured: false, in_stock: true,
+      sku: '', price: '', unit: 'sqm', image_url: '', featured: false, in_stock: true, stock_to_add: '',
     });
     setEditing(null);
     setShowForm(false);
@@ -117,12 +118,30 @@ export default function AdminProducts() {
     };
 
     try {
+      const stockToAdd = Math.floor(Number(form.stock_to_add));
+      let productId = editing?.id ?? null;
       if (editing) {
         await updateProductAdmin(editing.id, data);
-        toast({ title: 'Product updated' });
       } else {
-        await createProductAdmin(data);
-        toast({ title: 'Product created' });
+        productId = await createProductAdmin(data);
+      }
+      // Customers can only add a product to the cart once it has recorded stock, so let staff record
+      // the received quantity right here (through the audited inventory movement) instead of sending them elsewhere.
+      if (productId && Number.isFinite(stockToAdd) && stockToAdd > 0) {
+        const { error: stockError } = await supabase.rpc('adjust_product_stock', {
+          p_product_id: productId,
+          p_quantity: stockToAdd,
+          p_movement_type: 'in',
+          p_notes: editing ? 'Stock added from product form' : 'Opening stock',
+          p_reference_type: 'manual_adjustment',
+        });
+        if (stockError) {
+          toast({ title: editing ? 'Product updated, but stock was not added' : 'Product created, but stock was not added', description: describeDbError(stockError as { message?: string; code?: string }) + ' Record it from Inventory.', variant: 'destructive' });
+        } else {
+          toast({ title: editing ? 'Product updated and stock added' : 'Product created with opening stock' });
+        }
+      } else {
+        toast({ title: editing ? 'Product updated' : 'Product created', description: editing ? undefined : 'No stock recorded yet - customers will see Request Availability until stock is added.' });
       }
       await fetchProducts();
       resetForm();
@@ -159,6 +178,7 @@ export default function AdminProducts() {
       image_url: product.image_url || '',
       featured: product.featured,
       in_stock: product.in_stock,
+      stock_to_add: '',
     });
     setShowForm(true);
   };
@@ -338,9 +358,10 @@ export default function AdminProducts() {
                   <span className="text-sm text-navy-700">Featured</span>
                 </label>
               </div>
-              <div role="note" className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-3 text-sm text-amber-900">
-                <strong className="block mb-1">Product stock is managed separately</strong>
-                This form does not add or change inventory. New products start with zero sellable stock. Saving product details does not add inventory. After saving, open <a href="/admin/inventory" className="font-semibold underline underline-offset-2">Inventory</a> and record the actual received quantity. The customer Add to Cart button remains unavailable until stock is recorded.
+              <div>
+                <label htmlFor="product-stock-to-add" className="block text-sm font-medium text-navy-700 mb-1">{editing ? 'Add received stock (optional)' : 'Opening stock quantity'}</label>
+                <input id="product-stock-to-add" type="number" min="0" step="1" inputMode="numeric" className="input" value={form.stock_to_add} onChange={(e) => setForm({ ...form, stock_to_add: e.target.value })} placeholder="e.g. 120" />
+                <p className="mt-1 text-xs text-gray-600">{editing ? `Currently ${editing.stock_quantity ?? 0} in stock. Quantity entered here is added to it.` : 'Customers can only add a product to the cart once it has stock.'} Further changes and write-offs are recorded in <a href="/admin/inventory" className="font-semibold underline underline-offset-2">Inventory</a>.</p>
               </div>
               <div className="flex gap-3 pt-4">
                 <button type="button" onClick={resetForm} className="btn-secondary flex-1">Cancel</button>

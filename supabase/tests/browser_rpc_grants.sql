@@ -62,6 +62,7 @@ INSERT INTO browser_rpc_names (name) VALUES
   ('get_customer_lifecycle_360'),
   ('get_customer_lifecycle_operations_360'),
   ('get_customer_maintenance_plans_360'),
+  ('get_customer_payment_accounts'),
   ('get_customer_payment_methods'),
   ('get_customer_portal_360'),
   ('get_customer_portal_data'),

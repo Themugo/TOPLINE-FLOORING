@@ -35,6 +35,16 @@ const workerSecret = Deno.env.get("TOPLINE_WORKER_SECRET");
 const PROVIDER_TIMEOUT_MS = 20_000;
 
 if (!supabaseUrl || !serviceRoleKey) throw new Error("Missing Supabase service configuration");
+
+// Email-first launch: only channels whose provider credentials are present are claimed. Rows for other channels stay
+// queued (see migration 20261102180000) instead of failing, burning retries and being lost.
+function configuredChannels(): Array<"email" | "sms" | "whatsapp"> {
+  const channels: Array<"email" | "sms" | "whatsapp"> = [];
+  if (brevoApiKey && brevoSenderEmail) channels.push("email");
+  if (atUsername && atApiKey) channels.push("sms");
+  if (whatsappProvider === "meta" && whatsappAccessToken && whatsappPhoneNumberId) channels.push("whatsapp");
+  return channels;
+}
 const admin = createClient(supabaseUrl, serviceRoleKey, { auth: { persistSession: false, autoRefreshToken: false } });
 
 async function sendEmail(item: OutboxMessage) {
@@ -328,7 +338,8 @@ Deno.serve(async (req) => {
   try {
     const body = await req.json().catch(() => ({}));
     const limit = Math.max(1, Math.min(Number(body?.limit ?? 10), 50));
-    const { data, error } = await admin.rpc("claim_communication_outbox_worker", { p_limit: limit });
+    const channels = configuredChannels();
+    const { data, error } = await admin.rpc("claim_communication_outbox_worker", { p_limit: limit, p_channels: channels });
     if (error) throw error;
     const results = [];
     for (const item of (data ?? []) as OutboxMessage[]) results.push(await processItem(item));
@@ -340,7 +351,8 @@ Deno.serve(async (req) => {
       console.error("Brevo marketing sync queue processing failed", message);
       marketingSync = { processed: 0, configured: Boolean(brevoApiKey && brevoMarketingListId > 0), error: message };
     }
-    return Response.json({ processed: results.length, results, marketing_sync: marketingSync });
+    const deferred = (["email", "sms", "whatsapp"] as const).filter((c) => !channels.includes(c));
+    return Response.json({ processed: results.length, results, channels_active: channels, channels_waiting_for_setup: deferred, marketing_sync: marketingSync });
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     return Response.json({ error: message }, { status: 500 });

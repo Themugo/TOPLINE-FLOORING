@@ -1,6 +1,6 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { constantTimeEqual } from "../_shared/security.ts";
+import { constantTimeEqual, headerOrQuery } from "../_shared/security.ts";
 
 const url = Deno.env.get("SUPABASE_URL");
 const key = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
@@ -8,18 +8,15 @@ const secret = Deno.env.get("COMMUNICATION_WEBHOOK_SECRET");
 if (!url || !key || !secret) throw new Error("Communication webhook is not configured");
 const admin = createClient(url, key, { auth: { persistSession: false, autoRefreshToken: false } });
 
-Deno.serve(async (req) => {
-  if (req.method !== "POST") return new Response("Method Not Allowed", { status: 405 });
-  if (!constantTimeEqual(req.headers.get("x-topline-webhook-secret"), secret)) return new Response("Unauthorized", { status: 401 });
-  const raw = await req.text();
-  if (raw.length > 1_048_576) return new Response("Payload Too Large", { status: 413 });
-  let body: Record<string, unknown>;
-  try {
-    body = JSON.parse(raw) as Record<string, unknown>;
-  } catch {
-    return Response.json({ error: "Invalid JSON payload" }, { status: 400 });
-  }
+// Brevo webhooks cannot always send a custom header, so the shared secret is accepted three ways:
+// the x-topline-webhook-secret header, "Authorization: Bearer <secret>" (Brevo's webhook authentication option),
+// or ?secret=<secret> in the webhook URL. All comparisons are constant-time.
+function presentedSecret(req: Request): string | null {
+  const bearer = req.headers.get("authorization")?.match(/^Bearer\s+(.+)$/i)?.[1] ?? null;
+  return headerOrQuery(req, "x-topline-webhook-secret", "secret") ?? bearer;
+}
 
+async function handle(body: Record<string, any>): Promise<Response> { // deno-lint-ignore no-explicit-any
   if (body?.event) {
     const event = String(body.event);
     const lower = event.toLowerCase();
@@ -68,4 +65,25 @@ Deno.serve(async (req) => {
   }
 
   return Response.json({ ignored: true });
+}
+
+Deno.serve(async (req) => {
+  if (req.method !== "POST") return new Response("Method Not Allowed", { status: 405 });
+  if (!constantTimeEqual(presentedSecret(req), secret)) return new Response("Unauthorized", { status: 401 });
+  const raw = await req.text();
+  if (raw.length > 1_048_576) return new Response("Payload Too Large", { status: 413 });
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(raw);
+  } catch {
+    return Response.json({ error: "Invalid JSON payload" }, { status: 400 });
+  }
+  // Brevo may batch events into an array; each is recorded (and de-duplicated downstream) independently.
+  // deno-lint-ignore no-explicit-any
+  const events = (Array.isArray(parsed) ? parsed : [parsed]).filter((e): e is Record<string, any> => typeof e === "object" && e !== null && !Array.isArray(e)).slice(0, 200);
+  for (const event of events) {
+    const result = await handle(event);
+    if (!result.ok) return result;
+  }
+  return Response.json({ ok: true, recorded: events.length });
 });

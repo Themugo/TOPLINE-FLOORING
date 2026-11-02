@@ -30,6 +30,7 @@
     "verify:all": "node scripts/verify-all.mjs",
     "verify:application-security-trust-boundary": "node scripts/verify-application-security-trust-boundary.mjs",
     "verify:authorization-order-360": "node scripts/verify-authorization-order-360.mjs",
+    "verify:payment-accounts-email-first": "node scripts/verify-payment-accounts-and-email-first.mjs",
     "verify:brevo-email": "node scripts/verify-brevo-email-integration.mjs",
     "verify:cart-brand": "node scripts/verify-cart-navigation-and-brand-uniformity.mjs",
     "verify:cart-stock-eligibility": "node scripts/verify-cart-stock-eligibility.mjs",

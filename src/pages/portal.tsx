@@ -13,6 +13,8 @@ import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 import { confirmEmailLink, friendlyAuthError, isRecoveryLink, isUnverifiedEmailError, readAuthLinkProblem, readEmailLinkToken, type EmailLinkType, registerCustomerAccount, requestCustomerMagicLink, requestCustomerPasswordReset, resendCustomerVerification, signInCustomer, signOutCustomer, updateCustomerPassword } from '@/lib/customer-portal';
 import { getCustomerPortal360, type CustomerPortal360Data } from '@/lib/customer-portal-360';
 import { getCustomerJourney, type CustomerJourneyEvent } from '@/lib/customer-journey';
+import { PaymentAccountsList } from '@/components/payments/PaymentAccountsList';
+import { getCustomerPaymentAccounts, type CustomerPaymentAccount } from '@/lib/payment-accounts';
 import { useSeoMeta } from '@/hooks/use-seo';
 import { telHref } from '@/lib/utils';
 import { useSiteSettings } from '@/hooks/use-data';
@@ -185,6 +187,7 @@ export default function Portal() {
   useSeoMeta('customer-portal', null, { noIndex: true });
   const { settings } = useSiteSettings();
   const [data, setData] = useState<CustomerPortal360Data | null>(null);
+  const [paymentAccounts, setPaymentAccounts] = useState<CustomerPaymentAccount[]>([]);
   const [loading, setLoading] = useState(true);
   const [signedIn, setSignedIn] = useState(false);
   const [recovering, setRecovering] = useState(() => isRecoveryLink());
@@ -292,6 +295,8 @@ export default function Portal() {
       const portal = await getCustomerPortal360();
       setData(portal);
       setAuthenticatedError(false);
+      // Independent of the dashboard: if bank details fail to load the rest of the account still works.
+      void getCustomerPaymentAccounts().then(setPaymentAccounts).catch(() => setPaymentAccounts([]));
       const [journeyResult, prefsResult, docsResult, communicationsResult] = await Promise.allSettled([
         getCustomerJourney(),
         getCustomerPortalPreferences(),
@@ -350,6 +355,9 @@ export default function Portal() {
           </div>
         );
       })()}
+      {paymentAccounts.length > 0 && (
+        <Card className="rounded-2xl border-slate-200 shadow-sm" id="payment-details"><CardHeader><CardTitle>How to pay</CardTitle><p className="text-sm text-muted-foreground">Pay Topline using any of these accounts, and quote your order or invoice number as the reference.</p></CardHeader><CardContent><PaymentAccountsList accounts={paymentAccounts} /></CardContent></Card>
+      )}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Card className="rounded-2xl border-slate-200 shadow-sm"><CardContent className="p-5"><p className="text-xs uppercase tracking-wider text-muted-foreground">Active projects</p><p className="text-2xl font-bold mt-2">{data.summary.active_projects}</p></CardContent></Card>
         <Card className="rounded-2xl border-slate-200 shadow-sm"><CardContent className="p-5"><p className="text-xs uppercase tracking-wider text-muted-foreground">Open orders</p><p className="text-2xl font-bold mt-2">{data.summary.open_orders}</p></CardContent></Card>

@@ -361,7 +361,18 @@ Deno.serve(async (req: Request) => {
     if (method === "bank_transfer") {
       const rawConfig = gateway.public_config ?? {};
       const allowedBankKeys = ["bank_name", "account_name", "account_number", "branch", "swift_code", "reference_format", "instructions"];
-      const safeConfig = Object.fromEntries(Object.entries(rawConfig).filter(([key]) => allowedBankKeys.includes(key)));
+      const legacyConfig = Object.fromEntries(Object.entries(rawConfig).filter(([key]) => allowedBankKeys.includes(key)));
+      // Staff-managed accounts (Admin > Settings > Bank & payment details) take precedence over the legacy JSON config.
+      const { data: managedAccounts } = await db
+        .from("business_payment_accounts")
+        .select("kind,label,bank_name,account_name,account_number,branch,swift_code,paybill_number,till_number,phone_number,reference_hint,instructions")
+        .eq("is_active", true)
+        .eq("show_to_customers", true)
+        .order("display_order", { ascending: true })
+        .order("created_at", { ascending: true });
+      const safeConfig: Record<string, unknown> = Array.isArray(managedAccounts) && managedAccounts.length
+        ? { accounts: managedAccounts }
+        : legacyConfig;
       await db
         .from("payment_transactions")
         .update({

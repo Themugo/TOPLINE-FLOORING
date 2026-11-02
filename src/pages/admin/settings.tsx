@@ -4,6 +4,7 @@ import { Link } from 'wouter';
 import { AdminLayout } from './dashboard';
 import { supabase } from '@/lib/supabase';
 import { useToast } from '@/hooks/use-toast';
+import { PaymentAccountsManager } from '@/components/admin/PaymentAccountsManager';
 
 export default function AdminSettings() {
   const [currentEmail, setCurrentEmail] = useState('');
@@ -132,6 +133,7 @@ export default function AdminSettings() {
           {saving ? 'Saving...' : 'Save Account Settings'}
         </button>
       </div>
+      <PaymentAccountsManager />
     </AdminLayout>
   );
 }

@@ -224,7 +224,11 @@ export default function Home() {
   const handleAddToCart = (product: Product, variantId?: string) => {
     const variants = getActiveProductVariants(product);
     const variant = variants.length ? variants.find((v) => v.id === variantId) || getDefaultProductVariant(product) : undefined;
-    if (!isProductPurchasable(product, variant)) return;
+    if (!isProductPurchasable(product, variant)) {
+      // Never leave a dead button: unavailable materials go to the quotation flow, same as the Materials Shop.
+      setLocation(`/quotation?product=${encodeURIComponent(product.name)}&sku=${encodeURIComponent(product.sku || '')}`);
+      return;
+    }
     addToCart(product, 1, variant);
     // Public homepage purchase actions must lead to the same visible cart
     // experience as the Materials Shop instead of silently changing only the badge.
@@ -615,11 +619,10 @@ export default function Home() {
                   <div className="p-4 pt-0 border-t border-gray-100/80 mt-2 flex items-center justify-between">
                     <p className="font-bold text-navy-950 text-base">{formatKES(getProductUnitPrice(product, selectedVariant))}</p>
                     <button
-                      disabled={!isProductPurchasable(product, selectedVariant)}
                       onClick={() => handleAddToCart(product, selectedVariant?.id)}
                       className="text-xs bg-primary-500 hover:bg-primary-600 text-white px-3 py-1.5 rounded-lg font-semibold transition-all shadow-2xs hover:shadow-sm"
                     >
-                      {addToCartText}
+                      {isProductPurchasable(product, selectedVariant) ? addToCartText : 'Request Availability'}
                     </button>
                   </div>
                 </div>

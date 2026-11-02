@@ -167,3 +167,13 @@ typecheck · lint (0 warnings) · build · verify:all 137/137 (new `verify:admin
 
 ## Not verified
 Real iOS/Android install and launch, iOS standalone quirks, keyboard/screen-reader walkthrough of every admin form with real data (audits ran against empty-state fixtures), live Supabase, provider sandboxes.
+
+## Pass 6 - communications (email-first), bank/payment details, add-to-cart
+
+**Communications audit.** Email via Brevo is complete end to end (outbox, retry/idempotency, uncertain-delivery handling, suppression, marketing consent sync, Auth SMTP templates). Fixed: the worker previously claimed SMS/WhatsApp rows with no provider configured and failed them; migration `20261102180000` + worker change now claim only configured channels (unconfigured rows wait, cancelled after 72 h). The Brevo webhook accepts header, bearer or `?secret=` authentication and batches; readiness treats SMS/WhatsApp as optional. Activation checklist added to `docs/BREVO-EMAIL-INTEGRATION-RUNBOOK.md`.
+
+**Bank and payment details.** Migration `20261102190000` adds audited, RLS-protected `business_payment_accounts` (bank, Paybill, Till, Send Money, other) with validation, and `get_customer_payment_accounts()`. Admin manager in Business Settings; "How to pay" card in the customer portal; payment-initiate and payment-return use the managed accounts (legacy gateway config remains the fallback).
+
+**Add to cart (public site).** Reproduced in a browser: the click works when a product has stock; products with zero stock (the default for every new product, since the admin form could not record stock) are sent to Request Availability, and the home page button was simply disabled. Fixes: admin product form now records opening / received stock through the audited inventory RPC; the home button routes to a quotation instead of being dead.
+
+**Gates.** tsc clean, eslint clean, build OK, vitest 238/238, verify-all 138/138, SQL regressions pass on a scratch database. Not verified here: live Supabase, Brevo domain/API/webhook, real mailbox delivery, edge function deployment.
