@@ -263,3 +263,7 @@ Not verifiable from here: live data, payment-gateway callbacks, email delivery, 
 - **Draft leak:** `get_customer_portal_360` returned draft quotations and draft invoices; it now hides drafts (and drafts no longer count as outstanding).
 - **Claim de-duplication:** mount + auth-event loads share one claim request.
 - Verified end to end (browser, desktop 1280 and phone 390, mocked Supabase): auto-claim of an unlinked account, quotation response, empty state, no page errors — 11/11 each. Gates: tsc/eslint/build clean, verify-all 146/146, vitest 238/238.
+
+## Pass 16 — Acceptance creates the order (2026-11-03)
+- Customer acceptance in the portal now converts the quotation to an order and project immediately (`private.convert_quotation_to_order_core`, same logic as the admin button, no browser grant). The conversion runs in a sub-transaction so a failure never undoes the acceptance; staff can still convert manually (`conversion_note` is returned).
+- Verified on a real PostgreSQL 16 instance with stubbed tables: accept -> status `converted`, 1 order, 1 project; second accept rejected. Browser tests 11/11 desktop and phone; verify-all 146/146, vitest 238/238.

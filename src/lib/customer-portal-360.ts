@@ -31,13 +31,15 @@ export function isPortalAccessMissing(err: unknown): boolean {
   return /portal access is not available/i.test(msg);
 }
 
+export interface QuotationResponseResult { id: string; status: string; order_id?: string | null; project_id?: string | null; conversion_note?: string | null }
+
 export type QuotationResponseAction = 'accept' | 'decline' | 'request_changes';
 
 /** Statuses in which the customer may still answer a quotation (mirrors the server rule). */
 export const QUOTATION_OPEN_STATUSES = ['quoted', 'sent', 'negotiating'];
 
-export async function respondToCustomerQuotation(quotationId: string, action: QuotationResponseAction, note?: string): Promise<{ id: string; status: string }> {
+export async function respondToCustomerQuotation(quotationId: string, action: QuotationResponseAction, note?: string): Promise<QuotationResponseResult> {
   const { data, error } = await supabase.rpc('respond_to_customer_quotation', { p_quotation_id: quotationId, p_action: action, p_note: note?.trim() || null });
   if (error) throw error;
-  return data as { id: string; status: string };
+  return data as QuotationResponseResult;
 }

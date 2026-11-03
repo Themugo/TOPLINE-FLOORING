@@ -242,7 +242,7 @@ export default function Portal() {
     try {
       const r = await respondToCustomerQuotation(quotationId, action, quoteNote);
       setQuoteNote('');
-      setQuoteMessage(action === 'accept' ? 'Thank you. Your acceptance has been sent and our team will confirm the next steps shortly.' : action === 'decline' ? 'Your response has been sent. Thank you for letting us know.' : 'Your request has been sent. We will update the quotation and get back to you.');
+      setQuoteMessage(action === 'accept' ? (r.order_id ? 'Thank you. Your acceptance is confirmed and your order has been created. Close this window and open it under Orders to pay.' : 'Thank you. Your acceptance has been sent and our team will confirm the next steps shortly.') : action === 'decline' ? 'Your response has been sent. Thank you for letting us know.' : 'Your request has been sent. We will update the quotation and get back to you.');
       setSelectedRecord((cur) => cur && cur.type === 'quotation' && cur.value.id === quotationId ? { type: 'quotation', value: { ...cur.value, status: r.status } } : cur);
       void loadDashboard();
     } catch (err) { setQuoteMessage(errorMessage(err, 'Your response could not be sent. Please try again.') ?? 'Your response could not be sent. Please try again.'); }

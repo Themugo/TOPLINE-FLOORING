@@ -5,4 +5,7 @@ const d = fs.readFileSync('supabase/migrations/20261103141000_customer_portal_hi
 if (!d.includes("q.status <> 'draft'") || !d.includes("i.status <> 'draft'")) throw new Error('portal must hide drafts');
 const p = fs.readFileSync('src/pages/portal.tsx','utf8');
 for (const n of ['respondToCustomerQuotation', 'Accept quotation', 'Request changes', 'Decline']) if (!p.includes(n)) throw new Error('portal missing: ' + n);
+const a = fs.readFileSync('supabase/migrations/20261103150000_customer_quotation_accept_creates_order.sql','utf8');
+for (const n of ['convert_quotation_to_order_core', 'FROM PUBLIC, anon, authenticated', 'EXCEPTION WHEN OTHERS', "v_new := 'converted'"]) if (!a.includes(n)) throw new Error('Accept-creates-order migration missing: ' + n);
+if (/current_user_has_permission/.test(a)) throw new Error('core conversion must be reachable only through the ownership-checked RPC');
 console.log('verify-pass15-portal-business: OK');
