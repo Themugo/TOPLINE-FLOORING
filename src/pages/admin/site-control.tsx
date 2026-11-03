@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Code2, MailCheck, Save, ShieldCheck, SlidersHorizontal } from 'lucide-react';
 import { AdminLayout } from './dashboard';
 import { supabase } from '@/lib/supabase';
@@ -12,6 +12,37 @@ type Integration = { id: string; integration_key: string; channel: string; provi
 type PaymentCertification = { gateway_key: string; environment: 'sandbox'|'production'; status: string; certified_at: string | null; expires_at: string | null; test_results: Record<string, unknown>; evidence: Record<string, unknown>; notes: string | null };
 type PaymentGateway = { id: string; gateway_key: string; provider: string; payment_method: 'mpesa'|'card'|'bank_transfer'; display_name: string; customer_description: string | null; icon_key: string | null; is_enabled: boolean; customer_visible: boolean; supports_checkout: boolean; supports_orders: boolean; supports_invoices: boolean; requires_customer_phone: boolean; sort_order: number; public_config: Record<string, unknown>; admin_config: Record<string, unknown>; secret_env_keys: string[]; health_status: string; last_tested_at: string | null; last_test_message: string | null };
 
+
+/** Editable JSON box: keeps what the user is typing (even while it is not yet valid JSON) and only applies it once it parses. */
+function JsonConfigField({ value, onValid, label = 'Public configuration JSON', help }: { value: Record<string, unknown>; onValid: (parsed: Record<string, unknown>) => void; label?: string; help?: string }) {
+  const canonical = JSON.stringify(value ?? {}, null, 2);
+  const [draft, setDraft] = useState(canonical);
+  const [invalid, setInvalid] = useState(false);
+  const lastApplied = useRef(canonical);
+  useEffect(() => {
+    // Adopt outside changes (reload, the alert-email field above) but never clobber text being typed.
+    if (canonical !== lastApplied.current) { lastApplied.current = canonical; setDraft(canonical); setInvalid(false); }
+  }, [canonical]);
+  return (
+    <label className="block text-sm font-medium mt-4">{label}
+      <textarea
+        value={draft}
+        aria-invalid={invalid}
+        onChange={(e) => {
+          setDraft(e.target.value);
+          try {
+            const parsed = JSON.parse(e.target.value);
+            if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) { lastApplied.current = JSON.stringify(parsed, null, 2); setInvalid(false); onValid(parsed as Record<string, unknown>); }
+            else setInvalid(true);
+          } catch { setInvalid(true); }
+        }}
+        className={`input font-mono text-xs min-h-[110px] mt-1 ${invalid ? 'border-red-400' : ''}`}
+      />
+      {help && <span className="mt-1 block text-xs font-normal text-gray-500">{help}</span>}
+      {invalid && <span role="alert" className="mt-1 block text-xs font-normal text-red-600">Not valid JSON yet. Your last valid configuration is kept until this is fixed.</span>}
+    </label>
+  );
+}
 
 export default function AdminSiteControl() {
   const [tab, setTab] = useState<'design'|'integrations'|'features'>('design');
@@ -207,7 +238,7 @@ export default function AdminSiteControl() {
                 <label className="text-sm font-medium">Customer display name<input className="input mt-1" value={item.display_name} onChange={e=>setPaymentGateways(prev=>prev.map(x=>x.id===item.id?{...x,display_name:e.target.value}:x))}/></label>
                 <label className="text-sm font-medium">Provider key<input className="input mt-1" value={item.provider} onChange={e=>setPaymentGateways(prev=>prev.map(x=>x.id===item.id?{...x,provider:e.target.value}:x))}/></label>
                 <label className="text-sm font-medium md:col-span-2">Customer description<textarea className="input mt-1 min-h-[70px]" value={item.customer_description || ''} onChange={e=>setPaymentGateways(prev=>prev.map(x=>x.id===item.id?{...x,customer_description:e.target.value}:x))}/></label>
-                <label className="text-sm font-medium md:col-span-2">Non-secret payment configuration<textarea className="input mt-1 min-h-[90px] font-mono text-xs" value={JSON.stringify(item.public_config ?? {}, null, 2)} onChange={e=>{try{const parsed=JSON.parse(e.target.value); if(parsed && typeof parsed==='object' && !Array.isArray(parsed)) setPaymentGateways(prev=>prev.map(x=>x.id===item.id?{...x,public_config:parsed}:x));}catch{ /* keep the last valid value until the JSON is complete */ }}} placeholder='{"account_name":"Topline Flooring","account_number":"...","bank_name":"...","instructions":"..."}' /><span className="text-xs text-gray-500">Customer-safe settings only. Credentials, passwords, tokens and provider callback/initiation URLs are not stored here.</span></label>
+                <div className="md:col-span-2"><JsonConfigField label="Non-secret payment configuration" help={"Customer-safe settings only. Credentials, passwords, tokens and provider callback/initiation URLs are not stored here."} value={item.public_config ?? {}} onValid={(parsed)=>setPaymentGateways(prev=>prev.map(x=>x.id===item.id?{...x,public_config:parsed}:x))}/></div>
                 <label className="text-sm font-medium">Display order<input type="number" className="input mt-1" value={item.sort_order} onChange={e=>setPaymentGateways(prev=>prev.map(x=>x.id===item.id?{...x,sort_order:Number(e.target.value)}:x))}/></label>
                 <label className="flex items-center gap-2 text-sm pt-7"><input type="checkbox" checked={item.customer_visible} onChange={e=>setPaymentGateways(prev=>prev.map(x=>x.id===item.id?{...x,customer_visible:e.target.checked}:x))}/> Visible to customers</label>
               </div>
@@ -230,7 +261,8 @@ export default function AdminSiteControl() {
                 <label className="text-sm font-medium">Required secret<input value={item.required_secret_env || ''} readOnly className="input mt-1 bg-gray-50 font-mono text-xs"/></label>
                 <label className="flex items-center gap-2 text-sm mt-7"><input type="checkbox" checked={item.is_enabled} onChange={e=>setIntegrations(prev=>prev.map(x=>x.id===item.id?{...x,is_enabled:e.target.checked}:x))}/><span>Enable provider</span></label>
               </div>
-              <label className="block text-sm font-medium mt-4">Public configuration JSON<textarea value={JSON.stringify(item.public_config ?? {}, null, 2)} onChange={e=>{try{const parsed=JSON.parse(e.target.value);setIntegrations(prev=>prev.map(x=>x.id===item.id?{...x,public_config:parsed}:x));}catch{ /* keep the last valid value until the JSON is complete */ }}} className="input font-mono text-xs min-h-[110px] mt-1"/></label>
+              {item.integration_key==='communications.email' && <label className="block text-sm font-medium mt-4">New enquiry alert email(s)<input type="text" value={String((item.public_config as Record<string, unknown>)?.quotation_admin_email ?? '')} onChange={e=>setIntegrations(prev=>prev.map(x=>x.id===item.id?{...x,public_config:{...(x.public_config ?? {}),quotation_admin_email:e.target.value}}:x))} placeholder="sales@yourdomain.co.ke, owner@yourdomain.co.ke" className="input mt-1"/><span className="mt-1 block text-xs font-normal text-gray-500">Staff get an email here for every new quotation request and contact-form message. Up to five addresses, separated by commas. Leave empty to use the contact email from Site Settings.</span></label>}
+              <JsonConfigField value={item.public_config ?? {}} onValid={(parsed)=>setIntegrations(prev=>prev.map(x=>x.id===item.id?{...x,public_config:parsed}:x))}/>
               <div className="mt-4 flex flex-wrap items-center justify-between gap-3"><div className="text-xs text-gray-500">Secret status: <strong>{item.secret_configured?'configured':'not confirmed'}</strong> · Last test: {item.last_tested_at ? new Date(item.last_tested_at).toLocaleString() : 'never'}</div><div className="flex flex-wrap gap-2">{item.integration_key==='communications.email' && <><input type="email" value={testRecipient} onChange={e=>setTestRecipient(e.target.value)} placeholder="test recipient@example.com" className="input w-64"/><button disabled={testingBrevo} onClick={()=>void testBrevo()} className="btn-secondary"><MailCheck className="w-4 h-4 inline mr-2"/>{testingBrevo?'Testing…':'Test Brevo'}</button></>}<button disabled={saving} onClick={()=>void saveIntegration(item)} className="btn-primary"><Save className="w-4 h-4 inline mr-2"/>Save</button></div></div>
             </section>)}
           </div>

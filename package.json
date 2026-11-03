@@ -39,6 +39,7 @@
     "verify:pass13": "node scripts/verify-pass13-payment-portal.mjs",
     "verify:pass14": "node scripts/verify-pass14-settings.mjs",
     "verify:pass15": "node scripts/verify-pass15-portal-business.mjs",
+    "verify:pass18": "node scripts/verify-pass18-registration-email-config.mjs",
     "verify:brevo-email": "node scripts/verify-brevo-email-integration.mjs",
     "verify:cart-brand": "node scripts/verify-cart-navigation-and-brand-uniformity.mjs",
     "verify:cart-stock-eligibility": "node scripts/verify-cart-stock-eligibility.mjs",

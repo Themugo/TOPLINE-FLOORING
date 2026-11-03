@@ -1,0 +1,125 @@
+-- Pass 18: staff new-enquiry alerts were silently skipped unless an address existed in the communications settings or
+-- legacy CMS rows. Fall back to the contact email maintained in Admin > Site Settings.
+CREATE OR REPLACE FUNCTION public.queue_quotation_intake_emails()
+RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER SET search_path = public, private AS $$
+DECLARE
+  v_raw text;
+  v_admins text[];
+  v_admin text;
+  v_index integer := 0;
+  v_is_contact boolean;
+  v_prefix text;
+  v_ref text;
+  v_site text := private.topline_site_url();
+  v_recipient text;
+  v_name text;
+  v_name_staff text;
+  v_project text;
+  v_location text;
+  v_timeline text;
+  v_customer_subject text;
+  v_customer_message text;
+  v_staff_subject text;
+  v_staff_message text;
+  v_received text;
+  v_staff_queued boolean := false;
+BEGIN
+  -- Staff alert recipients: one or more addresses in the communications settings, with the CMS contact email as fallback.
+  SELECT ic.public_config->>'quotation_admin_email' INTO v_raw
+    FROM public.site_integration_configs ic WHERE ic.integration_key = 'communications.email';
+  v_admins := private.parse_notification_recipients(v_raw);
+  IF coalesce(array_length(v_admins, 1), 0) = 0 THEN
+    SELECT cc.content->>'email' INTO v_raw FROM public.cms_content cc WHERE cc.page = 'contact' AND cc.section = 'info' LIMIT 1;
+    v_admins := private.parse_notification_recipients(v_raw);
+  END IF;
+  IF coalesce(array_length(v_admins, 1), 0) = 0 THEN
+    SELECT cc.content->>'email' INTO v_raw FROM public.cms_content cc WHERE cc.page = 'footer' AND cc.section = 'contact' LIMIT 1;
+    v_admins := private.parse_notification_recipients(v_raw);
+  END IF;
+  -- The Admin > Site Settings > Contact email is what the public site shows, so it is the last, most reliable fallback.
+  IF coalesce(array_length(v_admins, 1), 0) = 0 THEN
+    SELECT ss.setting_value->>'email' INTO v_raw FROM public.site_settings ss WHERE ss.setting_key = 'contact' LIMIT 1;
+    v_admins := private.parse_notification_recipients(v_raw);
+  END IF;
+
+  -- The Contact page stores its messages with this marker project type.
+  v_is_contact := lower(btrim(coalesce(NEW.project_type, ''))) = 'general contact message';
+  v_prefix := CASE WHEN v_is_contact THEN 'MSG-' ELSE 'RFQ-' END;
+  v_ref := v_prefix || upper(substr(replace(NEW.id::text, '-', ''), 1, 8));
+  v_recipient := lower(btrim(coalesce(NEW.email, '')));
+  v_name := coalesce(nullif(private.sanitize_inline_text(NEW.name, 80), ''), 'there');
+  v_name_staff := coalesce(nullif(private.sanitize_inline_text(NEW.name, 200), ''), 'Unknown');
+  v_project := coalesce(nullif(private.sanitize_inline_text(coalesce(NEW.project_type, NEW.service), 120), ''), 'Not specified');
+  v_location := coalesce(nullif(private.sanitize_inline_text(coalesce(NEW.county, NEW.location), 120), ''), 'Not specified');
+  v_timeline := nullif(private.sanitize_inline_text(NEW.timeline, 120), '');
+  v_received := to_char(NEW.created_at AT TIME ZONE 'Africa/Nairobi', 'DD Mon YYYY, HH24:MI') || ' (EAT)';
+
+  IF v_is_contact THEN
+    v_customer_subject := 'We received your message (' || v_ref || ')';
+    v_customer_message := format(
+      E'Hello %s,\n\nThank you for contacting TOPLINE Flooring & Waterproofing. We have received your message and a member of our team will reply to you using the details you provided.\n\nReference: %s\n\nIf you would like to add something, simply reply to this email.\n\nWant to follow your requests and orders online? Create a free account with this email address: %s/portal\n\nTOPLINE Flooring & Waterproofing',
+      v_name, v_ref, v_site);
+    v_staff_subject := left('New website message ' || v_ref || ' from ' || v_name_staff, 150);
+  ELSE
+    v_customer_subject := 'We received your quotation request (' || v_ref || ')';
+    v_customer_message := format(
+      E'Hello %s,\n\nThank you for your quotation request. We have received it and our team will review the details and contact you using the information you provided.\n\nReference: %s\nProject type: %s\nLocation: %s\n%s\nIf anything changes, or you would like to add details, simply reply to this email.\n\nWant to follow this request online? Create a free account with this email address: %s/portal\n\nThis is a transactional acknowledgement, not a marketing subscription.\n\nTOPLINE Flooring & Waterproofing',
+      v_name, v_ref, v_project, v_location,
+      CASE WHEN v_timeline IS NOT NULL THEN 'Timeline: ' || v_timeline || E'\n' ELSE '' END,
+      v_site);
+    v_staff_subject := left('New quotation request ' || v_ref || ': ' || left(v_project, 60) || ' - ' || v_name_staff, 150);
+  END IF;
+
+  v_staff_message := format(
+    E'%s\n\nReference: %s\nReceived: %s\nName: %s\nEmail: %s\nPhone: %s\nCompany: %s\n%sLocation: %s\nTimeline: %s\nBudget range: %s\n\nMessage:\n%s\n\nReply to this email to answer the buyer directly; your reply goes to %s.\nReview and assign follow-up in the admin dashboard: %s/admin/quotations',
+    CASE WHEN v_is_contact THEN 'A new message was sent through the website contact form.' ELSE 'A new quotation request was submitted on the website.' END,
+    v_ref, v_received, v_name_staff,
+    private.sanitize_inline_text(NEW.email, 320),
+    private.sanitize_inline_text(NEW.phone, 30),
+    coalesce(nullif(private.sanitize_inline_text(NEW.company, 200), ''), 'Not provided'),
+    CASE WHEN v_is_contact THEN 'Subject: ' || v_project || E'\n' ELSE 'Project: ' || v_project || E'\n' END,
+    v_location,
+    coalesce(v_timeline, 'Not provided'),
+    coalesce(nullif(private.sanitize_inline_text(NEW.budget_range, 120), ''), 'Not provided'),
+    coalesce(nullif(private.sanitize_block_text(NEW.message, 5000), ''), 'Not provided'),
+    private.sanitize_inline_text(NEW.email, 320),
+    v_site);
+
+  -- Customer acknowledgement: at most two per address per day, never to a bounced or complaining address.
+  -- The buyer's free text is deliberately not echoed back (it would let a stranger make us mail attacker-written text).
+  IF v_recipient <> ''
+     AND (SELECT count(*) FROM public.communication_outbox o
+           WHERE o.recipient = v_recipient AND o.dedupe_key LIKE 'quotation-intake:%:customer'
+             AND o.created_at > now() - interval '24 hours') < 2
+     AND NOT EXISTS (SELECT 1 FROM public.communication_suppressions s
+                      WHERE s.email = v_recipient AND s.reason IN ('hard_bounce','invalid_email','spam_complaint')) THEN
+    INSERT INTO public.communication_outbox(customer_id, channel, recipient, subject, message, dedupe_key)
+    VALUES (NEW.customer_id, 'email', v_recipient, v_customer_subject, v_customer_message, 'quotation-intake:' || NEW.id::text || ':customer')
+    ON CONFLICT (dedupe_key) WHERE dedupe_key IS NOT NULL DO NOTHING;
+  END IF;
+
+  -- Staff alerts: one copy per configured address, each capped at 30 per hour so a flood cannot swamp an inbox.
+  -- Replies go to the buyer. Every request is still saved and shown in the admin notifications.
+  FOREACH v_admin IN ARRAY v_admins LOOP
+    v_index := v_index + 1;
+    IF (SELECT count(*) FROM public.communication_outbox o
+         WHERE o.recipient = v_admin AND o.dedupe_key LIKE 'quotation-intake:%:admin%'
+           AND o.created_at > now() - interval '1 hour') < 30 THEN
+      INSERT INTO public.communication_outbox(customer_id, channel, recipient, subject, message, dedupe_key, reply_to)
+      VALUES (NULL, 'email', v_admin, v_staff_subject, v_staff_message,
+              'quotation-intake:' || NEW.id::text || CASE WHEN v_index = 1 THEN ':admin' ELSE ':admin-' || v_index::text END,
+              CASE WHEN v_recipient ~ '^[^[:space:]@]+@[^[:space:]@]+\.[^[:space:]@]+$' THEN v_recipient ELSE NULL END)
+      ON CONFLICT (dedupe_key) WHERE dedupe_key IS NOT NULL DO NOTHING;
+      v_staff_queued := true;
+    END IF;
+  END LOOP;
+
+  INSERT INTO public.notification_events(event_type, entity_type, entity_id, title, message, severity, audience, metadata)
+  VALUES ('quotation.received', 'quotation', NEW.id,
+          CASE WHEN v_is_contact THEN 'New website message' ELSE 'New quotation request' END,
+          v_staff_message, 'info', 'staff',
+          jsonb_build_object('quotation_id', NEW.id, 'reference', v_ref, 'contact_message', v_is_contact,
+                             'admin_email_queued', v_staff_queued, 'admin_recipients', coalesce(array_length(v_admins, 1), 0)));
+  RETURN NEW;
+END; $$;
+REVOKE ALL ON FUNCTION public.queue_quotation_intake_emails() FROM PUBLIC, anon, authenticated;
