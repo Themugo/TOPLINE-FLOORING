@@ -17,7 +17,7 @@ This is a continuation of the existing TOPLINE FLOORING & WATERPROOFING project.
 | `node --experimental-strip-types scripts/test-theme-engine.mjs` | PASS — 17/17 | Includes control-character regression coverage. Node prints an experimental type-stripping warning; this is not a test failure. |
 | `node scripts/verify-all.mjs` | PASS — 117/117 | Static verification suite. It explicitly leaves browser visual/responsive review and external production/UAT evidence pending. |
 | `node --check` across `scripts/**/*.mjs` | PASS | Every discovered `.mjs` script passed syntax parsing. |
-| Supabase migration integrity | PASS in static suite | 116 active migrations; unique timestamps; target project ref remains `zmbsskvnzjdaxuxlauyx`. This is not proof that migrations were applied to production. |
+| Supabase migration integrity | PASS in static suite | 116 active migrations; unique timestamps; target project ref remains `cvjmfplhdlfvqnnmzqcp`. This is not proof that migrations were applied to production. |
 | Theme contrast/static contracts | PASS in static suite | 10/10 contrast pairs; 92 router inventory rows. Browser visual/responsive verification remains pending. |
 | Environment-file scan | PASS | No local `.env` file was present in this workspace; `.env.example` remains. Check your Windows checkout separately before sharing logs or archives. |
 

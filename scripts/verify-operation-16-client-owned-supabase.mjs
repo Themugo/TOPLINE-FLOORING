@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url';
 const root = process.cwd();
 const verifierPath = path.resolve(fileURLToPath(import.meta.url));
 const failures = [];
-const canonicalRef = 'zmbsskvnzjdaxuxlauyx';
+const canonicalRef = 'cvjmfplhdlfvqnnmzqcp';
 const canonicalUrl = `https://${canonicalRef}.supabase.co`;
 
 function read(file) { return fs.readFileSync(path.join(root, file), 'utf8'); }

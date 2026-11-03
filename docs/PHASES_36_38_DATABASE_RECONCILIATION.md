@@ -31,7 +31,7 @@ npx supabase gen types typescript --local > src/types/database.ts
 
 `npm run verify:remote-deploy-gate` verifies:
 
-- dedicated Topline project binding (`zmbsskvnzjdaxuxlauyx`);
+- dedicated Topline project binding (`cvjmfplhdlfvqnnmzqcp`);
 - exact production URL contract;
 - 116 active migrations in the 14 October 2026 source baseline;
 - unique, strictly formatted migration timestamps;
@@ -48,7 +48,7 @@ After local replay, regression tests and type generation succeed:
 
 ```cmd
 npx supabase login
-npx supabase link --project-ref zmbsskvnzjdaxuxlauyx
+npx supabase link --project-ref cvjmfplhdlfvqnnmzqcp
 npx supabase migration list --linked
 npx supabase db push --dry-run --linked
 npx supabase db lint --linked

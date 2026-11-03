@@ -2,8 +2,8 @@
 
 ## Canonical production identity
 
-- Supabase project ref: `zmbsskvnzjdaxuxlauyx`
-- Supabase API URL: `https://zmbsskvnzjdaxuxlauyx.supabase.co`
+- Supabase project ref: `cvjmfplhdlfvqnnmzqcp`
+- Supabase API URL: `https://cvjmfplhdlfvqnnmzqcp.supabase.co`
 - Supabase region: `eu-central-1`
 - PostgreSQL major version: `17`
 - Ownership model: client-owned Supabase account/project
@@ -18,7 +18,7 @@ Use migration inspection and dry-run before deployment:
 
 ```cmd
 npx supabase login
-npx supabase link --project-ref zmbsskvnzjdaxuxlauyx
+npx supabase link --project-ref cvjmfplhdlfvqnnmzqcp
 npx supabase migration list --linked
 npx supabase db push --dry-run --linked
 npx supabase db lint --linked

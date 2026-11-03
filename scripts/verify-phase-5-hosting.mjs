@@ -9,7 +9,7 @@ const read = (file) => fs.readFileSync(path.join(root, file), 'utf8');
 const check = (condition, message) => condition ? checks.push(message) : failures.push(message);
 
 const expectedUrl = 'https://toplinefloorandwaterproofing.co.ke';
-const expectedSupabase = 'https://zmbsskvnzjdaxuxlauyx.supabase.co';
+const expectedSupabase = 'https://cvjmfplhdlfvqnnmzqcp.supabase.co';
 const envExample = read('.env.example');
 const vercel = JSON.parse(read('vercel.json'));
 const robots = read('public/robots.txt');

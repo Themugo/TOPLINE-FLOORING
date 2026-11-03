@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
-const expectedRef = 'zmbsskvnzjdaxuxlauyx';
+const expectedRef = 'cvjmfplhdlfvqnnmzqcp';
 const expectedUrl = `https://${expectedRef}.supabase.co`;
 const envPath = resolve(process.cwd(), '.env');
 

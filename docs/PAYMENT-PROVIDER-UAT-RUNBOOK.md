@@ -20,14 +20,14 @@ Safaricom does not sign callbacks, so the callback URL itself carries a shared s
 1. Generate a long random value and store it as an Edge Function secret:
    `supabase secrets set MPESA_CALLBACK_SECRET=<random-value>`
 2. Register the callback URL with the same value in the query string:
-   `supabase secrets set MPESA_CALLBACK_URL=https://zmbsskvnzjdaxuxlauyx.supabase.co/functions/v1/payment-callback?secret=<random-value>`
+   `supabase secrets set MPESA_CALLBACK_URL=https://cvjmfplhdlfvqnnmzqcp.supabase.co/functions/v1/payment-callback?secret=<random-value>`
 3. Without `MPESA_CALLBACK_SECRET`, `payment-callback` answers 501 and `payment-initiate` refuses to send an STK prompt, so a customer is never asked to pay when the payment could not be recorded. If the secret in the URL does not match, callbacks are rejected with 401.
 4. Rotating the secret: set both secrets, then redeploy `payment-initiate` and `payment-callback`. In-flight prompts created with the old URL will be rejected, so rotate outside trading hours.
 
 ## Environment variables on the operator machine
 
 ```cmd
-set PAYMENT_WEBHOOK_URL=https://zmbsskvnzjdaxuxlauyx.supabase.co/functions/v1/payment-webhook
+set PAYMENT_WEBHOOK_URL=https://cvjmfplhdlfvqnnmzqcp.supabase.co/functions/v1/payment-webhook
 set PAYMENT_PROVIDER=mpesa
 set PAYMENT_WEBHOOK_SECRET=<provider-webhook-secret>
 set PAYMENT_UAT_ORDER_ID=<isolated-uat-order-uuid>

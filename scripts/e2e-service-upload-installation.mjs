@@ -39,7 +39,7 @@ const EXPECTED_MUTATION_URL = (process.env.E2E_EXPECTED_SUPABASE_URL || '').repl
 const EMAIL = process.env.E2E_ADMIN_EMAIL || '';
 const PASSWORD = process.env.E2E_ADMIN_PASSWORD || '';
 
-const CANONICAL = 'https://zmbsskvnzjdaxuxlauyx.supabase.co';
+const CANONICAL = 'https://cvjmfplhdlfvqnnmzqcp.supabase.co';
 const results = [];
 function pass(name, detail = '') { results.push(['PASS', name, detail]); console.log(`PASS ${name}${detail ? ` — ${detail}` : ''}`); }
 function fail(name, detail) { results.push(['FAIL', name, detail]); console.error(`FAIL ${name} — ${detail}`); }

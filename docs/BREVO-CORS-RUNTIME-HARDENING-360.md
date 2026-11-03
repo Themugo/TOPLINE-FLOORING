@@ -25,7 +25,7 @@ No wildcard origin is used.
 From the repository root after extracting this package:
 
 ```cmd
-supabase functions deploy brevo-test-email --project-ref zmbsskvnzjdaxuxlauyx
+supabase functions deploy brevo-test-email --project-ref cvjmfplhdlfvqnnmzqcp
 ```
 
 Keep JWT verification enabled. Do not use `--no-verify-jwt`.

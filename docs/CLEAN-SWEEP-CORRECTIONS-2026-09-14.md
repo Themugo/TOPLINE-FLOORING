@@ -9,7 +9,7 @@ Date: 2026-09-14
    - Reformatted the component without changing its block types, routing, data source, or rendered behavior.
 
 2. **Live Supabase migration history reconciliation**
-   - Reconciled the local filenames for migrations 108–113 with the versions recorded by the dedicated production Supabase project `zmbsskvnzjdaxuxlauyx`.
+   - Reconciled the local filenames for migrations 108–113 with the versions recorded by the dedicated production Supabase project `cvjmfplhdlfvqnnmzqcp`.
    - This removed the local duplicate migration timestamp and restores strict migration ordering.
    - No migration SQL was rewritten or re-executed as part of this cleanup; this is a local migration-history filename reconciliation to match the already-applied remote versions.
 

@@ -58,7 +58,7 @@ production migration deployment
 post-deploy advisors + smoke tests
 ```
 
-At the time Phase 2 was completed, the project had not yet been connected for production database deployment. Phase 2 source changes were therefore prepared without claiming production migration deployment. The canonical production project is now the client-owned Supabase project `zmbsskvnzjdaxuxlauyx`.
+At the time Phase 2 was completed, the project had not yet been connected for production database deployment. Phase 2 source changes were therefore prepared without claiming production migration deployment. The canonical production project is now the client-owned Supabase project `cvjmfplhdlfvqnnmzqcp`.
 
 ## Backups and recovery
 

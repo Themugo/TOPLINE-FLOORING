@@ -12,8 +12,8 @@
 
 ## Supabase
 
-- [ ] Project ref is `zmbsskvnzjdaxuxlauyx`.
-- [ ] `supabase link --project-ref zmbsskvnzjdaxuxlauyx` points to Topline.
+- [ ] Project ref is `cvjmfplhdlfvqnnmzqcp`.
+- [ ] `supabase link --project-ref cvjmfplhdlfvqnnmzqcp` points to Topline.
 - [ ] `supabase db push --dry-run --linked` reviewed.
 - [ ] Canonical migrations applied by an authorized operator.
 - [ ] Auth Site URL and redirect URLs configured.

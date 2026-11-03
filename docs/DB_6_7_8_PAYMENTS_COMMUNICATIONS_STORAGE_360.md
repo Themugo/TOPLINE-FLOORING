@@ -10,7 +10,7 @@ This sweep hardens the production Supabase control plane across:
 
 ## Live verification
 
-- Dedicated Supabase project: `zmbsskvnzjdaxuxlauyx`
+- Dedicated Supabase project: `cvjmfplhdlfvqnnmzqcp`
 - Database engine: PostgreSQL 17
 - Existing payment provider idempotency constraint: `(provider, provider_event_id)` unique.
 - Existing inbound communication idempotency constraint: `(provider, channel, provider_message_id)` unique.

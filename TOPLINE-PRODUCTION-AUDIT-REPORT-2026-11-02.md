@@ -285,3 +285,7 @@ Not verifiable from here: live data, payment-gateway callbacks, email delivery, 
 ## Pass 19 — Domain change to toplinefloorandwaterproofing.co.ke
 - Site URL, CORS origins, sender/reply-to defaults, sitemap, robots, vercel.json, Supabase Auth redirects, email templates and docs now use `toplinefloorandwaterproofing.co.ke`. The old domain stays only as an extra allowed CORS origin.
 - New migration `20261103170000_new_domain_defaults.sql` updates `private.topline_site_url()` and the stored Brevo sender/reply-to values.
+
+## Pass 20 — Rebuilt on a new Supabase project
+- The previous project (`zmbsskvnzjdaxuxlauyx`) was deleted; production is now `cvjmfplhdlfvqnnmzqcp`, owned by the client's own Supabase account. Source, config and verifiers point to the new ref.
+- A from-scratch apply of all 138 migrations on an empty PostgreSQL passes (`supabase/tests/local/run-local.sh`).

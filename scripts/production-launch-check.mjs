@@ -4,7 +4,7 @@ import path from 'node:path';
 const root = process.cwd();
 const envFile = path.join(root, '.env');
 const envExample = path.join(root, '.env.example');
-const expectedProjectRef = 'zmbsskvnzjdaxuxlauyx';
+const expectedProjectRef = 'cvjmfplhdlfvqnnmzqcp';
 const expectedSite = 'https://toplinefloorandwaterproofing.co.ke';
 
 const result = { ready: true, checks: [] };

@@ -8,8 +8,8 @@ Bind the application and Supabase CLI structure to the known dedicated Topline p
 
 - Organization: Frameworks Suites
 - Project: Topline Flooring & Water Roofing
-- Project ref: `zmbsskvnzjdaxuxlauyx`
-- API URL: `https://zmbsskvnzjdaxuxlauyx.supabase.co`
+- Project ref: `cvjmfplhdlfvqnnmzqcp`
+- API URL: `https://cvjmfplhdlfvqnnmzqcp.supabase.co`
 
 ## Delivered
 
@@ -30,7 +30,7 @@ Phase 5 does **not** assume that the remote database is empty or matches the rep
 
 ```cmd
 npx supabase login
-npx supabase link --project-ref zmbsskvnzjdaxuxlauyx
+npx supabase link --project-ref cvjmfplhdlfvqnnmzqcp
 npx supabase migration list --linked
 npx supabase db push --dry-run --linked
 npx supabase db lint --linked

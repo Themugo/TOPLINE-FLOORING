@@ -5,7 +5,7 @@ import { checkReleaseEnvironmentFiles } from './lib-release-environment-check.mj
 const root = process.cwd();
 const failures = [];
 const warnings = [];
-const expectedProjectRef = 'zmbsskvnzjdaxuxlauyx';
+const expectedProjectRef = 'cvjmfplhdlfvqnnmzqcp';
 const expectedSupabaseUrl = `https://${expectedProjectRef}.supabase.co`;
 const expectedSiteUrl = 'https://toplinefloorandwaterproofing.co.ke';
 

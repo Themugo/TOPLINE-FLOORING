@@ -46,7 +46,7 @@ Do not reset or destroy a live Topline production database. Establish the clean 
 
 ```cmd
 npx supabase login
-npx supabase link --project-ref zmbsskvnzjdaxuxlauyx
+npx supabase link --project-ref cvjmfplhdlfvqnnmzqcp
 npx supabase migration list --linked
 npx supabase db push --dry-run --linked
 ```

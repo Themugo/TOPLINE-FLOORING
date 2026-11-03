@@ -46,10 +46,10 @@ function run(file, env) {
 // Service mutation mode must never be overrideable for the canonical production project.
 {
   const result = run('scripts/e2e-service-upload-installation.mjs', {
-    VITE_SUPABASE_URL: 'https://zmbsskvnzjdaxuxlauyx.supabase.co',
+    VITE_SUPABASE_URL: 'https://cvjmfplhdlfvqnnmzqcp.supabase.co',
     VITE_SUPABASE_PUBLISHABLE_KEY: 'test-public-key',
     E2E_RUN_MUTATIONS: 'true',
-    E2E_EXPECTED_SUPABASE_URL: 'https://zmbsskvnzjdaxuxlauyx.supabase.co',
+    E2E_EXPECTED_SUPABASE_URL: 'https://cvjmfplhdlfvqnnmzqcp.supabase.co',
     E2E_ALLOW_PRODUCTION_MUTATIONS: 'true'
   });
   assert.equal(result.status, 1, result.stdout + result.stderr);

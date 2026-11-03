@@ -9,7 +9,7 @@ Repository target:
 - GitHub: `https://github.com/Themugo/TOPLINE-FLOORING`
 - Local Windows path: `C:\Users\hp\Desktop\TOPLINE FLOORING & ROOFING`
 - Canonical production site: `https://toplinefloorandwaterproofing.co.ke`
-- Supabase project ref: `zmbsskvnzjdaxuxlauyx`
+- Supabase project ref: `cvjmfplhdlfvqnnmzqcp`
 - Node: `22.x`
 
 ## Verified baseline

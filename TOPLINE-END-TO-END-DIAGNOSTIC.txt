@@ -4769,8 +4769,8 @@ RLS/RPC security boundary: PASS
 Admin route/UI: PASS
 CI registration: PASS
 Operation 16 client-owned Supabase verification PASSED.
-- Canonical project: zmbsskvnzjdaxuxlauyx
-- Canonical URL: https://zmbsskvnzjdaxuxlauyx.supabase.co
+- Canonical project: cvjmfplhdlfvqnnmzqcp
+- Canonical URL: https://cvjmfplhdlfvqnnmzqcp.supabase.co
 - Active migrations: 116
 - Retired project reference scan: PASS
 Operation 17 Production Automation Control 360: STRUCTURAL GATE PASSED (116 migrations)
@@ -4791,7 +4791,7 @@ Operation 6 verification passed: 116 migrations, 20261004130000_allow_queued_cus
 Operation 7 verification passed: 116 migrations, 20260913070000_080_communications_customer_journey_360.sql
 Operation 8 executive operations verification: PASS
 Operation 9 Production Certification: STRUCTURAL GATE PASSED
-- Dedicated Supabase project: zmbsskvnzjdaxuxlauyx
+- Dedicated Supabase project: cvjmfplhdlfvqnnmzqcp
 - Active migrations: 116
 - Latest migration: 20261004130000_allow_queued_customer_communications.sql
 - Application route/import integrity: passed
@@ -4912,7 +4912,7 @@ NOTE .env.local exists locally, is ignored by Git, and is not tracked; keep it o
 Phases 30-32 production verification passed (116 active migrations).
 Database dependency verification passed (116 migrations, 163 tables, 244 functions, 288 FK references).
 Generated database types contract passed (308,772 bytes).
-Remote deployment safety gate passed (116 active migrations, project zmbsskvnzjdaxuxlauyx).
+Remote deployment safety gate passed (116 active migrations, project cvjmfplhdlfvqnnmzqcp).
 Phases 36–38 Database Reconciliation & Deployment Safety 360 passed.
 Phase 39–41 source verification passed.
 Phase 42–44 source verification passed.
@@ -4949,11 +4949,11 @@ Public tracking contract verification PASSED.
 - the frontend contract matches the JSONB RPC shape
 - public tracking requires both order number and checkout phone number
 Release candidate gate PASSED.
-- Dedicated Supabase project: zmbsskvnzjdaxuxlauyx
+- Dedicated Supabase project: cvjmfplhdlfvqnnmzqcp
 - Active migrations: 116
 - Payment webhook: fail-closed until a real provider adapter is configured
 - Next external validation: local DB replay, linked dry-run, provider UAT
-Remote deployment safety gate passed (116 active migrations, project zmbsskvnzjdaxuxlauyx).
+Remote deployment safety gate passed (116 active migrations, project cvjmfplhdlfvqnnmzqcp).
 RPC Authorization Certification static verification PASSED
 Schema contract verification passed (116 active migrations).
 PASS public services page has no hard-coded feature catalog
@@ -4974,7 +4974,7 @@ WARNING: Windows project path contains '&': C:\Users\hp\Desktop\TOPLINE FLOORING
 Topline toolchain verification PASSED.
 - Node: v22.22.2
 - Active migrations: 116
-- Supabase target: zmbsskvnzjdaxuxlauyx
+- Supabase target: cvjmfplhdlfvqnnmzqcp
 Vercel deployment verification PASSED.
 - package.json uses ESM mode
 - Vercel Node runtime is pinned to 22.x

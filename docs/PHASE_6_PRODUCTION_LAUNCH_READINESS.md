@@ -40,7 +40,7 @@ Server-side secrets **must not** be placed in Vite variables or committed to Git
 The repository contains the canonical migration history, but source files alone do not prove the remote database is deployed. Use the authorized Supabase CLI/control plane to perform:
 
 ```cmd
-supabase link --project-ref zmbsskvnzjdaxuxlauyx
+supabase link --project-ref cvjmfplhdlfvqnnmzqcp
 supabase db push --dry-run --linked
 ```
 

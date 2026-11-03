@@ -3,7 +3,7 @@ import path from 'node:path';
 
 const root = process.cwd();
 const failures = [];
-const expectedProjectRef = 'zmbsskvnzjdaxuxlauyx';
+const expectedProjectRef = 'cvjmfplhdlfvqnnmzqcp';
 const expectedUrl = `https://${expectedProjectRef}.supabase.co`;
 
 const read = (file) => fs.readFileSync(path.join(root, file), 'utf8');

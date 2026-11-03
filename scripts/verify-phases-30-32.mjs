@@ -54,7 +54,7 @@ for (const file of required) if (!readme.includes(file)) fail(`supabase/README.m
 
 if (!existsSync('supabase/config.toml')) fail('Missing supabase/config.toml');
 const config = readFileSync('supabase/config.toml', 'utf8');
-if (!config.includes('project_id = "zmbsskvnzjdaxuxlauyx"')) fail('Supabase config is not pinned to the Topline project.');
+if (!config.includes('project_id = "cvjmfplhdlfvqnnmzqcp"')) fail('Supabase config is not pinned to the Topline project.');
 
 const securityTest = 'supabase/tests/security_regression.sql';
 if (!existsSync(securityTest)) fail('Missing security regression SQL test.');
@@ -67,7 +67,7 @@ if (!/roles\s*@>\s*ARRAY\['anon'\]/.test(security)) fail('Security regression te
 
 const envExample = readFileSync('.env.example', 'utf8');
 for (const key of ['VITE_SUPABASE_URL','VITE_SUPABASE_PUBLISHABLE_KEY']) if (!envExample.includes(key)) fail(`.env.example is missing ${key}`);
-if (!envExample.includes('zmbsskvnzjdaxuxlauyx.supabase.co')) fail('Topline Supabase URL missing from environment contract.');
+if (!envExample.includes('cvjmfplhdlfvqnnmzqcp.supabase.co')) fail('Topline Supabase URL missing from environment contract.');
 const envCheck = checkReleaseEnvironmentFiles(process.cwd());
 for (const note of envCheck.notes) console.warn(`NOTE ${note}`);
 if (envCheck.failures.length) fail(envCheck.failures.join('\n'));

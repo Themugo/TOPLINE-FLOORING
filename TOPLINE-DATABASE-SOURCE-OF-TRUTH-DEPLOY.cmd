@@ -25,7 +25,7 @@ if errorlevel 1 (
   exit /b 1
 )
 
-set SUPABASE_PROJECT_REF=zmbsskvnzjdaxuxlauyx
+set SUPABASE_PROJECT_REF=cvjmfplhdlfvqnnmzqcp
 
 echo.
 echo [1/3] Link project if needed...

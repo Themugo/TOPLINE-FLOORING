@@ -33,6 +33,6 @@ git add -A
 git commit -m "Fail closed on M-Pesa callbacks without a secret; refuse prompts whose callback would be rejected"
 git push origin main
 supabase secrets set MPESA_CALLBACK_SECRET=<random-value>
-supabase secrets set MPESA_CALLBACK_URL=https://zmbsskvnzjdaxuxlauyx.supabase.co/functions/v1/payment-callback?secret=<random-value>
+supabase secrets set MPESA_CALLBACK_URL=https://cvjmfplhdlfvqnnmzqcp.supabase.co/functions/v1/payment-callback?secret=<random-value>
 supabase functions deploy payment-initiate payment-callback
 ```
