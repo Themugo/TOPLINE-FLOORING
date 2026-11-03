@@ -1,0 +1,18 @@
+create role anon nologin; create role authenticated nologin; create role service_role nologin bypassrls; create role authenticator nologin; create role supabase_admin nologin; create role supabase_auth_admin nologin;
+create schema extensions; create schema auth; create schema storage; create schema realtime;
+create extension pgcrypto with schema extensions; create extension "uuid-ossp" with schema extensions; create extension pg_trgm with schema extensions; create extension citext with schema extensions; create extension btree_gist with schema extensions; create extension unaccent with schema extensions;
+grant usage on schema extensions to public;
+create table auth.users(id uuid primary key default gen_random_uuid(), email text, email_confirmed_at timestamptz, raw_user_meta_data jsonb default '{}', raw_app_meta_data jsonb default '{}', encrypted_password text, created_at timestamptz default now(), updated_at timestamptz default now(), last_sign_in_at timestamptz, phone text, banned_until timestamptz, is_sso_user boolean default false);
+create function auth.uid() returns uuid language sql stable as $$ select nullif(current_setting('request.jwt.claim.sub', true),'')::uuid $$;
+create function auth.role() returns text language sql stable as $$ select coalesce(nullif(current_setting('request.jwt.claim.role', true),''),'anon') $$;
+create function auth.jwt() returns jsonb language sql stable as $$ select coalesce(nullif(current_setting('request.jwt.claims', true),''),'{}')::jsonb $$;
+create function auth.email() returns text language sql stable as $$ select nullif(current_setting('request.jwt.claim.email', true),'') $$;
+create table storage.buckets(id text primary key, name text, public boolean default false, file_size_limit bigint, allowed_mime_types text[], created_at timestamptz default now(), updated_at timestamptz default now());
+create table storage.objects(id uuid primary key default gen_random_uuid(), bucket_id text, name text, owner uuid, metadata jsonb, created_at timestamptz default now(), updated_at timestamptz default now(), path_tokens text[]);
+alter table storage.objects enable row level security;
+create function storage.foldername(name text) returns text[] language sql immutable as $$ select string_agg(x,'/')::text[] from (select 1) s, unnest(string_to_array(name,'/')) x where false $$;
+create or replace function storage.foldername(name text) returns text[] language sql immutable as $$ select (string_to_array(name,'/'))[1:array_length(string_to_array(name,'/'),1)-1] $$;
+create function storage.filename(name text) returns text language sql immutable as $$ select (string_to_array(name,'/'))[array_length(string_to_array(name,'/'),1)] $$;
+grant usage on schema auth, storage to anon, authenticated, service_role;
+grant execute on all functions in schema auth to anon, authenticated, service_role;
+alter default privileges in schema public grant all on tables to postgres;
