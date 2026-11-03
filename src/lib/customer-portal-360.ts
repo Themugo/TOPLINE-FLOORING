@@ -30,3 +30,14 @@ export function isPortalAccessMissing(err: unknown): boolean {
   const msg = err instanceof Error ? err.message : typeof err === 'object' && err && 'message' in err ? String((err as { message: unknown }).message) : '';
   return /portal access is not available/i.test(msg);
 }
+
+export type QuotationResponseAction = 'accept' | 'decline' | 'request_changes';
+
+/** Statuses in which the customer may still answer a quotation (mirrors the server rule). */
+export const QUOTATION_OPEN_STATUSES = ['quoted', 'sent', 'negotiating'];
+
+export async function respondToCustomerQuotation(quotationId: string, action: QuotationResponseAction, note?: string): Promise<{ id: string; status: string }> {
+  const { data, error } = await supabase.rpc('respond_to_customer_quotation', { p_quotation_id: quotationId, p_action: action, p_note: note?.trim() || null });
+  if (error) throw error;
+  return data as { id: string; status: string };
+}

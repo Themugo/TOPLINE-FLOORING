@@ -257,3 +257,9 @@ Not verifiable from here: live data, payment-gateway callbacks, email delivery, 
 - **Swallowed errors:** 53 admin/portal handlers used `err instanceof Error ? err.message : fallback`, which discards Postgrest/RPC errors (plain objects). New `errorMessage()` helper now surfaces the real reason across 29 files + portal; SEO save also reports the reason.
 - **Account settings:** email change now says a confirmation link was sent (the address changes only after confirming).
 - Verifier `verify-pass14-settings.mjs`; gates: tsc/eslint/build clean, verify-all 145/145, vitest 238/238.
+
+## Pass 15 — Customer portal and business flow (2026-11-03)
+- **Quotation dead end:** customers could view a quotation but not answer it. New `respond_to_customer_quotation()` (owner-only, open statuses `quoted/sent/negotiating`, expiry check, row lock) moves the quote to `accepted/rejected/negotiating`, stamps `responded_at` and appends the customer's note for the sales team; the portal quotation dialog now offers Accept / Request changes / Decline.
+- **Draft leak:** `get_customer_portal_360` returned draft quotations and draft invoices; it now hides drafts (and drafts no longer count as outstanding).
+- **Claim de-duplication:** mount + auth-event loads share one claim request.
+- Verified end to end (browser, desktop 1280 and phone 390, mocked Supabase): auto-claim of an unlinked account, quotation response, empty state, no page errors — 11/11 each. Gates: tsc/eslint/build clean, verify-all 146/146, vitest 238/238.

@@ -129,6 +129,7 @@ INSERT INTO browser_rpc_names (name) VALUES
   ('reschedule_order_delivery'),
   ('resolve_installation_issue'),
   ('resolve_inventory_alert'),
+  ('respond_to_customer_quotation'),
   ('retry_communication_outbox'),
   ('rollback_theme_brand_version'),
   ('save_payment_gateway_control_360'),
