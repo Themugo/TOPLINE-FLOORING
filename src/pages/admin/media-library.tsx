@@ -32,6 +32,7 @@ import {
   optimizeImageUrl,
 } from '@/lib/image-compressor';
 import type { MediaFolder, MediaFile } from '@/lib/types';
+import { errorMessage } from '@/lib/db';
 
 const CATEGORIES = [
   'General',
@@ -872,7 +873,7 @@ function UploadModal({
           is_public: true,
         });
       } catch (err) {
-        uploadErrors.push(`${rawFile.name}: ${err instanceof Error ? err.message : 'Failed to process file'}`);
+        uploadErrors.push(`${rawFile.name}: ${errorMessage(err, 'Failed to process file')}`);
       }
     }
 

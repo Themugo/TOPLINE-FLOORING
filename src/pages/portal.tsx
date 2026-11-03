@@ -11,6 +11,7 @@ import { Label } from '@/components/ui/label';
 import { CheckCircle2, Clock, FileText, LogOut, Package, RefreshCw, ShieldCheck, Truck } from 'lucide-react';
 import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 import { confirmEmailLink, friendlyAuthError, isRecoveryLink, isUnverifiedEmailError, readAuthLinkProblem, readEmailLinkToken, type EmailLinkType, registerCustomerAccount, requestCustomerMagicLink, requestCustomerPasswordReset, resendCustomerVerification, signInCustomer, signOutCustomer, updateCustomerPassword } from '@/lib/customer-portal';
+import { errorMessage } from '@/lib/db';
 import { getCustomerPortal360, claimCustomerPortalAccess, isPortalAccessMissing, type CustomerPortal360Data } from '@/lib/customer-portal-360';
 import { getCustomerJourney, type CustomerJourneyEvent } from '@/lib/customer-journey';
 import { PaymentAccountsList } from '@/components/payments/PaymentAccountsList';
@@ -227,7 +228,7 @@ export default function Portal() {
       await loadDashboard();
       setServiceMessage(`Request ${result.case_number || 'submitted'} has been received.`);
     } catch (err) {
-      setServiceMessage(err instanceof Error ? err.message : 'Unable to submit your service request.');
+      setServiceMessage((errorMessage(err, 'Unable to submit your service request.') ?? 'Unable to submit your service request.'));
     } finally { setServiceSending(false); }
   };
 
@@ -244,7 +245,7 @@ export default function Portal() {
       });
       setNotificationPrefs(saved);
       setPrefsMessage('Notification preferences saved.');
-    } catch (err) { setPrefsMessage(err instanceof Error ? err.message : 'Unable to save preferences.'); }
+    } catch (err) { setPrefsMessage(errorMessage(err, 'Unable to save preferences.') ?? 'Unable to save preferences.'); }
     finally { setPrefsSaving(false); }
   };
 
@@ -253,7 +254,7 @@ export default function Portal() {
     if (!rating) return;
     setFeedbackSending(caseId);
     try { await submitServiceCaseFeedback(caseId, rating, feedbackComment[caseId]); setFeedbackMessage(prev => ({ ...prev, [caseId]: 'Thank you for your feedback.' })); }
-    catch (err) { setFeedbackMessage(prev => ({ ...prev, [caseId]: err instanceof Error ? err.message : 'Unable to submit feedback.' })); }
+    catch (err) { setFeedbackMessage(prev => ({ ...prev, [caseId]: (errorMessage(err, 'Unable to submit feedback.') ?? 'Unable to submit feedback.') })); }
     finally { setFeedbackSending(null); }
   };
 
@@ -318,7 +319,7 @@ export default function Portal() {
       const failedSections = [journeyResult, prefsResult, docsResult, communicationsResult].some((result) => result.status === 'rejected');
       setError(failedSections ? 'Some account extras are temporarily unavailable. Your orders and quotations are still available; try refreshing later.' : null);
     } catch (err) { setAuthenticatedError(true); console.error('Customer dashboard failed to load', err);
-      const m = err instanceof Error ? err.message : '';
+      const m = (errorMessage(err, '') ?? '');
       if (m === 'PORTAL_UNVERIFIED') setError('Please verify your email address first. Open the confirmation email we sent you, then press Try again.');
       else if (m === 'PORTAL_CONFLICT') setError('This email is already linked to another customer account. Please contact our team and we will connect it for you.');
       else setError('Your customer dashboard could not be loaded right now. Please try again, or contact our team if this continues.' + (m ? ' (Ref: ' + m.slice(0, 80) + ')' : '')); }
@@ -349,7 +350,7 @@ export default function Portal() {
   if (authenticatedError || !data) return <CustomerLayout><section className="min-h-[65vh] bg-slate-50/80 py-16 md:py-20"><div className="container mx-auto max-w-md px-6"><Card className="rounded-2xl border-slate-200 shadow-sm"><CardContent className="p-8 text-center space-y-4"><ShieldCheck className="mx-auto h-10 w-10 text-primary" /><h2 className="text-xl font-semibold">We couldn't load your dashboard</h2><p className="text-sm text-muted-foreground">Your account is signed in, but your customer information is temporarily unavailable.</p>{error && <p className="text-sm text-destructive">{error}</p>}<div className="flex justify-center gap-3"><Button onClick={()=>void loadDashboard()}><RefreshCw className="h-4 w-4 mr-2"/>Try again</Button><Button variant="outline" onClick={()=>void signOutCustomer()}>Sign out</Button></div></CardContent></Card></div></section></CustomerLayout>;
 
   return <CustomerLayout>
-    <section className="bg-[#0C2D57] text-white py-14 md:py-16"><div className="container mx-auto px-6 md:px-12 flex flex-col md:flex-row md:items-end justify-between gap-6"><div><p className="text-sky-200 text-xs uppercase tracking-[0.2em] mb-2">MY TOPLINE · CUSTOMER ACCOUNT</p><h1 className="font-display text-3xl md:text-4xl font-bold tracking-tight text-white">Welcome, {data.customer.name}</h1><p className="text-secondary-foreground/60 mt-2">Your quotations and orders in one place.</p></div><div className="flex gap-3"><Button variant="outline" className="w-fit" onClick={() => void loadDashboard()}><RefreshCw className="h-4 w-4 mr-2" /> Refresh</Button><Button variant="outline" className="w-fit" onClick={() => { void signOutCustomer().then(() => { setSignedIn(false); setData(null); }).catch((err) => setError(err instanceof Error ? err.message : 'Unable to sign out. Please try again.')); }}><LogOut className="h-4 w-4 mr-2" /> Sign out</Button></div></div></section>
+    <section className="bg-[#0C2D57] text-white py-14 md:py-16"><div className="container mx-auto px-6 md:px-12 flex flex-col md:flex-row md:items-end justify-between gap-6"><div><p className="text-sky-200 text-xs uppercase tracking-[0.2em] mb-2">MY TOPLINE · CUSTOMER ACCOUNT</p><h1 className="font-display text-3xl md:text-4xl font-bold tracking-tight text-white">Welcome, {data.customer.name}</h1><p className="text-secondary-foreground/60 mt-2">Your quotations and orders in one place.</p></div><div className="flex gap-3"><Button variant="outline" className="w-fit" onClick={() => void loadDashboard()}><RefreshCw className="h-4 w-4 mr-2" /> Refresh</Button><Button variant="outline" className="w-fit" onClick={() => { void signOutCustomer().then(() => { setSignedIn(false); setData(null); }).catch((err) => setError((errorMessage(err, 'Unable to sign out. Please try again.') ?? 'Unable to sign out. Please try again.'))); }}><LogOut className="h-4 w-4 mr-2" /> Sign out</Button></div></div></section>
     <section className="bg-slate-50/80 py-10 md:py-12"><div className="container mx-auto px-6 md:px-12 space-y-8">
       {error && <p className="rounded-md border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive">{error}</p>}
       {(() => {

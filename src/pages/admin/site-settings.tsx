@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Save, Globe, Phone, Code, Image as ImageIcon } from 'lucide-react';
 import { AdminLayout } from './dashboard';
-import { dbFailure } from '@/lib/db';
+import { dbFailure, describeDbError, errorMessage } from '@/lib/db';
 import { supabase } from '@/lib/supabase';
 import { useToast } from '@/hooks/use-toast';
 import { useCMS } from '@/context/CMSContext';
@@ -12,6 +12,7 @@ import { DEFAULT_BRAND, resolveBrand } from '@/lib/brand';
 export default function AdminSiteSettings() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [loadFailed, setLoadFailed] = useState(false);
   const { toast } = useToast();
   const { refetch: refetchCms } = useCMS();
   const [activeTab, setActiveTab] = useState('general');
@@ -34,8 +35,12 @@ export default function AdminSiteSettings() {
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const fetchSettings = async () => {
-    const { data } = await supabase.from('site_settings').select('*');
-    if (data) {
+    const { data, error } = await supabase.from('site_settings').select('*');
+    if (error) {
+      // Never leave the form looking empty-but-saveable: saving defaults would overwrite real values.
+      setLoadFailed(true);
+      toast({ title: 'Could not load site settings', description: describeDbError(error), variant: 'destructive' });
+    } else if (data) {
       const newSettings = { ...settings };
       // Older versions saved the logo and favicon under their own keys, which the public site never read.
       // Carry those values over so nothing already uploaded is lost.
@@ -52,7 +57,7 @@ export default function AdminSiteSettings() {
         if (newSettings[s.setting_key as keyof typeof newSettings]) {
           const settingKey = s.setting_key as keyof typeof newSettings;
           const rawValue = s.setting_value;
-          const parsedValue: unknown = typeof rawValue === 'object' ? rawValue : JSON.parse(rawValue || '{}');
+          const parsedValue: unknown = parseValue(rawValue);
           (newSettings as unknown as Record<string, unknown>)[settingKey] = parsedValue;
         }
       });
@@ -65,6 +70,10 @@ export default function AdminSiteSettings() {
   };
 
   const handleSave = async () => {
+    if (loadFailed) {
+      toast({ title: 'Reload before saving', description: 'The current settings could not be loaded, so saving now could overwrite them.', variant: 'destructive' });
+      return;
+    }
     setSaving(true);
     try {
       for (const [key, value] of Object.entries(settings)) {
@@ -79,7 +88,7 @@ export default function AdminSiteSettings() {
       await refetchCms();
       toast({ title: 'Settings saved successfully' });
     } catch (err) {
-      toast({ title: 'Failed to save settings', description: err instanceof Error ? err.message : undefined, variant: 'destructive' });
+      toast({ title: 'Failed to save settings', description: errorMessage(err), variant: 'destructive' });
     }
     setSaving(false);
   };

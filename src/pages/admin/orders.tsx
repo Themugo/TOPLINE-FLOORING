@@ -9,6 +9,7 @@ import { Pagination } from '@/components/admin/Pagination';
 import { Eye, X } from 'lucide-react';
 import type { Order } from '@/lib/types';
 import { getOrderOperations360, reconcileOrderPayment, type OrderOperations360 } from '@/lib/order-operations';
+import { errorMessage } from '@/lib/db';
 
 export default function AdminOrders() {
   const { toast } = useToast();
@@ -51,7 +52,7 @@ export default function AdminOrders() {
     setSelectedOrder(order);
     setDetailLoading(true);
     try { setOrder360(await getOrderOperations360(order.id)); }
-    catch (error) { toast({ title: 'Unable to load order operations', description: error instanceof Error ? error.message : 'Please try again', variant: 'destructive' }); setOrder360(null); }
+    catch (error) { toast({ title: 'Unable to load order operations', description: errorMessage(error, 'Please try again'), variant: 'destructive' }); setOrder360(null); }
     finally { setDetailLoading(false); }
   };
 
@@ -59,7 +60,7 @@ export default function AdminOrders() {
     if (!selectedOrder) return;
     setDetailLoading(true);
     try { setOrder360(await getOrderOperations360(selectedOrder.id)); }
-    catch (error) { toast({ title: 'Unable to refresh order', description: error instanceof Error ? error.message : 'Please try again', variant: 'destructive' }); }
+    catch (error) { toast({ title: 'Unable to refresh order', description: errorMessage(error, 'Please try again'), variant: 'destructive' }); }
     finally { setDetailLoading(false); }
   };
 
@@ -71,7 +72,7 @@ export default function AdminOrders() {
       await refreshOrder360();
       await fetchOrders();
     }
-    catch (error) { toast({ title: 'Payment reconciliation unavailable', description: error instanceof Error ? error.message : 'Finance permission is required', variant: 'destructive' }); }
+    catch (error) { toast({ title: 'Payment reconciliation unavailable', description: errorMessage(error, 'Finance permission is required'), variant: 'destructive' }); }
   };
 
   const updateStatus = async (orderId: string, status: string) => {

@@ -4,6 +4,7 @@ import { Link } from 'wouter';
 import { AdminLayout } from './dashboard';
 import { getCommercialLifecycle360 } from '@/lib/lifecycle';
 import { formatKES } from '@/lib/utils';
+import { errorMessage } from '@/lib/db';
 
 type Snapshot = Record<string, unknown>;
 const n = (v: unknown) => Number(v || 0);
@@ -16,7 +17,7 @@ export default function CommercialLifecycle() {
   const load = async () => {
     setLoading(true); setError(null);
     try { setData(await getCommercialLifecycle360()); }
-    catch (e) { setError(e instanceof Error ? e.message : 'Unable to load commercial lifecycle'); }
+    catch (e) { setError(errorMessage(e, 'Unable to load commercial lifecycle')); }
     finally { setLoading(false); }
   };
   useEffect(() => { void load(); }, []);

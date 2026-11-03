@@ -4,6 +4,7 @@ import { Link } from 'wouter';
 import { AdminLayout } from './dashboard';
 import { getExecutiveOperations360, reconcileExecutiveOperations360, type ExecutiveSnapshot } from '@/lib/executive-operations-360';
 import { formatKES } from '@/lib/utils';
+import { errorMessage } from '@/lib/db';
 
 const cards = [
   ['Customers', 'customers', Users, '/admin/customers'],
@@ -22,9 +23,9 @@ export default function ExecutiveOperations360() {
   const [data, setData] = useState<ExecutiveSnapshot | null>(null);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState<string | null>(null);
-  const load = useCallback(async () => { setLoading(true); setMessage(null); try { setData(await getExecutiveOperations360(days)); } catch (e) { setMessage(e instanceof Error ? e.message : 'Unable to load control centre'); } finally { setLoading(false); } }, [days]);
+  const load = useCallback(async () => { setLoading(true); setMessage(null); try { setData(await getExecutiveOperations360(days)); } catch (e) { setMessage(errorMessage(e, 'Unable to load control centre')); } finally { setLoading(false); } }, [days]);
   useEffect(() => { void load(); }, [load]);
-  const reconcile = async () => { setLoading(true); setMessage(null); try { await reconcileExecutiveOperations360(); await load(); setMessage('Executive reconciliation completed.'); } catch (e) { setMessage(e instanceof Error ? e.message : 'Reconciliation failed'); setLoading(false); } };
+  const reconcile = async () => { setLoading(true); setMessage(null); try { await reconcileExecutiveOperations360(); await load(); setMessage('Executive reconciliation completed.'); } catch (e) { setMessage(errorMessage(e, 'Reconciliation failed')); setLoading(false); } };
   const m = data?.metrics ?? {};
   return <AdminLayout title="Executive Operations 360" subtitle="Company-wide operational control across sales, delivery, supply chain, finance and customer lifecycle" actions={<div className="flex gap-2"><select aria-label="Time range" value={days} onChange={e => setDays(Number(e.target.value))} className="px-3 py-2 rounded-lg border border-gray-200 bg-white text-sm"><option value={7}>7 days</option><option value={30}>30 days</option><option value={90}>90 days</option></select><button onClick={() => void reconcile()} disabled={loading} className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-primary-600 text-white text-sm font-medium disabled:opacity-50"><RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} /> Reconcile</button></div>}>
     {message && <div className="mb-6 rounded-xl border border-gray-200 bg-white p-4 text-sm text-gray-700">{message}</div>}

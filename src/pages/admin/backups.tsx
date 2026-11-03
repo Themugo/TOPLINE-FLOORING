@@ -4,6 +4,7 @@ import { Database, Download, ShieldCheck } from 'lucide-react';
 import { useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useToast } from '@/hooks/use-toast';
+import { errorMessage } from '@/lib/db';
 
 export default function AdminBackups() {
   const { toast } = useToast();
@@ -17,7 +18,7 @@ export default function AdminBackups() {
       const url = URL.createObjectURL(blob); const a = document.createElement('a');
       a.href = url; a.download = `topline-data-export-${new Date().toISOString().slice(0,10)}.json`; a.click(); URL.revokeObjectURL(url);
       toast({ title: 'Data export ready', description: data?.event?.payload_hash ? `Export ${data.event.id.slice(0, 8)}… verified with hash ${data.event.payload_hash}.` : 'The operational export has been downloaded.' });
-    } catch (err) { toast({ title: 'Export failed', description: err instanceof Error ? err.message : 'Unable to create the export.', variant: 'destructive' }); }
+    } catch (err) { toast({ title: 'Export failed', description: errorMessage(err, 'Unable to create the export.'), variant: 'destructive' }); }
     finally { setExporting(false); }
   };
   return <AdminLayout><div className="space-y-6 max-w-4xl"><div><h1 className="text-2xl font-bold">Backups & Data Export</h1><p className="text-muted-foreground">Understand the database backup boundary and create an operational data export.</p></div>

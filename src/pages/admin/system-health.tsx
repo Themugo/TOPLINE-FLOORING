@@ -3,6 +3,7 @@ import { Activity, CheckCircle2, Clock3, Database, Mail, Package, RefreshCw, Ser
 import { AdminLayout } from './dashboard';
 import { getSystemHealthSnapshot, type SystemHealthSnapshot } from '@/lib/system-health';
 import { Button } from '@/components/ui/button';
+import { errorMessage } from '@/lib/db';
 
 function Metric({ icon: Icon, label, value, detail }: { icon: typeof Activity; label: string; value: string | number; detail: string }) {
   return <div className="rounded-2xl border bg-card p-5 shadow-sm">
@@ -15,7 +16,7 @@ export default function AdminSystemHealth() {
   const [data, setData] = useState<SystemHealthSnapshot | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const load = useCallback(async () => { setLoading(true); setError(''); try { setData(await getSystemHealthSnapshot()); } catch (e) { setError(e instanceof Error ? e.message : 'Unable to read system health.'); } finally { setLoading(false); } }, []);
+  const load = useCallback(async () => { setLoading(true); setError(''); try { setData(await getSystemHealthSnapshot()); } catch (e) { setError(errorMessage(e, 'Unable to read system health.')); } finally { setLoading(false); } }, []);
   useEffect(() => { void load(); }, [load]);
   return <AdminLayout title="System Health" subtitle="A read-only operational view of the Topline platform." actions={<Button variant="outline" onClick={() => void load()} disabled={loading}><RefreshCw className={`mr-2 h-4 w-4 ${loading ? 'animate-spin' : ''}`} />Refresh</Button>}>
     {error ? <div className="rounded-2xl border border-destructive/30 bg-destructive/5 p-5 text-sm text-destructive">{error}</div> : loading && !data ? <div className="py-16 text-center text-muted-foreground">Checking platform health…</div> : data && <div className="space-y-6">

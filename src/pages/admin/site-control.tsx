@@ -4,6 +4,7 @@ import { AdminLayout } from './dashboard';
 import { supabase } from '@/lib/supabase';
 import { useToast } from '@/hooks/use-toast';
 import { isSafeDesignTokenValue, validateCustomCss } from '@/lib/theme-engine';
+import { errorMessage } from '@/lib/db';
 
 type Token = { id: string; token_key: string; token_value: string; token_type: string; description: string | null; is_active: boolean };
 type Flag = { id: string; flag_key: string; label: string; description: string | null; is_enabled: boolean; config: Record<string, unknown> };
@@ -52,7 +53,7 @@ export default function AdminSiteControl() {
       setFlags((flagRes.data ?? []) as Flag[]);
       setPaymentCertifications((certRes.data ?? []) as PaymentCertification[]);
     } catch (error) {
-      toast({ title: 'Unable to load site control plane', description: error instanceof Error ? error.message : 'Access denied or unavailable.', variant: 'destructive' });
+      toast({ title: 'Unable to load site control plane', description: errorMessage(error, 'Access denied or unavailable.'), variant: 'destructive' });
     } finally { setLoading(false); }
   }, [toast]);
 
@@ -68,7 +69,7 @@ export default function AdminSiteControl() {
       const { error } = await supabase.from('site_design_tokens').update({ token_value: token.token_value, is_active: token.is_active, updated_at: new Date().toISOString() }).eq('id', token.id);
       if (error) throw error;
       toast({ title: `${token.token_key} saved` });
-    } catch (error) { toast({ title: 'Token save failed', description: error instanceof Error ? error.message : 'Unable to save.', variant: 'destructive' }); }
+    } catch (error) { toast({ title: 'Token save failed', description: errorMessage(error, 'Unable to save.'), variant: 'destructive' }); }
     finally { setSaving(false); }
   };
 
@@ -80,7 +81,7 @@ export default function AdminSiteControl() {
       const { error } = await supabase.from('site_settings').upsert({ setting_key: 'custom_css', setting_value: { css }, updated_at: new Date().toISOString() }, { onConflict: 'setting_key' });
       if (error) throw error;
       toast({ title: 'Custom CSS published', description: 'The public site will use the new stylesheet on its next load.' });
-    } catch (error) { toast({ title: 'Custom CSS save failed', description: error instanceof Error ? error.message : 'Unable to save.', variant: 'destructive' }); }
+    } catch (error) { toast({ title: 'Custom CSS save failed', description: errorMessage(error, 'Unable to save.'), variant: 'destructive' }); }
     finally { setSaving(false); }
   };
 
@@ -90,7 +91,7 @@ export default function AdminSiteControl() {
       const { error } = await supabase.from('site_integration_configs').update({ provider: item.provider, is_enabled: item.is_enabled, public_config: item.public_config, status: item.is_enabled ? item.status : 'disabled', updated_at: new Date().toISOString() }).eq('id', item.id);
       if (error) throw error;
       toast({ title: `${item.integration_key} saved` });
-    } catch (error) { toast({ title: 'Integration save failed', description: error instanceof Error ? error.message : 'Unable to save.', variant: 'destructive' }); }
+    } catch (error) { toast({ title: 'Integration save failed', description: errorMessage(error, 'Unable to save.'), variant: 'destructive' }); }
     finally { setSaving(false); }
   };
 
@@ -112,7 +113,7 @@ export default function AdminSiteControl() {
       if (!data?.ok) throw new Error(data?.error || 'Brevo test failed.');
       toast({ title: 'Brevo test accepted', description: data.message_id ? `Provider message ID: ${data.message_id}` : 'Check the recipient mailbox.' });
     } catch (error) {
-      toast({ title: 'Brevo test failed', description: error instanceof Error ? error.message : 'Provider unavailable.', variant: 'destructive' });
+      toast({ title: 'Brevo test failed', description: errorMessage(error, 'Provider unavailable.'), variant: 'destructive' });
     } finally { setTestingBrevo(false); }
   };
 
@@ -133,7 +134,7 @@ export default function AdminSiteControl() {
       toast({ title: `${item.display_name} payment gateway saved`, description: data?.release_gate?.ready ? 'Production certification gate is satisfied.' : 'Gateway remains subject to provider certification.' });
       await load();
     } catch (error) {
-      toast({ title: 'Payment gateway save failed', description: error instanceof Error ? error.message : 'Unable to save.', variant: 'destructive' });
+      toast({ title: 'Payment gateway save failed', description: errorMessage(error, 'Unable to save.'), variant: 'destructive' });
     } finally { setSaving(false); }
   };
 
@@ -153,7 +154,7 @@ export default function AdminSiteControl() {
       if (error) throw error;
       toast({ title: `${item.display_name} production certification recorded` });
       await load();
-    } catch (error) { toast({ title: 'Certification could not be recorded', description: error instanceof Error ? error.message : 'Unable to save certification.', variant: 'destructive' }); }
+    } catch (error) { toast({ title: 'Certification could not be recorded', description: errorMessage(error, 'Unable to save certification.'), variant: 'destructive' }); }
     finally { setSaving(false); }
   };
 
@@ -163,7 +164,7 @@ export default function AdminSiteControl() {
       const { error } = await supabase.from('site_feature_flags').update({ is_enabled: item.is_enabled, config: item.config, updated_at: new Date().toISOString() }).eq('id', item.id);
       if (error) throw error;
       toast({ title: `${item.label} updated` });
-    } catch (error) { toast({ title: 'Feature flag save failed', description: error instanceof Error ? error.message : 'Unable to save.', variant: 'destructive' }); }
+    } catch (error) { toast({ title: 'Feature flag save failed', description: errorMessage(error, 'Unable to save.'), variant: 'destructive' }); }
     finally { setSaving(false); }
   };
 

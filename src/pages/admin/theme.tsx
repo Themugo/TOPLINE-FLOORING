@@ -6,6 +6,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useCMS } from '@/context/CMSContext';
 import type { ThemeSetting } from '@/lib/types';
 import { validateAppliedTheme } from '@/lib/theme-engine';
+import { errorMessage } from '@/lib/db';
 
 const presets = [
   { name: 'TOPLINE Ocean & Lime', primary: '#0C2D57', secondary: '#B4E33D', accent: '#0E6B78' },
@@ -49,7 +50,7 @@ export default function AdminTheme() {
       setTheme(result.theme);
       setVersions(result.versions ?? []);
     } catch (error) {
-      toast({ title: 'Unable to load governed theme', description: error instanceof Error ? error.message : 'Theme governance is unavailable.', variant: 'destructive' });
+      toast({ title: 'Unable to load governed theme', description: errorMessage(error, 'Theme governance is unavailable.'), variant: 'destructive' });
     } finally {
       setLoading(false);
     }
@@ -80,7 +81,7 @@ export default function AdminTheme() {
       await Promise.all([refetchCms(), loadGovernance()]);
       toast({ title: `Theme saved as version ${result.version_number}` });
     } catch (error) {
-      toast({ title: 'Failed to save governed theme', description: error instanceof Error ? error.message : 'The theme was not saved.', variant: 'destructive' });
+      toast({ title: 'Failed to save governed theme', description: errorMessage(error, 'The theme was not saved.'), variant: 'destructive' });
     } finally { setSaving(false); }
   };
 
@@ -93,7 +94,7 @@ export default function AdminTheme() {
       await Promise.all([refetchCms(), loadGovernance()]);
       toast({ title: `Theme rolled back to version ${version.version_number}` });
     } catch (error) {
-      toast({ title: 'Rollback failed', description: error instanceof Error ? error.message : 'The theme was not changed.', variant: 'destructive' });
+      toast({ title: 'Rollback failed', description: errorMessage(error, 'The theme was not changed.'), variant: 'destructive' });
     } finally { setRollingBack(null); }
   };
 

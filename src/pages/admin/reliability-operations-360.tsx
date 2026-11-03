@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { AlertTriangle, CheckCircle2, Clock3, RefreshCw, ShieldAlert } from 'lucide-react';
 import { AdminLayout } from './dashboard';
 import { createOperationalIncident, getReliabilityOperations360, updateOperationalIncident, type IncidentSeverity, type IncidentStatus, type ReliabilitySnapshot } from '@/lib/reliability-operations-360';
+import { errorMessage } from '@/lib/db';
 
 const severityClass: Record<IncidentSeverity, string> = { critical: 'text-red-700 bg-red-50 border-red-200', high: 'text-amber-700 bg-amber-50 border-amber-200', medium: 'text-yellow-700 bg-yellow-50 border-yellow-200', low: 'text-gray-700 bg-gray-50 border-gray-200' };
 
@@ -10,18 +11,18 @@ export default function ReliabilityOperations360() {
   const [days, setDays] = useState(30);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState('');
-  const load = useCallback(async () => { setLoading(true); setMessage(''); try { setData(await getReliabilityOperations360(days)); } catch (e) { setMessage(e instanceof Error ? e.message : 'Unable to load reliability control.'); } finally { setLoading(false); } }, [days]);
+  const load = useCallback(async () => { setLoading(true); setMessage(''); try { setData(await getReliabilityOperations360(days)); } catch (e) { setMessage(errorMessage(e, 'Unable to load reliability control.')); } finally { setLoading(false); } }, [days]);
   useEffect(() => { void load(); }, [load]);
   const create = async () => {
     const title = window.prompt('Incident title'); if (!title?.trim()) return;
     const severity = (window.prompt('Severity: critical, high, medium, low', 'medium') ?? 'medium').trim() as IncidentSeverity;
     const domain = (window.prompt('Domain: platform, database, payments, communications, fulfillment, supply_chain, customer_service, security, other', 'platform') ?? 'platform').trim();
-    try { setLoading(true); await createOperationalIncident({ severity, domain, title }); await load(); setMessage('Incident recorded.'); } catch (e) { setLoading(false); setMessage(e instanceof Error ? e.message : 'Unable to create incident.'); }
+    try { setLoading(true); await createOperationalIncident({ severity, domain, title }); await load(); setMessage('Incident recorded.'); } catch (e) { setLoading(false); setMessage(errorMessage(e, 'Unable to create incident.')); }
   };
   const advance = async (id: string, status: IncidentStatus) => {
     const resolutionSummary = status === 'resolved' ? (window.prompt('Resolution summary') ?? '') : undefined;
     if (status === 'resolved' && !resolutionSummary?.trim()) return;
-    try { setLoading(true); await updateOperationalIncident({ id, status, resolutionSummary }); await load(); setMessage('Incident updated.'); } catch (e) { setLoading(false); setMessage(e instanceof Error ? e.message : 'Unable to update incident.'); }
+    try { setLoading(true); await updateOperationalIncident({ id, status, resolutionSummary }); await load(); setMessage('Incident updated.'); } catch (e) { setLoading(false); setMessage(errorMessage(e, 'Unable to update incident.')); }
   };
   const m = data?.metrics;
   return <AdminLayout title="Reliability & Incident Response 360" subtitle="Durable incident ownership and operational response without creating a second system of record." actions={<div className="flex gap-2"><select aria-label="Time range" value={days} onChange={e => setDays(Number(e.target.value))} className="rounded-lg border px-3 py-2 text-sm"><option value={7}>7 days</option><option value={30}>30 days</option><option value={90}>90 days</option></select><button onClick={() => void load()} disabled={loading} className="inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-sm"><RefreshCw className={loading ? 'h-4 w-4 animate-spin' : 'h-4 w-4'} />Refresh</button><button onClick={() => void create()} className="rounded-lg bg-primary-600 px-3 py-2 text-sm font-medium text-white">Record incident</button></div>}>

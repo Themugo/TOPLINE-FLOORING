@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { describeDbError } from '@/lib/db';
+import { describeDbError, errorMessage } from '@/lib/db';
 import { quotationRequestReference } from '@/lib/commerce';
 import { Eye, X, Plus, Trash2, Download, ArrowRightCircle, UserPlus } from 'lucide-react';
 import { AdminLayout } from './dashboard';
@@ -47,7 +47,7 @@ export default function AdminQuotations() {
       await refetch();
       if (selected?.id === id) setSelected({ ...selected, status: status as QuotationStatus });
     } catch (error) {
-      toast({ title: 'Failed to update status', description: error instanceof Error ? error.message : undefined, variant: 'destructive' });
+      toast({ title: 'Failed to update status', description: errorMessage(error), variant: 'destructive' });
     }
   };
 
@@ -78,7 +78,7 @@ export default function AdminQuotations() {
       await refetch();
       setSelected(null);
     } catch (error) {
-      toast({ title: 'Failed to convert quotation', description: error instanceof Error ? error.message : undefined, variant: 'destructive' });
+      toast({ title: 'Failed to convert quotation', description: errorMessage(error), variant: 'destructive' });
     }
   };
 

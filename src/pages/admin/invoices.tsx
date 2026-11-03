@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { describeDbError } from '@/lib/db';
+import { describeDbError, errorMessage } from '@/lib/db';
 import { Plus, X, Trash2, Download, DollarSign, FileText } from 'lucide-react';
 import { AdminLayout } from './dashboard';
 import { useInvoices, useCustomers, useSiteSettings } from '@/hooks/use-data';
@@ -156,7 +156,7 @@ export default function AdminInvoices() {
                       <td className="px-6 py-4">
                         <select
                           value={inv.status}
-                          onChange={async (e) => { try { await transitionInvoiceLifecycle(inv.id, e.target.value); await refetch(); toast({ title: 'Invoice status updated' }); } catch (err) { toast({ title: 'Status change rejected', description: err instanceof Error ? err.message : 'Invalid invoice transition', variant: 'destructive' }); } }}
+                          onChange={async (e) => { try { await transitionInvoiceLifecycle(inv.id, e.target.value); await refetch(); toast({ title: 'Invoice status updated' }); } catch (err) { toast({ title: 'Status change rejected', description: errorMessage(err, 'Invalid invoice transition'), variant: 'destructive' }); } }}
                           className={`text-xs font-medium px-2 py-1 rounded-full border-0 ${STATUS_STYLES[inv.status]}`}
                         >
                           {STATUS_OPTIONS.map((s) => <option key={s} value={s}>{s}</option>)}

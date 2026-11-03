@@ -4,6 +4,7 @@ import { Lock, Mail, AlertCircle, Eye, EyeOff, ArrowLeft } from 'lucide-react';
 import { useAdminAuth } from '@/hooks/use-data';
 import { useBrand } from '@/hooks/use-brand';
 import { isSupabaseConfigured, supabase } from '@/lib/supabase';
+import { errorMessage } from '@/lib/db';
 
 export default function AdminLogin() {
   const brand = useBrand();
@@ -78,7 +79,7 @@ export default function AdminLogin() {
       if (error) throw error;
       setResetSuccess(true);
     } catch (err) {
-      setResetError(err instanceof Error ? err.message : 'Failed to send reset email');
+      setResetError(errorMessage(err, 'Failed to send reset email'));
     } finally {
       setResetLoading(false);
     }

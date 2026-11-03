@@ -103,7 +103,7 @@ function SeoContent() {
 
     setSaving(false);
     if (error) {
-      toast({ type: 'error', message: 'Failed to save SEO settings' });
+      toast({ type: 'error', message: `Failed to save SEO settings: ${describeDbError(error)}` });
     } else {
       toast({ type: 'success', message: 'SEO settings saved' });
       await refetchCms();

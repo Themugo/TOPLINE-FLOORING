@@ -76,7 +76,7 @@ Never put a service-role or worker secret in a `VITE_*` variable.
 
 ## Current active chain (Phases 30–32 verification baseline)
 
-The current production candidate contains 132 uniquely timestamped active migrations, ending with `20261103100000_payment_settings_permissions_and_portal_claim.sql`. Run the complete verification suite before any linked database deployment.
+The current production candidate contains 133 uniquely timestamped active migrations, ending with `20261103120000_staff_read_site_settings_and_product_children.sql`. Run the complete verification suite before any linked database deployment.
 
 Current active chain additions: `20260930170000_service_catalog_and_communications_worker_hardening.sql`, `20260930180000_project_documents_private_storage.sql`, `20260930190000_staff_read_inactive_cms_catalog_rows.sql`, `20260930193000_private_document_policy_overlap_hardening.sql`, `20260930200000_project_templates.sql`, `20260930210000_close_legacy_public_read_policies.sql`, `20260930220000_projects_admin_contract_columns.sql`, `20260930230000_move_product_cost_prices_staff_only.sql`, `20260930240000_coupon_validation_throttle.sql`, `20260930250000_finance_permission_resource.sql`, `20261001090000_project_template_persistence_360.sql`, `20261001100000_admin_notification_state_360.sql`, `20261001110000_catalog_product_service_upload_integrity_360.sql`.
 
@@ -223,3 +223,4 @@ These files were present in `supabase/migrations/` but not yet listed above. App
 - `20261102180000_channel_gated_outbox_claim.sql` — outbox worker claims only channels whose provider is configured (email-first launch); stale SMS/WhatsApp rows cancelled after 72h
 - `20261102190000_business_payment_accounts.sql` — staff-managed bank / M-Pesa payment details (`business_payment_accounts`, audited, RLS by settings permission) and `get_customer_payment_accounts()` for the customer portal
 - `20261103100000_payment_settings_permissions_and_portal_claim.sql` — seeds `settings:insert/delete` (fixes payment details not saving) and adds `claim_customer_portal_access()` self-service portal repair
+- `20261103120000_staff_read_site_settings_and_product_children.sql` — restores staff SELECT on `site_settings` and on child rows of draft products (variants, images, specs, documents, tag/collection links) after the public read allow-lists

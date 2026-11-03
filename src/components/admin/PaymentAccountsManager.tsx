@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Landmark, Pencil, Plus, Trash2, X } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { errorMessage } from '@/lib/db';
 import {
   PAYMENT_ACCOUNT_KINDS, deleteBusinessPaymentAccount, emptyPaymentAccount, listBusinessPaymentAccounts,
   saveBusinessPaymentAccount, type BusinessPaymentAccount, type PaymentAccountInput,
@@ -28,7 +29,7 @@ export function PaymentAccountsManager() {
   const load = useCallback(async () => {
     setLoading(true);
     try { setAccounts(await listBusinessPaymentAccounts()); setLoadError(null); }
-    catch (e) { setLoadError(e instanceof Error ? e.message : 'Could not load payment details'); }
+    catch (e) { setLoadError(errorMessage(e, 'Could not load payment details')); }
     finally { setLoading(false); }
   }, []);
   useEffect(() => { void load(); }, [load]);

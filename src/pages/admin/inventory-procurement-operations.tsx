@@ -4,6 +4,7 @@ import { AdminLayout } from './dashboard';
 import { formatKES } from '@/lib/utils';
 import { getInventoryProcurementOperations360, reconcileInventoryProcurement } from '@/lib/inventory-procurement-360';
 import { useToast } from '@/hooks/use-toast';
+import { errorMessage } from '@/lib/db';
 
 type Snapshot = Record<string, unknown>;
 const money = (v: unknown) => formatKES(Number(v || 0));
@@ -20,7 +21,7 @@ export default function InventoryProcurementOperations() {
     try {
       setData(await getInventoryProcurementOperations360(30));
     } catch (e) {
-      toast({ title: 'Operations snapshot failed', description: e instanceof Error ? e.message : 'Unable to load inventory/procurement data', variant: 'destructive' });
+      toast({ title: 'Operations snapshot failed', description: errorMessage(e, 'Unable to load inventory/procurement data'), variant: 'destructive' });
     } finally { setLoading(false); }
   }, [toast]);
 
@@ -38,7 +39,7 @@ export default function InventoryProcurementOperations() {
         variant: discrepancies === 0 && orphans === 0 ? undefined : 'destructive',
       });
     } catch (e) {
-      toast({ title: 'Reconciliation failed', description: e instanceof Error ? e.message : 'Unable to reconcile inventory', variant: 'destructive' });
+      toast({ title: 'Reconciliation failed', description: errorMessage(e, 'Unable to reconcile inventory'), variant: 'destructive' });
     } finally { setReconciling(false); }
   };
 

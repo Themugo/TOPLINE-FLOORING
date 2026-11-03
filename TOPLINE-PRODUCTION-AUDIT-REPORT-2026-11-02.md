@@ -250,3 +250,10 @@ Not verifiable from here: live data, payment-gateway callbacks, email delivery, 
 - **Payment details not saving:** RLS on `business_payment_accounts` required `settings:insert` / `settings:delete`, which were never seeded (only select/update existed), so every save was rejected. Migration `20261103100000` seeds both and grants them to owner/admin. The admin form also now shows the real database error (Postgrest errors are not `Error` instances, so the message was previously dropped).
 - **Portal "We couldn't load your dashboard":** signed-in accounts with no `customer_portal_access` row (staff/owner logins, accounts created before the link trigger, late verification) hit "Customer portal access is not available". New `claim_customer_portal_access()` binds the verified email to its unique customer (or creates the profile) and the portal retries automatically; unverified/conflict cases get specific messages, and unexpected errors show a short reference.
 - Verifier `verify-pass13-payment-portal.mjs`; gates: tsc/eslint/build clean, verify-all 144/144, vitest 238/238.
+
+## Pass 14 — Settings audit (2026-11-03)
+- **Site Settings (admin) read access lost:** 20261016150000 narrowed `site_settings` public read to `custom_css` and added no staff policy, so the admin page loaded blank and upserts could fail or overwrite real values with defaults. Migration `20261103120000` adds a `content:select` staff read; the page now refuses to save after a failed load and reports the load error.
+- **Draft product children hidden from staff:** same migration restores staff read of variants, images, specifications, documents and tag/collection links.
+- **Swallowed errors:** 53 admin/portal handlers used `err instanceof Error ? err.message : fallback`, which discards Postgrest/RPC errors (plain objects). New `errorMessage()` helper now surfaces the real reason across 29 files + portal; SEO save also reports the reason.
+- **Account settings:** email change now says a confirmation link was sent (the address changes only after confirming).
+- Verifier `verify-pass14-settings.mjs`; gates: tsc/eslint/build clean, verify-all 145/145, vitest 238/238.

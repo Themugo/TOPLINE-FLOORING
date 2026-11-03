@@ -15,6 +15,7 @@ import {
 import { AdminLayout } from './dashboard';
 import { supabase } from '@/lib/supabase';
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { errorMessage } from '@/lib/db';
 
 interface Snapshot {
   lowStock: number;
@@ -97,7 +98,7 @@ export default function OperationsCommandCenter() {
       setProjectPipeline(group(projectPipelineResult.data));
       setSchedule([...visitRows, ...installationRows].sort((a, b) => (a.date || '').localeCompare(b.date || '')).slice(0, 8));
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Unable to load operations data');
+      setError(errorMessage(err, 'Unable to load operations data'));
     } finally {
       setLoading(false);
     }

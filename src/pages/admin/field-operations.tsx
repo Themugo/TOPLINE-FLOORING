@@ -13,6 +13,7 @@ import {
 } from '@/lib/field-operations';
 import { AlertTriangle, CheckCircle2, ClipboardList, HardHat, Plus, RefreshCw, Ruler, Truck, Users, X } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
+import { errorMessage } from '@/lib/db';
 
 type Installation = { id: string; installation_number: string | null; project_id: string | null; scheduled_date: string | null; scheduled_time: string | null; status: string; projects?: { title?: string | null; client_name?: string | null } | null };
 type Staff = { user_id: string; display_name: string | null; is_active: boolean };
@@ -76,7 +77,7 @@ export default function FieldOperations() {
       if (rpcError) throw rpcError;
       const raw = (data ?? {}) as Partial<Detail>;
       setDetail({ assignments: (raw.assignments ?? []) as Assignment[], measurements: (raw.measurements ?? []) as Measurement[], materials: (raw.materials ?? []) as Material[], progress: (raw.progress ?? []) as Progress[], issues: (raw.issues ?? []) as Issue[], signoff: (raw.signoff ?? null) as Signoff | null });
-    } catch (e) { toast({ title: 'Could not load field record', description: e instanceof Error ? e.message : 'Please try again', variant: 'destructive' }); }
+    } catch (e) { toast({ title: 'Could not load field record', description: errorMessage(e, 'Please try again'), variant: 'destructive' }); }
     finally { setDetailLoading(false); }
   }, [toast]);
 
@@ -85,7 +86,7 @@ export default function FieldOperations() {
 
   const run = async (action: () => Promise<unknown>, success: string, reset?: () => void) => {
     try { await action(); toast({ title: success }); reset?.(); await load(); if (selected) await loadDetail(selected.id); }
-    catch (e) { toast({ title: 'Action failed', description: e instanceof Error ? e.message : 'Please try again', variant: 'destructive' }); }
+    catch (e) { toast({ title: 'Action failed', description: errorMessage(e, 'Please try again'), variant: 'destructive' }); }
   };
 
   const metrics = useMemo(() => ({ scheduled: installations.filter((x) => x.status === 'scheduled').length, active: installations.filter((x) => x.status === 'in_progress').length, completed: installations.filter((x) => x.status === 'completed').length, openIssues: detail.issues.filter((x) => x.status === 'open' || x.status === 'in_progress').length }), [installations, detail.issues]);

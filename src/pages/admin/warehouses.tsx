@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { describeDbError } from '@/lib/db';
+import { describeDbError, errorMessage } from '@/lib/db';
 import { Plus, X, Trash2, Building2, Pencil, ArrowLeftRight, PackageSearch } from 'lucide-react';
 import { AdminLayout } from './dashboard';
 import { useWarehouses, useWarehouseStock, useStockTransfers, useProducts } from '@/hooks/use-data';
@@ -326,7 +326,7 @@ function TransfersTab() {
       setShowForm(false);
       setForm({ from_warehouse_id: '', to_warehouse_id: '', product_id: '', quantity: 1, notes: '' });
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to transfer stock';
+      const message = errorMessage(err, 'Failed to transfer stock');
       toast({ title: message.includes('Insufficient stock') ? 'Insufficient stock at source warehouse' : 'Failed to transfer stock', variant: 'destructive' });
     } finally {
       setSaving(false);

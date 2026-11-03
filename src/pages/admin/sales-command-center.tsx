@@ -5,6 +5,7 @@ import { AdminLayout } from './dashboard';
 import { formatKES } from '@/lib/utils';
 import { getCommercialLifecycle360 } from '@/lib/lifecycle';
 import { useEffect, useState } from 'react';
+import { errorMessage } from '@/lib/db';
 
 type Snapshot = Record<string, unknown>;
 const n = (v: unknown) => Number(v || 0);
@@ -13,7 +14,7 @@ export default function SalesCommandCenter() {
   const [snapshot, setSnapshot] = useState<Snapshot>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  useEffect(() => { let mounted = true; (async () => { try { setSnapshot(await getCommercialLifecycle360()); } catch (e) { if (mounted) setError(e instanceof Error ? e.message : 'Unable to load sales data'); } finally { if (mounted) setLoading(false); } })(); return () => { mounted = false; }; }, []);
+  useEffect(() => { let mounted = true; (async () => { try { setSnapshot(await getCommercialLifecycle360()); } catch (e) { if (mounted) setError(errorMessage(e, 'Unable to load sales data')); } finally { if (mounted) setLoading(false); } })(); return () => { mounted = false; }; }, []);
   const cards: Array<[string, number, LucideIcon, string]> = [
     ['Open leads', n(snapshot.leads_open), Users, '/admin/leads'],
     ['Qualified leads', n(snapshot.leads_qualified), TrendingUp, '/admin/crm'],

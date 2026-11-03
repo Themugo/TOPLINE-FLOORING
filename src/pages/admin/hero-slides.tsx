@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Plus, Pencil, Trash2, X, Image as ImageIcon } from 'lucide-react';
 import { AdminLayout } from './dashboard';
 import { supabase } from '@/lib/supabase';
-import { dbFailure, describeDbError } from '@/lib/db';
+import { dbFailure, describeDbError, errorMessage } from '@/lib/db';
 import { useToast } from '@/hooks/use-toast';
 import { ImageUpload } from '@/components/ui/image-upload';
 import type { HeroSlide } from '@/lib/types';
@@ -76,7 +76,7 @@ export default function AdminHeroSlides() {
       await fetchSlides();
       resetForm();
     } catch (err) {
-      toast({ title: 'Failed to save slide', description: err instanceof Error ? err.message : undefined, variant: 'destructive' });
+      toast({ title: 'Failed to save slide', description: errorMessage(err), variant: 'destructive' });
     } finally {
       setSaving(false);
     }

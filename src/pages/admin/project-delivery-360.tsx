@@ -3,6 +3,7 @@ import { CheckCircle2, ClipboardCheck, RefreshCw, ShieldCheck, AlertTriangle, Us
 import { AdminLayout } from './dashboard';
 import { useToast } from '@/hooks/use-toast';
 import { getProjectDelivery360, reconcileProjectDelivery360, recordProjectQualityInspection, updateProjectDeliveryStatus } from '@/lib/project-delivery-360';
+import { errorMessage } from '@/lib/db';
 
 const money = (value: unknown) => new Intl.NumberFormat('en-KE', { style: 'currency', currency: 'KES', maximumFractionDigits: 0 }).format(Number(value || 0));
 type DeliveryProject={id:string;title:string;project_number?:string|null;client_name?:string|null;status:string;progress_percentage?:number|null;project_value?:number|null};
@@ -28,7 +29,7 @@ export default function AdminProjectDelivery360() {
       const next = (Array.isArray(data.projects) ? data.projects : []) as DeliveryRecord[];
       setRows(next);
       if (next[0]?.project?.id) setSelected(currentSelected => currentSelected || next[0].project.id);
-    } catch (e) { toast({ title: 'Unable to load project delivery', description: e instanceof Error ? e.message : 'Unknown error', variant: 'destructive' }); }
+    } catch (e) { toast({ title: 'Unable to load project delivery', description: errorMessage(e, 'Unknown error'), variant: 'destructive' }); }
     finally { setLoading(false); }
   }, [toast]);
   useEffect(() => { void load(); }, [load]);
@@ -40,7 +41,7 @@ export default function AdminProjectDelivery360() {
   const latestQuality = qualityRows[0]?.status;
   const latestInstallation = installations[0]?.status;
   const ready = Number(project.progress_percentage || 0) === 100 && openIssues === 0 && openTasks === 0 && (!latestInstallation || latestInstallation === 'completed') && (!latestQuality || ['passed','waived'].includes(latestQuality)) && !!signoff?.approved;
-  const run = async (fn: () => Promise<unknown>, title: string) => { setSaving(true); try { await fn(); toast({ title }); await load(); } catch (e) { toast({ title: 'Operation failed', description: e instanceof Error ? e.message : 'Unknown error', variant: 'destructive' }); } finally { setSaving(false); } };
+  const run = async (fn: () => Promise<unknown>, title: string) => { setSaving(true); try { await fn(); toast({ title }); await load(); } catch (e) { toast({ title: 'Operation failed', description: errorMessage(e, 'Unknown error'), variant: 'destructive' }); } finally { setSaving(false); } };
 
   return <AdminLayout title="Project Delivery 360" subtitle="One authoritative control surface from project planning through field execution, cost, quality and customer completion.">
     <div className="space-y-6">

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { describeDbError } from '@/lib/db';
+import { describeDbError, errorMessage } from '@/lib/db';
 import { AlertTriangle, Package, TrendingDown, History } from 'lucide-react';
 import { AdminLayout } from './dashboard';
 import { supabase } from '@/lib/supabase';
@@ -63,7 +63,7 @@ export default function AdminInventory() {
       setCountDrafts((d) => Object.fromEntries(Object.entries(d).filter(([id]) => id !== productId)));
       await fetchData();
     } catch (err) {
-      toast({ title: 'Could not save count', description: err instanceof Error ? err.message : undefined, variant: 'destructive' });
+      toast({ title: 'Could not save count', description: errorMessage(err), variant: 'destructive' });
     } finally { setCountSavingId(null); }
   };
 
@@ -91,7 +91,7 @@ export default function AdminInventory() {
       setAdjustmentForm({ product_id: '', quantity: 0, type: 'in', notes: '' });
       await fetchData();
     } catch (err) {
-      toast({ title: 'Failed to record adjustment', description: err instanceof Error ? err.message : undefined, variant: 'destructive' });
+      toast({ title: 'Failed to record adjustment', description: errorMessage(err), variant: 'destructive' });
     } finally { setSaving(false); }
   };
 

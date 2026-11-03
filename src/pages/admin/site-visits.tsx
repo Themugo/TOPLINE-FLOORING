@@ -4,6 +4,7 @@ import { AdminLayout } from './dashboard';
 import { supabase } from '@/lib/supabase';
 import { createSiteVisit, updateSiteVisitStatus } from '@/lib/lifecycle';
 import { useToast } from '@/hooks/use-toast';
+import { errorMessage } from '@/lib/db';
 
 type Visit = {
   id: string; quotation_id: string | null; customer_id: string | null; scheduled_date: string;
@@ -39,7 +40,7 @@ export default function AdminSiteVisits() {
       toast({ title: 'Site visit scheduled' });
       await load();
     } catch (error) {
-      toast({ title: 'Could not schedule site visit', description: error instanceof Error ? error.message : undefined, variant: 'destructive' });
+      toast({ title: 'Could not schedule site visit', description: errorMessage(error), variant: 'destructive' });
     } finally { setSaving(false); }
   };
 
@@ -49,7 +50,7 @@ export default function AdminSiteVisits() {
       if (!result.success) throw new Error(result.error || 'Update failed');
       await load();
     } catch (error) {
-      toast({ title: 'Could not update visit', description: error instanceof Error ? error.message : undefined, variant: 'destructive' });
+      toast({ title: 'Could not update visit', description: errorMessage(error), variant: 'destructive' });
     }
   };
 

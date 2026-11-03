@@ -5,6 +5,7 @@ import { AdminLayout } from './dashboard';
 import { supabase } from '@/lib/supabase';
 import { useToast } from '@/hooks/use-toast';
 import { PaymentAccountsManager } from '@/components/admin/PaymentAccountsManager';
+import { errorMessage } from '@/lib/db';
 
 export default function AdminSettings() {
   const [currentEmail, setCurrentEmail] = useState('');
@@ -50,11 +51,13 @@ export default function AdminSettings() {
 
       setNewPassword('');
       setConfirmPassword('');
-      toast({ title: 'Account settings saved successfully' });
+      toast(updates.email
+        ? { title: 'Check your inbox', description: `A confirmation link was sent to ${updates.email}. Your sign-in email changes once you confirm it${updates.password ? '; your password was updated now.' : '.'}` }
+        : { title: 'Password updated successfully' });
     } catch (err) {
       toast({
         title: 'Failed to save settings',
-        description: err instanceof Error ? err.message : undefined,
+        description: errorMessage(err),
         variant: 'destructive',
       });
     }

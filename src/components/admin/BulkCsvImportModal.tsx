@@ -14,6 +14,7 @@ import {
 import { supabase } from '@/lib/supabase';
 import { useToast } from '@/hooks/use-toast';
 import type { Project } from '@/lib/types';
+import { errorMessage } from '@/lib/db';
 
 interface BulkCsvImportModalProps {
   onClose: () => void;
@@ -454,10 +455,10 @@ export function BulkCsvImportModal({
       onClose();
     } catch (err: unknown) {
       console.error('Bulk CSV import failed:', err);
-      const errorMessage = err instanceof Error ? err.message : 'An error occurred while importing projects into the database.';
+      const failureText = errorMessage(err, 'An error occurred while importing projects into the database.');
       toast({
         title: 'Import Failed',
-        description: errorMessage,
+        description: failureText,
         variant: 'destructive',
       });
     } finally {

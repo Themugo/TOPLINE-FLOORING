@@ -46,3 +46,17 @@ export async function dbFailure(
     return describeDbError({ message: err instanceof Error ? err.message : String(err) });
   }
 }
+
+/**
+ * Readable message for anything thrown by a Supabase call. Postgrest/Auth errors are plain objects
+ * (not `Error` instances), so `err instanceof Error` silently dropped the real reason and the
+ * admin saw only a generic fallback.
+ */
+export function errorMessage(err: unknown, fallback?: string): string | undefined {
+  if (err && typeof err === 'object' && 'message' in err && typeof (err as { message: unknown }).message === 'string' && (err as { message: string }).message) {
+    const e = err as DbErrorLike;
+    return describeDbError(e);
+  }
+  if (typeof err === 'string' && err) return err;
+  return fallback;
+}

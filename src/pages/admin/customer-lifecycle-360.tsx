@@ -3,6 +3,7 @@ import { AdminLayout } from './dashboard';
 import { useToast } from '@/hooks/use-toast';
 import { Activity, CalendarClock, RefreshCw, ShieldCheck, Star, Wrench } from 'lucide-react';
 import { getCustomerLifecycleOperations360, reconcileCustomerLifecycle360, type CustomerLifecycleCustomer } from '@/lib/customer-lifecycle-360';
+import { errorMessage } from '@/lib/db';
 
 type Row = CustomerLifecycleCustomer;
 
@@ -15,7 +16,7 @@ export default function AdminCustomerLifecycle360() {
   const load = useCallback(async () => {
     setLoading(true);
     try { setData(await getCustomerLifecycleOperations360()); }
-    catch (e) { toast({ title: 'Unable to load customer lifecycle', description: e instanceof Error ? e.message : 'Please try again', variant: 'destructive' }); }
+    catch (e) { toast({ title: 'Unable to load customer lifecycle', description: errorMessage(e, 'Please try again'), variant: 'destructive' }); }
     finally { setLoading(false); }
   }, [toast]);
 
@@ -27,7 +28,7 @@ export default function AdminCustomerLifecycle360() {
       const result = await reconcileCustomerLifecycle360();
       toast({ title: 'Customer lifecycle reconciled', description: `${result.warranty_cases_checked || 0} warranty cases checked and ${result.maintenance_visits_marked_missed || 0} missed visits updated.` });
       await load();
-    } catch (e) { toast({ title: 'Reconciliation failed', description: e instanceof Error ? e.message : 'Please try again', variant: 'destructive' }); }
+    } catch (e) { toast({ title: 'Reconciliation failed', description: errorMessage(e, 'Please try again'), variant: 'destructive' }); }
     finally { setBusy(false); }
   };
 
