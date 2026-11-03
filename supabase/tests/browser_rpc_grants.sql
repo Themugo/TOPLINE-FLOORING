@@ -21,6 +21,7 @@ INSERT INTO browser_rpc_names (name) VALUES
   ('assign_installation_staff'),
   ('cancel_communication_outbox'),
   ('check_order_fulfillment_readiness'),
+  ('claim_customer_portal_access'),
   ('complete_data_subject_request'),
   ('complete_maintenance_visit_360'),
   ('complete_order_delivery'),

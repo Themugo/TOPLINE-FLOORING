@@ -11,7 +11,7 @@ import { Label } from '@/components/ui/label';
 import { CheckCircle2, Clock, FileText, LogOut, Package, RefreshCw, ShieldCheck, Truck } from 'lucide-react';
 import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 import { confirmEmailLink, friendlyAuthError, isRecoveryLink, isUnverifiedEmailError, readAuthLinkProblem, readEmailLinkToken, type EmailLinkType, registerCustomerAccount, requestCustomerMagicLink, requestCustomerPasswordReset, resendCustomerVerification, signInCustomer, signOutCustomer, updateCustomerPassword } from '@/lib/customer-portal';
-import { getCustomerPortal360, type CustomerPortal360Data } from '@/lib/customer-portal-360';
+import { getCustomerPortal360, claimCustomerPortalAccess, isPortalAccessMissing, type CustomerPortal360Data } from '@/lib/customer-portal-360';
 import { getCustomerJourney, type CustomerJourneyEvent } from '@/lib/customer-journey';
 import { PaymentAccountsList } from '@/components/payments/PaymentAccountsList';
 import { getCustomerPaymentAccounts, type CustomerPaymentAccount } from '@/lib/payment-accounts';
@@ -292,7 +292,15 @@ export default function Portal() {
       // The canonical customer payload is required for the dashboard. Ancillary
       // timeline, preference, document and communication services are independent: a
       // temporary failure in one must not hide a customer's orders and quotations.
-      const portal = await getCustomerPortal360();
+      let portal: CustomerPortal360Data;
+      try { portal = await getCustomerPortal360(); }
+      catch (first) {
+        if (!isPortalAccessMissing(first)) throw first;
+        const claim = await claimCustomerPortalAccess();
+        if (claim === 'unverified') throw new Error('PORTAL_UNVERIFIED');
+        if (claim === 'ambiguous' || claim === 'conflict') throw new Error('PORTAL_CONFLICT');
+        portal = await getCustomerPortal360();
+      }
       setData(portal);
       setAuthenticatedError(false);
       // Independent of the dashboard: if bank details fail to load the rest of the account still works.
@@ -309,7 +317,11 @@ export default function Portal() {
       setCommunications(communicationsResult.status === 'fulfilled' ? communicationsResult.value?.timeline || [] : []);
       const failedSections = [journeyResult, prefsResult, docsResult, communicationsResult].some((result) => result.status === 'rejected');
       setError(failedSections ? 'Some account extras are temporarily unavailable. Your orders and quotations are still available; try refreshing later.' : null);
-    } catch (err) { setAuthenticatedError(true); console.error('Customer dashboard failed to load', err); setError('Your customer dashboard could not be loaded right now. Please try again, or contact our team if this continues.'); }
+    } catch (err) { setAuthenticatedError(true); console.error('Customer dashboard failed to load', err);
+      const m = err instanceof Error ? err.message : '';
+      if (m === 'PORTAL_UNVERIFIED') setError('Please verify your email address first. Open the confirmation email we sent you, then press Try again.');
+      else if (m === 'PORTAL_CONFLICT') setError('This email is already linked to another customer account. Please contact our team and we will connect it for you.');
+      else setError('Your customer dashboard could not be loaded right now. Please try again, or contact our team if this continues.' + (m ? ' (Ref: ' + m.slice(0, 80) + ')' : '')); }
     finally { setLoading(false); }
   }, []);
 

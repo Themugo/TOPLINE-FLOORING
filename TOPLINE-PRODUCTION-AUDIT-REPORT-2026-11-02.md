@@ -245,3 +245,8 @@ Admin: 138 views rendered at both widths, no page errors; two "no shell" flags w
 Gates: tsc, eslint, build clean; verify-all 143/143 (new verify-final-sweep 9/9); vitest 238/238. No database changes.
 
 Not verifiable from here: live data, payment-gateway callbacks, email delivery, real devices. Product and service URLs enter the sitemap at build time, so redeploy after adding catalogue items.
+
+## Pass 13 — Payment details save + portal dashboard (2026-11-03)
+- **Payment details not saving:** RLS on `business_payment_accounts` required `settings:insert` / `settings:delete`, which were never seeded (only select/update existed), so every save was rejected. Migration `20261103100000` seeds both and grants them to owner/admin. The admin form also now shows the real database error (Postgrest errors are not `Error` instances, so the message was previously dropped).
+- **Portal "We couldn't load your dashboard":** signed-in accounts with no `customer_portal_access` row (staff/owner logins, accounts created before the link trigger, late verification) hit "Customer portal access is not available". New `claim_customer_portal_access()` binds the verified email to its unique customer (or creates the profile) and the portal retries automatically; unverified/conflict cases get specific messages, and unexpected errors show a short reference.
+- Verifier `verify-pass13-payment-portal.mjs`; gates: tsc/eslint/build clean, verify-all 144/144, vitest 238/238.

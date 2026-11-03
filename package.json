@@ -36,6 +36,7 @@
     "verify:navigation-master": "node scripts/verify-navigation-master.mjs",
     "verify:services-shop-workflows": "node scripts/verify-services-shop-workflows.mjs",
     "verify:final-sweep": "node scripts/verify-final-sweep.mjs",
+    "verify:pass13": "node scripts/verify-pass13-payment-portal.mjs",
     "verify:brevo-email": "node scripts/verify-brevo-email-integration.mjs",
     "verify:cart-brand": "node scripts/verify-cart-navigation-and-brand-uniformity.mjs",
     "verify:cart-stock-eligibility": "node scripts/verify-cart-stock-eligibility.mjs",

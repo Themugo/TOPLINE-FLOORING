@@ -46,14 +46,14 @@ export function PaymentAccountsManager() {
       setForm(null); setEditingId(null);
       await load();
     } catch (err) {
-      toast({ title: 'Could not save', description: err instanceof Error ? err.message : undefined, variant: 'destructive' });
+      toast({ title: 'Could not save', description: (err as { message?: string } | null)?.message ?? 'Unknown error. Check your permissions and try again.', variant: 'destructive' });
     } finally { setSaving(false); }
   };
 
   const remove = async (a: BusinessPaymentAccount) => {
     if (!window.confirm(`Delete "${a.label}"? Customers will no longer see it.`)) return;
     try { await deleteBusinessPaymentAccount(a.id); toast({ title: 'Deleted' }); await load(); }
-    catch (err) { toast({ title: 'Could not delete', description: err instanceof Error ? err.message : undefined, variant: 'destructive' }); }
+    catch (err) { toast({ title: 'Could not delete', description: (err as { message?: string } | null)?.message ?? 'Unknown error. Check your permissions and try again.', variant: 'destructive' }); }
   };
 
   const kind = form?.kind;

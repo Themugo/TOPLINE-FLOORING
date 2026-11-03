@@ -17,3 +17,16 @@ export async function getCustomerPortal360(): Promise<CustomerPortal360Data> {
   if (error) throw error;
   return data as CustomerPortal360Data;
 }
+
+export type PortalClaimStatus = 'already_linked' | 'linked' | 'created' | 'unverified' | 'ambiguous' | 'conflict' | 'unauthenticated';
+
+export async function claimCustomerPortalAccess(): Promise<PortalClaimStatus> {
+  const { data, error } = await supabase.rpc('claim_customer_portal_access');
+  if (error) throw error;
+  return ((data as { status?: PortalClaimStatus } | null)?.status ?? 'unauthenticated');
+}
+
+export function isPortalAccessMissing(err: unknown): boolean {
+  const msg = err instanceof Error ? err.message : typeof err === 'object' && err && 'message' in err ? String((err as { message: unknown }).message) : '';
+  return /portal access is not available/i.test(msg);
+}

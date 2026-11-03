@@ -1,0 +1,11 @@
+import fs from 'node:fs';
+const m = fs.readFileSync('supabase/migrations/20261103100000_payment_settings_permissions_and_portal_claim.sql','utf8');
+const must = ["('settings','insert'", "('settings','delete'", "r.code IN ('owner','admin')", 'claim_customer_portal_access', "SET search_path = ''", 'REVOKE ALL ON FUNCTION public.claim_customer_portal_access() FROM PUBLIC, anon', 'email_confirmed_at'];
+for (const n of must) if (!m.includes(n)) throw new Error('Pass 13 migration missing: ' + n);
+const pay = fs.readFileSync('supabase/migrations/20261102190000_business_payment_accounts.sql','utf8');
+for (const a of ['insert','delete']) if (pay.includes(`('settings','${a}')`) && !m.includes(`('settings','${a}'`)) throw new Error('permission not seeded: ' + a);
+const portal = fs.readFileSync('src/pages/portal.tsx','utf8');
+if (!portal.includes('claimCustomerPortalAccess')) throw new Error('portal must auto-claim access');
+const mgr = fs.readFileSync('src/components/admin/PaymentAccountsManager.tsx','utf8');
+if (mgr.includes('err instanceof Error ? err.message')) throw new Error('payment save must surface Postgrest errors');
+console.log('verify-pass13-payment-portal: OK');

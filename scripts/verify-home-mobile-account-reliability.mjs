@@ -21,7 +21,7 @@ check('Mobile header has a settings-driven direct call action', /aria-label="Cal
 check('Mobile bottom navigation exposes Services and Shop', /href="\/services"[\s\S]*?Services/.test(actionBar) && /href="\/shop"[\s\S]*?Shop/.test(actionBar));
 check('Mobile bottom navigation exposes WhatsApp and quotation', /wa\.me\/\$\{whatsapp\}/.test(actionBar) && /href="\/quotation"/.test(actionBar));
 check('Mobile bottom navigation respects safe-area inset', /env\(safe-area-inset-bottom\)/.test(actionBar));
-check('Customer dashboard core payload loads independently of optional sections', /const portal = await getCustomerPortal360\(\)/.test(portal) && /Promise\.allSettled/.test(portal));
+check('Customer dashboard core payload loads independently of optional sections', /portal = await getCustomerPortal360\(\)/.test(portal) && /Promise\.allSettled/.test(portal));
 check('Optional customer account sections degrade independently', /journeyResult\.status === 'fulfilled'/.test(portal) && /prefsResult\.status === 'fulfilled'/.test(portal) && /docsResult\.status === 'fulfilled'/.test(portal) && /communicationsResult\.status === 'fulfilled'/.test(portal));
 check('Account identity backfill requires verified email', /u\.email_confirmed_at IS NOT NULL/.test(migration));
 check('Account identity backfill rejects ambiguous email matches', /HAVING count\(\*\) = 1/.test(migration));
