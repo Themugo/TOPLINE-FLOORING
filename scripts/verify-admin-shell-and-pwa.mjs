@@ -51,7 +51,7 @@ const pngSize = (file) => {
   const sig = b.subarray(0, 8).toString('hex') === '89504e470d0a1a0a';
   return sig ? [b.readUInt32BE(16), b.readUInt32BE(20)] : null;
 };
-check('Manifest declares name, short_name, start_url, scope, standalone display and brand colours', manifest.name && manifest.short_name && manifest.start_url && manifest.scope === '/' && manifest.display === 'standalone' && manifest.theme_color === '#0c2d57' && manifest.background_color);
+check('Manifest declares name, short_name, start_url, scope, standalone display and brand colours', manifest.name && manifest.short_name && manifest.start_url && manifest.scope === '/' && manifest.display === 'standalone' && manifest.theme_color === '#f7f6f3' && manifest.background_color);
 check('Manifest theme_color matches <meta name="theme-color">', html.includes(`<meta name="theme-color" content="${manifest.theme_color}"`));
 const iconProblems = [];
 for (const icon of manifest.icons.filter((i) => i.type === 'image/png')) {

@@ -13,7 +13,7 @@
     <meta name="apple-mobile-web-app-title" content="Topline" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <meta name="format-detection" content="telephone=no" />
-    <meta name="theme-color" content="#0c2d57" />
+    <meta name="theme-color" content="#f7f6f3" />
     <meta name="color-scheme" content="light" />
     <meta name="description" content="Topline Flooring and Waterproofing delivers professional flooring, coatings and waterproofing solutions across Kenya." />
     <meta name="robots" content="index,follow" />
@@ -27,8 +27,9 @@
     <style>
       /* First paint: match the brand instead of flashing white while the app downloads and starts. */
       html, body { margin: 0; background: #f7f6f3; }
-      #boot-splash { position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; background: #0c2d57; color: #fff; font: 600 15px/1.3 system-ui, -apple-system, "Segoe UI", sans-serif; letter-spacing: .02em; z-index: 0; }
-      #boot-splash i { width: 28px; height: 28px; border: 3px solid rgba(255,255,255,.25); border-top-color: #b4e33d; border-radius: 50%; animation: boot-spin .8s linear infinite; }
+      #root { background: #f7f6f3; min-height: 100vh; }
+      #boot-splash { position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; background: #f7f6f3; color: #0c2d57; font: 600 15px/1.3 system-ui, -apple-system, "Segoe UI", sans-serif; letter-spacing: .02em; z-index: 0; }
+      #boot-splash i { width: 28px; height: 28px; border: 3px solid rgba(12,45,87,.15); border-top-color: #0c2d57; border-radius: 50%; animation: boot-spin .8s linear infinite; }
       @keyframes boot-spin { to { transform: rotate(360deg); } }
       @media (prefers-reduced-motion: reduce) { #boot-splash i { animation: none; } }
     </style>

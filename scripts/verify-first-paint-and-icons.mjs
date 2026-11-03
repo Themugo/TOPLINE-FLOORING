@@ -3,7 +3,7 @@ const read = (p) => readFileSync(p, 'utf8');
 const checks = [];
 const check = (n, ok) => checks.push([n, Boolean(ok)]);
 const html = read('index.html'); const home = read('src/pages/home.tsx'); const bar = read('src/components/layout/MobileActionBar.tsx');
-check('index.html paints a branded splash, not a blank page', /id="boot-splash"/.test(html) && /background: #0c2d57/.test(html));
+check('index.html paints a branded splash, not a blank page', /id="boot-splash"/.test(html) && /#boot-splash[^}]*background: #f7f6f3/.test(html) && !/#boot-splash[^}]*background: #0c2d57/.test(html) && /name="theme-color" content="#f7f6f3"/.test(html));
 check('hero preload script is external (CSP script-src self)', /<script src="\/boot\.js">/.test(html) && existsSync('public/boot.js') && !/<script>(?!<)/.test(html.replace(/<script type="module"[^>]*><\/script>/, '')));
 check('hero shows a placeholder until its data has loaded', /const heroPending = slidesLoading/.test(home) && /if \(heroPending\) return \[\];/.test(home));
 check('hero never draws a stock default before real slides arrive', home.indexOf('if (heroPending) return [];') < home.indexOf('const defaultSlide'));
