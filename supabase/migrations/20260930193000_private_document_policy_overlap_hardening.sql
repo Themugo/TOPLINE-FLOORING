@@ -12,7 +12,7 @@
 --
 -- Idempotent: every statement is DROP POLICY IF EXISTS + CREATE POLICY.
 
-ALTER TABLE storage.objects ENABLE ROW LEVEL SECURITY;
+DO $$ BEGIN EXECUTE 'ALTER TABLE storage.objects ENABLE ROW LEVEL SECURITY'; EXCEPTION WHEN insufficient_privilege THEN NULL; END $$;
 
 -- ---------------------------------------------------------------------------
 -- Customer documents and staff media: everything outside projects/
