@@ -14,7 +14,7 @@ email security tools that merely *open* links can no longer use them up (the "li
 | Change Email Address | `change-email.html` | Confirm your new email address |
 
 1. Paste each file into the matching template and set the subject.
-2. Authentication, URL Configuration: **Site URL** must be `https://toplineflooringandwaterproofing.co.ke` (the templates use `{{ .SiteURL }}`).
+2. Authentication, URL Configuration: **Site URL** must be `https://toplinefloorandwaterproofing.co.ke` (the templates use `{{ .SiteURL }}`).
 3. Send yourself one of each from a test account (checklist section 5) and press the button in a normal browser.
 
 ## Safe to roll out

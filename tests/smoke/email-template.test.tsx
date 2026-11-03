@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { escapeHtml, renderTransactionalEmail, textToEmailHtml } from '../../supabase/functions/_shared/email-template';
 
-const SITE = 'https://toplineflooringandwaterproofing.co.ke';
-const brand = { name: 'Topline Flooring & Waterproofing', siteUrl: SITE, supportEmail: 'support@toplineflooringandwaterproofing.co.ke' };
+const SITE = 'https://toplinefloorandwaterproofing.co.ke';
+const brand = { name: 'Topline Flooring & Waterproofing', siteUrl: SITE, supportEmail: 'support@toplinefloorandwaterproofing.co.ke' };
 
 describe('transactional email template', () => {
   it('escapes markup, quotes and ampersands', () => {
@@ -36,7 +36,7 @@ describe('transactional email template', () => {
     expect(out.html).toContain('Topline Flooring &amp; Waterproofing');
     expect(out.html).toContain('<p style="margin:0 0 16px 0;">Hello Amina,</p>');
     expect(out.html).toContain('Thanks for writing.<br />Second line.');
-    expect(out.html).toContain('support@toplineflooringandwaterproofing.co.ke');
+    expect(out.html).toContain('support@toplinefloorandwaterproofing.co.ke');
     expect(out.html).toContain('<title>We received your message (MSG-12345678)</title>');
     expect(out.text.startsWith('Hello Amina,\n\nThanks for writing.')).toBe(true);
     expect(out.text.endsWith(`--\nTopline Flooring & Waterproofing\n${SITE}`)).toBe(true);

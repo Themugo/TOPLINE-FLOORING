@@ -49,7 +49,7 @@ The portfolio page correctly falls back to an empty state when the project query
 
 ### P1 — Build/deployment contract
 The canonical site is:
-`https://toplineflooringandwaterproofing.co.ke`
+`https://toplinefloorandwaterproofing.co.ke`
 
 The repository now declares this in `.env.example` and Vercel configuration. Before production release, confirm the Vercel project has the required public Supabase variables and that the domain/DNS/HTTPS/canonical redirect are live.
 

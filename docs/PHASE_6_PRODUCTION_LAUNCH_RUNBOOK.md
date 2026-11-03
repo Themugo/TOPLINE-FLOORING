@@ -41,7 +41,7 @@
 
 - [ ] Production environment variables configured.
 - [ ] Deployment succeeds.
-- [ ] `toplineflooringandwaterproofing.co.ke` attached.
+- [ ] `toplinefloorandwaterproofing.co.ke` attached.
 - [ ] HTTPS certificate active.
 - [ ] `www` canonical behaviour verified.
 - [ ] Existing site retained until UAT acceptance.

@@ -11,7 +11,7 @@ const fail=m=>{console.error(`BLOCKED: ${m}`);process.exit(2)};
 if(!endpoint||!orderId||!email||!phone){ fail('M-Pesa UAT requires an isolated endpoint, test order, test customer email and test phone.'); }
 let endpointUrl;
 try { endpointUrl=new URL(endpoint); } catch { fail('PAYMENT_INITIATE_URL must be an absolute URL.'); }
-const blockedHosts=new Set(['toplineflooringandwaterproofing.co.ke','www.toplineflooringandwaterproofing.co.ke','zmbsskvnzjdaxuxlauyx.supabase.co']);
+const blockedHosts=new Set(['toplinefloorandwaterproofing.co.ke','www.toplinefloorandwaterproofing.co.ke','zmbsskvnzjdaxuxlauyx.supabase.co']);
 if(blockedHosts.has(endpointUrl.hostname.toLowerCase())) fail('M-Pesa UAT cannot target a known production host.');
 if(!['sandbox','staging','local'].includes(uatEnvironment)) fail('MPESA_UAT_ENV must be sandbox, staging or local.');
 if(!expectedHost||endpointUrl.host.toLowerCase()!==expectedHost) fail('MPESA_UAT_EXPECTED_HOST must exactly match the payment initiation endpoint host.');

@@ -6,13 +6,13 @@ Date: 2026-09-14
 
 The production deployment was failing because `vercel.json` used a full URL as the `redirects[].source` pattern:
 
-`https://www.toplineflooringandwaterproofing.co.ke/:path*`
+`https://www.toplinefloorandwaterproofing.co.ke/:path*`
 
 Vercel redirect sources are pathname patterns. The canonical host redirect has therefore been corrected to a path-only source with a host matcher:
 
 - Source: `/:path*`
-- Host condition: `www.toplineflooringandwaterproofing.co.ke`
-- Destination: `https://toplineflooringandwaterproofing.co.ke/:path*`
+- Host condition: `www.toplinefloorandwaterproofing.co.ke`
+- Destination: `https://toplinefloorandwaterproofing.co.ke/:path*`
 - Permanent: `true`
 
 This preserves the intended www-to-non-www behavior without an invalid source pattern.

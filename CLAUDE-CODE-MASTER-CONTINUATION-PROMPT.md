@@ -8,7 +8,7 @@ Continue auditing, fixing and production-hardening the existing system without b
 Repository target:
 - GitHub: `https://github.com/Themugo/TOPLINE-FLOORING`
 - Local Windows path: `C:\Users\hp\Desktop\TOPLINE FLOORING & ROOFING`
-- Canonical production site: `https://toplineflooringandwaterproofing.co.ke`
+- Canonical production site: `https://toplinefloorandwaterproofing.co.ke`
 - Supabase project ref: `zmbsskvnzjdaxuxlauyx`
 - Node: `22.x`
 
@@ -110,7 +110,7 @@ Do not remove legitimate demo/sample content from documentation or tests. Only c
 
 ## Priority 5 — Production build and deployment
 Confirm:
-- `VITE_SITE_URL` resolves to `https://toplineflooringandwaterproofing.co.ke`
+- `VITE_SITE_URL` resolves to `https://toplinefloorandwaterproofing.co.ke`
 - Vercel build contract is correct
 - SPA routing works
 - canonical www → non-www redirect works

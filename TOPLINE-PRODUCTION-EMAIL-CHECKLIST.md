@@ -1,6 +1,6 @@
 # TOPLINE Production Email and Registration Checklist
 
-Project ref `zmbsskvnzjdaxuxlauyx`; site `https://toplineflooringandwaterproofing.co.ke`.
+Project ref `zmbsskvnzjdaxuxlauyx`; site `https://toplinefloorandwaterproofing.co.ke`.
 Everything below needs access this audit did not have. Tick each item and keep evidence (screenshots with secrets hidden,
 provider message ids, redacted headers). **Never paste a key, password or token into chat, tickets or this file.**
 
@@ -27,7 +27,7 @@ The repository contains no timer. `operations-scheduler` must be called on a sch
 - [ ] **Sign-in / Providers, Email:** "Confirm email" **ON**. The marketing opt-in only proves ownership of an address when this is on.
 - [ ] Minimum password length 8 or more; enable leaked-password protection if your plan allows it.
 - [ ] Secure email change / double-confirm ON (matches `supabase/config.toml`).
-- [ ] **URL Configuration:** Site URL `https://toplineflooringandwaterproofing.co.ke`; Redirect URLs include `https://toplineflooringandwaterproofing.co.ke/portal` and `https://toplineflooringandwaterproofing.co.ke/admin/settings` (add staging origins deliberately; the codified list in `config.toml` replaces the dashboard list if you ever run `supabase config push`).
+- [ ] **URL Configuration:** Site URL `https://toplinefloorandwaterproofing.co.ke`; Redirect URLs include `https://toplinefloorandwaterproofing.co.ke/portal` and `https://toplinefloorandwaterproofing.co.ke/admin/settings` (add staging origins deliberately; the codified list in `config.toml` replaces the dashboard list if you ever run `supabase config push`).
 - [ ] **SMTP Settings:** custom SMTP enabled (Supabase's built-in sender is heavily rate-limited and not for production). Use the Brevo SMTP relay with a dedicated SMTP key and a sender on your authenticated domain.
 - [ ] **Email Templates:** paste the four branded templates from `docs/email-templates/` (confirm signup, magic link, reset password, change email) and set the subjects listed in that folder's README. They link to `/portal?token_hash=...` so email security scanners cannot use up the one-time link. Until installed, the default links still work and the portal explains an expired link.
 - [ ] Customer password reset exists in the portal ("Forgot your password?"); test it with a controlled mailbox (section 5, test 6b).

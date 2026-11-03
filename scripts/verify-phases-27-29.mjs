@@ -31,7 +31,7 @@ if (!wa.includes('aria-expanded') || !wa.includes('aria-label={isOpen') || wa.in
 if (!seo.includes("og:locale") || !seo.includes("en-KE") || !seo.includes('schema-website')) throw new Error('SEO locale/site schema missing');
 if (market.includes('Industrial Polymers Global') || market.includes('Apex Chemical Systems')) throw new Error('Placeholder partner data remains');
 if (!sitemap.includes("loc: '/industries'") || !sitemap.includes("loc: '/market'")) throw new Error('Public routes missing from sitemap');
-if (!robots.includes('Sitemap: https://toplineflooringandwaterproofing.co.ke/sitemap.xml') || !robots.includes('Disallow: /admin')) throw new Error('Robots policy missing');
+if (!robots.includes('Sitemap: https://toplinefloorandwaterproofing.co.ke/sitemap.xml') || !robots.includes('Disallow: /admin')) throw new Error('Robots policy missing');
 if (!index.includes('Topline Flooring and Waterproofing') || !index.includes('og:locale')) throw new Error('Static SEO shell metadata missing');
 if (!industries.includes('Request a Technical Assessment')) throw new Error('Industry conversion path missing');
 console.log('Phase 27–29 source verification passed.');

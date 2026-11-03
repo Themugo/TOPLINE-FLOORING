@@ -7,6 +7,9 @@
 // origins with the TOPLINE_WEB_ORIGIN secret (comma separated).
 
 const DEFAULT_ORIGINS = [
+  "https://toplinefloorandwaterproofing.co.ke",
+  "https://www.toplinefloorandwaterproofing.co.ke",
+  // Legacy domain, kept so old links and sessions keep working during the move.
   "https://toplineflooringandwaterproofing.co.ke",
   "https://www.toplineflooringandwaterproofing.co.ke",
 ];

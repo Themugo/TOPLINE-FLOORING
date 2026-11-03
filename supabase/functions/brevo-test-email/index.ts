@@ -4,13 +4,15 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 const supabaseUrl = Deno.env.get("SUPABASE_URL");
 const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
 const brevoApiKey = Deno.env.get("BREVO_API_KEY");
-const senderEmail = Deno.env.get("BREVO_SENDER_EMAIL") ?? "no-reply@toplineflooringandwaterproofing.co.ke";
+const senderEmail = Deno.env.get("BREVO_SENDER_EMAIL") ?? "no-reply@toplinefloorandwaterproofing.co.ke";
 const senderName = Deno.env.get("BREVO_SENDER_NAME") ?? "Topline Flooring & Waterproofing";
-const replyTo = Deno.env.get("BREVO_REPLY_TO_EMAIL") ?? "support@toplineflooringandwaterproofing.co.ke";
+const replyTo = Deno.env.get("BREVO_REPLY_TO_EMAIL") ?? "support@toplinefloorandwaterproofing.co.ke";
 
 const ALLOWED_ORIGINS = new Set([
   "http://localhost:3000",
   "http://127.0.0.1:3000",
+  "https://toplinefloorandwaterproofing.co.ke",
+  "https://www.toplinefloorandwaterproofing.co.ke",
   "https://toplineflooringandwaterproofing.co.ke",
   "https://www.toplineflooringandwaterproofing.co.ke",
 ]);

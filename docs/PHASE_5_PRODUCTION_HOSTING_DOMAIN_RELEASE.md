@@ -28,7 +28,7 @@ The website and business operating system are independent of cPanel hosting. cPa
 
 - Added the canonical `.env.example` production contract.
 - Kept browser configuration limited to the Supabase URL + publishable/anon key and public site URL.
-- Added an explicit Vercel redirect from `www.toplineflooringandwaterproofing.co.ke` to the canonical non-www domain.
+- Added an explicit Vercel redirect from `www.toplinefloorandwaterproofing.co.ke` to the canonical non-www domain.
 - Preserved SPA fallback and security headers.
 - Added a canonical sitemap declaration to `robots.txt`.
 - Added `/.well-known/security.txt` with the real Topline contact address.
@@ -42,7 +42,7 @@ The website and business operating system are independent of cPanel hosting. cPa
 4. Production values:
    - `VITE_SUPABASE_URL=https://zmbsskvnzjdaxuxlauyx.supabase.co`
    - `VITE_SUPABASE_PUBLISHABLE_KEY=<real public key>`
-   - `VITE_SITE_URL=https://toplineflooringandwaterproofing.co.ke`
+   - `VITE_SITE_URL=https://toplinefloorandwaterproofing.co.ke`
 5. Do not add service-role, Brevo, Africa's Talking, or other server secrets to Vercel browser environment variables.
 6. Add the apex and `www` domain to Vercel.
 7. Keep the old WordPress/cPanel website available until the new deployment passes UAT.

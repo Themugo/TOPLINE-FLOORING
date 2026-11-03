@@ -20,7 +20,7 @@ check(read('src/lib/supabase.ts').includes(expectedUrl), 'Frontend Supabase clie
 check(read('vercel.json').includes('"buildCommand": "npm run build"'), 'Vercel uses the repository production build command.');
 check(read('vercel.json').includes('"outputDirectory": "dist"'), 'Vercel serves the Vite dist output.');
 check(read('vercel.json').includes('"source": "/(.*)"'), 'Vercel SPA routing is defined.');
-check(read('public/robots.txt').includes('Sitemap: https://toplineflooringandwaterproofing.co.ke/sitemap.xml'), 'Robots policy declares the canonical sitemap.');
+check(read('public/robots.txt').includes('Sitemap: https://toplinefloorandwaterproofing.co.ke/sitemap.xml'), 'Robots policy declares the canonical sitemap.');
 check(exists('public/.well-known/security.txt'), 'Security contact file exists.');
 check(exists('docs/PHASE_6_PRODUCTION_LAUNCH_READINESS.md'), 'Phase 6 launch runbook exists.');
 check(exists('scripts/production-launch-check.mjs'), 'Production launch check script exists.');
@@ -31,7 +31,7 @@ const env = read('.env.example');
 for (const key of ['VITE_SUPABASE_URL', 'VITE_SUPABASE_PUBLISHABLE_KEY', 'VITE_SITE_URL']) {
   check(env.includes(`${key}=`), `Environment contract declares ${key}.`);
 }
-check(env.includes('VITE_SITE_URL=https://toplineflooringandwaterproofing.co.ke'), 'Canonical site URL is fixed in the environment contract.');
+check(env.includes('VITE_SITE_URL=https://toplinefloorandwaterproofing.co.ke'), 'Canonical site URL is fixed in the environment contract.');
 
 if (failures.length) {
   console.error('Phase 6 launch-readiness verification FAILED.');

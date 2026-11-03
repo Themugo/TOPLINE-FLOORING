@@ -90,7 +90,7 @@ Use `x-topline-callback-secret` with `AT_INBOUND_SECRET`.
 
 ### Brevo inbound email
 
-For true email replies, configure Brevo inbound parsing on a dedicated receiving subdomain such as `reply.toplineflooringandwaterproofing.co.ke`. Do not use the same domain/subdomain used for outbound sending. Point the inbound webhook to:
+For true email replies, configure Brevo inbound parsing on a dedicated receiving subdomain such as `reply.toplinefloorandwaterproofing.co.ke`. Do not use the same domain/subdomain used for outbound sending. Point the inbound webhook to:
 
 `https://zmbsskvnzjdaxuxlauyx.supabase.co/functions/v1/email-inbound`
 

@@ -27,7 +27,7 @@ pass('project document update is metadata scoped', hasPerm(policyBody('Topline p
 pass('project document delete is metadata scoped', hasPerm(policyBody('Topline project documents delete'), 'delete') && policyBody('Topline project documents delete').includes(meta));
 pass('legacy media/customer document policies exclude the projects/ namespace', ['read','upload','update','delete'].every((k) => policyBody(`Topline private documents ${k}`).includes("split_part(name, '/', 1) <> 'projects'")));
 pass('customer export no longer uses wildcard CORS', !exportFn.includes("'Access-Control-Allow-Origin': '*'"));
-pass('customer export has configurable canonical origin', exportFn.includes('TOPLINE_WEB_ORIGIN') && exportFn.includes('https://toplineflooringandwaterproofing.co.ke'));
+pass('customer export has configurable canonical origin', exportFn.includes('TOPLINE_WEB_ORIGIN') && exportFn.includes('https://toplinefloorandwaterproofing.co.ke'));
 const deleteHandler = doc.slice(doc.indexOf('const handleDeleteDocument'), doc.indexOf('const filteredDocs'));
 pass('document deletion removes metadata before storage cleanup', deleteHandler.indexOf("from('project_documents')") < deleteHandler.indexOf("from(DOCUMENT_BUCKET).remove"));
 pass('document deletion retries storage cleanup', doc.includes('for (let attempt = 0; attempt < 2; attempt += 1)'));

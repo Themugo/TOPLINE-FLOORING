@@ -8,5 +8,5 @@ export const TOPLINE_COMPANY = {
   email: 'toplineflooringandwaterproofin@gmail.com',
   phone: '0720 859 737 / 0755 293 372',
   whatsapp: '+254720859737',
-  url: 'https://toplineflooringandwaterproofing.co.ke',
+  url: 'https://toplinefloorandwaterproofing.co.ke',
 } as const;

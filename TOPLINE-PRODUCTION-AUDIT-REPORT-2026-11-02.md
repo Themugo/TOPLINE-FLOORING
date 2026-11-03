@@ -281,3 +281,7 @@ Not verifiable from here: live data, payment-gateway callbacks, email delivery, 
 - **Delivery events:** delivered updates the outbox row, replays are de-duplicated, hard bounce/unsubscribe suppress the address, and no acknowledgement is sent to a suppressed address.
 - **Configuration:** `docs/CONFIGURATION-CHECKLIST.md` lists every Edge Function environment variable (generated from code, enforced by a verifier) plus the dashboard steps; `www` auth redirect URLs added to `config.toml`.
 - Tests: `registration_email_flow_regression.sql` (added to the local runner), browser test of the Site Control JSON fields; verify-all 147/147, vitest 238/238.
+
+## Pass 19 — Domain change to toplinefloorandwaterproofing.co.ke
+- Site URL, CORS origins, sender/reply-to defaults, sitemap, robots, vercel.json, Supabase Auth redirects, email templates and docs now use `toplinefloorandwaterproofing.co.ke`. The old domain stays only as an extra allowed CORS origin.
+- New migration `20261103170000_new_domain_defaults.sql` updates `private.topline_site_url()` and the stored Brevo sender/reply-to values.

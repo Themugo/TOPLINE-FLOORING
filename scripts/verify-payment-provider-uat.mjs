@@ -15,7 +15,7 @@ const fail = (m) => { console.error(`BLOCKED: ${m}`); process.exit(2); };
 if (!endpoint) fail('PAYMENT_WEBHOOK_URL is required.');
 let endpointUrl;
 try { endpointUrl = new URL(endpoint); } catch { fail('PAYMENT_WEBHOOK_URL must be an absolute URL.'); }
-const blockedHosts = new Set(['toplineflooringandwaterproofing.co.ke', 'www.toplineflooringandwaterproofing.co.ke', 'zmbsskvnzjdaxuxlauyx.supabase.co']);
+const blockedHosts = new Set(['toplinefloorandwaterproofing.co.ke', 'www.toplinefloorandwaterproofing.co.ke', 'zmbsskvnzjdaxuxlauyx.supabase.co']);
 if (blockedHosts.has(endpointUrl.hostname.toLowerCase())) fail('Provider UAT cannot target a known production host.');
 if (!['sandbox', 'staging', 'local'].includes(uatEnvironment)) fail('PAYMENT_UAT_ENV must be sandbox, staging or local.');
 if (!expectedHost || endpointUrl.host.toLowerCase() !== expectedHost) fail('PAYMENT_UAT_EXPECTED_HOST must exactly match the webhook endpoint host.');

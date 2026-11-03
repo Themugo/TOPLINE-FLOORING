@@ -7,12 +7,12 @@ enabled = true
 # Auth policy is codified here so it can be reviewed and cannot silently fall back to Supabase defaults if
 # `supabase config push` is ever run. The marketing opt-in relies on verified email addresses, so confirmations
 # must stay on. Leaked-password protection is a hosted-project (Pro) dashboard setting and is not available here.
-site_url = "https://toplineflooringandwaterproofing.co.ke"
+site_url = "https://toplinefloorandwaterproofing.co.ke"
 additional_redirect_urls = [
-  "https://toplineflooringandwaterproofing.co.ke/portal",
-  "https://toplineflooringandwaterproofing.co.ke/admin/settings",
-  "https://www.toplineflooringandwaterproofing.co.ke/portal",
-  "https://www.toplineflooringandwaterproofing.co.ke/admin/settings",
+  "https://toplinefloorandwaterproofing.co.ke/portal",
+  "https://toplinefloorandwaterproofing.co.ke/admin/settings",
+  "https://www.toplinefloorandwaterproofing.co.ke/portal",
+  "https://www.toplinefloorandwaterproofing.co.ke/admin/settings",
 ]
 minimum_password_length = 8
 

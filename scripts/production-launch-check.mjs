@@ -5,7 +5,7 @@ const root = process.cwd();
 const envFile = path.join(root, '.env');
 const envExample = path.join(root, '.env.example');
 const expectedProjectRef = 'zmbsskvnzjdaxuxlauyx';
-const expectedSite = 'https://toplineflooringandwaterproofing.co.ke';
+const expectedSite = 'https://toplinefloorandwaterproofing.co.ke';
 
 const result = { ready: true, checks: [] };
 function add(label, status, detail) {

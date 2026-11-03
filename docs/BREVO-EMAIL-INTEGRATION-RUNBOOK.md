@@ -14,15 +14,15 @@ Brevo is the canonical transactional email provider for Topline.
 ## Brevo account setup
 
 1. Create/verify the Brevo account.
-2. Authenticate `toplineflooringandwaterproofing.co.ke` in Brevo (SPF/DKIM as Brevo instructs).
-3. Create/verify the sender `no-reply@toplineflooringandwaterproofing.co.ke`.
-4. Create/verify the reply-to address `support@toplineflooringandwaterproofing.co.ke`.
+2. Authenticate `toplinefloorandwaterproofing.co.ke` in Brevo (SPF/DKIM as Brevo instructs).
+3. Create/verify the sender `no-reply@toplinefloorandwaterproofing.co.ke`.
+4. Create/verify the reply-to address `support@toplinefloorandwaterproofing.co.ke`.
 5. Create a Brevo API key with the minimum transactional-email scope available in the Brevo account.
 6. Store the key as `BREVO_API_KEY` in the Supabase Edge Function secrets/deployment secret store.
 7. Set:
-   - `BREVO_SENDER_EMAIL=no-reply@toplineflooringandwaterproofing.co.ke`
+   - `BREVO_SENDER_EMAIL=no-reply@toplinefloorandwaterproofing.co.ke`
    - `BREVO_SENDER_NAME=Topline Flooring & Waterproofing`
-   - `BREVO_REPLY_TO_EMAIL=support@toplineflooringandwaterproofing.co.ke`
+   - `BREVO_REPLY_TO_EMAIL=support@toplinefloorandwaterproofing.co.ke`
 
 ## Supabase Auth SMTP
 
@@ -33,7 +33,7 @@ Configure Supabase Auth's **Custom SMTP** with Brevo's SMTP relay. Recommended:
 - Security: STARTTLS/TLS
 - Username: the Brevo SMTP login shown by Brevo
 - Password: the Brevo SMTP key/password shown by Brevo
-- Sender email: `no-reply@toplineflooringandwaterproofing.co.ke`
+- Sender email: `no-reply@toplinefloorandwaterproofing.co.ke`
 - Sender name: `Topline Flooring & Waterproofing`
 
 Keep Auth/system mail separate from marketing mail. Do not put SMTP credentials in `.env`, Vite variables, SQL tables, or source control.

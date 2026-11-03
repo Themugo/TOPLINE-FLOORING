@@ -7,7 +7,7 @@ const failures = [];
 const warnings = [];
 const expectedProjectRef = 'zmbsskvnzjdaxuxlauyx';
 const expectedSupabaseUrl = `https://${expectedProjectRef}.supabase.co`;
-const expectedSiteUrl = 'https://toplineflooringandwaterproofing.co.ke';
+const expectedSiteUrl = 'https://toplinefloorandwaterproofing.co.ke';
 
 const read = (file) => fs.readFileSync(path.join(root, file), 'utf8');
 const exists = (file) => fs.existsSync(path.join(root, file));

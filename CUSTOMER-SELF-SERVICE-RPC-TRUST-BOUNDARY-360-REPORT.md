@@ -4,7 +4,7 @@
 **HARDENED — 360 source verification passed and migration applied to the dedicated production Supabase project.**
 
 Canonical Supabase project: `zmbsskvnzjdaxuxlauyx`  
-Canonical site: `https://toplineflooringandwaterproofing.co.ke`
+Canonical site: `https://toplinefloorandwaterproofing.co.ke`
 
 ## Scope
 Reviewed the customer/public trust boundary across customer portal identity binding, portal reads, quotation intake, order checkout, public order tracking, coupon validation, service-case creation/feedback, notification preferences, and customer journey/maintenance RPCs.

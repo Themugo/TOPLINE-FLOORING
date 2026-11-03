@@ -13,5 +13,5 @@ for (const dir of fs.readdirSync('supabase/functions')) {
 }
 for (const k of used) if (!doc.includes('`' + k + '`')) throw new Error('Undocumented environment variable: ' + k);
 const toml = fs.readFileSync('supabase/config.toml','utf8');
-if (!toml.includes('https://www.toplineflooringandwaterproofing.co.ke/portal')) throw new Error('www redirect URL missing');
+if (!toml.includes('https://www.toplinefloorandwaterproofing.co.ke/portal')) throw new Error('www redirect URL missing');
 console.log('verify-pass18-registration-email-config: OK');

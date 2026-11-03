@@ -1,6 +1,6 @@
 import { createClient } from 'npm:@supabase/supabase-js@2';
 
-const allowedOrigin = Deno.env.get('TOPLINE_WEB_ORIGIN') || 'https://toplineflooringandwaterproofing.co.ke';
+const allowedOrigin = Deno.env.get('TOPLINE_WEB_ORIGIN') || 'https://toplinefloorandwaterproofing.co.ke';
 const cors = { 'Access-Control-Allow-Origin': allowedOrigin, 'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type', Vary: 'Origin' };
 
 Deno.serve(async (req) => {

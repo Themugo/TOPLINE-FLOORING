@@ -11,8 +11,8 @@
 
 - http://localhost:3000
 - http://127.0.0.1:3000
-- https://toplineflooringandwaterproofing.co.ke
-- https://www.toplineflooringandwaterproofing.co.ke
+- https://toplinefloorandwaterproofing.co.ke
+- https://www.toplinefloorandwaterproofing.co.ke
 
 No wildcard origin is used.
 

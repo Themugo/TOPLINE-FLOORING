@@ -51,7 +51,7 @@ Supabase (Edge Functions > Secrets) or Vercel; never in `VITE_*` variables, SQL 
 | `WHATSAPP_VERIFY_TOKEN` | Webhook verification token | whatsapp-webhook | Optional (WhatsApp later) | Edge secret |
 
 ## Dashboard settings (not secrets)
-1. **Supabase Auth > URL Configuration**: Site URL `https://toplineflooringandwaterproofing.co.ke`; Redirect URLs include `/portal` and `/admin/settings` for both the bare and `www.` domains.
+1. **Supabase Auth > URL Configuration**: Site URL `https://toplinefloorandwaterproofing.co.ke`; Redirect URLs include `/portal` and `/admin/settings` for both the bare and `www.` domains.
 2. **Supabase Auth > SMTP**: Brevo relay (`smtp-relay.brevo.com`, port 587) with the Brevo **SMTP** login and key (not the API key).
 3. **Supabase Auth > Email Templates**: paste the four files from `docs/email-templates`.
 4. **Admin > Site Control > Integrations > communications.email**: enable the provider and set **New enquiry alert email(s)**. If left empty, alerts go to the contact email in Admin > Site Settings. Without either, staff receive no new-enquiry email (customers still get their acknowledgement).

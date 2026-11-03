@@ -77,7 +77,7 @@ After the Supabase infrastructure is verified:
 
 ## 5A. Phase 5 hosting and domain release contract
 
-The canonical production website is `https://toplineflooringandwaterproofing.co.ke`. `www` is redirected to the canonical non-www host. `robots.txt` publishes the canonical sitemap and `/.well-known/security.txt` provides a security contact.
+The canonical production website is `https://toplinefloorandwaterproofing.co.ke`. `www` is redirected to the canonical non-www host. `robots.txt` publishes the canonical sitemap and `/.well-known/security.txt` provides a security contact.
 
 Run the static release gate before deployment:
 
