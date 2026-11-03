@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { MessageCircle, X, Send, PhoneCall } from 'lucide-react';
+import { X, Send, PhoneCall } from 'lucide-react';
+import { WhatsAppIcon } from '@/components/icons/WhatsAppIcon';
 import { useSiteSettings } from '@/hooks/use-data';
 
 const DEFAULT_WHATSAPP = '254720859737';
@@ -30,7 +31,7 @@ export function WhatsAppButton() {
           <div className="px-3.5 py-2.5 bg-gradient-to-r from-emerald-600 to-teal-700 text-white flex items-center justify-between">
             <div className="flex items-center gap-2">
               <div className="p-1.5 bg-white/20 rounded-xl">
-                <MessageCircle className="w-4 h-4 text-white fill-current" />
+                <WhatsAppIcon className="w-4 h-4 text-white" />
               </div>
               <div>
                 <h4 className="font-bold text-xs flex items-center gap-1.5">
@@ -96,7 +97,7 @@ export function WhatsAppButton() {
           aria-label={isOpen ? "Close WhatsApp sales chat" : "Open WhatsApp sales chat"}
           aria-expanded={isOpen}
         >
-          <MessageCircle className="w-6 h-6 text-white fill-current shrink-0" />
+          <WhatsAppIcon className="w-6 h-6 text-white shrink-0" />
           
           {/* Online status indicator badge */}
           <span className="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-emerald-400 border-2 border-white flex items-center justify-center">

@@ -20,6 +20,7 @@ export default function Contact() {
   useImagePreloader(useMemo(() => [CONTACT_HERO_IMAGE], []));
   const [form, setForm] = useState<FormData>({ name: "", email: "", phone: "", subject: "", message: "" });
   const [submitting, setSubmitting] = useState(false);
+  const [sentTo, setSentTo] = useState('');
   const update = (key: keyof FormData, value: string) => setForm((current) => ({ ...current, [key]: value }));
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -43,6 +44,7 @@ export default function Contact() {
         message: clean.message,
       });
       toast({ title: "Your message has been received", description: `Thank you for contacting TOPLINE. We have emailed a confirmation to ${clean.email}; check your spam folder if it does not arrive. Our team will reply to you there.` });
+      setSentTo(clean.email);
       setForm({ name: "", email: "", phone: "", subject: "", message: "" });
     } catch (error) {
       toast({
@@ -99,6 +101,7 @@ export default function Contact() {
 
           <section className="rounded-2xl border border-[#DDD9D2] bg-white p-5 shadow-[0_18px_55px_-40px_rgba(12,45,87,0.4)] sm:p-8 lg:p-9">
             <div className="mb-7 border-b border-[#E3DFD8] pb-5"><p className="text-xs font-bold uppercase tracking-[0.18em] text-[#566F0D]">Send an enquiry</p><h2 className="mt-2 flex items-center gap-2 font-display text-2xl font-semibold text-[#0C2D57]"><MessageSquare className="h-5 w-5 text-[#0E6B78]" />How can we help?</h2><p className="mt-2 text-sm leading-6 text-slate-500">Required fields are marked. Your submission is routed through TOPLINE's existing enquiry and quotation workflow.</p></div>
+            {sentTo && <div role="status" className="mb-5 flex items-start gap-3 rounded-xl border border-[#0E6B78]/30 bg-[#0E6B78]/10 p-4 text-sm text-[#0C2D57]"><CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-[#0E6B78]" aria-hidden="true" /><p><strong>Your message has been received.</strong> We have emailed a confirmation to {sentTo}; check your spam folder if it does not arrive. Our team will reply using the details you gave.</p></div>}
             <form onSubmit={handleSubmit} className="space-y-5">
               <div className="grid gap-5 sm:grid-cols-2">
                 <div className="space-y-2"><label htmlFor="contact-name" className="text-sm font-semibold text-[#0C2D57]">Full name <span className="text-red-700">*</span></label><input id="contact-name" name="name" type="text" autoComplete="name" required minLength={2} maxLength={200} value={form.name} onChange={(e) => update("name", e.target.value)} placeholder="Your full name" className="h-12 w-full rounded-lg border border-[#868D95] bg-white px-4 text-sm text-[#0C2D57] outline-none transition placeholder:text-[#5F6B78] focus:border-[#0E6B78] focus:ring-2 focus:ring-[#0E6B78]/20" /></div>

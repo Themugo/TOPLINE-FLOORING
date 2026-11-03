@@ -6,10 +6,10 @@ const mark = read('public/topline-brand-mark.svg');
 const checks = [];
 const check = (name, condition) => checks.push({ name, pass: Boolean(condition) });
 
-check('Canonical Topline wordmark is protected from CMS site-name overrides', /<span className="block font-display[^>]*>Topline<\/span>/.test(header) && !/settings\.site_info\?\.name/.test(header));
-check('Canonical FLOORING & WATERPROOFING descriptor is fixed', /const tagline = 'FLOORING & WATERPROOFING'/.test(header));
-check('Brand promise is presented on large desktop layouts', /Professional Solutions for Lasting Spaces/.test(header));
-check('Header references the dedicated scalable brand mark asset', /src="\/topline-brand-mark\.svg"/.test(header) && /viewBox="0 0 120 104"/.test(mark));
+check('Wordmark is driven by the brand setting with a Topline default', /wordmark: 'Topline'/.test(read('src/lib/brand.ts')) && /brand\.wordmark/.test(read('src/components/layout/BrandLockup.tsx')));
+check('Default FLOORING & WATERPROOFING descriptor is defined once and editable', /descriptor: 'FLOORING & WATERPROOFING'/.test(read('src/lib/brand.ts')) && /useBrand\(\)/.test(header));
+check('Brand promise is presented on large desktop layouts', /Professional Solutions for Lasting Spaces/.test(read('src/lib/brand.ts')) && /hidden lg:block/.test(read('src/components/layout/BrandLockup.tsx')));
+check('Header references the dedicated scalable brand mark asset', /logoUrl: '\/topline-brand-mark\.svg'/.test(read('src/lib/brand.ts')) && /<BrandLockup variant="header"/.test(header) && /viewBox="0 0 120 104"/.test(mark));
 check('Logo uses approved Ocean and Signal Lime tokens', /#0C2D57/.test(mark) && /#B4E33D/.test(mark));
 check('Logo mark includes house/roof and flooring geometry', /<path/.test(mark) && /flooring/i.test(mark));
 check('Desktop primary navigation remains responsive', /hidden lg:flex[^>]*aria-label="Main navigation"/.test(header));

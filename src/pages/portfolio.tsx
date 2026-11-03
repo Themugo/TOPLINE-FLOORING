@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   ArrowRight, Award, Building2, Calendar, CheckCircle2, ChevronLeft, ChevronRight,
   ImageOff, Layers, Loader2, MapPin, RotateCw, Search, ShieldAlert, Sparkles,
-  Wrench, X,
+  Lightbulb, X,
 } from 'lucide-react';
 import { Link } from 'wouter';
 import { Breadcrumbs } from '@/components/Breadcrumbs';
@@ -290,7 +290,7 @@ export default function Portfolio() {
                   {(selectedProject.summary || selectedProject.description) && <div><h3 className="mb-2 text-xs font-bold uppercase tracking-wider text-navy-900">Project overview</h3><p className="whitespace-pre-line text-sm leading-relaxed text-gray-700">{selectedProject.summary || selectedProject.description}</p></div>}
                   <div className="grid gap-4 md:grid-cols-3">
                     {selectedProject.challenge && <div className="rounded-xl border border-amber-200 bg-amber-50/70 p-4"><h3 className="mb-2 flex items-center gap-2 text-sm font-bold text-amber-950"><ShieldAlert className="h-4 w-4" aria-hidden="true" />Challenge</h3><p className="whitespace-pre-line text-sm leading-relaxed text-amber-950/90">{selectedProject.challenge}</p></div>}
-                    {selectedProject.solution && <div className="rounded-xl border border-blue-200 bg-blue-50/70 p-4"><h3 className="mb-2 flex items-center gap-2 text-sm font-bold text-blue-950"><Wrench className="h-4 w-4" aria-hidden="true" />Solution applied</h3><p className="whitespace-pre-line text-sm leading-relaxed text-blue-950/90">{selectedProject.solution}</p></div>}
+                    {selectedProject.solution && <div className="rounded-xl border border-blue-200 bg-blue-50/70 p-4"><h3 className="mb-2 flex items-center gap-2 text-sm font-bold text-blue-950"><Lightbulb className="h-4 w-4" aria-hidden="true" />Solution applied</h3><p className="whitespace-pre-line text-sm leading-relaxed text-blue-950/90">{selectedProject.solution}</p></div>}
                     {selectedProject.results && <div className="rounded-xl border border-emerald-200 bg-emerald-50/70 p-4"><h3 className="mb-2 flex items-center gap-2 text-sm font-bold text-emerald-950"><CheckCircle2 className="h-4 w-4" aria-hidden="true" />Outcome</h3><p className="whitespace-pre-line text-sm leading-relaxed text-emerald-950/90">{selectedProject.results}</p></div>}
                   </div>
                   {selectedProject.materials_used && <div className="rounded-xl border border-gray-200 bg-white p-4"><h3 className="mb-2 flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-navy-900"><Award className="h-4 w-4 text-primary-600" aria-hidden="true" />Materials and system</h3><p className="whitespace-pre-line text-sm leading-relaxed text-gray-700">{selectedProject.materials_used}</p></div>}

@@ -15,6 +15,7 @@ import {
   X,
 } from 'lucide-react';
 import { useAdminAuth } from '@/hooks/use-data';
+import { useBrand } from '@/hooks/use-brand';
 import { useStaffPermissions } from '@/hooks/use-staff-permissions';
 import { useBodyScrollLock } from '@/hooks/use-body-scroll-lock';
 import { applyUpdate, promptInstall, usePwa } from '@/lib/pwa';
@@ -87,6 +88,7 @@ function useOnline() {
 }
 
 export function AdminLayout({ children, title, subtitle, actions }: AdminLayoutProps) {
+  const brand = useBrand();
   const { logout, user } = useAdminAuth();
   const { canSee } = useStaffPermissions();
   const [location, setLocation] = useLocation();
@@ -126,8 +128,8 @@ export function AdminLayout({ children, title, subtitle, actions }: AdminLayoutP
 
   // Page title for the browser tab / history.
   useEffect(() => {
-    if (heading) document.title = `${heading} · Topline Admin`;
-  }, [heading]);
+    if (heading) document.title = `${heading} · ${brand.wordmark} Admin`;
+  }, [heading, brand.wordmark]);
 
   // Accessibility safety net for the ~70 admin screens: (1) horizontally scrolling tables must be
   // keyboard-reachable (WCAG 2.1.1) and (2) a <label> written without htmlFor next to its control is
@@ -314,7 +316,7 @@ export function AdminLayout({ children, title, subtitle, actions }: AdminLayoutP
           </button>
 
           <Link href="/admin" className="lg:hidden font-display font-bold text-base text-navy-950 truncate">
-            Topline Admin
+            {brand.wordmark} Admin
           </Link>
 
           <button
@@ -402,10 +404,10 @@ export function AdminLayout({ children, title, subtitle, actions }: AdminLayoutP
         >
           <div className="flex items-center justify-between gap-2 px-4 py-3 border-b border-gray-200 shrink-0">
             <Link href="/admin" className="flex items-center gap-3 min-w-0">
-              <img src="/topline-brand-mark.svg" alt="" width={36} height={36} className="h-9 w-9 rounded-lg" />
+              <img src={brand.logoUrl} alt="" width={36} height={36} className="h-9 w-9 rounded-lg object-contain" />
               <span className="min-w-0">
-                <span className="block font-display font-bold text-navy-900 leading-tight text-sm truncate">Topline Admin</span>
-                <span className="block text-[11px] text-gray-600 font-medium truncate">Topline Business Portal</span>
+                <span className="block font-display font-bold text-navy-900 leading-tight text-sm truncate">{brand.wordmark} Admin</span>
+                <span className="block text-[11px] text-gray-600 font-medium truncate">{brand.wordmark} Business Portal</span>
               </span>
             </Link>
             <button

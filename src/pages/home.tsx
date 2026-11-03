@@ -9,6 +9,7 @@ import { formatKES, telHref } from '@/lib/utils';
 import { ServiceToneBar } from '@/components/ui/ServiceToneBar';
 import { getServicePlaceholder, getProductPlaceholder, withFallback, ensureRealImage, getRandomRealImage } from '@/lib/placeholders';
 import { useCart } from '@/hooks/use-cart';
+import { useBrand } from '@/hooks/use-brand';
 import { useImagePreloader } from '@/hooks/use-image-preloader';
 import type { Product } from '@/lib/types';
 import { ProductVariantSelector } from '@/components/ProductVariantSelector';
@@ -39,27 +40,28 @@ interface HeroSlideData {
 
 export default function Home() {
   useSeoMeta('home');
-  const { slides } = useHeroSlides();
+  const { slides, loading: slidesLoading } = useHeroSlides();
   const { sections } = useHomepageSections();
   const getSection = (type: string) => sections.find(s => s.section_type === type);
   const productsSection = getSection('products');
   const productsLimit = Number(productsSection?.content?.limit) || 6;
-  const { products: featuredProducts, error: featuredProductsError } = useProducts({ featured: true, limit: productsLimit });
+  const { products: featuredProducts, loading: featuredLoading, error: featuredProductsError } = useProducts({ featured: true, limit: productsLimit });
   // Keep the homepage useful when the catalogue is populated but no products are marked featured.
   // The query still respects active/public product rules; it does not create demo products.
-  const { products: catalogueProducts, error: catalogueProductsError } = useProducts({ limit: productsLimit });
+  const { products: catalogueProducts, loading: catalogueLoading, error: catalogueProductsError } = useProducts({ limit: productsLimit });
   const products = featuredProducts.length > 0 ? featuredProducts : catalogueProducts;
   const productsLoadError = featuredProductsError && catalogueProductsError ? featuredProductsError : null;
   const { projects } = useProjects({ activeOnly: true });
   const { testimonials } = useTestimonials();
   const { partners } = usePartners();
   const { promotions } = usePromotions('top');
-  const { services, error: servicesLoadError } = useServices();
+  const { services, loading: servicesLoading, error: servicesLoadError } = useServices();
   const { settings } = useSiteSettings();
   const phone = settings.contact?.phone || '';
   const { theme } = useThemeSettings();
   const layoutStyle = theme?.layout_style || 'classic';
   const { addToCart } = useCart();
+  const brand = useBrand();
   const [, setLocation] = useLocation();
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isSliderPaused, setIsSliderPaused] = useState(false);
@@ -117,7 +119,11 @@ export default function Home() {
   // Build one hero carousel from configured CMS slides plus real catalogue records.
   // Catalogue entries are capped so the hero remains curated and useful rather than
   // becoming an endless list. Existing detail routes remain the source of truth.
+  // Until the data that decides the first slide has arrived, render a calm branded placeholder instead of a built-in
+  // stock photo. Drawing a default image first and then swapping to the real slide is what produced the blank flash.
+  const heroPending = slidesLoading || (slides.length === 0 && (featuredLoading || catalogueLoading || servicesLoading));
   const allSlides: HeroSlideData[] = useMemo(() => {
+    if (heroPending) return [];
     const configuredSlides: HeroSlideData[] = slides.map((slide, idx) => ({
       id: slide.id,
       title: slide.title,
@@ -164,7 +170,7 @@ export default function Home() {
     const defaultSlide: HeroSlideData = {
       id: 'topline-homepage-default',
       title: 'Floors and waterproofing built to perform.',
-      subtitle: 'FLOORING & WATERPROOFING CONTRACTOR',
+      subtitle: brand.descriptor,
       description: 'Technical flooring systems, roof and water-tank waterproofing, and installation support across Kenya.',
       image_url: getRandomRealImage('flooring', 0),
       button_text: 'Discuss Your Project',
@@ -175,7 +181,7 @@ export default function Home() {
     if (configuredSlides.length > 0) return configuredSlides;
     const mediaBackedCatalogueSlides = [...productSlides, ...serviceSlides];
     return mediaBackedCatalogueSlides.length > 0 ? mediaBackedCatalogueSlides : [defaultSlide];
-  }, [slides, products, services]);
+  }, [heroPending, slides, products, services, brand.descriptor]);
 
   // Preload hero slide, service, product, project, and partner images for smooth transitions
   useImagePreloader(
@@ -190,6 +196,13 @@ export default function Home() {
       return urls;
     }, [allSlides, services, products, projects, partners, aboutContent?.image_url])
   );
+
+  useEffect(() => {
+    // Remembered so index.html can start downloading the first hero image before the app has booted next time.
+    const first = allSlides[0]?.image_url;
+    if (!first) return;
+    try { localStorage.setItem('topline:hero-image', first); } catch { /* storage is optional */ }
+  }, [allSlides]);
 
   useEffect(() => {
     if (currentSlide >= allSlides.length) setCurrentSlide(0);
@@ -267,6 +280,19 @@ export default function Home() {
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
       >
+        {heroPending && (
+          <div className="absolute inset-0 z-20 flex items-center" aria-hidden="true">
+            <div className="max-w-7xl mx-auto px-5 sm:px-8 lg:px-10 w-full">
+              <div className="max-w-2xl space-y-4 py-10 animate-pulse">
+                <div className="h-5 w-40 rounded-full bg-white/15" />
+                <div className="h-9 w-4/5 rounded-lg bg-white/15" />
+                <div className="h-9 w-3/5 rounded-lg bg-white/15" />
+                <div className="h-4 w-2/3 rounded bg-white/10" />
+                <div className="h-11 w-44 rounded-lg bg-[#B4E33D]/30" />
+              </div>
+            </div>
+          </div>
+        )}
         {allSlides.map((slide, index) => (
           <div
             key={slide.id}
@@ -619,8 +645,10 @@ export default function Home() {
                   <div className="p-4 pt-0 border-t border-gray-100/80 mt-2 flex items-center justify-between">
                     <p className="font-bold text-navy-950 text-base">{formatKES(getProductUnitPrice(product, selectedVariant))}</p>
                     <button
+                      type="button"
                       onClick={() => handleAddToCart(product, selectedVariant?.id)}
-                      className="text-xs bg-primary-500 hover:bg-primary-600 text-white px-3 py-1.5 rounded-lg font-semibold transition-all shadow-2xs hover:shadow-sm"
+                      aria-label={isProductPurchasable(product, selectedVariant) ? `Add ${product.name} to cart` : `Request availability for ${product.name}`}
+                      className="min-h-10 text-xs bg-primary-500 hover:bg-primary-600 text-white px-3.5 py-2 rounded-lg font-semibold transition-all shadow-2xs hover:shadow-sm"
                     >
                       {isProductPurchasable(product, selectedVariant) ? addToCartText : 'Request Availability'}
                     </button>
@@ -643,7 +671,7 @@ export default function Home() {
         <section className={`${partnersSection?.padding || 'py-12 lg:py-16'} bg-gray-50/50 border-y border-gray-200/60`} style={sectionStyle('partners')}>
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <h2 className="text-center font-display text-xs lg:text-sm font-bold text-primary-600 uppercase tracking-[0.2em] mb-8">
-              {partnersSection?.title || 'Our Certified Partners & Manufacturers'}
+              {partnersSection?.title || 'Our Partners & Manufacturers'}
             </h2>
             <div className="flex flex-wrap justify-center items-center gap-4 sm:gap-6 lg:gap-8">
               {partners.slice(0, partnersMaxItems).map((partner) => (
@@ -719,7 +747,7 @@ export default function Home() {
             {ctaSection?.title || 'Ready to Elevate Your Commercial Space?'}
           </h2>
           <p className="text-navy-100/90 mb-8 max-w-2xl mx-auto text-base sm:text-lg leading-relaxed">
-            {ctaSection?.subtitle || 'Get in touch with our certified engineers for an on-site survey and detailed project quotation.'}
+            {ctaSection?.subtitle || 'Get in touch with our team to arrange an on-site survey and a detailed project quotation.'}
           </p>
           <div className="flex flex-col sm:flex-row justify-center items-center gap-4">
             <Link href={ctaContent.cta_link || '/quotation'} className="w-full sm:w-auto bg-primary-500 hover:bg-primary-600 text-white px-8 py-3.5 rounded-xl font-bold text-sm shadow-lg shadow-primary-500/25 transition-all">

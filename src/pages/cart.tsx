@@ -1,5 +1,5 @@
 import { checkoutFingerprint, resolveCheckoutKey, CHECKOUT_FINGERPRINT_STORAGE } from '@/lib/checkout-key';
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { Link, useLocation } from 'wouter';
 import { Trash2, ShoppingCart, ArrowLeft, Minus, Plus, Tag, X, Truck } from 'lucide-react';
 import { CustomerLayout } from '@/components/layout/CustomerLayout';
@@ -14,6 +14,9 @@ import { useSeoMeta } from '@/hooks/use-seo';
 import { CustomerPaymentMethods } from '@/components/customer/CustomerPaymentMethods';
 import { initiateCustomerPayment } from '@/lib/customer-payments';
 import { navigateToPaymentUrl } from '@/lib/safe-redirect';
+import { supabase } from '@/lib/supabase';
+import { isProductPurchasable, getProductAvailableStock } from '@/lib/product-commerce';
+import type { CartItem, Product } from '@/lib/types';
 
 interface FormData {
   name: string;
@@ -40,7 +43,57 @@ interface AppliedCoupon {
 
 export default function Cart() {
   useSeoMeta('cart', null, { breadcrumbs: [{ label: 'Materials Shop', href: '/shop' }, { label: 'Shopping Cart' }], noIndex: true });
-  const { items, removeFromCart, updateQuantity, clearCart, totalPrice } = useCart();
+  const { items, removeFromCart, updateQuantity, clearCart, replaceItems, totalPrice } = useCart();
+  const [cartNotices, setCartNotices] = useState<string[]>([]);
+  const reconciled = useRef(false);
+
+  // A saved cart is a snapshot. Before the shopper pays, refresh price, stock and availability from the
+  // live catalogue so the totals shown here match what the server will charge, and nothing that has since
+  // sold out or been withdrawn reaches checkout.
+  useEffect(() => {
+    if (reconciled.current || items.length === 0) return;
+    reconciled.current = true;
+    const ids = Array.from(new Set(items.map((item) => item.product.id)));
+    void (async () => {
+      try {
+        const { data, error } = await supabase
+          .from('products')
+          .select('*, category:categories(*), brand:product_brands(*), variants:product_variants(*)')
+          .in('id', ids)
+          .eq('is_active', true);
+        if (error) throw error;
+        const live = new Map(((data as Product[] | null) ?? []).map((product) => [product.id, product]));
+        // An empty answer for a non-empty cart is more likely a transient read problem than a catalogue wipe-out.
+        // Only act when the catalogue answered with at least one of the products in this cart.
+        if (live.size === 0) return;
+        const notices: string[] = [];
+        const next: CartItem[] = [];
+        for (const item of items) {
+          const product = live.get(item.product.id);
+          const variant = item.variant ? product?.variants?.find((candidate) => candidate.id === item.variant?.id) : undefined;
+          if (!product || (item.variant && !variant) || !isProductPurchasable(product, variant)) {
+            notices.push(`${item.product.name}${item.variant ? ` (${item.variant.variant_name})` : ''} is no longer available and was removed from your cart.`);
+            continue;
+          }
+          const available = getProductAvailableStock(product, variant);
+          const quantity = Math.min(item.quantity, Math.max(1, Math.floor(available)));
+          if (quantity < item.quantity) notices.push(`Only ${quantity} of ${product.name} ${quantity === 1 ? 'is' : 'are'} in stock, so the quantity was adjusted.`);
+          next.push({ product, variant, quantity });
+        }
+        const changed = next.length !== items.length || next.some((item, index) => {
+          const old = items[index];
+          return !old || old.quantity !== item.quantity || old.product.price !== item.product.price || old.product.sale_price !== item.product.sale_price || old.variant?.price_adjustment !== item.variant?.price_adjustment || old.variant?.sale_price !== item.variant?.sale_price;
+        });
+        if (changed) {
+          if (!notices.length) notices.push('Prices in your cart were refreshed to match the current catalogue.');
+          replaceItems(next);
+          setCartNotices(notices);
+        }
+      } catch {
+        // Offline or catalogue unreachable: keep the saved cart; the server still validates price and stock at checkout.
+      }
+    })();
+  }, [items, replaceItems]);
   const { zones } = useDeliveryZones();
   const [, setLocation] = useLocation();
   const { toast } = useToast();
@@ -288,6 +341,11 @@ export default function Cart() {
                 Your Cart ({items.length} {items.length === 1 ? 'item' : 'items'})
               </h1>
 
+              {cartNotices.length > 0 && (
+                <div role="status" className="mb-4 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
+                  <ul className="list-disc space-y-1 pl-5">{cartNotices.map((notice) => <li key={notice}>{notice}</li>)}</ul>
+                </div>
+              )}
               <div className="space-y-4">
                 {items.map((item) => (
                   <div key={`${item.product.id}:${item.variant?.id || 'base'}`} className="bg-white rounded-xl p-4 sm:p-6 border border-gray-200">
@@ -326,8 +384,9 @@ export default function Cart() {
                             </span>
                             <button
                               onClick={() => updateQuantity(item.product.id, item.quantity + 1, item.variant)}
+                              disabled={item.quantity >= getProductAvailableStock(item.product, item.variant)}
                               type="button" aria-label={`Increase ${item.product.name} quantity`}
-                              className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+                              className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40"
                             >
                               <Plus className="w-4 h-4" />
                             </button>

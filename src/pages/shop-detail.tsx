@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Link, useLocation } from 'wouter';
+import { CompareToggle } from '@/components/comparison/CompareToggle';
 import { Plus, Minus, ShoppingCart, Check, ShieldCheck, Truck, FileText, Sparkles, ChevronRight } from 'lucide-react';
 import type { ProductVariant } from '@/lib/types';
 import { CustomerLayout } from '@/components/layout/CustomerLayout';
@@ -289,6 +290,8 @@ export default function ShopDetail() {
                 </div>
               </div>
 
+              <div><CompareToggle productId={product.id} productName={product.name} /></div>
+
               {/* Purchase Actions */}
               {!isProductPurchasable(product, selectedVariant) && (
                 <div role="status" className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
@@ -345,7 +348,7 @@ export default function ShopDetail() {
                   </div>
 
                   <Link
-                    href="/quotation"
+                    href={`/quotation?product=${encodeURIComponent(product.name)}&sku=${encodeURIComponent(product.sku || '')}`}
                     className="block text-center w-full py-2.5 px-4 rounded-xl border border-gray-200 text-xs font-bold text-navy-800 hover:bg-gray-50 transition-colors"
                   >
                     Need Bulk Contractor Pricing or Bill of Quantities Quote?

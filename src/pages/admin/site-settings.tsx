@@ -6,6 +6,8 @@ import { supabase } from '@/lib/supabase';
 import { useToast } from '@/hooks/use-toast';
 import { useCMS } from '@/context/CMSContext';
 import { ImageUpload } from '@/components/ui/image-upload';
+import { BrandLockup } from '@/components/layout/BrandLockup';
+import { DEFAULT_BRAND, resolveBrand } from '@/lib/brand';
 
 export default function AdminSiteSettings() {
   const [loading, setLoading] = useState(true);
@@ -15,9 +17,11 @@ export default function AdminSiteSettings() {
   const [activeTab, setActiveTab] = useState('general');
 
   const [settings, setSettings] = useState({
-    site_info: { name: '', tagline: '', description: '', founded: 2014 },
-    logo: { url: '', width: 200, height: 60 },
-    favicon: { url: '' },
+    site_info: {
+      name: '', tagline: '', description: '', founded: 2014,
+      // Brand lockup. Everything here is shown across the public site, admin, footer and browser tab.
+      logo_url: '', favicon_url: '', brand_wordmark: '', brand_descriptor: '', brand_promise: undefined as string | undefined, show_brand_text: true,
+    },
     contact: { email: '', phone: '', phone_alt: '', whatsapp: '', address: '' },
     business_hours: { weekdays: { open: '08:00', close: '17:00' }, saturday: { open: '09:00', close: '13:00' }, sunday: 'Closed' },
     social_links: { facebook: '', instagram: '', linkedin: '', twitter: '' },
@@ -33,6 +37,17 @@ export default function AdminSiteSettings() {
     const { data } = await supabase.from('site_settings').select('*');
     if (data) {
       const newSettings = { ...settings };
+      // Older versions saved the logo and favicon under their own keys, which the public site never read.
+      // Carry those values over so nothing already uploaded is lost.
+      let legacyLogo = '';
+      let legacyFavicon = '';
+      const parseValue = (raw: unknown): Record<string, unknown> => {
+        try { const v = typeof raw === 'object' ? raw : JSON.parse(String(raw || '{}')); return (v && typeof v === 'object' ? v : {}) as Record<string, unknown>; } catch { return {}; }
+      };
+      data.forEach((s) => {
+        if (s.setting_key === 'logo') legacyLogo = String(parseValue(s.setting_value).url ?? '');
+        if (s.setting_key === 'favicon') legacyFavicon = String(parseValue(s.setting_value).url ?? '');
+      });
       data.forEach((s) => {
         if (newSettings[s.setting_key as keyof typeof newSettings]) {
           const settingKey = s.setting_key as keyof typeof newSettings;
@@ -41,6 +56,9 @@ export default function AdminSiteSettings() {
           (newSettings as unknown as Record<string, unknown>)[settingKey] = parsedValue;
         }
       });
+      newSettings.site_info = { ...settings.site_info, ...newSettings.site_info };
+      if (!newSettings.site_info.logo_url && legacyLogo) newSettings.site_info.logo_url = legacyLogo;
+      if (!newSettings.site_info.favicon_url && legacyFavicon) newSettings.site_info.favicon_url = legacyFavicon;
       setSettings(newSettings);
     }
     setLoading(false);
@@ -105,7 +123,8 @@ export default function AdminSiteSettings() {
             <h2 className="font-semibold text-gray-900">General Information</h2>
             <div className="grid gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Site Name</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Business name</label>
+                <p className="mb-1 text-xs text-gray-500">The full name, used in page titles, the footer copyright, search results and emails.</p>
                 <input
                   type="text"
                   value={settings.site_info.name}
@@ -115,7 +134,8 @@ export default function AdminSiteSettings() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Tagline</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Search-result tagline</label>
+                <p className="mb-1 text-xs text-gray-500">Shown after the business name in browser tabs and search results. The line under the logo is set below.</p>
                 <input
                   type="text"
                   value={settings.site_info.tagline}
@@ -132,6 +152,31 @@ export default function AdminSiteSettings() {
                   className="input min-h-[80px]"
                   placeholder="Company description..."
                 />
+              </div>
+              <div className="rounded-xl border border-gray-200 bg-gray-50 p-4 space-y-4">
+                <div>
+                  <h3 className="font-semibold text-gray-900">Logo text and descriptor</h3>
+                  <p className="text-xs text-gray-500">Shown next to the logo in the website header, footer and the admin sidebar. Changes apply everywhere once saved.</p>
+                </div>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="brand-wordmark">Brand name (large text)</label>
+                    <input id="brand-wordmark" type="text" maxLength={30} value={settings.site_info.brand_wordmark} onChange={(e) => updateSetting('site_info', { ...settings.site_info, brand_wordmark: e.target.value })} className="input" placeholder={DEFAULT_BRAND.wordmark} />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="brand-descriptor">Descriptor (line under the name)</label>
+                    <input id="brand-descriptor" type="text" maxLength={40} value={settings.site_info.brand_descriptor} onChange={(e) => updateSetting('site_info', { ...settings.site_info, brand_descriptor: e.target.value })} className="input" placeholder={DEFAULT_BRAND.descriptor} />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="brand-promise">Slogan (wider screens and footer)</label>
+                  <input id="brand-promise" type="text" maxLength={80} value={settings.site_info.brand_promise ?? DEFAULT_BRAND.promise} onChange={(e) => updateSetting('site_info', { ...settings.site_info, brand_promise: e.target.value })} className="input" />
+                  <p className="mt-1 text-xs text-gray-500">Leave it empty to hide the slogan.</p>
+                </div>
+                <div>
+                  <p className="mb-2 text-xs font-medium uppercase tracking-wide text-gray-500">Preview</p>
+                  <div className="flex items-center gap-3 rounded-lg border border-gray-200 bg-white p-3"><BrandLockup variant="header" brand={resolveBrand(settings.site_info)} /></div>
+                </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
@@ -358,8 +403,8 @@ export default function AdminSiteSettings() {
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Header Logo</label>
                   <ImageUpload
-                    value={settings.logo.url}
-                    onChange={(url) => updateSetting('logo', { ...settings.logo, url })}
+                    value={settings.site_info.logo_url}
+                    onChange={(url) => updateSetting('site_info', { ...settings.site_info, logo_url: url })}
                     folder="branding"
                     label="Header Logo"
                   />
@@ -367,13 +412,19 @@ export default function AdminSiteSettings() {
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Browser Favicon</label>
                   <ImageUpload
-                    value={settings.favicon.url}
-                    onChange={(url) => updateSetting('favicon', { ...settings.favicon, url })}
+                    value={settings.site_info.favicon_url}
+                    onChange={(url) => updateSetting('site_info', { ...settings.site_info, favicon_url: url })}
                     folder="branding"
                     label="Favicon Icon"
                   />
                 </div>
               </div>
+              <label className="flex items-start gap-2 text-sm text-gray-700">
+                <input type="checkbox" className="mt-1" checked={settings.site_info.show_brand_text !== false} onChange={(e) => updateSetting('site_info', { ...settings.site_info, show_brand_text: e.target.checked })} />
+                <span>Show the brand name and descriptor next to the logo<span className="block text-xs text-gray-500">Turn this off if your uploaded logo already contains the business name.</span></span>
+              </label>
+              <p className="text-xs text-gray-500">Square or wide PNG or WebP with a transparent background works best. Leave empty to use the built-in Topline mark. The favicon is the small icon in the browser tab. The installed phone-app icon is separate: see docs/brand-and-site-identity.md.</p>
+              <div className="flex items-center gap-3 rounded-lg border border-gray-200 bg-gray-50 p-3"><BrandLockup variant="header" brand={resolveBrand(settings.site_info)} /></div>
             </div>
             <div className="bg-white rounded-xl border border-gray-200 p-6 space-y-4">
               <h2 className="font-semibold text-gray-900">Footer Settings</h2>

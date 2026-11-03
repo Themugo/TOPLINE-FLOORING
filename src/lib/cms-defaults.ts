@@ -321,7 +321,7 @@ export const DEFAULT_CMS_STORE: CMSContentStore = {
         ],
       },
     ],
-    copyright: '© 2026 Topline Flooring and Waterproofing. All rights reserved.',
+    copyright: '', // empty = built automatically from the business name and the current year
     legal_disclaimer: 'Content and project imagery can be edited directly via the CMS Admin Panel.',
     newsletter: {
       title: 'Stay Informed',

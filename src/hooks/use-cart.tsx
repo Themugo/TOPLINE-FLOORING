@@ -10,7 +10,8 @@ type CartAction =
   | { type: 'REMOVE_ITEM'; productId: string; variantId?: string }
   | { type: 'UPDATE_QUANTITY'; productId: string; quantity: number; variantId?: string }
   | { type: 'CLEAR_CART' }
-  | { type: 'LOAD_CART'; items: CartItem[] };
+  | { type: 'LOAD_CART'; items: CartItem[] }
+  | { type: 'REFRESH_ITEMS'; items: CartItem[] };
 
 interface CartContextValue {
   items: CartItem[];
@@ -21,11 +22,18 @@ interface CartContextValue {
   removeFromCart: (productId: string, variant?: ProductVariant) => void;
   updateQuantity: (productId: string, quantity: number, variant?: ProductVariant) => void;
   clearCart: () => void;
+  replaceItems: (items: CartItem[]) => void;
   totalPrice: number;
   totalItems: number;
 }
 
 const CartContext = createContext<CartContextValue | null>(null);
+
+/** Highest quantity the shopper can hold for a line, from the stock the catalogue last reported. */
+export function maxQuantityFor(product: Product, variant?: ProductVariant): number {
+  const stock = variant ? variant.stock_quantity : product.stock_quantity;
+  return Number.isFinite(stock) && stock > 0 ? Math.floor(stock) : Number.POSITIVE_INFINITY;
+}
 
 function cartReducer(state: CartState, action: CartAction): CartState {
   switch (action.type) {
@@ -39,14 +47,14 @@ function cartReducer(state: CartState, action: CartAction): CartState {
           ...state,
           items: state.items.map((item) =>
             item.product.id === action.product.id && item.variant?.id === action.variant?.id
-              ? { ...item, quantity: item.quantity + qty }
+              ? { ...item, quantity: Math.min(item.quantity + qty, maxQuantityFor(action.product, action.variant)) }
               : item
           ),
         };
       }
       return {
         ...state,
-        items: [...state.items, { product: action.product, quantity: qty, variant: action.variant }],
+        items: [...state.items, { product: action.product, quantity: Math.min(qty, maxQuantityFor(action.product, action.variant)), variant: action.variant }],
       };
     }
     case 'REMOVE_ITEM':
@@ -67,12 +75,14 @@ function cartReducer(state: CartState, action: CartAction): CartState {
         ...state,
         items: state.items.map((item) =>
           item.product.id === action.productId && item.variant?.id === action.variantId
-            ? { ...item, quantity: action.quantity }
+            ? { ...item, quantity: Math.min(action.quantity, maxQuantityFor(item.product, item.variant)) }
             : item
         ),
       };
     case 'CLEAR_CART':
       return { ...state, items: [] };
+    case 'REFRESH_ITEMS':
+      return { ...state, items: action.items };
     case 'LOAD_CART':
       return { ...state, items: action.items };
     default:
@@ -134,6 +144,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
     dispatch({ type: 'UPDATE_QUANTITY', productId, quantity, variantId: variant?.id });
   };
 
+  const replaceItems = (items: CartItem[]) => {
+    dispatch({ type: 'REFRESH_ITEMS', items });
+  };
+
   const clearCart = () => {
     dispatch({ type: 'CLEAR_CART' });
   };
@@ -161,6 +175,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
         removeFromCart: removeItem,
         updateQuantity,
         clearCart,
+        replaceItems,
         totalPrice,
         totalItems,
       }}

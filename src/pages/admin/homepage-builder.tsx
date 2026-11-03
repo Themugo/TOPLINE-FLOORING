@@ -25,7 +25,7 @@ const SECTION_DEFAULTS: Record<string, Partial<HomepageSection>> = {
   about: { title: 'Who We Are', subtitle: '', content: { paragraph_1: '', paragraph_2: '', image_url: '', stats: [], badge_text: 'About Us' } },
   products: { title: 'Materials Shop', subtitle: 'Premium materials from trusted brands', content: { limit: 6, badge_text: 'Materials Shop', view_all_text: 'View Full Catalog', add_to_cart_text: 'Add to Cart' } },
   testimonials: { title: 'What Clients Say', subtitle: '', content: { max_items: 4, badge_text: 'Client Feedback' } },
-  partners: { title: 'Our Certified Partners', subtitle: '', content: { max_items: 10 } },
+  partners: { title: 'Our Partners', subtitle: '', content: { max_items: 10 } },
   cta: { title: 'Ready to Start Your Project?', subtitle: 'Get in touch with our team for a free consultation and quotation.', content: { cta_text: 'Get Free Quote', cta_link: '/quotation', phone_button_text: 'Call Technical Team' } },
 };
 

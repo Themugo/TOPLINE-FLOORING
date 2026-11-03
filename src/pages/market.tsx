@@ -47,7 +47,7 @@ export default function Market() {
       {/* Hero Section */}
       <section className="bg-gradient-to-br from-primary/90 to-primary py-16 lg:py-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h1 className="font-display text-3xl lg:text-4xl font-bold text-white mb-4">Our Certified Partners</h1>
+          <h1 className="font-display text-3xl lg:text-4xl font-bold text-white mb-4">Our Partners</h1>
           <p className="text-primary-foreground/80 text-lg max-w-2xl mx-auto">
             We work with leading manufacturers and suppliers to deliver the highest quality flooring and waterproofing solutions.
           </p>

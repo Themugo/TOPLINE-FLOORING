@@ -1,12 +1,13 @@
 import { PwaPrompts } from '@/components/pwa/PwaPrompts';
 import { CMSProvider, useCMS } from '@/context/CMSContext';
 import { CartProvider } from '@/hooks/use-cart';
+import { BrandHead } from '@/components/layout/BrandHead';
 import { AdminAuthGuard, AdminPublicRoute } from '@/components/admin/AdminGuard';
 import { ToastContainer } from '@/components/ui/toast';
 import { ThemeApplier } from '@/components/ThemeApplier';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { useLocation } from 'wouter';
-import { lazy, Suspense, useEffect } from 'react';
+import { lazy, Suspense, useEffect, useRef } from 'react';
 
 // Pages
 import Home from '@/pages/home';
@@ -132,9 +133,34 @@ function Router() {
   // Treat /shop/ and /shop alike so typed or externally linked URLs with a trailing slash do not 404.
   const location = rawLocation.length > 1 ? (rawLocation.replace(/\/+$/, '') || '/') : rawLocation;
 
-  // Scroll to top on route change
+  // Route change: honour #anchors, otherwise scroll to top, then move focus to the
+  // main landmark and announce the new page to assistive tech.
+  const firstRoute = useRef(true);
   useEffect(() => {
-    window.scrollTo(0, 0);
+    const hash = window.location.hash;
+    let target: HTMLElement | null = null;
+    if (hash.length > 1) {
+      try { target = document.getElementById(decodeURIComponent(hash.slice(1))); } catch { target = null; }
+    }
+    if (target) target.scrollIntoView();
+    else window.scrollTo(0, 0);
+    if (firstRoute.current) { firstRoute.current = false; return; }
+    const id = window.setTimeout(() => {
+      const main = document.getElementById('main-content');
+      if (main && !target) main.focus({ preventScroll: true });
+      const heading = document.querySelector('h1')?.textContent?.trim();
+      let region = document.getElementById('route-announcer');
+      if (!region) {
+        region = document.createElement('div');
+        region.id = 'route-announcer';
+        region.setAttribute('aria-live', 'polite');
+        region.setAttribute('role', 'status');
+        region.className = 'sr-only';
+        document.body.appendChild(region);
+      }
+      region.textContent = heading || document.title;
+    }, 150);
+    return () => window.clearTimeout(id);
   }, [location]);
 
   // Admin login (public route)
@@ -430,6 +456,7 @@ function AppContent() {
   return (
     <ErrorBoundary>
       <ThemeApplier />
+      <BrandHead />
       <Router />
       <PwaPrompts />
       <ToastContainer />

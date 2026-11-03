@@ -23,7 +23,7 @@ check('Cart coupon validation remains server-backed and invalidates after subtot
 check('Cart payment initiation retains idempotency and return route', cart.includes("checkout-payment:${checkoutKey}") && cart.includes('/payment-return'));
 check('Quotation submission preserves canonical quotation RPC', quote.includes('submitQuotationRequest(') && commerce.includes("supabase.rpc('submit_quotation_request'"));
 check('Quotation validates positive area and project location', quote.includes('area <= 0') && quote.includes("if (!form.location.trim())"));
-check('Quotation budget clearly labels itself indicative and avoids unsupported guarantees', quote.includes('Indicative Budget Range (KES)') && !quote.includes('Guaranteed 24h Turnaround') && !quote.includes('within 24h'));
+check('Quotation shows no invented prices and avoids unsupported guarantees', !quote.includes('Indicative Budget Range') && !/ratePerSqm/.test(quote) && quote.includes('Pricing is prepared by our team') && !quote.includes('Guaranteed 24h Turnaround') && !quote.includes('within 24h'));
 check('Forms expose customer-facing accessible labels and status feedback', cart.includes('aria-label="Delivery area"') && quote.includes('aria-label="Total project area in square metres"') && portal.includes('aria-live="polite"'));
 
 let failed = 0;

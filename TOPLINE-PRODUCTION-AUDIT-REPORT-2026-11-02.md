@@ -177,3 +177,71 @@ Real iOS/Android install and launch, iOS standalone quirks, keyboard/screen-read
 **Add to cart (public site).** Reproduced in a browser: the click works when a product has stock; products with zero stock (the default for every new product, since the admin form could not record stock) are sent to Request Availability, and the home page button was simply disabled. Fixes: admin product form now records opening / received stock through the audited inventory RPC; the home button routes to a quotation instead of being dead.
 
 **Gates.** tsc clean, eslint clean, build OK, vitest 238/238, verify-all 138/138, SQL regressions pass on a scratch database. Not verified here: live Supabase, Brevo domain/API/webhook, real mailbox delivery, edge function deployment.
+
+## Pass 7 - stock visibility, first paint, icon system
+
+**Product availability.** Products cannot be bought until a stock quantity is recorded (checkout and payment confirmation enforce stock server-side by design). Inventory now has a per-product "Set counted stock" entry (audited movement); status shows "No stock recorded" instead of "Low Stock". A read-only audit query (`TOPLINE-product-availability-audit.sql`) reports every product's real state. Live data was not readable from this session.
+
+**First-frame flash.** Root cause: the hero drew a built-in stock photo while CMS slides/products loaded, then swapped to the real slide (not yet downloaded). Fix: hero shows a branded placeholder until its data has loaded; no stock default is drawn first; index.html paints a branded splash instead of white; the last hero image URL is remembered and preloaded by `/boot.js` (external, CSP-safe) on repeat visits. Verified in a mobile browser with a 700 ms delayed API: placeholder, then the real slide, never a stock image.
+
+**Icons.** Services (spanner) -> layered-surface icon; Shop -> materials box (no longer duplicates the cart); WhatsApp -> real brand mark (new `WhatsAppIcon`) in the mobile bar, chat widget and track-order; Get quote / Contact / Track order / Portfolio use quotation, headset, parcel-search and building icons across the mobile bar, menu, top strip and pages. Footer still uses the generic Twitter glyph for X (not changed). Gates: tsc, eslint, build, verify-all, vitest.
+
+## Pass 8 - navigation master polish
+
+Mobile menu rebuilt: clear hierarchy (Explore / Your orders / Talk to us), 15 px items with 40 px icon tiles, lime active bar, no duplicated entries (quotation, account and tracking each appear once), the quotation action pinned at the bottom so it never needs scrolling, contact details in one tidy card, staff sign-in demoted to a quiet link, short entrance animation (reduced-motion safe), focus moves into the menu on open and back to the toggle on close, desktop links expose aria-current. Bottom bar: larger labels, 52 px targets, active indicator. Verified in a mobile browser at 360, 390 and 768 px: no horizontal overflow, quotation action fully visible, Escape returns focus to the menu button.
+
+## Pass 9 - global brand editor
+
+Audit: the Site Settings logo and favicon were saved under separate `logo` / `favicon` keys the public site never read (editing them did nothing), and the header, footer, admin sidebar, admin sign-in and default hero text hardcoded the logo file, descriptor and slogan; the footer copyright repeated the business name suffix. Fix: one brand source (`src/lib/brand.ts`, `useBrand`, shared `BrandLockup`) stored in the `site_info` row; editor fields for business name, brand name, descriptor, slogan, logo, favicon and a show-text toggle with live preview; header, footer, admin sidebar and sign-in, browser-tab favicon, default hero label and copyright follow it; logos saved under the old keys are carried over. Verified in a browser with default, custom-logo and logo-only configurations. Documented limits (static manifest, installed-app icon, offline page, auth email templates) in `docs/brand-and-site-identity.md`.
+
+## Pass 10 — Navigation master audit (desktop + phone)
+
+Crawled 17 public routes at phone and desktop widths: no page errors, no horizontal overflow, no internal link resolving to 404.
+
+Fixed:
+- About, FAQs, Industries and Partners were orphaned; now in the desktop "More" menu, a mobile "Company" section and the footer.
+- Footer services all pointed to /services with placeholder names; they now link to each `/service/<slug>`, plus "View all services".
+- Admin menu locations (main/footer/mobile) did not match the public site ('header'); `main` is aliased to header, the mobile location now drives the phone menu, and the editor validates link formats.
+- Active state is one shared helper (`nav-active.ts`): Services stays lit on a service page, Shop on a product page, Track Order on confirmation.
+- External/new-tab links use `rel="noopener noreferrer"` and announce "(opens in a new tab)".
+- Tap targets: header search/phone buttons, footer links, social icons, breadcrumbs and 404 links enlarged (phone small-target count: up to ~25 per page before, 0–8 after).
+- Router: hash anchors, focus moved to main content and a polite route announcement after navigation; 404 offers Services/Shop/Quote/Contact.
+- Staff sign-in demoted to a quiet footer link.
+
+Gates: tsc, eslint, build clean; verify-all 141/141 (new verify-navigation-master 9/9); vitest 238/238. No database changes in this pass.
+
+Remaining (small): inline text links inside page copy and breadcrumb items are ~36px tall on phones; desktop inline links are mouse-targeted. Real-device checks still recommended.
+
+## Pass 11 — Services and shop workflows, end to end
+
+Method: code review of every step (services → service → quotation; shop → product → cart → checkout → payment → tracking), then a scripted browser run against a stateful mock backend at phone (390px) and desktop (1280px): 24/24 checks each, plus failure paths (rejected order, rate-limited quote, variant stock, tracking).
+
+Defects found and fixed:
+1. Quote handoffs were dead: product/SKU from the shop and service from service pages were dropped. The quotation now reads `?product`, `?sku`, `?service` and pre-fills (materials enquiry mode needs no area).
+2. The quotation's service list was hard-coded and its "Indicative Budget Range" used invented per-sqm rates. Options now come from the service catalogue; the estimator is replaced by a factual "your request at a glance" panel. Prices are quoted by the team after review.
+3. `/shop?category=<slug>` (product breadcrumbs, Industries page) was ignored; now applied. Seven Industries cards linked to a meaningless `?type=service`; they now go to /services.
+4. Cart stored a permanent snapshot of price and stock. Quantity is now clamped to known stock, the + button stops at stock, and on opening the cart prices/stock/availability are refreshed from the live catalogue with a notice for any change or removal. An empty catalogue answer is treated as inconclusive so a transient read problem cannot empty a cart.
+5. After payment the customer saw no order number. The payment-return page now shows the order number, lines, totals and a "Track this order" link (prefilled order number).
+
+Gates: tsc, eslint, build clean; verify-all 142/142 (new verify-services-shop-workflows 11/11; verify-customer-commerce-pages updated for the removed estimator); vitest 238/238. No database changes.
+
+Not covered: real gateway callbacks (M-Pesa/card), real inventory data, real devices. `/checkout-success` is no longer used by the live flow (harmless).
+
+## Pass 12 — Final sweep of remaining areas
+
+Scope: everything not yet exercised end to end — comparison, search, contact, FAQ, About/Industries/Partners/Portfolio, CMS pages, unknown-URL handling, home buttons, customer portal (signed in, populated and empty accounts, register/forgot/bad credentials), and all 138 admin views at desktop and phone widths. Scripted browser runs at 1280px and 390px against a mock backend.
+
+Defects found and fixed:
+1. **Product comparison was dead**: nothing added products to it, the bar was never mounted and state did not sync inside a tab. Added a Compare toggle on shop cards and product pages (max 4, aria-pressed, "comparison full" message), shared in-tab state, and a bar that sits clear of the mobile action bar and the floating WhatsApp button.
+2. **No search on desktop**: the header search existed only below the `lg` breakpoint. It now works at every width and Escape closes it.
+3. **Portal showed a raw JavaScript error** ("Cannot read properties of null…") and hid all orders when an account had no saved preferences. Ancillary data is now null-safe; load failures show a plain message instead of internal text.
+4. Portal phone/name/email fields now use proper input types and autocomplete (telephone keypad on phones).
+5. Contact: confirmation now stays on the page (not only a fleeting toast).
+6. Home product buttons name the product for screen readers and meet the 40px touch target.
+7. **Unverifiable claims removed from default copy**: "For over 10 years", "Over 10 Years of Excellence", "Certified Partners", "certified engineers". Defaults are neutral; state exact claims in the site editor if they are accurate.
+
+Admin: 138 views rendered at both widths, no page errors; two "no shell" flags were load timing and passed when re-run alone.
+
+Gates: tsc, eslint, build clean; verify-all 143/143 (new verify-final-sweep 9/9); vitest 238/238. No database changes.
+
+Not verifiable from here: live data, payment-gateway callbacks, email delivery, real devices. Product and service URLs enter the sitemap at build time, so redeploy after adding catalogue items.

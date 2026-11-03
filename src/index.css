@@ -391,9 +391,12 @@ button:disabled, input:disabled, textarea:disabled, select:disabled { cursor: no
   color: #0C2D57;
   isolation: isolate;
 }
-.topline-mobile-menu nav > a {
+.topline-mobile-menu a {
   -webkit-tap-highlight-color: rgba(180, 227, 61, .18);
 }
+@keyframes topline-menu-enter { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }
+.topline-menu-enter { animation: topline-menu-enter .18s ease-out; }
+@media (prefers-reduced-motion: reduce) { .topline-menu-enter { animation: none; } }
 @media (max-width: 639px) {
   .topline-mobile-menu nav {
     padding-bottom: max(1rem, env(safe-area-inset-bottom));

@@ -41,6 +41,32 @@ export default function AdminInventory() {
     setLoading(false);
   };
 
+  const [countDrafts, setCountDrafts] = useState<Record<string, string>>({});
+  const [countSavingId, setCountSavingId] = useState<string | null>(null);
+
+  // Quick "this is what is actually on the shelf" entry: sets the counted quantity through the same audited
+  // inventory movement as the adjustment form, so staff can bring many products up to date in one pass.
+  const saveCount = async (productId: string) => {
+    const counted = Math.floor(Number(countDrafts[productId]));
+    if (!Number.isFinite(counted) || counted <= 0) {
+      toast({ title: 'Enter the counted quantity (1 or more)', description: 'To write stock off to zero, use Record Stock Adjustment with Stock Out.', variant: 'destructive' });
+      return;
+    }
+    setCountSavingId(productId);
+    try {
+      const { error } = await supabase.rpc('adjust_product_stock', {
+        p_product_id: productId, p_quantity: counted, p_movement_type: 'adjustment',
+        p_notes: 'Stock count', p_reference_type: 'stock_count', p_reference_id: null, p_warehouse_id: null,
+      });
+      if (error) throw error;
+      toast({ title: 'Stock count saved' });
+      setCountDrafts((d) => Object.fromEntries(Object.entries(d).filter(([id]) => id !== productId)));
+      await fetchData();
+    } catch (err) {
+      toast({ title: 'Could not save count', description: err instanceof Error ? err.message : undefined, variant: 'destructive' });
+    } finally { setCountSavingId(null); }
+  };
+
   const handleAdjustment = async (e: React.FormEvent) => {
     e.preventDefault();
     const product = products.find(p => p.id === adjustmentForm.product_id);
@@ -157,6 +183,7 @@ export default function AdminInventory() {
                   <th className="text-left px-6 py-3 text-xs font-medium text-gray-600 uppercase">Stock</th>
                   <th className="text-left px-6 py-3 text-xs font-medium text-gray-600 uppercase">Threshold</th>
                   <th className="text-left px-6 py-3 text-xs font-medium text-gray-600 uppercase">Status</th>
+                  <th className="text-left px-6 py-3 text-xs font-medium text-gray-600 uppercase">Set counted stock</th>
                 </tr>
               </thead>
               <tbody className="divide-y">
@@ -169,9 +196,15 @@ export default function AdminInventory() {
                       <td className="px-6 py-4 text-navy-700">{product.stock_quantity}</td>
                       <td className="px-6 py-4 text-gray-700">{product.low_stock_threshold}</td>
                       <td className="px-6 py-4">
-                        <span className={`text-xs px-2 py-1 rounded font-medium ${isLow ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>
-                          {isLow ? 'Low Stock' : 'In Stock'}
+                        <span className={`text-xs px-2 py-1 rounded font-medium ${product.stock_quantity <= 0 ? 'bg-gray-200 text-gray-700' : isLow ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>
+                          {product.stock_quantity <= 0 ? 'No stock recorded' : isLow ? 'Low Stock' : 'In Stock'}
                         </span>
+                      </td>
+                      <td className="px-6 py-4">
+                        <form className="flex items-center gap-2" onSubmit={(e) => { e.preventDefault(); void saveCount(product.id); }}>
+                          <input type="number" min="1" step="1" inputMode="numeric" aria-label={`Counted stock for ${product.name}`} className="input w-24" value={countDrafts[product.id] ?? ''} onChange={(e) => setCountDrafts((d) => ({ ...d, [product.id]: e.target.value }))} placeholder={String(product.stock_quantity)} />
+                          <button type="submit" disabled={countSavingId === product.id || !(countDrafts[product.id] ?? '').trim()} className="btn-secondary px-3 py-1.5 text-sm">{countSavingId === product.id ? 'Saving…' : 'Save'}</button>
+                        </form>
                       </td>
                     </tr>
                   );

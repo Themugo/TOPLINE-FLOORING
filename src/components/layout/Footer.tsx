@@ -2,10 +2,12 @@ import { Link } from 'wouter';
 import { Phone, Mail, MapPin, Facebook, Instagram, Linkedin, Twitter } from 'lucide-react';
 import { useSiteSettings, useServices, useNavigationMenus } from '@/hooks/use-data';
 import { telHref } from '@/lib/utils';
+import { useBrand } from '@/hooks/use-brand';
+import { NavAnchor } from '@/components/layout/NavAnchor';
+import { BrandLockup } from '@/components/layout/BrandLockup';
 
 const DEFAULTS = {
   name: 'Topline Flooring & Waterproofing',
-  tagline: 'FLOORING & WATERPROOFING',
   description:
     'Professional flooring and waterproofing solutions for commercial, industrial, and residential projects.',
   phone: '',
@@ -20,7 +22,7 @@ export function Footer() {
   const { menus: footerMenus } = useNavigationMenus('footer');
 
   const siteName = settings.site_info?.name || DEFAULTS.name;
-  const tagline = DEFAULTS.tagline;
+  const brand = useBrand();
   const description = settings.site_info?.description || DEFAULTS.description;
 
   const phone = settings.contact?.phone || DEFAULTS.phone;
@@ -41,7 +43,7 @@ export function Footer() {
 
   const copyright =
     settings.footer?.copyright ||
-    `© ${currentYear} ${siteName} Flooring and Waterproofing | All Rights Reserved`;
+    `© ${currentYear} ${siteName}. All rights reserved.`;
   const showSocial = settings.footer?.show_social !== false;
 
   return (
@@ -51,77 +53,66 @@ export function Footer() {
           <div>
             <Link
               href="/"
-              aria-label="Topline Flooring and Waterproofing home"
+              aria-label={`${brand.siteName} home`}
               className="group flex items-center gap-2.5 sm:gap-3 mb-6 rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0E6B78] focus-visible:ring-offset-2"
             >
-              <img
-                src="/topline-brand-mark.svg"
-                alt=""
-                aria-hidden="true"
-                className="h-10 w-10 sm:h-12 sm:w-[3.35rem] shrink-0 object-contain"
-                width="72"
-                height="64"
-              />
-              <span className="min-w-0 flex flex-col justify-center">
-                <span className="block font-display text-[19px] sm:text-[21px] font-extrabold leading-[0.98] tracking-[-0.045em] text-[#0C2D57]">Topline</span>
-                <span className="mt-1 block whitespace-nowrap text-[7px] sm:text-[9px] font-extrabold leading-tight tracking-[0.005em] sm:tracking-[0.045em] text-[#0C2D57]">{tagline}</span>
-                <span className="mt-1 hidden sm:block text-[8px] font-semibold leading-tight tracking-[0.06em] text-slate-500">Professional solutions for lasting spaces</span>
-              </span>
+              <BrandLockup variant="footer" />
             </Link>
             <p className="text-sm text-navy-500 leading-relaxed">{description}</p>
           </div>
 
           <div>
-            <h3 className="font-semibold text-primary-600 mb-4">Quick Links</h3>
-            <nav className="space-y-3">
-              {(footerMenus.length > 0 ? footerMenus : [
-                { href: '/', label: 'Home' },
-                { href: '/services', label: 'Services' },
-                { href: '/shop', label: 'Materials Shop' },
-                { href: '/contact', label: 'Contact Us' },
-                { href: '/quotation', label: 'Get a Quote' },
-              ]).map((link) => (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className="block text-sm text-navy-600 hover:text-primary-600 transition-colors"
-                >
-                  {link.label}
-                </Link>
-              ))}
+            <h3 className="font-semibold text-primary-600 mb-3">Quick Links</h3>
+            <nav aria-label="Footer quick links">
+              <ul className="grid grid-cols-2 gap-x-4 md:grid-cols-1 lg:grid-cols-1 xl:grid-cols-2">
+                {(footerMenus.length > 0 ? footerMenus : [
+                  { href: '/', label: 'Home', open_in_new_tab: false },
+                  { href: '/about', label: 'About Us', open_in_new_tab: false },
+                  { href: '/services', label: 'Services', open_in_new_tab: false },
+                  { href: '/portfolio', label: 'Portfolio', open_in_new_tab: false },
+                  { href: '/shop', label: 'Materials Shop', open_in_new_tab: false },
+                  { href: '/industries', label: 'Industries', open_in_new_tab: false },
+                  { href: '/market', label: 'Partners', open_in_new_tab: false },
+                  { href: '/faq', label: 'FAQs', open_in_new_tab: false },
+                  { href: '/contact', label: 'Contact Us', open_in_new_tab: false },
+                  { href: '/quotation', label: 'Get a Quote', open_in_new_tab: false },
+                  { href: '/track-order', label: 'Track an Order', open_in_new_tab: false },
+                  { href: '/portal', label: 'My Account', open_in_new_tab: false },
+                ]).map((link) => (
+                  <li key={`${link.href}-${link.label}`}>
+                    <NavAnchor
+                      href={link.href}
+                      newTab={link.open_in_new_tab}
+                      className="flex min-h-10 items-center text-sm text-navy-600 transition-colors hover:text-primary-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0E6B78] rounded-md"
+                    >
+                      {link.label}
+                    </NavAnchor>
+                  </li>
+                ))}
+              </ul>
             </nav>
           </div>
 
           <div>
-            <h3 className="font-semibold text-primary-600 mb-4">Our Services</h3>
-            <nav className="space-y-3">
-              {services.length > 0 ? (
-                services.slice(0, 5).map((service) => (
-                  <Link
-                    key={service.id}
-                    href="/services"
-                    className="block text-sm text-navy-600 hover:text-primary-600 transition-colors"
-                  >
-                    {service.name}
+            <h3 className="font-semibold text-primary-600 mb-3">Our Services</h3>
+            <nav aria-label="Footer services">
+              <ul>
+                {services.slice(0, 6).map((service) => (
+                  <li key={service.id}>
+                    <Link
+                      href={service.slug ? `/service/${service.slug}` : '/services'}
+                      className="flex min-h-10 items-center text-sm text-navy-600 transition-colors hover:text-primary-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0E6B78] rounded-md"
+                    >
+                      {service.name}
+                    </Link>
+                  </li>
+                ))}
+                <li>
+                  <Link href="/services" className="flex min-h-10 items-center gap-1 text-sm font-semibold text-[#0C2D57] hover:text-primary-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0E6B78] rounded-md">
+                    View all services <span aria-hidden="true">→</span>
                   </Link>
-                ))
-              ) : (
-                [
-                  'Industrial Flooring',
-                  'Epoxy Coatings',
-                  'Waterproofing Systems',
-                  'Concrete Sealers',
-                  'Joint Sealants',
-                ].map((service) => (
-                  <Link
-                    key={service}
-                    href="/services"
-                    className="block text-sm text-navy-600 hover:text-primary-600 transition-colors"
-                  >
-                    {service}
-                  </Link>
-                ))
-              )}
+                </li>
+              </ul>
             </nav>
           </div>
 
@@ -131,7 +122,7 @@ export function Footer() {
               {phone && (
                 <a
                   href={telHref(phone)}
-                  className="flex items-start gap-3 text-sm text-navy-600 hover:text-primary-600 transition-colors"
+                  className="flex min-h-10 items-start gap-3 py-1 text-sm text-navy-600 hover:text-primary-600 transition-colors"
                 >
                   <Phone className="w-4 h-4 mt-0.5 flex-shrink-0" />
                   <span className="min-w-0 [overflow-wrap:anywhere]">{phone}</span>
@@ -140,7 +131,7 @@ export function Footer() {
               {email && (
                 <a
                   href={`mailto:${email}`}
-                  className="flex items-start gap-3 text-sm text-navy-600 hover:text-primary-600 transition-colors"
+                  className="flex min-h-10 items-start gap-3 py-1 text-sm text-navy-600 hover:text-primary-600 transition-colors"
                 >
                   <Mail className="w-4 h-4 mt-0.5 flex-shrink-0" />
                   <span className="min-w-0 [overflow-wrap:anywhere]">{email}</span>
@@ -175,7 +166,7 @@ export function Footer() {
                     href={url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center text-navy-600 hover:bg-primary-500 hover:text-white transition-colors"
+                    className="w-11 h-11 rounded-full bg-gray-100 flex items-center justify-center text-navy-600 hover:bg-primary-500 hover:text-white transition-colors"
                     aria-label={`Visit our ${key} page`}
                   >
                     <Icon className="w-4 h-4" />
@@ -192,8 +183,8 @@ export function Footer() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex flex-col md:flex-row justify-between items-center gap-2">
             <p className="text-sm text-white font-medium">{copyright}</p>
-            <Link href="/admin/login" className="text-sm text-white/90 hover:text-white transition-colors">
-              Admin Portal
+            <Link href="/admin/login" className="inline-flex min-h-10 items-center text-xs text-white/80 hover:text-white transition-colors">
+              Staff sign in
             </Link>
           </div>
         </div>

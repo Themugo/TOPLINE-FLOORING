@@ -118,10 +118,13 @@ export function useNavigationMenus(location?: string) {
     setError(null);
     try {
       let query = supabase.from('navigation_menus').select('*').order('display_order');
-      if (location) query = query.eq('location', location);
+      // Older rows saved from the admin menu editor used "main" for the header menu.
+      if (location === 'header') query = query.in('location', ['header', 'main']);
+      else if (location) query = query.eq('location', location);
       const { data, error: err } = await query;
       if (err) throw err;
-      setMenus(data || []);
+      // Staff can read inactive rows; visitors must never see them. Only top-level items are rendered.
+      setMenus((data || []).filter((item) => item.is_active !== false && !item.parent_id));
     } catch (err) {
       setError(errorMessage(err, 'Failed to load navigation menus'));
     } finally {
@@ -1456,8 +1459,13 @@ function getStoredComparison(): ComparisonState {
   }
 }
 
+export const MAX_COMPARE_PRODUCTS = 4;
+const COMPARISON_EVENT = 'topline:comparison-changed';
+
 function setStoredComparison(state: ComparisonState) {
-  localStorage.setItem(COMPARISON_STORAGE_KEY, JSON.stringify(state));
+  try { localStorage.setItem(COMPARISON_STORAGE_KEY, JSON.stringify(state)); } catch { /* storage unavailable: in-memory state still updates */ }
+  // `storage` only fires in other tabs, so notify every hook instance in this tab explicitly.
+  window.dispatchEvent(new Event(COMPARISON_EVENT));
 }
 
 export function useProductComparison() {
@@ -1466,28 +1474,23 @@ export function useProductComparison() {
   useEffect(() => {
     const handler = () => setComparison(getStoredComparison());
     window.addEventListener('storage', handler);
-    return () => window.removeEventListener('storage', handler);
+    window.addEventListener(COMPARISON_EVENT, handler);
+    return () => { window.removeEventListener('storage', handler); window.removeEventListener(COMPARISON_EVENT, handler); };
   }, []);
 
-  const addToComparison = async (productId: string) => {
-    if (comparison.product_ids.length >= 4) return;
-    if (comparison.product_ids.includes(productId)) return;
-    const next = { product_ids: [...comparison.product_ids, productId] };
-    setStoredComparison(next);
-    setComparison(next);
+  const ids = Array.isArray(comparison.product_ids) ? comparison.product_ids : [];
+  const isInComparison = (productId: string) => ids.includes(productId);
+  /** Returns 'added' | 'removed' | 'full' so callers can tell the shopper what happened. */
+  const toggleComparison = (productId: string): 'added' | 'removed' | 'full' => {
+    const current = getStoredComparison().product_ids ?? [];
+    if (current.includes(productId)) { setStoredComparison({ product_ids: current.filter((id) => id !== productId) }); return 'removed'; }
+    if (current.length >= MAX_COMPARE_PRODUCTS) return 'full';
+    setStoredComparison({ product_ids: [...current, productId] });
+    return 'added';
   };
+  const addToComparison = async (productId: string) => { toggleComparison(productId) };
+  const removeFromComparison = async (productId: string) => { setStoredComparison({ product_ids: ids.filter((id) => id !== productId) }); };
+  const clearComparison = async () => { setStoredComparison({ product_ids: [] }); };
 
-  const removeFromComparison = async (productId: string) => {
-    const next = { product_ids: comparison.product_ids.filter(id => id !== productId) };
-    setStoredComparison(next);
-    setComparison(next);
-  };
-
-  const clearComparison = async () => {
-    const next = { product_ids: [] };
-    setStoredComparison(next);
-    setComparison(next);
-  };
-
-  return { comparison, loading: false, addToComparison, removeFromComparison, clearComparison };
+  return { comparison: { product_ids: ids }, loading: false, isInComparison, toggleComparison, addToComparison, removeFromComparison, clearComparison };
 }

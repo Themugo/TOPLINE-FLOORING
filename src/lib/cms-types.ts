@@ -20,6 +20,11 @@ export interface WebsiteSettingsGroup {
     favicon_url: string;
     description: string;
     url: string;
+    /** Brand lockup, edited in Admin > Site Settings. All optional: defaults live in src/lib/brand.ts. */
+    brand_wordmark?: string;
+    brand_descriptor?: string;
+    brand_promise?: string;
+    show_brand_text?: boolean;
   };
   company: {
     name: string;

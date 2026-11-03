@@ -147,7 +147,7 @@ export default function ServiceDetail() {
                 {service.short_description || service.description}
               </p>
               <div className="flex flex-wrap items-center gap-4">
-                <Link href="/quotation" className="inline-flex items-center gap-2 rounded-xl bg-[#C8F26A] px-6 py-3 text-sm font-bold text-[#0C2D57] shadow-sm transition hover:bg-[#DDF79F] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white">
+                <Link href={`/quotation?service=${encodeURIComponent(service.slug || slugifyServiceName(service.name))}`} className="inline-flex items-center gap-2 rounded-xl bg-[#C8F26A] px-6 py-3 text-sm font-bold text-[#0C2D57] shadow-sm transition hover:bg-[#DDF79F] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white">
                   <span>Get Quotation</span>
                   <ArrowRight className="w-4 h-4" />
                 </Link>
@@ -202,7 +202,7 @@ export default function ServiceDetail() {
             <p className="text-xs font-bold uppercase tracking-[.18em] text-[#566F0D]">At a glance</p><h2 className="mb-6 mt-2 font-display text-2xl font-semibold tracking-tight text-[#0C2D57]">Key system attributes</h2>
             <div className="grid sm:grid-cols-2 gap-3.5">
               {service.features.map((feature) => (
-                <div key={feature} className="flex items-start gap-3 rounded-xl border border-slate-200/80 bg-white p-4 shadow-[0_3px_12px_rgba(12,45,87,.03)]">
+                <div key={`${service.id}-${feature}`} className="flex items-start gap-3 rounded-xl border border-slate-200/80 bg-white p-4 shadow-[0_3px_12px_rgba(12,45,87,.03)]">
                   <CheckCircle2 className="w-5 h-5 text-emerald-500 flex-shrink-0 mt-0.5" />
                   <span className="text-navy-900 font-medium text-sm sm:text-base">{feature}</span>
                 </div>
@@ -220,7 +220,7 @@ export default function ServiceDetail() {
             Tell us about your site and requirements so we can discuss the scope and quotation for your {service.name.toLowerCase()} project.
           </p>
           <div className="flex flex-col sm:flex-row justify-center items-center gap-4">
-            <Link href="/quotation" className="w-full rounded-xl bg-[#C8F26A] px-8 py-3 text-sm font-bold text-[#0C2D57] shadow-md transition hover:bg-[#DDF79F] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white sm:w-auto">
+            <Link href={`/quotation?service=${encodeURIComponent(service.slug || slugifyServiceName(service.name))}`} className="w-full rounded-xl bg-[#C8F26A] px-8 py-3 text-sm font-bold text-[#0C2D57] shadow-md transition hover:bg-[#DDF79F] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white sm:w-auto">
               Request Project Quotation
             </Link>
             <Link href="/services" className="w-full rounded-xl border border-white/20 px-8 py-3 text-sm font-semibold text-white transition hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white sm:w-auto">

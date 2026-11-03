@@ -2,9 +2,11 @@ import { useState, useCallback } from 'react';
 import { useLocation } from 'wouter';
 import { Lock, Mail, AlertCircle, Eye, EyeOff, ArrowLeft } from 'lucide-react';
 import { useAdminAuth } from '@/hooks/use-data';
+import { useBrand } from '@/hooks/use-brand';
 import { isSupabaseConfigured, supabase } from '@/lib/supabase';
 
 export default function AdminLogin() {
+  const brand = useBrand();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -180,13 +182,13 @@ export default function AdminLogin() {
             <ArrowLeft className="w-4 h-4" />
             Back
           </button>
-          <div className="w-16 h-16 rounded-full border-2 border-navy-600 flex items-center justify-center mx-auto mb-4 bg-white shadow-sm">
-            <span className="text-primary-600 font-display font-bold text-2xl">T</span>
+          <div className="w-16 h-16 rounded-full border-2 border-navy-600 flex items-center justify-center mx-auto mb-4 bg-white shadow-sm overflow-hidden p-2">
+            <img src={brand.logoUrl} alt="" className="h-full w-full object-contain" />
           </div>
           <h1 className="font-display text-2xl font-bold text-primary-600">
             Admin Portal
           </h1>
-          <p className="text-navy-600 mt-1">Topline Flooring & Waterproofing</p>
+          <p className="text-navy-600 mt-1">{brand.siteName}</p>
         </div>
 
         <div className="bg-white rounded-xl p-8 border border-gray-200 shadow-sm">

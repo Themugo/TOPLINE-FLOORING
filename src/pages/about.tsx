@@ -35,10 +35,10 @@ export default function About() {
 
   const heroTitle = content.hero?.title || "Who We Are";
   const heroSubtitle = content.hero?.subtitle || "Building Trust and Protection, One Surface at a Time";
-  const missionText = content.mission?.text || `For over 10 years, ${companyName} has been the trusted partner for professional flooring and waterproofing solutions.`;
+  const missionText = content.mission?.text || `${companyName} provides professional flooring and waterproofing solutions, from assessment and material selection to installation and handover.`;
   const missionVision = content.mission?.vision || "";
   const valuesRaw = content.values?.items;
-  const teamTitle = content.team?.title || "Over 10 Years of Excellence";
+  const teamTitle = content.team?.title || "The People Behind the Work";
 
   let valuesList = defaultValues;
   if (valuesRaw) {

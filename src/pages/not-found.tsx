@@ -27,6 +27,18 @@ export default function NotFound() {
           <ArrowLeft className="w-4 h-4" />
           Back to Home
         </Link>
+        <nav aria-label="Helpful pages" className="mt-8 flex flex-wrap items-center justify-center gap-2">
+          {[
+            { href: '/services', label: 'Services' },
+            { href: '/shop', label: 'Materials Shop' },
+            { href: '/quotation', label: 'Get a Quote' },
+            { href: '/contact', label: 'Contact' },
+          ].map((l) => (
+            <Link key={l.href} href={l.href} className="inline-flex min-h-11 items-center rounded-full border border-gray-200 px-4 text-sm font-medium text-navy-700 hover:border-primary-600 hover:text-primary-600">
+              {l.label}
+            </Link>
+          ))}
+        </nav>
       </div>
     </CustomerLayout>
   );

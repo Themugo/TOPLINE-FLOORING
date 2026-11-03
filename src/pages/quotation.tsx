@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { FileText, Send, CheckCircle2, ShieldCheck, Calculator, Sparkles, ArrowRight, Phone, Check } from 'lucide-react';
 import { CustomerLayout } from '@/components/layout/CustomerLayout';
 import { Breadcrumbs } from '@/components/Breadcrumbs';
@@ -6,7 +6,7 @@ import { useToast } from '@/hooks/use-toast';
 import { QuotationRateLimitedError, submitQuotationRequest, quotationRequestReference } from '@/lib/commerce';
 import { useSeoMeta } from '@/hooks/use-seo';
 import { useImagePreloader } from '@/hooks/use-image-preloader';
-import { useSiteSettings } from '@/hooks/use-data';
+import { useSiteSettings, useServices } from '@/hooks/use-data';
 import { telHref } from '@/lib/utils';
 import { Link } from 'wouter';
 
@@ -25,17 +25,9 @@ interface FormData {
 
 const QUOTATION_HERO_IMAGE = 'https://images.unsplash.com/photo-1503387762-592deb587942?auto=format&fit=crop&w=1200&q=80';
 
-// Systems for instant budget estimation preview
-const SYSTEM_ESTIMATES: Record<string, { name: string; ratePerSqm: number; unit: string; thickness: string }> = {
-  'Industrial Flooring': { name: 'Epoxy / PU Industrial Screed', ratePerSqm: 2800, unit: 'sqm', thickness: '3mm - 6mm Heavy Duty' },
-  'Commercial Flooring': { name: 'Self-Leveling Commercial Epoxy', ratePerSqm: 2200, unit: 'sqm', thickness: '2mm Decorative Finish' },
-  'Residential Flooring': { name: '3D Metallic / Flake Epoxy', ratePerSqm: 2500, unit: 'sqm', thickness: '2mm - 3mm Premium' },
-  'Waterproofing - Roof': { name: 'Polyurethane Liquid Membrane (Roof)', ratePerSqm: 1800, unit: 'sqm', thickness: '1.5mm UV Resistant' },
-  'Waterproofing - Basement': { name: 'Crystalline / Bituminous Tanking', ratePerSqm: 2100, unit: 'sqm', thickness: 'Subterranean Grade' },
-  'Waterproofing - Bathroom': { name: 'Flexible Cementitious Waterproofing', ratePerSqm: 1400, unit: 'sqm', thickness: 'Dual Coat System' },
-  'Water Tank': { name: 'Potable Water Grade Membrane', ratePerSqm: 1950, unit: 'sqm', thickness: 'Food & Health Certified' },
-  'Concrete Sealing': { name: 'Lithium Silicate Densifier & Sealer', ratePerSqm: 1100, unit: 'sqm', thickness: 'Deep Penetrating' },
-};
+/** Used only when the service catalogue cannot be loaded; the catalogue is the source of truth. */
+const FALLBACK_PROJECT_TYPES = ['Industrial Flooring', 'Commercial Flooring', 'Residential Flooring', 'Waterproofing - Roof', 'Waterproofing - Basement', 'Waterproofing - Bathroom', 'Water Tank', 'Concrete Sealing'];
+const MATERIAL_ENQUIRY = 'Materials supply enquiry';
 
 export default function Quotation() {
   useSeoMeta('quotation', null, { breadcrumbs: [{ label: 'Request Quotation' }] });
@@ -46,45 +38,53 @@ export default function Quotation() {
 
   useImagePreloader(useMemo(() => [QUOTATION_HERO_IMAGE], []));
 
+  const { services, loading: servicesLoading } = useServices({ activeOnly: true });
+  const requested = useMemo(() => {
+    const q = new URLSearchParams(window.location.search);
+    return { product: (q.get('product') || '').slice(0, 160), sku: (q.get('sku') || '').slice(0, 60), service: (q.get('service') || '').slice(0, 120) };
+  }, []);
+  const projectTypes = useMemo(
+    () => (services.length > 0 ? services.map((service) => service.name) : FALLBACK_PROJECT_TYPES),
+    [services],
+  );
+
   const [form, setForm] = useState<FormData>({
     name: '',
     email: '',
     phone: '',
     company: '',
-    project_type: 'Industrial Flooring',
-    area_size: '250',
+    project_type: requested.product ? MATERIAL_ENQUIRY : '',
+    area_size: requested.product ? '' : '250',
     location: '',
     substrate_condition: 'New Concrete Slab',
     timeline: 'Within 2 Weeks',
-    message: '',
+    message: requested.product ? `Availability enquiry for: ${requested.product}${requested.sku ? ` (SKU ${requested.sku})` : ''}.\nQuantity needed: ` : '',
   });
+
+  // Pre-select the service the visitor came from (by slug or name) once the catalogue is known,
+  // otherwise default to the first listed service so the select is never blank.
+  useEffect(() => {
+    if (servicesLoading) return; // wait, otherwise the fallback list would be locked in before the catalogue arrives
+    setForm((current) => {
+      if (current.project_type) return current;
+      const wanted = requested.service.toLowerCase();
+      const match = wanted ? services.find((service) => (service.slug || '').toLowerCase() === wanted || service.name.toLowerCase() === wanted) : undefined;
+      return { ...current, project_type: match?.name || projectTypes[0] };
+    });
+  }, [services, servicesLoading, projectTypes, requested.service]);
 
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [rfqReference, setRfqReference] = useState('');
 
-  // Instant calculation preview
-  const estimatedBudget = useMemo(() => {
-    const areaNum = parseFloat(form.area_size.replace(/[^0-9.]/g, ''));
-    if (isNaN(areaNum) || areaNum <= 0) return null;
-    const system = SYSTEM_ESTIMATES[form.project_type];
-    if (!system) return null;
-    const minEst = Math.round(areaNum * system.ratePerSqm * 0.9);
-    const maxEst = Math.round(areaNum * system.ratePerSqm * 1.15);
-    return {
-      area: areaNum,
-      systemName: system.name,
-      thickness: system.thickness,
-      min: minEst,
-      max: maxEst,
-    };
-  }, [form.area_size, form.project_type]);
+  const areaNumber = parseFloat(form.area_size.replace(/[^0-9.]/g, ''));
+  const isMaterialEnquiry = form.project_type === MATERIAL_ENQUIRY;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (submitting) return;
     const area = Number(form.area_size);
-    if (!Number.isFinite(area) || area <= 0) {
+    if (!isMaterialEnquiry && (!Number.isFinite(area) || area <= 0)) {
       toast({ title: 'Check project area', description: 'Enter a valid area greater than zero square metres.', variant: 'destructive' });
       return;
     }
@@ -102,7 +102,7 @@ export default function Quotation() {
         county: form.location,
         projectType: form.project_type,
         service: form.project_type,
-        message: `Company: ${form.company || 'Not provided'}\nArea: ${form.area_size} sqm\nSubstrate: ${form.substrate_condition}\nDetails: ${form.message}`,
+        message: `Company: ${form.company || 'Not provided'}\nArea: ${form.area_size ? `${form.area_size} sqm` : 'Not provided'}\nSubstrate: ${form.substrate_condition}\nDetails: ${form.message}`,
         timeline: form.timeline,
       });
 
@@ -187,7 +187,7 @@ export default function Quotation() {
                       email: '',
                       phone: '',
                       company: '',
-                      project_type: 'Industrial Flooring',
+                      project_type: projectTypes[0] || '',
                       area_size: '250',
                       location: '',
                       substrate_condition: 'New Concrete Slab',
@@ -261,67 +261,31 @@ export default function Quotation() {
           <div className="grid lg:grid-cols-12 gap-8 items-start">
             {/* Left: Estimation Preview Widget & Tips */}
             <div className="lg:col-span-5 space-y-6">
-              {/* Calculator Widget */}
-              <div className="bg-[#0C2D57] rounded-2xl border border-slate-700 p-6 text-white shadow-xl space-y-5">
-                <div className="flex items-center justify-between pb-3 border-b border-white/10">
-                  <div className="flex items-center gap-2">
-                    <Calculator className="w-5 h-5 text-primary-400" />
-                    <h3 className="font-display font-bold text-base text-white">
-                      Instant Budget Estimator
-                    </h3>
-                  </div>
-                  <span className="text-[10px] font-bold uppercase tracking-wider bg-primary-500/20 text-primary-200 border border-primary-400/30 px-2 py-0.5 rounded">
-                    Guide Rates
-                  </span>
+              {/* Request summary: reflects only what the visitor has entered; no invented prices. */}
+              <div className="bg-[#0C2D57] rounded-2xl border border-slate-700 p-6 text-white shadow-xl space-y-5" aria-live="polite">
+                <div className="flex items-center gap-2 pb-3 border-b border-white/10">
+                  <Calculator className="w-5 h-5 text-primary-400" />
+                  <h3 className="font-display font-bold text-base text-white">Your request at a glance</h3>
                 </div>
-
-                <div className="space-y-3 text-xs">
+                <dl className="space-y-3 text-xs">
                   <div>
-                    <label className="block font-bold text-gray-300 mb-1">
-                      Selected System
-                    </label>
-                    <p className="font-semibold text-primary-100 bg-white/5 p-2.5 rounded-xl border border-white/10">
-                      {estimatedBudget?.systemName || form.project_type}
-                    </p>
+                    <dt className="font-bold text-gray-300 mb-1">Service / category</dt>
+                    <dd className="font-semibold text-primary-100 bg-white/5 p-2.5 rounded-xl border border-white/10">{form.project_type || 'Select a service'}</dd>
                   </div>
-
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="block font-bold text-gray-300 mb-1">
-                        Coverage Area
-                      </label>
-                      <p className="font-mono font-bold text-white bg-white/5 p-2.5 rounded-xl border border-white/10">
-                        {estimatedBudget?.area || 0} sqm
-                      </p>
+                      <dt className="font-bold text-gray-300 mb-1">Area</dt>
+                      <dd className="font-mono font-bold text-white bg-white/5 p-2.5 rounded-xl border border-white/10">{Number.isFinite(areaNumber) && areaNumber > 0 ? `${areaNumber} sqm` : isMaterialEnquiry ? 'Not needed' : '—'}</dd>
                     </div>
                     <div>
-                      <label className="block font-bold text-gray-300 mb-1">
-                        System Spec
-                      </label>
-                      <p className="font-semibold text-gray-300 bg-white/5 p-2.5 rounded-xl border border-white/10 truncate">
-                        {estimatedBudget?.thickness}
-                      </p>
+                      <dt className="font-bold text-gray-300 mb-1">Timeline</dt>
+                      <dd className="font-semibold text-gray-300 bg-white/5 p-2.5 rounded-xl border border-white/10 truncate">{form.timeline}</dd>
                     </div>
                   </div>
-
-                  {estimatedBudget && estimatedBudget.min > 0 ? (
-                    <div className="p-4 rounded-xl bg-gradient-to-br from-primary-950/80 to-navy-900 border border-primary-500/30 mt-4 space-y-1">
-                      <p className="text-[10px] font-bold uppercase tracking-wider text-primary-200">
-                        Indicative Budget Range (KES)
-                      </p>
-                      <p className="font-display text-2xl font-bold text-white">
-                        KES {estimatedBudget.min.toLocaleString()} – {estimatedBudget.max.toLocaleString()}
-                      </p>
-                      <p className="text-[10px] text-gray-400 leading-tight pt-1">
-                        *Includes supply of premium chemical resin and specialized installation. This is a planning estimate, not a quotation. Final pricing depends on measured scope, site conditions, system specification and availability.
-                      </p>
-                    </div>
-                  ) : (
-                    <p className="text-gray-400 text-[11px] pt-1">
-                      Enter a valid floor/roof surface area (in sqm) in the form to see an instant estimated budget range.
-                    </p>
-                  )}
-                </div>
+                </dl>
+                <p className="text-[11px] leading-5 text-gray-300">
+                  Pricing is prepared by our team after reviewing your scope and site, so you receive a quotation based on measured requirements rather than a generic rate.
+                </p>
               </div>
 
               {/* Requirements & Callout Card */}
@@ -453,19 +417,19 @@ export default function Quotation() {
                           onChange={(e) => setForm({ ...form, project_type: e.target.value })}
                           className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:bg-white text-xs font-semibold text-navy-950 transition-all cursor-pointer"
                         >
-                          {Object.keys(SYSTEM_ESTIMATES).map((sysKey) => (
-                            <option key={sysKey} value={sysKey}>
-                              {sysKey}
+                          {projectTypes.map((name) => (
+                            <option key={name} value={name}>
+                              {name}
                             </option>
                           ))}
-                          <option value="Joint Sealing">Joint Sealing & Crack Repair</option>
+                          <option value={MATERIAL_ENQUIRY}>Materials supply enquiry</option>
                           <option value="Other">Other Custom Application</option>
                         </select>
                       </div>
 
                       <div>
                         <label className="block text-xs font-bold uppercase tracking-wider text-navy-950 mb-1.5">
-                          Total Area Size (approx. SQM) <span className="text-red-500">*</span>
+                          Total Area Size (approx. SQM) {!isMaterialEnquiry && <span className="text-red-500">*</span>}
                         </label>
                         <div className="relative">
                           <input
@@ -473,7 +437,7 @@ export default function Quotation() {
                             min="0.1"
                             step="any"
                             inputMode="decimal"
-                            required
+                            required={!isMaterialEnquiry}
                             value={form.area_size}
                             onChange={(e) => setForm({ ...form, area_size: e.target.value })}
                             className="w-full px-3.5 py-2.5 pr-12 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:bg-white text-xs font-medium text-navy-950 transition-all placeholder:text-gray-400"

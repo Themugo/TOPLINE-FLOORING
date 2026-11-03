@@ -26,9 +26,9 @@ interface NavItem {
 }
 
 const LOCATIONS = [
-  { value: "main", label: "Main Navigation" },
+  { value: "header", label: "Main Navigation (website header)" },
   { value: "footer", label: "Footer" },
-  { value: "mobile", label: "Mobile Menu" },
+  { value: "mobile", label: "Mobile Menu (optional: replaces the header list on phones)" },
 ];
 
 export default function AdminNavigation() {
@@ -112,7 +112,7 @@ export default function AdminNavigation() {
         ) : (
           <div className="space-y-1">
             {LOCATIONS.map((loc) => {
-              const locItems = items.filter((i) => i.location === loc.value);
+              const locItems = items.filter((i) => (i.location === "main" ? "header" : i.location) === loc.value);
               if (locItems.length === 0) return null;
               return (
                 <div key={loc.value} className="mb-6">
@@ -165,9 +165,10 @@ function NavForm({
   onCancel: () => void;
   items: NavItem[];
 }) {
+  const { toast } = useToast();
   const [form, setForm] = useState({
     menu_name: initial?.menu_name || "",
-    location: initial?.location || "main",
+    location: (initial?.location === "main" ? "header" : initial?.location) || "header",
     label: initial?.label || "",
     href: initial?.href || "/",
     parent_id: initial?.parent_id || null as string | null,
@@ -184,7 +185,8 @@ function NavForm({
       </div>
       <div>
         <Label className="text-xs font-sans">Link URL</Label>
-        <Input value={form.href} onChange={(e) => setForm({ ...form, href: e.target.value })} className="mt-1 rounded-sm" placeholder="e.g. /about" />
+        <Input value={form.href} onChange={(e) => setForm({ ...form, href: e.target.value })} className="mt-1 rounded-sm" placeholder="e.g. /about  or  https://example.com" />
+        <p className="mt-1 text-[11px] text-muted-foreground">Use a page path starting with / (for example /about), a full https:// address, or tel: / mailto: links.</p>
       </div>
       <div>
         <Label className="text-xs font-sans">Location</Label>
@@ -215,7 +217,7 @@ function NavForm({
       </div>
       <div className="flex gap-3 pt-2">
         <Button variant="outline" onClick={onCancel} className="flex-1 rounded-sm">Cancel</Button>
-        <Button onClick={() => onSave(form)} className="flex-1 rounded-sm">Save</Button>
+        <Button onClick={() => { const href = form.href.trim(); if (!form.label.trim()) { toast({ title: "Enter a label", variant: "destructive" }); return; } if (!/^(\/[^\s]*|https?:\/\/[^\s]+|mailto:[^\s]+|tel:[^\s]+)$/i.test(href)) { toast({ title: "Check the link", description: "Use a path starting with / (like /about), a full https:// address, or a tel: / mailto: link.", variant: "destructive" }); return; } onSave({ ...form, label: form.label.trim(), href }); }} className="flex-1 rounded-sm">Save</Button>
       </div>
     </div>
   );

@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Link, useLocation } from 'wouter';
 import { Search, Filter, X, ShoppingCart, Check, ShieldCheck, Truck, Sparkles, Tag, ArrowRight, PackageCheck, SlidersHorizontal } from 'lucide-react';
 import { CustomerLayout } from '@/components/layout/CustomerLayout';
@@ -10,6 +10,7 @@ import { getProductPlaceholder, withFallback } from '@/lib/placeholders';
 import { useCart } from '@/hooks/use-cart';
 import { useImagePreloader } from '@/hooks/use-image-preloader';
 import type { Product } from '@/lib/types';
+import { CompareToggle } from '@/components/comparison/CompareToggle';
 import { ProductVariantSelector } from '@/components/ProductVariantSelector';
 import { getActiveProductVariants, getDefaultProductVariant, getProductUnitPrice, isProductPurchasable } from '@/lib/product-commerce';
 
@@ -23,6 +24,13 @@ export default function Shop() {
   const [selectedVariants, setSelectedVariants] = useState<Record<string, string>>({});
 
   const { categories } = useCategories();
+  // Honour /shop?category=<slug> (product breadcrumbs, Industries page) once categories are known.
+  useEffect(() => {
+    const slug = new URLSearchParams(window.location.search).get('category');
+    if (!slug || categories.length === 0) return;
+    const match = categories.find((category) => category.slug === slug || category.id === slug);
+    if (match) setSelectedCategory((current) => current ?? match.id);
+  }, [categories]);
   // Load the complete active catalogue once so category counts remain correct
   // while category filtering is applied locally.
   const { products, loading, error: loadError, refetch } = useProducts();
@@ -428,6 +436,7 @@ export default function Shop() {
                             <p className="text-[10px] text-gray-500 font-medium">
                               per {product.unit || 'unit'}
                             </p>
+                            <CompareToggle productId={product.id} productName={product.name} className="mt-2" />
                           </div>
 
                           <button

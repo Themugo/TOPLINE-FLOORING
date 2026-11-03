@@ -17,5 +17,5 @@ for (const route of ['/admin/sales', '/admin/operations']) {
   if (!app.includes(route)) throw new Error(`Missing route ${route}`);
 }
 const dashboard = fs.readFileSync(path.join(root, 'src/components/admin/AdminLayout.tsx'), 'utf8');
-if (!dashboard.includes('Topline Business Portal')) throw new Error('Portal branding not updated');
+if (!dashboard.includes('Business Portal')) throw new Error('Portal branding not updated');
 console.log('Phase 6–8 source verification passed.');

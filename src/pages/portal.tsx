@@ -106,16 +106,16 @@ function SignIn() {
       <CardHeader className="text-center"><ShieldCheck className="mx-auto mb-3 h-8 w-8 text-primary" /><CardTitle as="h1">{mode === 'register' ? 'Create your customer account' : 'Customer Portal'}</CardTitle><p className="text-sm text-muted-foreground">{mode === 'register' ? 'Create a secure account to track quotations, orders, projects and invoices.' : 'Access your quotations and orders securely.'}</p></CardHeader>
       <CardContent>{linkProblem && <p role="alert" className="mb-4 rounded-md border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900">{linkProblem}</p>}<form onSubmit={submit} className="space-y-4">
         {mode === 'register' ? <>
-          <div><Label htmlFor="portal-name">Full name</Label><Input id="portal-name" required value={name} onChange={e=>setName(e.target.value)} /></div>
-          <div><Label htmlFor="portal-phone">Phone number</Label><Input id="portal-phone" required value={phone} onChange={e=>setPhone(e.target.value)} /></div>
+          <div><Label htmlFor="portal-name">Full name</Label><Input id="portal-name" autoComplete="name" required value={name} onChange={e=>setName(e.target.value)} /></div>
+          <div><Label htmlFor="portal-phone">Phone number</Label><Input id="portal-phone" type="tel" inputMode="tel" autoComplete="tel" required value={phone} onChange={e=>setPhone(e.target.value)} /></div>
           <div><Label htmlFor="portal-company">Company (optional)</Label><Input id="portal-company" value={company} onChange={e=>setCompany(e.target.value)} /></div>
-          <div><Label htmlFor="portal-register-email">Email address</Label><Input id="portal-register-email" type="email" required value={email} onChange={e=>setEmail(e.target.value)} /></div>
+          <div><Label htmlFor="portal-register-email">Email address</Label><Input id="portal-register-email" type="email" autoComplete="email" required value={email} onChange={e=>setEmail(e.target.value)} /></div>
           <div><Label htmlFor="portal-password">Password</Label><Input id="portal-password" type="password" minLength={8} required autoComplete="new-password" value={password} onChange={e=>setPassword(e.target.value)} /><p className="mt-1 text-xs text-muted-foreground">At least 8 characters.</p></div>
           <label className="flex items-start gap-3 rounded-lg border border-slate-200 p-3 text-sm text-slate-700">
             <input id="portal-marketing-email-opt-in" type="checkbox" className="mt-1 h-4 w-4 shrink-0" checked={marketingEmailOptIn} onChange={e=>setMarketingEmailOptIn(e.target.checked)} />
             <span>Yes, send me occasional Topline offers, project inspiration and marketing updates by email. I can unsubscribe at any time. This is optional and is separate from account, quotation and order emails.</span>
           </label>
-        </> : <><div><Label htmlFor="portal-email">Email address</Label><Input id="portal-email" type="email" required value={email} onChange={e => setEmail(e.target.value)} placeholder="you@company.co.ke" /></div>{signInMethod === 'password' ? <div><Label htmlFor="portal-signin-password">Password</Label><Input id="portal-signin-password" type="password" required autoComplete="current-password" value={password} onChange={e=>setPassword(e.target.value)} /></div> : null}</>}
+        </> : <><div><Label htmlFor="portal-email">Email address</Label><Input id="portal-email" type="email" autoComplete="email" required value={email} onChange={e => setEmail(e.target.value)} placeholder="you@company.co.ke" /></div>{signInMethod === 'password' ? <div><Label htmlFor="portal-signin-password">Password</Label><Input id="portal-signin-password" type="password" required autoComplete="current-password" value={password} onChange={e=>setPassword(e.target.value)} /></div> : null}</>}
         {mode === 'signin' && signInMethod === 'password' && <div><Button type="button" variant="link" className="h-auto px-0 py-0 text-sm" onClick={() => { setForgot(true); setError(null); }}>Forgot your password?</Button></div>}
         {mode === 'signin' && <Button type="button" variant="link" className="px-0" onClick={()=>setSignInMethod(signInMethod === 'password' ? 'link' : 'password')}>{signInMethod === 'password' ? 'Use email sign-in link instead' : 'Use password instead'}</Button>}
         {error && <p className="text-sm text-destructive" role="alert">{error}</p>}
@@ -303,13 +303,13 @@ export default function Portal() {
         getCustomerPortalDocuments(),
         getCustomerCommunicationsSelfService360(),
       ]);
-      setJourney(journeyResult.status === 'fulfilled' ? journeyResult.value : []);
-      setNotificationPrefs(prefsResult.status === 'fulfilled' ? prefsResult.value.notification_preferences : null);
-      setDocuments(docsResult.status === 'fulfilled' ? docsResult.value : []);
-      setCommunications(communicationsResult.status === 'fulfilled' ? communicationsResult.value.timeline || [] : []);
+      setJourney(journeyResult.status === 'fulfilled' ? journeyResult.value ?? [] : []);
+      setNotificationPrefs(prefsResult.status === 'fulfilled' ? prefsResult.value?.notification_preferences ?? null : null);
+      setDocuments(docsResult.status === 'fulfilled' ? docsResult.value ?? [] : []);
+      setCommunications(communicationsResult.status === 'fulfilled' ? communicationsResult.value?.timeline || [] : []);
       const failedSections = [journeyResult, prefsResult, docsResult, communicationsResult].some((result) => result.status === 'rejected');
       setError(failedSections ? 'Some account extras are temporarily unavailable. Your orders and quotations are still available; try refreshing later.' : null);
-    } catch (err) { setAuthenticatedError(true); setError(err instanceof Error ? err.message : 'Your customer dashboard could not be loaded.'); }
+    } catch (err) { setAuthenticatedError(true); console.error('Customer dashboard failed to load', err); setError('Your customer dashboard could not be loaded right now. Please try again, or contact our team if this continues.'); }
     finally { setLoading(false); }
   }, []);
 
