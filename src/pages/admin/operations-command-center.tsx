@@ -57,7 +57,8 @@ export default function OperationsCommandCenter() {
       const horizonDate = horizon.toISOString().slice(0, 10);
 
       const [stock, warehouses, suppliers, pos, projects, alerts, visits, installations, receipts, poPipeline, projectPipelineResult] = await Promise.all([
-        supabase.from('products').select('id', { count: 'exact', head: true }).eq('is_active', true).filter('stock_quantity', 'lte', 'low_stock_threshold'),
+        // PostgREST cannot compare two columns, so low stock is counted from the rows.
+        supabase.from('products').select('id,stock_quantity,low_stock_threshold').eq('is_active', true),
         supabase.from('warehouses').select('id', { count: 'exact', head: true }).eq('is_active', true),
         supabase.from('suppliers').select('id', { count: 'exact', head: true }).eq('is_active', true),
         supabase.from('purchase_orders').select('id', { count: 'exact', head: true }).not('status', 'in', '(cancelled,received)'),
@@ -84,7 +85,7 @@ export default function OperationsCommandCenter() {
       const installationRows = (installations.data ?? []).map((r) => ({ id: r.id, date: r.scheduled_date, status: r.status, label: r.installation_number || 'Installation', href: '/admin/project-delivery' }));
 
       setData({
-        lowStock: stock.count || 0,
+        lowStock: (stock.data ?? []).filter((p) => (p.stock_quantity ?? 0) <= (p.low_stock_threshold ?? 0)).length,
         warehouses: warehouses.count || 0,
         suppliers: suppliers.count || 0,
         purchaseOrders: pos.count || 0,

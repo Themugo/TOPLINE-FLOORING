@@ -16,7 +16,9 @@ export function ManualPaymentDetails({ amount, reference }: { amount?: number | 
     <div className="rounded-xl border-2 border-primary/30 bg-primary/5 p-5 text-left">
       <h3 className="font-semibold">How to pay</h3>
       {typeof amount === 'number' && amount > 0 && <p className="mt-1 text-sm">Amount to pay: <span className="text-lg font-bold">{formatKES(amount)}</span></p>}
-      {reference && <p className="mt-1 text-sm">Use <span className="font-mono font-semibold">{reference}</span> as the payment reference.</p>}
+      {reference
+        ? <p className="mt-1 text-sm">Use <span className="font-mono font-semibold">{reference}</span> as the payment reference.</p>
+        : <p className="mt-1 text-sm text-muted-foreground">Place your order first. You will get an order number to use as the payment reference.</p>}
       <div className="mt-4"><PaymentAccountsList accounts={accounts} /></div>
       <p className="mt-3 text-xs text-muted-foreground">We confirm payments manually and email you a receipt.</p>
     </div>

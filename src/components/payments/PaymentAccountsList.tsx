@@ -24,15 +24,22 @@ function CopyValue({ label, value }: { label: string; value: string }) {
   );
 }
 
+const KIND_TITLES: Record<string, string> = {
+  mpesa_till: 'M-Pesa Till (Buy Goods)', mpesa_paybill: 'M-Pesa Paybill', mpesa_send_money: 'M-Pesa Send Money', bank: 'Bank transfer', other: 'Other',
+};
+
 export function PaymentAccountsList({ accounts }: { accounts: CustomerPaymentAccount[] }) {
   if (!accounts.length) return null;
+  // The same thank-you / "send us your confirmation" text is usually saved on every account; show each distinct note once.
+  const notes = Array.from(new Set(accounts.map((a) => (a.instructions ?? '').trim()).filter(Boolean)));
   return (
+    <div className="space-y-4">
     <div className="grid gap-4 md:grid-cols-2">
       {accounts.map((a, i) => {
         const Icon = a.kind === 'bank' ? Landmark : Smartphone;
         return (
           <div key={a.id ?? i} className="rounded-xl border border-slate-200 bg-white p-4 text-left">
-            <div className="mb-2 flex items-center gap-2 font-semibold"><Icon className="h-4 w-4 text-primary" />{a.label}</div>
+            <div className="mb-2 flex items-center gap-2 font-semibold"><Icon className="h-4 w-4 text-primary" />{KIND_TITLES[a.kind] ?? a.label}</div>
             {a.kind === 'bank' && <>
               {a.bank_name && <CopyValue label="Bank" value={a.bank_name} />}
               {a.account_name && <CopyValue label="Account name" value={a.account_name} />}
@@ -50,11 +57,14 @@ export function PaymentAccountsList({ accounts }: { accounts: CustomerPaymentAcc
               {a.account_name && <CopyValue label="Registered name" value={a.account_name} />}
             </>}
             {a.kind === 'other' && a.account_name && <CopyValue label="Name" value={a.account_name} />}
-            {a.reference_hint && <p className="mt-2 text-xs"><strong>Reference:</strong> {a.reference_hint}</p>}
-            {a.instructions && <p className="mt-1 text-xs text-muted-foreground whitespace-pre-line">{a.instructions}</p>}
           </div>
         );
       })}
+    </div>
+    {notes.length > 0 && <details className="rounded-xl border border-slate-200 bg-white p-4 text-xs text-muted-foreground">
+      <summary className="cursor-pointer text-sm font-medium text-foreground">Payment notes</summary>
+      <div className="mt-2 space-y-3">{notes.map((n, i) => <p key={i} className="whitespace-pre-line">{n}</p>)}</div>
+    </details>}
     </div>
   );
 }

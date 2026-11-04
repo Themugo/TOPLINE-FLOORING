@@ -238,7 +238,10 @@ export default function Cart() {
 
       const orderId = result.order_id;
       if (!orderId) throw new Error('Order was created without an order reference');
-      const payment = await initiateCustomerPayment({ targetType: 'order', targetId: orderId, email: form.email.trim(), phone: form.phone.trim(), paymentMethod, gatewayKey: paymentGatewayKey, idempotencyKey: `checkout-payment:${checkoutKey}:${paymentGatewayKey}`, returnUrl: `${window.location.origin}/payment-return` });
+      // Manual payment only needs the order: if the payment service is unreachable the order must not be lost,
+      // the buyer is taken to the confirmation page, which shows how to pay and the order number.
+      let payment: Awaited<ReturnType<typeof initiateCustomerPayment>> | null = null;
+      try { payment = await initiateCustomerPayment({ targetType: 'order', targetId: orderId, email: form.email.trim(), phone: form.phone.trim(), paymentMethod, gatewayKey: paymentGatewayKey, idempotencyKey: `checkout-payment:${checkoutKey}:${paymentGatewayKey}`, returnUrl: `${window.location.origin}/payment-return` }); } catch (paymentError) { if (paymentMethod !== 'bank_transfer') throw paymentError; }
 
       // Stash a summary for the confirmation page to display. We don't
       // grant anon a SELECT policy on `orders` (it would let anyone read
@@ -263,13 +266,13 @@ export default function Cart() {
             deliveryZoneName: selectedZone?.zone_name || null,
             deliveryAddress: form.deliveryAddress || null,
             orderNumber: result.order_number ?? null,
-            paymentAttemptId: payment.attempt_id,
-            paymentAccessToken: payment.access_token,
+            paymentAttemptId: payment?.attempt_id ?? null,
+            paymentAccessToken: payment?.access_token ?? null,
             paymentMethod,
             paymentGatewayKey,
-            paymentMessage: payment.message ?? null,
-            bankInstructions: payment.instructions ?? null,
-            checkoutUrl: payment.checkout_url ?? null,
+            paymentMessage: payment?.message ?? null,
+            bankInstructions: payment?.instructions ?? null,
+            checkoutUrl: payment?.checkout_url ?? null,
             savedAt: Date.now(),
           })
         );
@@ -285,7 +288,7 @@ export default function Cart() {
       setCheckoutIdempotencyKey(nextCheckoutKey);
       try { window.localStorage.setItem('topline-checkout-idempotency-key', nextCheckoutKey); window.localStorage.removeItem(CHECKOUT_FINGERPRINT_STORAGE); } catch { /* storage may be unavailable */ }
       clearCart();
-      if (payment.checkout_url) { navigateToPaymentUrl(payment.checkout_url); } else { setLocation(`/payment-return?attempt_id=${encodeURIComponent(payment.attempt_id)}&access_token=${encodeURIComponent(payment.access_token)}`); }
+      if (!payment) { setLocation(`/order-confirmation/${encodeURIComponent(orderId)}`); } else if (payment.checkout_url) { navigateToPaymentUrl(payment.checkout_url); } else { setLocation(`/payment-return?attempt_id=${encodeURIComponent(payment.attempt_id)}&access_token=${encodeURIComponent(payment.access_token)}`); }
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Something went wrong. Please try again.';
       toast({
