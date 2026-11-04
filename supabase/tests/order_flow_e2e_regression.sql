@@ -76,6 +76,16 @@ BEGIN
   IF st <> 'completed' THEN RAISE EXCEPTION '7 order did not reach completed: %', st; END IF;
   SELECT stock_quantity INTO stock_after FROM public.products WHERE id=prod;
   IF stock_after <> stock_before - 1 THEN RAISE EXCEPTION '7b stock must drop by 1 (% -> %)', stock_before, stock_after; END IF;
+
+  -- 8. Contact / quotation request as an anonymous visitor: lead + quotation stored, staff alerted, repeat spam limited.
+  DELETE FROM public.communication_outbox;
+  SET LOCAL ROLE anon;
+  r := public.submit_quotation_request('Otieno','otieno@t.invalid','0722000111','Nairobi','Commercial','Epoxy flooring','Need 300 sqm warehouse floor','500k-1m','1 month');
+  RESET ROLE;
+  IF NOT (r->>'success')::boolean THEN RAISE EXCEPTION '8a quotation request rejected: %', r; END IF;
+  IF NOT EXISTS (SELECT 1 FROM public.leads WHERE email='otieno@t.invalid') THEN RAISE EXCEPTION '8b lead not created'; END IF;
+  IF NOT EXISTS (SELECT 1 FROM public.quotations WHERE email='otieno@t.invalid') THEN RAISE EXCEPTION '8c quotation not created'; END IF;
+  IF NOT EXISTS (SELECT 1 FROM public.communication_outbox WHERE recipient='staff@t.invalid') THEN RAISE EXCEPTION '8d staff not alerted of the enquiry'; END IF;
   RAISE NOTICE 'ok order-flow';
 END $t$;
 ROLLBACK;

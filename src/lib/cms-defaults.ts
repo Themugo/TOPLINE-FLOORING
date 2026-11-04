@@ -295,10 +295,10 @@ export const DEFAULT_CMS_STORE: CMSContentStore = {
       {
         title: 'Services',
         links: [
-          { label: 'Epoxy Flooring', href: '/services/epoxy-flooring' },
-          { label: 'Waterproofing', href: '/services/waterproofing-solutions' },
-          { label: 'Hardwood Timber', href: '/services/hardwood-timber-flooring' },
-          { label: 'Polished Concrete', href: '/services/polished-concrete' },
+          { label: 'Epoxy Flooring', href: '/service/epoxy-flooring-services' },
+          { label: 'Waterproofing', href: '/service/flatroof-waterproofing-services-with-bituminous-app-membrane' },
+          { label: 'Tiles Installation', href: '/service/tiles-installation-services' },
+          { label: 'Polished Concrete', href: '/service/concrete-floor-polishing-services' },
         ],
       },
       {
