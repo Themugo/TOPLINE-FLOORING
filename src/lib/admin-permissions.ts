@@ -38,6 +38,7 @@ export const ROUTE_PERMISSIONS: Record<string, { resource: string; action: strin
   '/admin/reports': { resource: 'reports', action: 'select' },
   '/admin/seo': { resource: 'content', action: 'select' },
   '/admin/site-content': { resource: 'content', action: 'select' },
+  '/admin/about-page': { resource: 'content', action: 'select' },
   '/admin/coupons': { resource: 'catalog', action: 'select' },
   '/admin/product-brands': { resource: 'catalog', action: 'select' },
   '/admin/product-images': { resource: 'media', action: 'select' },

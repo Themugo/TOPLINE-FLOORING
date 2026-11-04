@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { useCmsContent } from "@/hooks/use-cms-content";
 import { useSeoMeta } from "@/hooks/use-seo";
 import { useSiteSettings } from "@/hooks/use-data";
+import { useSavedAboutPage, DEFAULT_ABOUT_IMAGE } from "@/lib/about-page";
 
 const defaultValues = [
   { icon: Shield, label: "Durable", desc: "Long-lasting solutions built to withstand the harshest conditions", color: "bg-accent-500" },
@@ -33,15 +34,26 @@ export default function About() {
   });
   const { content } = useCmsContent("about");
 
-  const heroTitle = content.hero?.title || "Who We Are";
-  const heroSubtitle = content.hero?.subtitle || "Building Trust and Protection, One Surface at a Time";
-  const missionText = content.mission?.text || `${companyName} provides professional flooring and waterproofing solutions, from assessment and material selection to installation and handover.`;
-  const missionVision = content.mission?.vision || "";
+  const { saved } = useSavedAboutPage();
+  const eyebrow = saved?.eyebrow || "About Us";
+  const heroTitle = saved?.title || content.hero?.title || "Who We Are";
+  const heroSubtitle = saved?.subtitle || content.hero?.subtitle || "Building Trust and Protection, One Surface at a Time";
+  const missionText = saved?.mission || content.mission?.text || `${companyName} provides professional flooring and waterproofing solutions, from assessment and material selection to installation and handover.`;
+  const missionVision = saved ? saved.vision : (content.mission?.vision || "");
+  const teamTitle = saved?.team_title || content.team?.title || "The People Behind the Work";
+  const closing = saved?.closing || "From industrial warehouses to commercial spaces and residential properties, we have the expertise to handle projects of any scale.";
+  const photo = saved?.image_url || DEFAULT_ABOUT_IMAGE;
+  const valuesTitle = saved?.values_title || "Our Values";
+  const valuesSubtitle = saved?.values_subtitle || "The principles that guide every project we undertake";
+  const ctaTitle = saved?.cta_title || "Certified & Trusted";
+  const ctaText = saved?.cta_text || "We partner with leading global brands to bring you the best materials and systems";
+  const ctaButton = saved?.cta_button || "Get in Touch";
   const valuesRaw = content.values?.items;
-  const teamTitle = content.team?.title || "The People Behind the Work";
 
   let valuesList = defaultValues;
-  if (valuesRaw) {
+  if (saved) {
+    valuesList = saved.values.map((v, i) => ({ ...defaultValues[i % defaultValues.length], label: v.label, desc: v.desc }));
+  } else if (valuesRaw) {
     try {
       const parsed = typeof valuesRaw === "string" ? JSON.parse(valuesRaw) : valuesRaw;
       if (Array.isArray(parsed) && parsed.length > 0) {
@@ -66,7 +78,7 @@ export default function About() {
 
       <section className="bg-secondary text-secondary-foreground py-20 md:py-28">
         <div className="container mx-auto px-6 md:px-12 text-center">
-          <p className="text-primary text-xs uppercase tracking-[0.2em] font-sans font-medium mb-3">About Us</p>
+          <p className="text-primary text-xs uppercase tracking-[0.2em] font-sans font-medium mb-3">{eyebrow}</p>
           <h1 className="font-display text-4xl md:text-5xl font-bold text-white mb-4">{heroTitle}</h1>
           <p className="text-secondary-foreground/60 text-sm md:text-base max-w-2xl mx-auto font-light">
             {heroSubtitle}
@@ -78,8 +90,15 @@ export default function About() {
         <div className="container mx-auto px-6 md:px-12">
           <div className="grid md:grid-cols-2 gap-12 items-center max-w-5xl mx-auto">
             <div>
-              <div className="bg-muted rounded-sm h-80 flex items-center justify-center">
-                <HardHat className="h-20 w-20 text-muted-foreground/30" />
+              <div className="relative aspect-[4/3] w-full overflow-hidden rounded-xl bg-muted shadow-sm">
+                <img
+                  src={photo}
+                  alt={teamTitle}
+                  loading="lazy"
+                  className="h-full w-full object-cover"
+                  onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                />
+                <HardHat aria-hidden="true" className="absolute left-1/2 top-1/2 -z-0 h-16 w-16 -translate-x-1/2 -translate-y-1/2 text-muted-foreground/30" />
               </div>
             </div>
             <div>
@@ -93,7 +112,7 @@ export default function About() {
                 </p>
               )}
               <p className="text-muted-foreground text-sm leading-relaxed font-light">
-                From industrial warehouses to commercial spaces and residential properties, we have the expertise to handle projects of any scale.
+                {closing}
               </p>
             </div>
           </div>
@@ -103,9 +122,9 @@ export default function About() {
       <section className="py-16 md:py-24 bg-muted">
         <div className="container mx-auto px-6 md:px-12">
           <div className="text-center mb-12">
-            <h2 className="font-display text-2xl md:text-3xl font-bold text-foreground mb-3">Our Values</h2>
+            <h2 className="font-display text-2xl md:text-3xl font-bold text-foreground mb-3">{valuesTitle}</h2>
             <p className="text-muted-foreground text-sm max-w-xl mx-auto font-light">
-              The principles that guide every project we undertake
+              {valuesSubtitle}
             </p>
           </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8 max-w-4xl mx-auto">
@@ -125,12 +144,12 @@ export default function About() {
       <section className="py-16 md:py-24">
         <div className="container mx-auto px-6 md:px-12 text-center">
           <Award className="h-12 w-12 text-primary mx-auto mb-4" />
-          <h2 className="font-display text-2xl md:text-3xl font-bold text-foreground mb-3">Certified & Trusted</h2>
+          <h2 className="font-display text-2xl md:text-3xl font-bold text-foreground mb-3">{ctaTitle}</h2>
           <p className="text-muted-foreground text-sm max-w-xl mx-auto font-light mb-8">
-            We partner with leading global brands to bring you the best materials and systems
+            {ctaText}
           </p>
           <Link href="/contact">
-            <Button className="rounded-sm">Get in Touch</Button>
+            <Button className="rounded-sm">{ctaButton}</Button>
           </Link>
         </div>
       </section>

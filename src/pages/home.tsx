@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
+import { DEFAULT_ABOUT_IMAGE } from '@/lib/about-page';
 import { Link, useLocation } from 'wouter';
-import { ChevronLeft, ChevronRight, Star, ArrowRight, Phone, Megaphone } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Star, ArrowRight, Phone, Megaphone, Package, Layers, ReceiptText, PackageSearch } from 'lucide-react';
 import { CustomerLayout } from '@/components/layout/CustomerLayout';
 import { RecentProjects } from '@/components/home/RecentProjects';
 import { useHeroSlides, useProducts, useTestimonials, usePartners, usePromotions, useHomepageSections, useServices, useSiteSettings, useThemeSettings, useProjects } from '@/hooks/use-data';
@@ -145,7 +146,7 @@ export default function Home() {
     // configured hero slides. Use real, published catalogue media rather than
     // inventing product/service imagery or mixing every catalogue item into
     // an already-curated hero carousel.
-    const productSlides: HeroSlideData[] = products
+    const productSlides: HeroSlideData[] = featuredProducts
       .filter((product) => Boolean(product.image_url && product.slug))
       .slice(0, 3)
       .map((product) => ({
@@ -165,7 +166,7 @@ export default function Home() {
       .map((service) => ({
         id: `featured-service-${service.id}`,
         title: service.name,
-        subtitle: 'FEATURED SERVICE',
+        subtitle: (service as { featured?: boolean }).featured ? 'FEATURED SERVICE' : 'OUR SERVICE',
         description: service.short_description || service.description || 'Explore this service and discuss the right solution for your project.',
         image_url: service.image_url as string,
         button_text: 'Explore Service',
@@ -187,7 +188,7 @@ export default function Home() {
     if (configuredSlides.length > 0) return configuredSlides;
     const mediaBackedCatalogueSlides = [...productSlides, ...serviceSlides];
     return mediaBackedCatalogueSlides.length > 0 ? mediaBackedCatalogueSlides : [defaultSlide];
-  }, [heroPending, slides, products, services, brand.descriptor]);
+  }, [heroPending, slides, featuredProducts, services, brand.descriptor]);
 
   // Preload hero slide, service, product, project, and partner images for smooth transitions
   useImagePreloader(
@@ -439,16 +440,20 @@ export default function Home() {
       <section className="relative z-30 bg-[#F7F6F3] px-4 sm:px-6 lg:px-8 py-3 sm:py-6">
         <div className="max-w-6xl mx-auto customer-intent-grid">
           <Link href="/shop" className="group customer-intent-card">
-            <div><strong>Shop materials</strong><span>Browse products and variants</span></div><ArrowRight className="w-4 h-4 text-primary-500 transition-transform group-hover:translate-x-1" />
+            <span className="customer-intent-icon bg-[#FDF0DC] text-[#B45309]"><Package className="h-5 w-5" aria-hidden="true" /></span>
+            <div className="min-w-0 flex-1"><strong>Shop materials</strong><span>Browse products and variants</span></div><ArrowRight className="w-4 h-4 shrink-0 text-slate-400 transition-transform group-hover:translate-x-1" />
           </Link>
           <Link href="/services" className="group customer-intent-card">
-            <div><strong>Find a service</strong><span>Explore flooring and waterproofing</span></div><ArrowRight className="w-4 h-4 text-primary-500 transition-transform group-hover:translate-x-1" />
+            <span className="customer-intent-icon bg-[#E1F3F4] text-[#0E6B78]"><Layers className="h-5 w-5" aria-hidden="true" /></span>
+            <div className="min-w-0 flex-1"><strong>Find a service</strong><span>Explore flooring and waterproofing</span></div><ArrowRight className="w-4 h-4 shrink-0 text-slate-400 transition-transform group-hover:translate-x-1" />
           </Link>
           <Link href="/quotation" className="group customer-intent-card">
-            <div><strong>Request a quote</strong><span>Tell us what your project needs</span></div><ArrowRight className="w-4 h-4 text-primary-500 transition-transform group-hover:translate-x-1" />
+            <span className="customer-intent-icon bg-[#EAF6D0] text-[#4D7C0F]"><ReceiptText className="h-5 w-5" aria-hidden="true" /></span>
+            <div className="min-w-0 flex-1"><strong>Request a quote</strong><span>Tell us what your project needs</span></div><ArrowRight className="w-4 h-4 shrink-0 text-slate-400 transition-transform group-hover:translate-x-1" />
           </Link>
           <Link href="/track-order" className="group customer-intent-card">
-            <div><strong>Track your order</strong><span>Check delivery and order progress</span></div><ArrowRight className="w-4 h-4 text-primary-500 transition-transform group-hover:translate-x-1" />
+            <span className="customer-intent-icon bg-[#E6ECFA] text-[#1D4ED8]"><PackageSearch className="h-5 w-5" aria-hidden="true" /></span>
+            <div className="min-w-0 flex-1"><strong>Track your order</strong><span>Check delivery and order progress</span></div><ArrowRight className="w-4 h-4 shrink-0 text-slate-400 transition-transform group-hover:translate-x-1" />
           </Link>
         </div>
       </section>
@@ -598,12 +603,12 @@ export default function Home() {
             <div className="relative">
               <div className="absolute -inset-1.5 bg-gradient-to-r from-primary-500/20 to-accent-500/20 rounded-3xl blur-lg pointer-events-none" />
               <img
-                src={withFallback(aboutContent.image_url, 'https://images.unsplash.com/photo-1541888946425-d81bb19240f5?auto=format&fit=crop&w=1200&q=80')}
+                src={withFallback(aboutContent.image_url, DEFAULT_ABOUT_IMAGE)}
                 alt={aboutSection?.title || 'Flooring specialists team'}
                 loading="lazy"
                 className="relative rounded-2xl shadow-xl w-full object-cover aspect-video border border-white"
                 onError={(e) => {
-                  e.currentTarget.src = 'https://images.unsplash.com/photo-1541888946425-d81bb19240f5?auto=format&fit=crop&w=1200&q=80';
+                  e.currentTarget.src = DEFAULT_ABOUT_IMAGE;
                 }}
               />
             </div>
@@ -625,7 +630,7 @@ export default function Home() {
                 {productsBadgeText}
               </span>
               <h2 className="font-display text-2xl lg:text-4xl font-bold text-navy-950 tracking-tight">
-                {productsSection?.title || 'Featured Materials'}
+                {productsSection?.title || (featuredProducts.length > 0 ? 'Featured Materials' : 'Our Materials')}
               </h2>
               <p className="text-gray-600 text-sm lg:text-base mt-1">{productsSection?.subtitle || 'Premium flooring chemicals and waterproofing products'}</p>
             </div>

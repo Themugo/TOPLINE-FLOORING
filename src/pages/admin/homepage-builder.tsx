@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import { MoveToStorageButton } from '@/components/admin/MoveToStorageButton';
+import { DEFAULT_ABOUT_IMAGE } from '@/lib/about-page';
 import { describeDbError } from '@/lib/db';
 import { Eye, EyeOff, Settings2, Save, Plus, Trash2, ChevronUp, ChevronDown, Loader2 } from 'lucide-react';
 import { AdminLayout } from './dashboard';
@@ -511,6 +513,7 @@ function SectionEditor({ section, onSave, onClose, saving }: { section: Homepage
                 onChange={(url) => setForm({ ...form, content: { ...form.content, image_url: url } })}
                 folder="homepage"
               />
+              {!form.content.image_url && <MoveToStorageButton sourceUrl={DEFAULT_ABOUT_IMAGE} folder="homepage" onDone={(url) => setForm({ ...form, content: { ...form.content, image_url: url } })} />}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Stats (e.g. "10+ Years")</label>
                 <div className="space-y-2">

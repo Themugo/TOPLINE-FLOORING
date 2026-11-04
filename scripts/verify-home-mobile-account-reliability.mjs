@@ -19,7 +19,7 @@ check('Mobile header provides accessible product search', /Search products/.test
 check('Mobile header search routes to the real shop catalogue', /setLocation\(`\/shop\?search=\$\{encodeURIComponent\(query\)\}`\)/.test(header));
 check('Shop restores search term from URL', /new URLSearchParams\(window\.location\.search\)\.get\('search'\)/.test(shop));
 check('Mobile header has a settings-driven direct call action', /aria-label="Call Topline"/.test(header) && /telHref\(phone\)/.test(header));
-check('Mobile bottom navigation exposes Services and Shop', /href="\/services"[\s\S]*?Services/.test(actionBar) && /href="\/shop"[\s\S]*?Shop/.test(actionBar));
+check('Mobile bottom navigation exposes Services and Shop', /['"]\/services['"][\s\S]*?Services/.test(actionBar) && /['"]\/shop['"][\s\S]*?Shop/.test(actionBar));
 check('Mobile bottom navigation exposes WhatsApp and quotation', /wa\.me\/\$\{whatsapp\}/.test(actionBar) && /href="\/quotation"/.test(actionBar));
 check('Mobile bottom navigation respects safe-area inset', /env\(safe-area-inset-bottom\)/.test(actionBar));
 check('Customer dashboard core payload loads independently of optional sections', /portal = await getCustomerPortal360\(\)/.test(portal) && /Promise\.allSettled/.test(portal));

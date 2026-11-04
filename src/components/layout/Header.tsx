@@ -232,24 +232,24 @@ export function Header() {
             <div className="flex items-center gap-1 sm:gap-2 lg:gap-3">
               <button
                 type="button"
-                className="inline-flex h-11 w-10 sm:w-11 items-center justify-center rounded-xl text-[#0C2D57] hover:bg-[#F7F6F3] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0E6B78]"
+                className="inline-flex h-11 w-10 sm:w-11 items-center justify-center rounded-xl text-[#0E6B78] hover:bg-[#E6F4F5] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0E6B78]"
                 aria-label={mobileSearchOpen ? 'Close product search' : 'Search products'}
                 aria-expanded={mobileSearchOpen}
                 onClick={() => { setMobileSearchOpen((open) => !open); setMobileMenuOpen(false); }}
               ><Search className="h-5 w-5" aria-hidden="true" /></button>
-              {phone && <a href={telHref(phone)} className="lg:hidden inline-flex h-11 w-10 sm:w-11 items-center justify-center rounded-xl text-[#0C2D57] hover:bg-[#F7F6F3] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0E6B78]" aria-label="Call Topline"><Phone className="h-5 w-5" aria-hidden="true" /></a>}
+              {phone && <a href={telHref(phone)} className="lg:hidden inline-flex h-11 w-10 sm:w-11 items-center justify-center rounded-xl text-[#15803D] hover:bg-[#EAF7EE] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0E6B78]" aria-label="Call Topline"><Phone className="h-5 w-5" aria-hidden="true" /></a>}
               <Link
                 href="/portal"
                 className="hidden sm:flex items-center gap-2 px-2.5 py-2 text-[13px] font-semibold text-slate-600 hover:text-[#0C2D57] hover:bg-slate-50 rounded-lg transition-colors"
                 aria-label="Customer account"
               >
-                <UserRound className="w-4 h-4" />
+                <UserRound className="w-4 h-4 text-[#6D28D9]" />
                 <span>My Account</span>
               </Link>
 
               <Link
                 href="/cart"
-                className="relative rounded-xl p-2.5 text-slate-600 transition-colors hover:bg-[#F7F6F3] hover:text-[#0C2D57] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0E6B78]"
+                className="relative rounded-xl p-2.5 text-[#C2410C] transition-colors hover:bg-[#FFF3EA] hover:text-[#9A3412] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0E6B78]"
                 aria-label={`Shopping cart${totalItems > 0 ? `, ${totalItems} items` : ''}`}
               >
                 <ShoppingCart className="w-5 h-5" />

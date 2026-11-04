@@ -104,6 +104,7 @@ const AdminFulfillmentDelivery360 = lazy(() => import('@/pages/admin/fulfillment
 const AdminSiteControl = lazy(() => import('@/pages/admin/site-control'));
 const AdminPages = lazy(() => import('@/pages/admin/pages'));
 const AdminSiteContent = lazy(() => import('@/pages/admin/site-content'));
+const AdminAboutPage = lazy(() => import('@/pages/admin/about-page'));
 const CustomPage = lazy(() => import('@/pages/custom-page'));
 
 function AdminLoading() {
@@ -254,6 +255,7 @@ function Router() {
     '/admin/site-control': AdminSiteControl,
     '/admin/pages': AdminPages,
     '/admin/site-content': AdminSiteContent,
+    '/admin/about-page': AdminAboutPage,
   };
 
   const AdminComponent = adminRoutes[location as keyof typeof adminRoutes];

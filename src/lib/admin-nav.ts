@@ -166,6 +166,7 @@ export const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
       { href: '/admin/homepage', label: 'Homepage', icon: LayoutTemplate },
       { href: '/admin/hero-slides', label: 'Hero Slides', icon: ImageIcon, keywords: 'banner carousel' },
       { href: '/admin/pages', label: 'Pages', icon: Newspaper },
+      { href: '/admin/about-page', label: 'About Page', icon: Newspaper, keywords: 'who we are story team photo' },
       { href: '/admin/site-content', label: 'Site Content', icon: Newspaper },
       { href: '/admin/navigation', label: 'Site Menus', icon: ListTree, keywords: 'navigation header footer' },
       { href: '/admin/media-library', label: 'Media Library', icon: Folder, keywords: 'images files' },
@@ -317,7 +318,7 @@ export const ADMIN_SIDEBAR: AdminSidebarGroup[] = [
     hubs: [
       { id: 'content', label: 'Website Content', icon: LayoutTemplate, keywords: 'homepage hero banner pages menus testimonials partners', tabs: [
         { href: '/admin/homepage', label: 'Homepage' }, { href: '/admin/hero-slides', label: 'Hero slides' }, { href: '/admin/pages', label: 'Pages' },
-        { href: '/admin/site-content', label: 'Page text' }, { href: '/admin/testimonials', label: 'Testimonials' },
+        { href: '/admin/about-page', label: 'About page' }, { href: '/admin/site-content', label: 'Page text' }, { href: '/admin/testimonials', label: 'Testimonials' },
         { href: '/admin/partners', label: 'Partners' }, { href: '/admin/navigation', label: 'Menus' } ] },
       { id: 'media', label: 'Media Library', icon: Folder, keywords: 'images files', tabs: [{ href: '/admin/media-library', label: 'Media Library' }] },
       { id: 'look', label: 'Look & Search', icon: Palette, keywords: 'theme colours seo brand', tabs: [

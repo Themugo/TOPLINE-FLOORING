@@ -342,10 +342,10 @@ export default function Cart() {
             Continue Shopping
           </Link>
 
-          <div className="grid lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-3 lg:gap-8">
             {/* Cart Items */}
-            <div className="lg:col-span-2">
-              <h1 className="font-display text-3xl font-bold tracking-tight text-[#0C2D57] mb-6">
+            <div className="min-w-0 lg:col-span-2">
+              <h1 className="font-display text-2xl sm:text-3xl font-bold tracking-tight text-[#0C2D57] mb-6">
                 Your Cart ({items.length} {items.length === 1 ? 'item' : 'items'})
               </h1>
 
@@ -357,9 +357,9 @@ export default function Cart() {
               <div className="space-y-4">
                 {items.map((item) => (
                   <div key={`${item.product.id}:${item.variant?.id || 'base'}`} className="bg-white rounded-xl p-4 sm:p-6 border border-gray-200">
-                    <div className="flex gap-4">
+                    <div className="flex gap-3 sm:gap-4">
                       <Link href={`/product/${item.product.slug}`} className="flex-shrink-0">
-                        <div className="w-24 h-24 sm:w-32 sm:h-32 rounded-lg overflow-hidden bg-gray-100">
+                        <div className="w-20 h-20 sm:w-32 sm:h-32 rounded-lg overflow-hidden bg-gray-100">
                           <img
                             src={withFallback(item.product.image_url, getProductPlaceholder(item.product.category?.slug || item.product.category?.name))}
                             alt={item.product.name}
@@ -371,7 +371,7 @@ export default function Cart() {
                       <div className="flex-1 min-w-0">
                         <Link
                           href={`/product/${item.product.slug}`}
-                          className="font-semibold text-gray-900 hover:text-primary-600 line-clamp-2"
+                          className="font-semibold text-gray-900 hover:text-primary-600 line-clamp-2 break-words [overflow-wrap:anywhere]"
                         >
                           {item.product.name}
                         </Link>
@@ -379,7 +379,7 @@ export default function Cart() {
                           {formatKES(item.variant ? (item.variant.sale_price ?? item.product.price + (item.variant.price_adjustment || 0)) : (item.product.sale_price ?? item.product.price))} / {item.product.unit}
                         </p>
                         {item.variant && <p className="text-xs text-gray-500 mt-1">Option: {item.variant.variant_name}</p>}
-                        <div className="flex items-center gap-4 mt-4">
+                        <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-2 sm:mt-4 sm:gap-4">
                           <div className="flex items-center border border-gray-300 rounded-lg">
                             <button
                               onClick={() => updateQuantity(item.product.id, item.quantity - 1, item.variant)}
@@ -399,7 +399,7 @@ export default function Cart() {
                               <Plus className="w-4 h-4" />
                             </button>
                           </div>
-                          <p className="font-semibold text-gray-900">
+                          <p className="font-semibold text-gray-900 tabular-nums">
                             {formatKES((item.variant ? (item.variant.sale_price ?? item.product.price + (item.variant.price_adjustment || 0)) : (item.product.sale_price ?? item.product.price)) * item.quantity)}
                           </p>
                           <button
@@ -417,8 +417,8 @@ export default function Cart() {
             </div>
 
             {/* Checkout Form */}
-            <div className="lg:col-span-1">
-              <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm sticky top-24">
+            <div className="min-w-0 lg:col-span-1">
+              <div className="bg-white rounded-2xl p-4 sm:p-6 border border-slate-200 shadow-sm lg:sticky lg:top-24">
                 <h2 className="font-display text-lg font-bold text-gray-900 mb-4">
                   Order Summary
                 </h2>
