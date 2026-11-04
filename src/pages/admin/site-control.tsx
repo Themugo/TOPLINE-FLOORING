@@ -58,8 +58,8 @@ export default function AdminSiteControl() {
   const [testingBrevo, setTestingBrevo] = useState(false);
   const { toast } = useToast();
 
-  const load = useCallback(async () => {
-    setLoading(true);
+  const load = useCallback(async (quiet = false) => {
+    if (!quiet) setLoading(true);
     try {
       // Order must match the queries below: certifications are fetched before feature flags.
       const [tokenRes, cssRes, intRes, gatewayRes, certRes, flagRes] = await Promise.all([
@@ -89,6 +89,7 @@ export default function AdminSiteControl() {
   }, [toast]);
 
   useEffect(() => { void load(); }, [load]);
+  const [banner, setBanner] = useState<{ ok: boolean; text: string } | null>(null);
 
   const saveToken = async (token: Token) => {
     if (!/^[a-zA-Z][a-zA-Z0-9_.-]{0,63}$/.test(token.token_key) || !isSafeDesignTokenValue(token.token_value)) {
@@ -119,10 +120,13 @@ export default function AdminSiteControl() {
   const saveIntegration = async (item: Integration) => {
     setSaving(true);
     try {
-      const { error } = await supabase.from('site_integration_configs').update({ provider: item.provider, is_enabled: item.is_enabled, public_config: item.public_config, status: item.is_enabled ? item.status : 'disabled', updated_at: new Date().toISOString() }).eq('id', item.id);
+      const { data, error } = await supabase.from('site_integration_configs').update({ provider: item.provider, is_enabled: item.is_enabled, public_config: item.public_config, status: item.is_enabled ? item.status : 'disabled', updated_at: new Date().toISOString() }).eq('id', item.id).select('id,is_enabled').maybeSingle();
       if (error) throw error;
+      if (!data) throw new Error('The change was not stored. Your account may not have permission to edit settings, or the session expired. Sign in again and retry.');
+      setBanner({ ok: true, text: `${item.integration_key} saved ${new Date().toLocaleTimeString()}` });
       toast({ title: `${item.integration_key} saved` });
-    } catch (error) { toast({ title: 'Integration save failed', description: errorMessage(error, 'Unable to save.'), variant: 'destructive' }); }
+      await load(true);
+    } catch (error) { const m = errorMessage(error, 'Unable to save.'); setBanner({ ok: false, text: `Integration NOT saved: ${m}` }); toast({ title: 'Integration save failed', description: m, variant: 'destructive' }); await load(true); }
     finally { setSaving(false); }
   };
 
@@ -162,10 +166,12 @@ export default function AdminSiteControl() {
         },
       });
       if (error) throw error;
+      setBanner({ ok: true, text: `${item.display_name} saved ${new Date().toLocaleTimeString()}` });
       toast({ title: `${item.display_name} payment gateway saved`, description: data?.release_gate?.ready ? 'Production certification gate is satisfied.' : 'Gateway remains subject to provider certification.' });
       await load();
     } catch (error) {
-      toast({ title: 'Payment gateway save failed', description: errorMessage(error, 'Unable to save.'), variant: 'destructive' });
+      const m = errorMessage(error, 'Unable to save.'); setBanner({ ok: false, text: `Payment gateway NOT saved: ${m}` });
+      toast({ title: 'Payment gateway save failed', description: m, variant: 'destructive' }); await load(true);
     } finally { setSaving(false); }
   };
 
@@ -192,10 +198,13 @@ export default function AdminSiteControl() {
   const saveFlag = async (item: Flag) => {
     setSaving(true);
     try {
-      const { error } = await supabase.from('site_feature_flags').update({ is_enabled: item.is_enabled, config: item.config, updated_at: new Date().toISOString() }).eq('id', item.id);
+      const { data, error } = await supabase.from('site_feature_flags').update({ is_enabled: item.is_enabled, config: item.config, updated_at: new Date().toISOString() }).eq('id', item.id).select('id').maybeSingle();
       if (error) throw error;
+      if (!data) throw new Error('The change was not stored. Your account may not have permission to edit settings, or the session expired. Sign in again and retry.');
+      setBanner({ ok: true, text: `${item.label} ${item.is_enabled ? 'enabled' : 'disabled'} and saved ${new Date().toLocaleTimeString()}` });
       toast({ title: `${item.label} updated` });
-    } catch (error) { toast({ title: 'Feature flag save failed', description: errorMessage(error, 'Unable to save.'), variant: 'destructive' }); }
+      await load(true);
+    } catch (error) { const m = errorMessage(error, 'Unable to save.'); setBanner({ ok: false, text: `${item.label} NOT saved: ${m}` }); toast({ title: 'Feature flag save failed', description: m, variant: 'destructive' }); await load(true); }
     finally { setSaving(false); }
   };
 
@@ -206,6 +215,7 @@ export default function AdminSiteControl() {
       <div className="bg-blue-50 border border-blue-100 rounded-xl p-4 text-sm text-blue-800">
         This is the safe no-code boundary: business content, structured layouts, design tokens, provider metadata and feature switches can be changed here. Provider secrets remain in the deployment secret store and are never exposed to browser code.
       </div>
+      {banner && <div role="status" className={`rounded-xl border p-3 text-sm ${banner.ok ? 'bg-green-50 border-green-200 text-green-800' : 'bg-red-50 border-red-200 text-red-800'}`}>{banner.ok ? '✓ ' : '✕ '}{banner.text}</div>}
       <div className="flex gap-2 border-b">
         {([['design','Design & CSS',Code2],['integrations','Payments & Messaging',ShieldCheck],['features','Features',SlidersHorizontal]] as const).map(([id,label,Icon]) => <button key={id} onClick={() => setTab(id)} className={`px-4 py-2 text-sm font-medium border-b-2 ${tab===id?'border-primary-600 text-primary-700':'border-transparent text-gray-500'}`}><Icon className="inline w-4 h-4 mr-2" />{label}</button>)}
       </div>
@@ -232,7 +242,7 @@ export default function AdminSiteControl() {
             {paymentGateways.map(item => <div key={item.id} className="border rounded-xl p-5">
               <div className="flex flex-wrap items-start justify-between gap-4">
                 <div><h3 className="font-semibold">{item.display_name}</h3><p className="text-xs text-gray-500 mt-1">{item.gateway_key} · {item.provider} · health: {item.health_status}</p></div>
-                <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={item.is_enabled} onChange={e=>setPaymentGateways(prev=>prev.map(x=>x.id===item.id?{...x,is_enabled:e.target.checked}:x))}/> Enabled</label>
+                <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={item.is_enabled} disabled={saving} onChange={e=>{const next={...item,is_enabled:e.target.checked};setPaymentGateways(prev=>prev.map(x=>x.id===item.id?next:x));void savePaymentGateway(next);}}/> Enabled (saves immediately)</label>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                 <label className="text-sm font-medium">Customer display name<input className="input mt-1" value={item.display_name} onChange={e=>setPaymentGateways(prev=>prev.map(x=>x.id===item.id?{...x,display_name:e.target.value}:x))}/></label>
@@ -259,7 +269,7 @@ export default function AdminSiteControl() {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-5">
                 <label className="text-sm font-medium">Provider<input value={item.provider} onChange={e=>setIntegrations(prev=>prev.map(x=>x.id===item.id?{...x,provider:e.target.value}:x))} className="input mt-1"/></label>
                 <label className="text-sm font-medium">Required secret<input value={item.required_secret_env || ''} readOnly className="input mt-1 bg-gray-50 font-mono text-xs"/></label>
-                <label className="flex items-center gap-2 text-sm mt-7"><input type="checkbox" checked={item.is_enabled} onChange={e=>setIntegrations(prev=>prev.map(x=>x.id===item.id?{...x,is_enabled:e.target.checked}:x))}/><span>Enable provider</span></label>
+                <label className="flex items-center gap-2 text-sm mt-7"><input type="checkbox" checked={item.is_enabled} disabled={saving} onChange={e=>{const next={...item,is_enabled:e.target.checked};setIntegrations(prev=>prev.map(x=>x.id===item.id?next:x));void saveIntegration(next);}}/><span>Enable provider (saves immediately)</span></label>
               </div>
               {item.integration_key==='communications.email' && <label className="block text-sm font-medium mt-4">New enquiry alert email(s)<input type="text" value={String((item.public_config as Record<string, unknown>)?.quotation_admin_email ?? '')} onChange={e=>setIntegrations(prev=>prev.map(x=>x.id===item.id?{...x,public_config:{...(x.public_config ?? {}),quotation_admin_email:e.target.value}}:x))} placeholder="sales@yourdomain.co.ke, owner@yourdomain.co.ke" className="input mt-1"/><span className="mt-1 block text-xs font-normal text-gray-500">Staff get an email here for every new quotation request and contact-form message. Up to five addresses, separated by commas. Leave empty to use the contact email from Site Settings.</span></label>}
               <JsonConfigField value={item.public_config ?? {}} onValid={(parsed)=>setIntegrations(prev=>prev.map(x=>x.id===item.id?{...x,public_config:parsed}:x))}/>
