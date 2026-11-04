@@ -11,7 +11,7 @@ const shop = read('src/pages/shop.tsx');
 const portal = read('src/pages/portal.tsx');
 const migration = read('supabase/migrations/20261015140000_reconcile_existing_verified_customer_portal_links.sql');
 
-check('Homepage hero keeps the approved responsive height contract', /h-\[30rem\] min-h-\[30rem\] sm:h-\[32rem\] lg:h-\[35rem\]/.test(home));
+check('Homepage hero keeps the approved responsive height contract', /h-\[17.5rem\] min-h-\[17.5rem\] sm:h-\[24rem\] lg:h-\[30rem\]/.test(home));
 const css = read('src/index.css');
 check('Homepage hero stays neutral (no solid navy flash) until the slide image has loaded', /bg-\[#E9E6DF\]/.test(home) && !/overflow-hidden bg-\[#0C2D57\]/.test(home) && !/backgroundImage: allSlides\[currentSlide\]/.test(home) && /\.topline-home-hero \{[^}]*background: #e9e6df/.test(css) && /readySlides/.test(home) && /onLoad=\{\(\) => markSlideReady/.test(home));
 check('Active hero image is eager and synchronously decoded', /loading=\{index === currentSlide \? 'eager' : 'lazy'\}/.test(home) && /decoding=\{index === currentSlide \? 'sync' : 'async'\}/.test(home));

@@ -113,20 +113,20 @@ export default function Shop() {
       <Breadcrumbs items={[{ label: 'Materials Shop' }]} />
       <div className="min-h-screen bg-gray-50/60">
         {/* Hero Banner Header */}
-        <section className="bg-gradient-to-b from-gray-50 via-white to-gray-50 border-b border-gray-200/80 py-12 lg:py-16 relative overflow-hidden">
+        <section className="bg-gradient-to-b from-gray-50 via-white to-gray-50 border-b border-gray-200/80 py-4 sm:py-10 lg:py-14 relative overflow-hidden">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
-            <span className="inline-block px-3.5 py-1 rounded-full bg-primary-50 text-primary-600 border border-primary-100 text-xs font-semibold uppercase tracking-wider mb-3">
+            <span className="hidden sm:inline-block px-3.5 py-1 rounded-full bg-primary-50 text-primary-600 border border-primary-100 text-xs font-semibold uppercase tracking-wider mb-3">
               Professional Flooring & Waterproofing Materials
             </span>
-            <h1 className="font-display text-3xl sm:text-4xl lg:text-5xl font-bold text-navy-950 tracking-tight mb-3">
+            <h1 className="font-display text-xl sm:text-4xl lg:text-5xl font-bold text-navy-950 tracking-tight mb-1 sm:mb-3">
               Find the right material for your project
             </h1>
-            <p className="text-navy-600 text-base sm:text-lg max-w-3xl mx-auto leading-relaxed">
+            <p className="text-navy-600 text-xs sm:text-lg max-w-3xl mx-auto leading-snug sm:leading-relaxed line-clamp-2 sm:line-clamp-none">
               Shop professional flooring, roofing and waterproofing materials with clear product information, available variants and secure checkout.
             </p>
 
             {/* Value Props Bar */}
-            <div className="mt-8 flex flex-wrap justify-center items-center gap-6 sm:gap-10 text-xs sm:text-sm font-semibold text-navy-800">
+            <div className="mt-3 sm:mt-8 hidden sm:flex flex-wrap justify-center items-center gap-x-4 gap-y-1 sm:gap-6 sm:gap-10 text-xs sm:text-sm font-semibold text-navy-800">
               <div className="flex items-center gap-2">
                 <Truck className="w-4 h-4 text-primary-500" />
                 <span>Delivery options at checkout</span>
@@ -143,12 +143,12 @@ export default function Shop() {
           </div>
         </section>
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
-          <div className="flex flex-col lg:flex-row gap-8">
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-8 lg:py-12">
+          <div className="flex flex-col lg:flex-row gap-4 sm:gap-8">
             {/* Filters Sidebar */}
             <aside className="lg:w-72 flex-shrink-0">
-              <div className="bg-white rounded-2xl border border-gray-200/80 p-6 sticky top-24 shadow-2xs">
-                <div className="flex items-center justify-between mb-5 pb-3 border-b border-gray-100">
+              <div className="bg-white rounded-xl sm:rounded-2xl border border-gray-200/80 p-2.5 sm:p-6 lg:sticky lg:top-24 shadow-2xs">
+                <div className="hidden sm:flex items-center justify-between mb-5 pb-3 border-b border-gray-100">
                   <h2 className="font-display font-bold text-navy-950 flex items-center gap-2 text-base">
                     <Filter className="w-4 h-4 text-primary-500" />
                     Filter Materials
@@ -168,8 +168,8 @@ export default function Shop() {
                 </div>
 
                 {/* Search Bar */}
-                <div className="mb-6">
-                  <label className="block text-xs font-bold uppercase tracking-wider text-navy-800 mb-2">
+                <div className="mb-2 sm:mb-6">
+                  <label className="hidden sm:block text-xs font-bold uppercase tracking-wider text-navy-800 mb-2">
                     Search Catalog
                   </label>
                   <div className="relative">
@@ -195,7 +195,7 @@ export default function Shop() {
                 </div>
 
                 {/* In Stock Toggle */}
-                <div className="mb-6 pb-5 border-b border-gray-100">
+                <div className="mb-2 pb-2 sm:mb-6 sm:pb-5 border-b border-gray-100">
                   <label className="flex items-center justify-between cursor-pointer select-none">
                     <span className="text-xs font-bold uppercase tracking-wider text-navy-800 flex items-center gap-2">
                       <Tag className="w-3.5 h-3.5 text-primary-500" />
@@ -212,16 +212,16 @@ export default function Shop() {
 
                 {/* Categories */}
                 <div>
-                  <h3 className="text-xs font-bold uppercase tracking-wider text-navy-800 mb-3 flex items-center justify-between">
+                  <h3 className="hidden sm:flex text-xs font-bold uppercase tracking-wider text-navy-800 mb-3 items-center justify-between">
                     <span>Categories</span>
                     <span className="text-[10px] text-gray-400 font-medium">
                       {categories.length} Total
                     </span>
                   </h3>
-                  <div className="space-y-1.5">
+                  <div className="flex gap-1.5 overflow-x-auto pb-1 lg:block lg:space-y-1.5 lg:overflow-visible lg:pb-0">
                     <button
                       onClick={() => setSelectedCategory(null)}
-                      className={`w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all flex items-center justify-between ${
+                      className={`shrink-0 lg:w-full text-left px-3 sm:px-3.5 py-1.5 sm:py-2.5 gap-2 rounded-full lg:rounded-xl text-xs font-semibold transition-all flex items-center justify-between ${
                         !selectedCategory
                           ? 'bg-primary-50 text-primary-700 border border-primary-200/80 shadow-2xs'
                           : 'text-gray-600 hover:bg-gray-50'
@@ -242,7 +242,7 @@ export default function Shop() {
                         <button
                           key={category.id}
                           onClick={() => setSelectedCategory(category.id)}
-                          className={`w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all flex items-center justify-between ${
+                          className={`shrink-0 lg:w-full text-left px-3 sm:px-3.5 py-1.5 sm:py-2.5 gap-2 rounded-full lg:rounded-xl text-xs font-semibold transition-all flex items-center justify-between ${
                             isSelected
                               ? 'bg-primary-50 text-primary-700 border border-primary-200/80 shadow-2xs'
                               : 'text-gray-600 hover:bg-gray-50'
@@ -261,7 +261,7 @@ export default function Shop() {
                 </div>
 
                 {/* Technical Help Box */}
-                <div className="mt-8 p-4 rounded-xl bg-navy-950 text-white text-xs space-y-2">
+                <div className="hidden lg:block mt-8 p-4 rounded-xl bg-navy-950 text-white text-xs space-y-2">
                   <p className="font-bold text-primary-200 uppercase tracking-wider text-[10px]">Need Technical Guidance?</p>
                   <p className="text-gray-300 leading-relaxed text-[11px]">
                     Unsure about coverage rates or primer compatibility? Speak with our floor engineers.
@@ -276,10 +276,10 @@ export default function Shop() {
 
             {/* Products Main View */}
             <div className="flex-1">
-              <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
+              <div className="mb-3 sm:mb-5 flex flex-wrap items-center justify-between gap-2 sm:gap-3">
                 <div>
                   <p className="text-sm font-bold text-navy-950">{filteredProducts.length} {filteredProducts.length === 1 ? 'material' : 'materials'} available</p>
-                  <p className="text-xs text-navy-500 mt-0.5">Choose a product, confirm its variant and add it to your order.</p>
+                  <p className="hidden sm:block text-xs text-navy-500 mt-0.5">Choose a product, confirm its variant and add it to your order.</p>
                 </div>
                 <div className="flex items-center gap-3">
                   {totalItems > 0 && <Link href="/cart" className="inline-flex items-center gap-2 rounded-xl border border-primary-200 bg-primary-50 px-3 py-2 text-xs font-bold text-primary-700 hover:bg-primary-100" aria-label={`View cart with ${totalItems} items`}><ShoppingCart className="h-4 w-4" /> View cart ({totalItems})</Link>}
@@ -287,8 +287,8 @@ export default function Shop() {
                 </div>
               </div>
               {/* Header Controls Bar */}
-              <div className="bg-white rounded-2xl border border-gray-200/80 p-4 mb-6 shadow-2xs flex flex-col sm:flex-row items-center justify-between gap-4">
-                <div className="text-xs text-gray-600 font-medium">
+              <div className="bg-white rounded-xl sm:rounded-2xl border border-gray-200/80 p-2 sm:p-4 mb-3 sm:mb-6 shadow-2xs flex flex-row items-center justify-end sm:justify-between gap-2 sm:gap-4">
+                <div className="hidden sm:block text-xs text-gray-600 font-medium">
                   {loading ? (
                     'Loading products...'
                   ) : (
@@ -302,7 +302,7 @@ export default function Shop() {
                 {/* Sort Dropdown */}
                 <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
                   <SlidersHorizontal className="w-3.5 h-3.5 text-gray-400" />
-                  <span className="text-xs text-gray-500 font-medium">Sort by:</span>
+                  <span className="hidden sm:inline text-xs text-gray-500 font-medium">Sort by:</span>
                   <select
                     aria-label="Sort products"
                     value={sortBy}
@@ -319,7 +319,7 @@ export default function Shop() {
 
               {/* Grid Content */}
               {loading ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2.5 sm:gap-5">
                   {Array.from({ length: 6 }).map((_, i) => (
                     <div key={i} className="bg-white rounded-2xl border border-gray-200 overflow-hidden p-4 space-y-3">
                       <div className="aspect-[4/3] bg-gray-100 rounded-xl animate-pulse" />
@@ -340,7 +340,7 @@ export default function Shop() {
                   <button onClick={() => void refetch()} className="btn-primary mt-4">Try again</button>
                 </div>
               ) : filteredProducts.length > 0 ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2.5 sm:gap-5">
                   {filteredProducts.map((product) => {
                     const placeholder = getProductPlaceholder(
                       product.category?.slug || product.category?.name
@@ -353,12 +353,12 @@ export default function Shop() {
                     return (
                       <div
                         key={product.id}
-                        className="group bg-white rounded-2xl border border-gray-200/80 hover:border-primary-300 shadow-2xs hover:shadow-xl transition-all duration-300 overflow-hidden flex flex-col justify-between"
+                        className="group bg-white rounded-xl sm:rounded-2xl border border-gray-200/80 hover:border-primary-300 shadow-2xs hover:shadow-xl transition-all duration-300 overflow-hidden flex flex-col justify-between"
                       >
                         <div>
                           {/* Image Container */}
                           <Link href={`/product/${product.slug}`}>
-                            <div className="relative aspect-[4/3] overflow-hidden bg-navy-950 cursor-pointer">
+                            <div className="relative aspect-square sm:aspect-[4/3] overflow-hidden bg-gray-100 cursor-pointer">
                               <img
                                 src={imageSrc}
                                 alt={product.name}
@@ -371,7 +371,7 @@ export default function Shop() {
                               <div className="absolute inset-0 bg-gradient-to-t from-navy-950/60 via-transparent to-transparent opacity-60 group-hover:opacity-80 transition-opacity" />
 
                               {/* Badges */}
-                              <div className="absolute top-3 left-3 right-3 flex items-center justify-between pointer-events-none">
+                              <div className="absolute top-1.5 left-1.5 right-1.5 sm:top-3 sm:left-3 sm:right-3 flex items-center justify-between pointer-events-none">
                                 {product.featured ? (
                                   <span className="bg-primary-500 text-white text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-md shadow-xs flex items-center gap-1">
                                     <Sparkles className="w-3 h-3" />
@@ -394,7 +394,7 @@ export default function Shop() {
 
                               {/* SKU Code Overlay */}
                               {product.sku && (
-                                <div className="absolute bottom-2.5 left-3 text-[10px] font-mono text-gray-300 bg-navy-950/70 backdrop-blur-xs px-2 py-0.5 rounded border border-white/10">
+                                <div className="hidden sm:block absolute bottom-2.5 left-3 text-[10px] font-mono text-gray-300 bg-navy-950/70 backdrop-blur-xs px-2 py-0.5 rounded border border-white/10">
                                   SKU: {product.sku}
                                 </div>
                               )}
@@ -402,41 +402,41 @@ export default function Shop() {
                           </Link>
 
                           {/* Product Info */}
-                          <div className="p-5">
+                          <div className="p-2.5 sm:p-5">
                             {product.category && (
-                              <p className="text-[10px] font-bold text-primary-600 uppercase tracking-wider mb-1.5">
+                              <p className="hidden sm:block text-[10px] font-bold text-primary-600 uppercase tracking-wider mb-1.5">
                                 {product.category.name}
                               </p>
                             )}
 
                             <Link href={`/product/${product.slug}`}>
-                              <h3 className="font-display font-bold text-navy-950 text-base group-hover:text-primary-600 transition-colors line-clamp-2 leading-snug mb-2">
+                              <h3 className="font-display font-bold text-navy-950 text-[13px] sm:text-base group-hover:text-primary-600 transition-colors line-clamp-2 leading-snug mb-1 sm:mb-2">
                                 {product.name}
                               </h3>
                             </Link>
 
                             {variants.length > 0 && (
-                              <div className="mb-4" onClick={(e) => e.preventDefault()}>
+                              <div className="mb-2 sm:mb-4" onClick={(e) => e.preventDefault()}>
                                 <ProductVariantSelector variants={variants} value={selectedVariant?.id} onChange={(id) => setSelectedVariants((prev) => ({ ...prev, [product.id]: id }))} compact />
                               </div>
                             )}
 
-                            <p className="text-xs text-gray-600 line-clamp-2 leading-relaxed mb-4">
+                            <p className="hidden sm:block text-xs text-gray-600 line-clamp-2 leading-relaxed mb-4">
                               {product.short_description || product.description}
                             </p>
                           </div>
                         </div>
 
                         {/* Price & Cart Footer */}
-                        <div className="px-5 pb-5 pt-3 border-t border-gray-100/80 flex items-center justify-between gap-3 bg-gray-50/40">
+                        <div className="px-2.5 pb-2.5 pt-1.5 sm:px-5 sm:pb-5 sm:pt-3 sm:border-t border-gray-100/80 flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-3 sm:bg-gray-50/40">
                           <div>
-                            <p className="font-display font-bold text-navy-950 text-base leading-none mb-0.5">
+                            <p className="font-display font-bold text-navy-950 text-[15px] sm:text-base leading-none mb-0.5">
                               {formatKES(getProductUnitPrice(product, selectedVariant))}
                             </p>
                             <p className="text-[10px] text-gray-500 font-medium">
                               per {product.unit || 'unit'}
                             </p>
-                            <CompareToggle productId={product.id} productName={product.name} className="mt-2" />
+                            <CompareToggle productId={product.id} productName={product.name} className="mt-1 sm:mt-2 hidden sm:inline-flex" />
                           </div>
 
                           <button
@@ -444,7 +444,7 @@ export default function Shop() {
                             onClick={(e) => handleAddToCart(product, e)}
                             aria-label={isProductPurchasable(product, selectedVariant) ? `Add ${product.name} to cart` : `Request availability for ${product.name}`}
                             title={isProductPurchasable(product, selectedVariant) ? 'Add this material to your cart' : 'Request availability for this material'}
-                            className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
+                            className={`w-full sm:w-auto justify-center px-2 sm:px-3.5 py-2 rounded-lg sm:rounded-xl text-[11px] sm:text-xs font-bold transition-all flex items-center gap-1.5 ${
                               isAdded
                                 ? 'bg-emerald-600 text-white shadow-sm scale-105'
                                 : isProductPurchasable(product, selectedVariant)

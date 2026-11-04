@@ -67,7 +67,6 @@ export default function Home() {
   // After 3.5 seconds it opens anyway so a slow or failing request can never keep a visitor waiting.
   const [patienceOver, setPatienceOver] = useState(false);
   useEffect(() => { const t = window.setTimeout(() => setPatienceOver(true), 3500); return () => window.clearTimeout(t); }, []);
-  const contentReady = patienceOver || (!slidesLoading && !sectionsLoading && !servicesLoading && !featuredLoading && !catalogueLoading);
   const [currentSlide, setCurrentSlide] = useState(0);
   // Slides stay neutral until their image has really loaded, so the page never flashes a solid navy block.
   const [readySlides, setReadySlides] = useState<Record<string, boolean>>({});
@@ -205,6 +204,22 @@ export default function Home() {
     }, [allSlides, services, products, projects, partners, aboutContent?.image_url])
   );
 
+  // First frame: data AND the first hero picture must be ready, so background, text and products appear in one go.
+  const firstHeroId = allSlides[0]?.id;
+  const firstHeroReady = firstHeroId === undefined || !allSlides[0]?.image_url || Boolean(readySlides[String(firstHeroId)]);
+  const contentReady = patienceOver || (!slidesLoading && !sectionsLoading && !servicesLoading && !featuredLoading && !catalogueLoading && firstHeroReady);
+
+  useEffect(() => {
+    const url = allSlides[0]?.image_url;
+    const id = allSlides[0]?.id;
+    if (!url || id === undefined) return;
+    const img = new Image();
+    img.onload = () => markSlideReady(id);
+    img.onerror = () => markSlideReady(id);
+    img.src = url;
+    if (img.complete) markSlideReady(id);
+  }, [allSlides]);
+
   useEffect(() => {
     // Remembered so index.html can start downloading the first hero image before the app has booted next time.
     const first = allSlides[0]?.image_url;
@@ -268,7 +283,7 @@ export default function Home() {
     return (
       <CustomerLayout>
         <div className="animate-pulse" role="status" aria-label="Loading the homepage">
-          <div className="h-[30rem] bg-[#E9E6DF] sm:h-[32rem] lg:h-[35rem]" />
+          <div className="h-[17.5rem] bg-[#E9E6DF] sm:h-[24rem] lg:h-[30rem]" />
           <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
             <div className="h-6 w-48 rounded-full bg-slate-200" />
             <div className="mt-4 h-9 w-2/3 max-w-md rounded-lg bg-slate-200" />
@@ -300,7 +315,7 @@ export default function Home() {
 
       {/* Hero Section - Full viewport slider with dark navy overlay */}
       <section
-        className="topline-home-hero relative h-[30rem] min-h-[30rem] sm:h-[32rem] lg:h-[35rem] overflow-hidden bg-[#E9E6DF] touch-pan-y"
+        className="topline-home-hero relative h-[17.5rem] min-h-[17.5rem] sm:h-[24rem] lg:h-[30rem] overflow-hidden bg-[#E9E6DF] touch-pan-y"
         style={!heroPending && allSlides.length === 0 ? { display: 'none' } : undefined}
         aria-roledescription="carousel"
         aria-label="Featured products, services and company highlights"
@@ -330,7 +345,7 @@ export default function Home() {
           <div
             key={slide.id}
             aria-hidden={index !== currentSlide}
-            className={`absolute inset-0 transition-opacity duration-1000 ${
+            className={`absolute inset-0 transition-opacity duration-500 ${
               index === currentSlide ? 'opacity-100' : 'opacity-0'
             }`}
           >
@@ -354,33 +369,27 @@ export default function Home() {
             />
             <div className="absolute inset-0 z-20 flex items-center transition-opacity duration-500" style={{ opacity: readySlides[String(slide.id)] ? 1 : 0 }}>
               <div className="max-w-7xl mx-auto px-5 sm:px-8 lg:px-10 w-full">
-                <div className="max-w-2xl py-10">
-                  {slide.source_type !== 'hero_slide' && (
+                <div className="max-w-2xl pt-4 pb-9 sm:py-10">
+                  {slide.source_type !== 'hero_slide' && !slide.subtitle && (
                     <p className="inline-flex items-center rounded-full border border-white/30 bg-white/10 px-3 py-1 mb-4 text-[11px] font-bold uppercase tracking-[0.16em] text-[#EEFBCF] backdrop-blur-sm">
                       {slide.source_type === 'product' ? 'Featured product' : 'Featured service'}
                     </p>
                   )}
                   {slide.subtitle && (
                     <p
-                      className={`text-[#B4E33D] font-semibold mb-3 sm:mb-4 text-[11px] sm:text-sm uppercase tracking-[0.16em] sm:tracking-[0.18em] transition-all duration-500 delay-100 ${
-                        index === currentSlide ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2'
-                      }`}
+                      className={`text-[#B4E33D] font-semibold mb-1.5 sm:mb-4 text-[10px] sm:text-sm uppercase tracking-[0.16em] sm:tracking-[0.18em] `}
                     >
                       {slide.subtitle}
                     </p>
                   )}
                   <h1
-                    className={`font-display text-[2rem] leading-[1.06] sm:text-5xl lg:text-[3.75rem] sm:leading-[1.04] font-bold tracking-tight text-white mb-4 sm:mb-5 max-w-2xl text-balance transition-all duration-500 delay-200 ${
-                      index === currentSlide ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2'
-                    }`}
+                    className={`font-display text-[1.4rem] leading-[1.12] sm:text-4xl lg:text-[3.25rem] sm:leading-[1.06] font-bold tracking-tight text-white mb-2.5 sm:mb-4 max-w-2xl text-balance line-clamp-3`}
                   >
                     {slide.title}
                   </h1>
                   {slide.description && (
                     <p
-                      className={`text-sm sm:text-lg text-slate-100 mb-5 sm:mb-7 max-w-xl leading-relaxed line-clamp-3 transition-all duration-500 delay-300 ${
-                        index === currentSlide ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2'
-                      }`}
+                      className={`text-xs sm:text-base text-slate-100 mb-3 sm:mb-6 max-w-xl leading-snug sm:leading-relaxed line-clamp-2 sm:line-clamp-3`}
                     >
                       {slide.description}
                     </p>
@@ -389,9 +398,7 @@ export default function Home() {
                     <Link
                       href={slide.button_link}
                       tabIndex={index === currentSlide ? 0 : -1}
-                      className={`min-h-11 inline-flex items-center justify-center gap-2 bg-[#B4E33D] hover:bg-[#c4ed5d] text-[#0C2D57] px-5 sm:px-6 py-3 rounded-lg text-sm font-bold transition-all duration-500 delay-400 shadow-sm hover:shadow-md ${
-                        index === currentSlide ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2'
-                      }`}
+                      className={`min-h-9 sm:min-h-11 inline-flex items-center justify-center gap-1.5 bg-[#B4E33D] hover:bg-[#c4ed5d] text-[#0C2D57] px-4 sm:px-6 py-2 sm:py-3 rounded-lg text-xs sm:text-sm font-bold shadow-sm hover:shadow-md `}
                     >
                       {slide.button_text}
                       <ArrowRight className="w-4 h-4" />
@@ -422,7 +429,7 @@ export default function Home() {
             >
               <ChevronRight className="w-5 h-5" />
             </button>
-            <div className="absolute bottom-3 sm:bottom-4 left-1/2 -translate-x-1/2 z-30 flex items-center gap-2 rounded-full bg-[#0C2D57]/45 px-3 py-2 backdrop-blur-sm">
+            <div className="absolute bottom-1.5 sm:bottom-4 left-1/2 -translate-x-1/2 z-30 flex items-center gap-1.5 sm:gap-2 rounded-full bg-[#0C2D57]/45 px-2.5 py-1.5 sm:px-3 sm:py-2 backdrop-blur-sm">
               {allSlides.map((_, index) => (
                 <button
                   key={index}
@@ -430,8 +437,8 @@ export default function Home() {
                   aria-label={`Show featured slide ${index + 1}: ${allSlides[index].title}`}
                   aria-current={index === currentSlide ? 'true' : undefined}
                   onClick={() => setCurrentSlide(index)}
-                  className={`w-2.5 h-2.5 rounded-full transition-all focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white ${
-                    index === currentSlide ? 'w-6 bg-primary-500' : 'bg-white/40 hover:bg-white/60'
+                  className={`w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full transition-all focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white ${
+                    index === currentSlide ? 'w-5 bg-primary-500' : 'bg-white/40 hover:bg-white/60'
                   }`}
                 />
               ))}
@@ -441,7 +448,7 @@ export default function Home() {
       </section>
 
       {/* Customer intent shortcuts: help first-time visitors choose the right journey immediately. */}
-      <section className="relative z-30 bg-[#F7F6F3] px-4 sm:px-6 lg:px-8 py-5 sm:py-6">
+      <section className="relative z-30 bg-[#F7F6F3] px-4 sm:px-6 lg:px-8 py-3 sm:py-6">
         <div className="max-w-6xl mx-auto customer-intent-grid">
           <Link href="/shop" className="group customer-intent-card">
             <div><strong>Shop materials</strong><span>Browse products and variants</span></div><ArrowRight className="w-4 h-4 text-primary-500 transition-transform group-hover:translate-x-1" />
@@ -476,9 +483,9 @@ export default function Home() {
 
       {/* Services Section */}
       {isSectionVisible('services') && (
-      <section className={`${servicesSection?.padding || 'py-16 lg:py-20'} bg-white`} style={sectionStyle('services')}>
+      <section className={`${servicesSection?.padding || 'py-7 sm:py-14 lg:py-20'} bg-white`} style={sectionStyle('services')}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-left max-w-3xl mb-9">
+          <div className="text-left max-w-3xl mb-3 sm:mb-3 sm:mb-9">
             <span className="inline-block px-3 py-1 rounded-full bg-primary-50 text-primary-600 border border-primary-100 text-xs font-semibold uppercase tracking-wider mb-2">
               {servicesBadgeText}
             </span>
@@ -498,7 +505,7 @@ export default function Home() {
                     key={service.id}
                     href={service.slug ? `/service/${service.slug}` : '/services'}
                     aria-label={`View ${service.name}`}
-                    className="group flex flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg w-72 lg:w-80 flex-shrink-0 snap-start"
+                    className="group flex flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg w-40 sm:w-72 lg:w-80 flex-shrink-0 snap-start"
                   >
                     <div className="relative aspect-[4/3] overflow-hidden bg-slate-100">
                       <img
@@ -509,18 +516,18 @@ export default function Home() {
                       />
                       <ServiceToneBar service={service} />
                     </div>
-                    <div className="flex flex-1 flex-col p-4 lg:p-5">
-                      <h3 className="font-display text-base lg:text-lg font-bold leading-snug text-navy-950 group-hover:text-primary-600 transition-colors">
+                    <div className="flex flex-1 flex-col p-2.5 sm:p-4 lg:p-5">
+                      <h3 className="font-display text-sm sm:text-base lg:text-lg font-bold leading-snug text-navy-950 line-clamp-2 sm:line-clamp-none group-hover:text-primary-600 transition-colors">
                         {service.name}
                       </h3>
-                      <p className="mt-2 line-clamp-3 text-sm leading-relaxed text-slate-600">{service.short_description || service.description}</p>
-                      <span className="mt-auto inline-flex items-center gap-1.5 pt-4 text-sm font-semibold text-primary-600 group-hover:gap-2.5 transition-all">View service <ArrowRight className="h-4 w-4" /></span>
+                      <p className="mt-1 sm:mt-2 line-clamp-2 sm:line-clamp-3 text-xs sm:text-sm leading-snug sm:leading-relaxed text-slate-600">{service.short_description || service.description}</p>
+                      <span className="mt-auto inline-flex items-center gap-1.5 pt-2 sm:pt-4 text-xs sm:text-sm font-semibold text-primary-600 group-hover:gap-2.5 transition-all">View service <ArrowRight className="h-4 w-4" /></span>
                     </div>
                   </Link>
                 ))}
               </div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
+              <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4 lg:gap-6">
                 {services.slice(0, servicesMaxItems).map((service) => (
                   <Link
                     key={service.id}
@@ -537,12 +544,12 @@ export default function Home() {
                       />
                       <ServiceToneBar service={service} />
                     </div>
-                    <div className="flex flex-1 flex-col p-4 lg:p-5">
-                      <h3 className="font-display text-base lg:text-lg font-bold leading-snug text-navy-950 group-hover:text-primary-600 transition-colors">
+                    <div className="flex flex-1 flex-col p-2.5 sm:p-4 lg:p-5">
+                      <h3 className="font-display text-sm sm:text-base lg:text-lg font-bold leading-snug text-navy-950 line-clamp-2 sm:line-clamp-none group-hover:text-primary-600 transition-colors">
                         {service.name}
                       </h3>
-                      <p className="mt-2 line-clamp-3 text-sm leading-relaxed text-slate-600">{service.short_description || service.description}</p>
-                      <span className="mt-auto inline-flex items-center gap-1.5 pt-4 text-sm font-semibold text-primary-600 group-hover:gap-2.5 transition-all">View service <ArrowRight className="h-4 w-4" /></span>
+                      <p className="mt-1 sm:mt-2 line-clamp-2 sm:line-clamp-3 text-xs sm:text-sm leading-snug sm:leading-relaxed text-slate-600">{service.short_description || service.description}</p>
+                      <span className="mt-auto inline-flex items-center gap-1.5 pt-2 sm:pt-4 text-xs sm:text-sm font-semibold text-primary-600 group-hover:gap-2.5 transition-all">View service <ArrowRight className="h-4 w-4" /></span>
                     </div>
                   </Link>
                 ))}
@@ -571,7 +578,7 @@ export default function Home() {
 
       {/* About Section */}
       {isSectionVisible('about') && (
-      <section className={`${aboutSection?.padding || 'py-16 lg:py-20'} bg-gray-50/80 border-y border-gray-200/60`} style={sectionStyle('about')}>
+      <section className={`${aboutSection?.padding || 'py-7 sm:py-14 lg:py-20'} bg-gray-50/80 border-y border-gray-200/60`} style={sectionStyle('about')}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-10 lg:gap-16 items-center">
             <div>
@@ -622,9 +629,9 @@ export default function Home() {
 
       {/* Materials Shop Section */}
       {isSectionVisible('products') && (
-      <section className={`${productsSection?.padding || 'py-16 lg:py-20'} bg-white`} style={sectionStyle('products')}>
+      <section className={`${productsSection?.padding || 'py-7 sm:py-14 lg:py-20'} bg-white`} style={sectionStyle('products')}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-10">
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-2 sm:gap-4 mb-3 sm:mb-10">
             <div>
               <span className="inline-block px-3 py-1 rounded-full bg-primary-50 text-primary-600 border border-primary-100 text-xs font-semibold uppercase tracking-wider mb-2">
                 {productsBadgeText}
@@ -664,7 +671,7 @@ export default function Home() {
                         </span>
                       )}
                     </Link>
-                    <div className="p-4">
+                    <div className="p-2.5 sm:p-4">
                       {product.category && (
                         <p className="text-[11px] font-semibold text-primary-600 uppercase tracking-wider mb-1">
                           {product.category.name}
@@ -678,13 +685,13 @@ export default function Home() {
                       </Link>
                     </div>
                   </div>
-                  <div className="p-4 pt-0 border-t border-gray-100/80 mt-2 flex items-center justify-between">
+                  <div className="p-2.5 pt-0 sm:p-4 sm:pt-0 border-t border-gray-100/80 mt-1 sm:mt-2 flex flex-col sm:flex-row sm:items-center justify-between gap-1.5">
                     <p className="font-bold text-navy-950 text-base">{formatKES(getProductUnitPrice(product, selectedVariant))}</p>
                     <button
                       type="button"
                       onClick={() => handleAddToCart(product, selectedVariant?.id)}
                       aria-label={isProductPurchasable(product, selectedVariant) ? `Add ${product.name} to cart` : `Request availability for ${product.name}`}
-                      className="min-h-10 text-xs bg-primary-500 hover:bg-primary-600 text-white px-3.5 py-2 rounded-lg font-semibold transition-all shadow-2xs hover:shadow-sm"
+                      className="min-h-9 sm:min-h-10 w-full sm:w-auto text-xs bg-primary-500 hover:bg-primary-600 text-white px-3.5 py-2 rounded-lg font-semibold transition-all shadow-2xs hover:shadow-sm"
                     >
                       {isProductPurchasable(product, selectedVariant) ? addToCartText : 'Request Availability'}
                     </button>
@@ -704,7 +711,7 @@ export default function Home() {
 
       {/* Partners */}
       {partners.length > 0 && isSectionVisible('partners') && (
-        <section className={`${partnersSection?.padding || 'py-12 lg:py-16'} bg-gray-50/50 border-y border-gray-200/60`} style={sectionStyle('partners')}>
+        <section className={`${partnersSection?.padding || 'py-6 sm:py-12 lg:py-16'} bg-gray-50/50 border-y border-gray-200/60`} style={sectionStyle('partners')}>
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <h2 className="text-center font-display text-xs lg:text-sm font-bold text-primary-600 uppercase tracking-[0.2em] mb-8">
               {partnersSection?.title || 'Our Partners & Manufacturers'}
@@ -737,7 +744,7 @@ export default function Home() {
 
       {/* Testimonials */}
       {testimonials.length > 0 && isSectionVisible('testimonials') && (
-        <section className={`${testimonialsSection?.padding || 'py-16 lg:py-20'} bg-white`} style={sectionStyle('testimonials')}>
+        <section className={`${testimonialsSection?.padding || 'py-7 sm:py-14 lg:py-20'} bg-white`} style={sectionStyle('testimonials')}>
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center max-w-2xl mx-auto mb-12">
               <span className="inline-block px-3 py-1 rounded-full bg-primary-50 text-primary-600 border border-primary-100 text-xs font-semibold uppercase tracking-wider mb-2">
@@ -776,7 +783,7 @@ export default function Home() {
 
       {/* CTA Section */}
       {isSectionVisible('cta') && (
-      <section className={`${ctaSection?.padding || 'py-16 lg:py-20'} bg-gradient-to-br from-navy-950 via-navy-900 to-navy-950 text-white relative overflow-hidden`} style={sectionStyle('cta')}>
+      <section className={`${ctaSection?.padding || 'py-7 sm:py-14 lg:py-20'} bg-gradient-to-br from-navy-950 via-navy-900 to-navy-950 text-white relative overflow-hidden`} style={sectionStyle('cta')}>
         <div className="absolute inset-0 bg-[radial-gradient(#4593da_1.2px,transparent_1.2px)] [background-size:24px_24px] opacity-10 pointer-events-none" />
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
           <h2 className="font-display text-3xl sm:text-4xl lg:text-5xl font-bold text-white tracking-tight mb-4">
