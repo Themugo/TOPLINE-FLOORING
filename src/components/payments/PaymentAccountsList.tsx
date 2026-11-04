@@ -5,9 +5,9 @@ import type { CustomerPaymentAccount } from '@/lib/payment-accounts';
 function CopyValue({ label, value }: { label: string; value: string }) {
   const [copied, setCopied] = useState(false);
   return (
-    <div className="flex items-center justify-between gap-3 border-b border-slate-100 py-2 last:border-0">
-      <span className="text-xs text-muted-foreground">{label}</span>
-      <span className="flex items-center gap-2 text-sm font-medium text-right break-all">
+    <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-0.5 border-b border-slate-100 py-2.5 last:border-0">
+      <span className="text-xs uppercase tracking-wide text-muted-foreground">{label}</span>
+      <span className="flex items-center gap-2 text-sm font-semibold tabular-nums text-right [overflow-wrap:anywhere]">
         {value}
         <button
           type="button"
@@ -34,12 +34,12 @@ export function PaymentAccountsList({ accounts }: { accounts: CustomerPaymentAcc
   const notes = Array.from(new Set(accounts.map((a) => (a.instructions ?? '').trim()).filter(Boolean)));
   return (
     <div className="space-y-4">
-    <div className="grid gap-4 md:grid-cols-2">
+    <div className="grid gap-4 [grid-template-columns:repeat(auto-fit,minmax(min(100%,17rem),1fr))]">
       {accounts.map((a, i) => {
         const Icon = a.kind === 'bank' ? Landmark : Smartphone;
         return (
-          <div key={a.id ?? i} className="rounded-xl border border-slate-200 bg-white p-4 text-left">
-            <div className="mb-2 flex items-center gap-2 font-semibold"><Icon className="h-4 w-4 text-primary" />{KIND_TITLES[a.kind] ?? a.label}</div>
+          <div key={a.id ?? i} className="min-w-0 rounded-xl border border-slate-200 bg-white p-4 text-left shadow-sm">
+            <div className="mb-1 flex items-center gap-2 border-b border-slate-100 pb-2 font-semibold text-[#0C2D57]"><Icon className="h-4 w-4 shrink-0 text-primary" />{KIND_TITLES[a.kind] ?? a.label}</div>
             {a.kind === 'bank' && <>
               {a.bank_name && <CopyValue label="Bank" value={a.bank_name} />}
               {a.account_name && <CopyValue label="Account name" value={a.account_name} />}

@@ -68,13 +68,18 @@ export default function IdentityAccess360() {
   const [form, setForm] = useState({ name: '', email: '', role: 'staff', title: '' });
   const [inviting, setInviting] = useState(false);
 
+  const [upgradeNotice, setUpgradeNotice] = useState('');
   const load = useCallback(async () => {
     setLoading(true);
-    try {
-      const [snap, inv, cat] = await Promise.all([getIdentityAccess360(), getStaffInvitations(), getStaffRoleCatalog()]);
-      setData(snap); setInvites(inv); setRoles(cat); setLoadError('');
-    } catch (e) { setLoadError(errorMessage(e, 'Unable to load identity controls.') ?? 'Unable to load identity controls.'); }
-    finally { setLoading(false); }
+    // Each part loads on its own so a part the database has not been upgraded for cannot blank the whole page.
+    const [snap, inv, cat] = await Promise.allSettled([getIdentityAccess360(), getStaffInvitations(), getStaffRoleCatalog()]);
+    if (snap.status === 'fulfilled') { setData(snap.value); setLoadError(''); }
+    else setLoadError(errorMessage(snap.reason, 'Unable to load identity controls.') ?? 'Unable to load identity controls.');
+    if (inv.status === 'fulfilled') setInvites(inv.value);
+    if (cat.status === 'fulfilled') setRoles(cat.value);
+    const missing = [inv, cat].some((r) => r.status === 'rejected' && /schema cache|could not find the function/i.test(String((r as PromiseRejectedResult).reason?.message ?? '')));
+    setUpgradeNotice(missing ? 'The database has not been upgraded for staff invitations yet. Run the latest database update (supabase db push), then refresh.' : '');
+    setLoading(false);
   }, []);
   useEffect(() => { void load(); }, [load]);
 
@@ -108,6 +113,7 @@ export default function IdentityAccess360() {
   return (
     <AdminLayout title="Team & Access" subtitle="Invite staff, assign their rights and keep a record of every change."
       actions={<button onClick={() => void load()} disabled={loading} className="btn-secondary inline-flex items-center gap-2"><RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />Refresh</button>}>
+      {upgradeNotice && <div className="mb-5 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">{upgradeNotice}</div>}
       {loadError && <div className="mb-5 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">{loadError}</div>}
 
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">

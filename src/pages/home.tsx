@@ -41,7 +41,7 @@ interface HeroSlideData {
 export default function Home() {
   useSeoMeta('home');
   const { slides, loading: slidesLoading } = useHeroSlides();
-  const { sections } = useHomepageSections();
+  const { sections, loading: sectionsLoading } = useHomepageSections();
   const getSection = (type: string) => sections.find(s => s.section_type === type);
   const productsSection = getSection('products');
   const productsLimit = Number(productsSection?.content?.limit) || 6;
@@ -63,6 +63,11 @@ export default function Home() {
   const { addToCart } = useCart();
   const brand = useBrand();
   const [, setLocation] = useLocation();
+  // The page opens once its main data has arrived, all at the same moment, instead of backgrounds appearing before the text and products.
+  // After 3.5 seconds it opens anyway so a slow or failing request can never keep a visitor waiting.
+  const [patienceOver, setPatienceOver] = useState(false);
+  useEffect(() => { const t = window.setTimeout(() => setPatienceOver(true), 3500); return () => window.clearTimeout(t); }, []);
+  const contentReady = patienceOver || (!slidesLoading && !sectionsLoading && !servicesLoading && !featuredLoading && !catalogueLoading);
   const [currentSlide, setCurrentSlide] = useState(0);
   // Slides stay neutral until their image has really loaded, so the page never flashes a solid navy block.
   const [readySlides, setReadySlides] = useState<Record<string, boolean>>({});
@@ -258,6 +263,23 @@ export default function Home() {
     // experience as the Materials Shop instead of silently changing only the badge.
     setLocation('/cart');
   };
+
+  if (!contentReady) {
+    return (
+      <CustomerLayout>
+        <div className="animate-pulse" role="status" aria-label="Loading the homepage">
+          <div className="h-[30rem] bg-[#E9E6DF] sm:h-[32rem] lg:h-[35rem]" />
+          <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
+            <div className="h-6 w-48 rounded-full bg-slate-200" />
+            <div className="mt-4 h-9 w-2/3 max-w-md rounded-lg bg-slate-200" />
+            <div className="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+              {[0, 1, 2, 3].map((i) => <div key={i} className="overflow-hidden rounded-2xl border border-slate-200 bg-white"><div className="aspect-[4/3] bg-slate-100" /><div className="space-y-2 p-5"><div className="h-4 w-3/4 rounded bg-slate-200" /><div className="h-3 w-full rounded bg-slate-100" /></div></div>)}
+            </div>
+          </div>
+        </div>
+      </CustomerLayout>
+    );
+  }
 
   return (
     <CustomerLayout>

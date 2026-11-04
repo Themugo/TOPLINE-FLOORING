@@ -2,6 +2,7 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import type { Quotation, QuotationItem, Invoice, InvoiceItem, Payment } from '@/lib/types';
 import { formatKES } from './utils';
+import type { CustomerPaymentAccount } from '@/lib/payment-accounts';
 
 interface CompanyInfo {
   name: string;
@@ -9,6 +10,21 @@ interface CompanyInfo {
   phone?: string;
   email?: string;
   address?: string;
+  taxLabel?: string;
+  taxPin?: string;
+}
+
+function accountLines(a: CustomerPaymentAccount): string[] {
+  const l: string[] = [];
+  if (a.bank_name) l.push(`Bank: ${a.bank_name}${a.branch ? ' - ' + a.branch : ''}`);
+  if (a.account_name) l.push(`Account name: ${a.account_name}`);
+  if (a.account_number) l.push(`Account no: ${a.account_number}`);
+  if (a.swift_code) l.push(`SWIFT: ${a.swift_code}`);
+  if (a.paybill_number) l.push(`Paybill: ${a.paybill_number}${a.account_number ? '' : ''}`);
+  if (a.till_number) l.push(`Till (Buy Goods): ${a.till_number}`);
+  if (a.phone_number) l.push(`Phone: ${a.phone_number}`);
+  if (a.reference_hint) l.push(`Reference: ${a.reference_hint}`);
+  return l;
 }
 
 export function generateQuotationPdf(
@@ -29,6 +45,7 @@ export function generateQuotationPdf(
   if (company.phone) doc.text(`Tel: ${company.phone}`, 14, 32);
   if (company.email) doc.text(`Email: ${company.email}`, 14, 37);
   if (company.address) doc.text(company.address, 14, 42);
+  if (company.taxPin) doc.text(`${company.taxLabel === 'VAT' ? 'KRA PIN' : 'Tax no'}: ${company.taxPin}`, 14, 47);
 
   doc.setFontSize(16);
   doc.setFont('helvetica', 'bold');
@@ -84,13 +101,13 @@ export function generateQuotationPdf(
 
     const finalY = (doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 8;
     const subtotal = quotation.subtotal || 0;
-    const taxRate = quotation.tax_rate || 16;
+    const taxRate = quotation.tax_rate ?? 16;
     const taxAmount = quotation.tax_amount || 0;
     const total = quotation.total_amount || 0;
 
     doc.setFontSize(10);
     doc.text(`Subtotal: ${formatKES(subtotal)}`, pageWidth - 14, finalY, { align: 'right' });
-    doc.text(`VAT (${taxRate}%): ${formatKES(taxAmount)}`, pageWidth - 14, finalY + 6, { align: 'right' });
+    doc.text(`${company.taxLabel || 'VAT'} (${taxRate}%): ${formatKES(taxAmount)}`, pageWidth - 14, finalY + 6, { align: 'right' });
     doc.setFont('helvetica', 'bold');
     doc.text(`Total: ${formatKES(total)}`, pageWidth - 14, finalY + 13, { align: 'right' });
     cursorY = finalY + 24;
@@ -115,7 +132,8 @@ export function generateInvoicePdf(
   invoice: Invoice,
   items: InvoiceItem[],
   payments: Payment[],
-  company: CompanyInfo
+  company: CompanyInfo,
+  accounts: CustomerPaymentAccount[] = []
 ) {
   const doc = new jsPDF();
   const pageWidth = doc.internal.pageSize.getWidth();
@@ -129,6 +147,7 @@ export function generateInvoicePdf(
   if (company.phone) doc.text(`Tel: ${company.phone}`, 14, 32);
   if (company.email) doc.text(`Email: ${company.email}`, 14, 37);
   if (company.address) doc.text(company.address, 14, 42);
+  if (company.taxPin) doc.text(`${company.taxLabel === 'VAT' ? 'KRA PIN' : 'Tax no'}: ${company.taxPin}`, 14, 47);
 
   doc.setFontSize(16);
   doc.setFont('helvetica', 'bold');
@@ -172,46 +191,61 @@ export function generateInvoicePdf(
 
   const finalY = (doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 8;
 
-  doc.setFontSize(10);
-  doc.text(`Subtotal: ${formatKES(invoice.subtotal)}`, pageWidth - 14, finalY, { align: 'right' });
-  doc.text(`VAT (${invoice.tax_rate}%): ${formatKES(invoice.tax_amount)}`, pageWidth - 14, finalY + 6, { align: 'right' });
-  doc.setFont('helvetica', 'bold');
-  doc.text(`Total: ${formatKES(invoice.total_amount)}`, pageWidth - 14, finalY + 13, { align: 'right' });
-  doc.setFont('helvetica', 'normal');
-
-  let paymentY = finalY + 22;
+  const taxLabel = company.taxLabel || 'VAT';
+  const balance = invoice.total_amount - invoice.amount_paid;
+  const totalsBody: string[][] = [
+    ['Subtotal (excl. ' + taxLabel + ')', formatKES(invoice.subtotal)],
+    [`${taxLabel} @ ${invoice.tax_rate}%`, formatKES(invoice.tax_amount)],
+    ['Invoice total', formatKES(invoice.total_amount)],
+  ];
+  if (invoice.amount_paid > 0) totalsBody.push(['Less: payments received', '-' + formatKES(invoice.amount_paid)]);
+  totalsBody.push([balance > 0 ? 'BALANCE DUE' : 'PAID IN FULL', formatKES(Math.max(balance, 0))]);
+  autoTable(doc, {
+    startY: finalY - 4,
+    margin: { left: pageWidth - 14 - 90 },
+    tableWidth: 90,
+    body: totalsBody,
+    theme: 'plain',
+    styles: { fontSize: 10, cellPadding: 1.8 },
+    columnStyles: { 0: { cellWidth: 52 }, 1: { cellWidth: 38, halign: 'right' } },
+    didParseCell: (d) => {
+      const last = d.row.index === totalsBody.length - 1;
+      if (d.row.index === 2 || last) d.cell.styles.fontStyle = 'bold';
+      if (last) { d.cell.styles.fillColor = [244, 238, 220]; }
+    },
+  });
+  let paymentY = (doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 10;
 
   if (payments.length > 0) {
-    doc.setFont('helvetica', 'bold');
-    doc.text('Payments Received:', 14, paymentY);
-    doc.setFont('helvetica', 'normal');
-    paymentY += 6;
-    payments.forEach((p) => {
-      doc.text(
-        `${new Date(p.paid_at).toLocaleDateString()} - ${formatKES(p.amount)} (${p.method}${p.reference ? ', ref: ' + p.reference : ''})`,
-        14,
-        paymentY
-      );
-      paymentY += 5;
+    autoTable(doc, {
+      startY: paymentY,
+      head: [['Date', 'Method', 'Reference', 'Amount']],
+      body: payments.map((p) => [new Date(p.paid_at).toLocaleDateString(), String(p.method).replace('_', ' '), p.reference || '-', formatKES(p.amount)]),
+      styles: { fontSize: 9 },
+      headStyles: { fillColor: [12, 45, 87] },
+      columnStyles: { 3: { halign: 'right' } },
     });
-    paymentY += 5;
+    paymentY = (doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 10;
   }
 
-  const balance = invoice.total_amount - invoice.amount_paid;
-  doc.setFont('helvetica', 'bold');
-  doc.text(
-    balance > 0 ? `Balance Due: ${formatKES(balance)}` : 'PAID IN FULL',
-    pageWidth - 14,
-    paymentY,
-    { align: 'right' }
-  );
+  if (balance > 0 && accounts.length > 0) {
+    autoTable(doc, {
+      startY: paymentY,
+      head: [['How to pay', 'Details']],
+      body: accounts.map((a) => [a.label, accountLines(a).join('\n') + `\nUse invoice ${invoice.invoice_number} as the payment reference.`]),
+      styles: { fontSize: 9, cellPadding: 2.5 },
+      headStyles: { fillColor: [12, 45, 87] },
+      columnStyles: { 0: { cellWidth: 45, fontStyle: 'bold' } },
+    });
+    paymentY = (doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 8;
+  }
 
   if (invoice.notes) {
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(9);
-    doc.text('Notes:', 14, paymentY + 12);
+    doc.text('Notes:', 14, paymentY);
     const lines = doc.splitTextToSize(invoice.notes, pageWidth - 28);
-    doc.text(lines, 14, paymentY + 17);
+    doc.text(lines, 14, paymentY + 5);
   }
 
   doc.setFontSize(8);

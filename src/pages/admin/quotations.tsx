@@ -7,6 +7,7 @@ import { useQuotations, useSiteSettings } from '@/hooks/use-data';
 import { formatDateTime, formatKES } from '@/lib/utils';
 import { supabase } from '@/lib/supabase';
 import { generateQuotationPdf } from '@/lib/pdf';
+import { useTaxSettings } from '@/lib/tax';
 import { useToast } from '@/hooks/use-toast';
 import type { Quotation, QuotationItem, QuotationStatus } from '@/lib/types';
 import { convertQuotationToOrder, createLeadFromQuotation, upsertQuotationItem, removeQuotationItem } from '@/lib/lifecycle';
@@ -32,6 +33,7 @@ const statusMeta = (status: string) => STATUS_FLOW.find((s) => s.value === statu
 export default function AdminQuotations() {
   const { quotations, loading, refetch } = useQuotations();
   const { settings } = useSiteSettings();
+  const tax = useTaxSettings();
   const { toast } = useToast();
   const [selected, setSelected] = useState<Quotation | null>(null);
 
@@ -53,6 +55,8 @@ export default function AdminQuotations() {
 
   const handleDownloadPdf = (q: Quotation) => {
     generateQuotationPdf(q, q.items || [], {
+      taxLabel: tax.label,
+      taxPin: tax.show_pin_on_documents ? tax.tax_pin : '',
       name: settings.site_info?.name || 'Topline Flooring & Waterproofing',
       tagline: settings.site_info?.tagline,
       phone: settings.contact?.phone,
@@ -196,7 +200,7 @@ function QuotationDetail({
 
   const recalcTotals = (list: QuotationItem[]) => {
     const subtotal = list.reduce((sum, i) => sum + i.line_total, 0);
-    const taxRate = quotation.tax_rate || 16;
+    const taxRate = quotation.tax_rate ?? 16;
     const taxAmount = subtotal * (taxRate / 100);
     return { subtotal, taxAmount, total: subtotal + taxAmount };
   };
@@ -312,7 +316,7 @@ function QuotationDetail({
         {items.length > 0 && (
           <div className="text-right text-sm space-y-1 mb-6">
             <p>Subtotal: {formatKES(subtotal)}</p>
-            <p>VAT ({quotation.tax_rate || 16}%): {formatKES(taxAmount)}</p>
+            <p>VAT ({quotation.tax_rate ?? 16}%): {formatKES(taxAmount)}</p>
             <p className="font-semibold text-base">Total: {formatKES(total)}</p>
           </div>
         )}

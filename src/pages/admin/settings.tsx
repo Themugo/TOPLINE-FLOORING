@@ -4,6 +4,7 @@ import { Link } from 'wouter';
 import { AdminLayout } from './dashboard';
 import { supabase } from '@/lib/supabase';
 import { useToast } from '@/hooks/use-toast';
+import { TaxSettingsCard } from '@/components/admin/TaxSettingsCard';
 import { PaymentAccountsManager } from '@/components/admin/PaymentAccountsManager';
 import { errorMessage } from '@/lib/db';
 
@@ -136,6 +137,7 @@ export default function AdminSettings() {
           {saving ? 'Saving...' : 'Save Account Settings'}
         </button>
       </div>
+      <TaxSettingsCard />
       <PaymentAccountsManager />
     </AdminLayout>
   );

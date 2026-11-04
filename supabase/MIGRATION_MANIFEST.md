@@ -76,7 +76,7 @@ Never put a service-role or worker secret in a `VITE_*` variable.
 
 ## Current active chain (Phases 30–32 verification baseline)
 
-The current production candidate contains 144 uniquely timestamped active migrations, ending with `20261104150000_staff_registration_and_owner_protection.sql`. Run the complete verification suite before any linked database deployment.
+The current production candidate contains 145 uniquely timestamped active migrations, ending with `20261104160000_tax_settings_and_receipt_breakdown.sql`. Run the complete verification suite before any linked database deployment.
 
 Current active chain additions: `20260930170000_service_catalog_and_communications_worker_hardening.sql`, `20260930180000_project_documents_private_storage.sql`, `20260930190000_staff_read_inactive_cms_catalog_rows.sql`, `20260930193000_private_document_policy_overlap_hardening.sql`, `20260930200000_project_templates.sql`, `20260930210000_close_legacy_public_read_policies.sql`, `20260930220000_projects_admin_contract_columns.sql`, `20260930230000_move_product_cost_prices_staff_only.sql`, `20260930240000_coupon_validation_throttle.sql`, `20260930250000_finance_permission_resource.sql`, `20261001090000_project_template_persistence_360.sql`, `20261001100000_admin_notification_state_360.sql`, `20261001110000_catalog_product_service_upload_integrity_360.sql`.
 
@@ -235,3 +235,4 @@ These files were present in `supabase/migrations/` but not yet listed above. App
 - `20261104130000_automation_dispatch_diagnostics.sql` — `get_automation_dispatch_log()` exposes recent worker call responses (401/404/5xx) to staff on the Automation page
 - `20261104140000_manual_payment_always_available.sql` — idempotently re-asserts the manual payment method as enabled, customer-visible and checkout-capable
 - `20261104150000_staff_registration_and_owner_protection.sql` — staff invitations and auto-accept registration, rights catalogue, hierarchy rules and absolute owner protection (triggers + RPCs)
+- `20261104160000_tax_settings_and_receipt_breakdown.sql` — configurable tax (default Kenya VAT 16%, KRA PIN), public allow-list for tax_settings, itemised subtotal/discount/delivery/VAT-included lines on order and payment emails

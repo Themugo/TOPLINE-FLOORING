@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { describeDbError, errorMessage } from '@/lib/db';
 import { Plus, X, Trash2, Download, DollarSign, FileText } from 'lucide-react';
 import { AdminLayout } from './dashboard';
@@ -6,6 +6,9 @@ import { useInvoices, useCustomers, useSiteSettings } from '@/hooks/use-data';
 import { useToast } from '@/hooks/use-toast';
 import { formatDateTime, formatKES } from '@/lib/utils';
 import { generateInvoicePdf } from '@/lib/pdf';
+import { useTaxSettings, formatRate } from '@/lib/tax';
+import { MoneyBreakdown } from '@/components/finance/MoneyBreakdown';
+import { listBusinessPaymentAccounts } from '@/lib/payment-accounts';
 import { transitionInvoiceLifecycle } from '@/lib/finance-operations';
 import type { Invoice, InvoiceStatus, PaymentMethod } from '@/lib/types';
 
@@ -24,6 +27,7 @@ export default function AdminInvoices() {
   const { invoices, loading, createInvoice, refetch } = useInvoices();
   const { customers } = useCustomers();
   const { settings } = useSiteSettings();
+  const tax = useTaxSettings();
   const { toast } = useToast();
   const [showCreate, setShowCreate] = useState(false);
   const [selected, setSelected] = useState<Invoice | null>(null);
@@ -73,7 +77,7 @@ export default function AdminInvoices() {
         customer_email: form.customer_email || null,
         customer_phone: form.customer_phone || null,
         billing_address: form.billing_address || null,
-        tax_rate: Number(form.tax_rate) || 16,
+        tax_rate: form.tax_rate.trim() !== '' && Number.isFinite(Number(form.tax_rate)) ? Number(form.tax_rate) : tax.enabled ? tax.rate : 0,
         due_date: form.due_date || null,
         notes: form.notes || null,
       });
@@ -88,14 +92,20 @@ export default function AdminInvoices() {
     }
   };
 
-  const handleDownloadPdf = (inv: Invoice) => {
+  useEffect(() => { setForm((f) => ({ ...f, tax_rate: String(tax.enabled ? tax.rate : 0) })); }, [tax.enabled, tax.rate]);
+
+  const handleDownloadPdf = async (inv: Invoice) => {
+    let accounts: Awaited<ReturnType<typeof listBusinessPaymentAccounts>> = [];
+    try { accounts = (await listBusinessPaymentAccounts()).filter((a) => a.is_active && a.show_to_customers); } catch { /* the invoice still prints without payment details */ }
     generateInvoicePdf(inv, inv.items || [], inv.payments || [], {
+      taxLabel: tax.label,
+      taxPin: tax.show_pin_on_documents ? tax.tax_pin : '',
       name: settings.site_info?.name || 'Topline Flooring and Waterproofing',
       tagline: settings.site_info?.tagline,
       phone: settings.contact?.phone,
       email: settings.contact?.email,
       address: settings.contact?.address,
-    });
+    }, accounts);
   };
 
   return (
@@ -197,7 +207,7 @@ export default function AdminInvoices() {
               <input placeholder="Phone" value={form.customer_phone} onChange={(e) => setForm({ ...form, customer_phone: e.target.value })} className="input" />
               <input placeholder="Billing address" value={form.billing_address} onChange={(e) => setForm({ ...form, billing_address: e.target.value })} className="input" />
               <div className="grid grid-cols-2 gap-3">
-                <input placeholder="VAT rate %" type="number" value={form.tax_rate} onChange={(e) => setForm({ ...form, tax_rate: e.target.value })} className="input" />
+                <input placeholder={`${tax.label} rate %`} type="number" value={form.tax_rate} onChange={(e) => setForm({ ...form, tax_rate: e.target.value })} className="input" />
                 <input placeholder="Due date" type="date" value={form.due_date} onChange={(e) => setForm({ ...form, due_date: e.target.value })} className="input" />
               </div>
               <textarea placeholder="Notes (optional)" value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} className="input min-h-[60px]" />
@@ -343,13 +353,13 @@ function InvoiceDetail({
 
         {items.length > 0 && (
           <div className="text-right text-sm space-y-1 mb-6 pb-4 border-b border-gray-100">
-            <p>Subtotal: {formatKES(current.subtotal)}</p>
-            <p>VAT ({current.tax_rate}%): {formatKES(current.tax_amount)}</p>
-            <p className="font-semibold text-base">Total: {formatKES(current.total_amount)}</p>
-            <p className="text-gray-700">Paid: {formatKES(current.amount_paid)}</p>
-            <p className={`font-semibold ${balance > 0 ? 'text-red-600' : 'text-green-600'}`}>
-              {balance > 0 ? `Balance Due: ${formatKES(balance)}` : 'Paid in Full'}
-            </p>
+            <MoneyBreakdown rows={[
+              { label: `Subtotal (excl. ${tax.label})`, amount: current.subtotal },
+              { label: `${tax.label} @ ${formatRate(Number(current.tax_rate))}`, amount: current.tax_amount },
+              { label: 'Invoice total', amount: current.total_amount, tone: 'strong' },
+              ...(current.amount_paid > 0 ? [{ label: 'Less: payments received', amount: current.amount_paid, tone: 'minus' as const }] : []),
+              { label: balance > 0 ? 'Balance due' : 'Paid in full', amount: Math.max(balance, 0), tone: 'total' as const },
+            ]} />
           </div>
         )}
 

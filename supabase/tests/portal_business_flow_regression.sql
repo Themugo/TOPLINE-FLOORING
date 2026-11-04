@@ -56,7 +56,7 @@ BEGIN
   IF NOT failed THEN RAISE EXCEPTION 'service case for another customer allowed'; END IF;
   -- customer cannot read payment accounts table or site_settings beyond allow-list
   SELECT count(*) INTO n FROM public.business_payment_accounts; IF n <> 0 THEN RAISE EXCEPTION 'customer reads payment accounts'; END IF;
-  SELECT count(*) INTO n FROM public.site_settings WHERE setting_key <> 'custom_css'; IF n <> 0 THEN RAISE EXCEPTION 'customer reads private settings'; END IF;
+  SELECT count(*) INTO n FROM public.site_settings WHERE setting_key NOT IN ('custom_css','tax_settings'); IF n <> 0 THEN RAISE EXCEPTION 'customer reads private settings'; END IF;
   RESET ROLE;
 
   -- staff: payment details save + site settings upsert/read

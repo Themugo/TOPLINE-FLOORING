@@ -1,4 +1,7 @@
 import { checkoutFingerprint, resolveCheckoutKey, CHECKOUT_FINGERPRINT_STORAGE } from '@/lib/checkout-key';
+import { MoneyBreakdown } from '@/components/finance/MoneyBreakdown';
+import { orderBreakdownRows } from '@/lib/order-breakdown';
+import { useTaxSettings } from '@/lib/tax';
 import { useState, useMemo, useEffect, useRef } from 'react';
 import { Link, useLocation } from 'wouter';
 import { Trash2, ShoppingCart, ArrowLeft, Minus, Plus, Tag, X, Truck } from 'lucide-react';
@@ -43,6 +46,7 @@ interface AppliedCoupon {
 }
 
 export default function Cart() {
+  const tax = useTaxSettings();
   useSeoMeta('cart', null, { breadcrumbs: [{ label: 'Materials Shop', href: '/shop' }, { label: 'Shopping Cart' }], noIndex: true });
   const { items, removeFromCart, updateQuantity, clearCart, replaceItems, totalPrice } = useCart();
   const [cartNotices, setCartNotices] = useState<string[]>([]);
@@ -514,27 +518,8 @@ export default function Cart() {
                   )}
                 </div>
 
-                <div className="py-4 border-b border-gray-200 space-y-2">
-                  <div className="flex justify-between text-sm text-gray-600">
-                    <span>Subtotal</span>
-                    <span>{formatKES(totalPrice)}</span>
-                  </div>
-                  {deliveryCharge > 0 && (
-                    <div className="flex justify-between text-sm text-gray-600">
-                      <span>Delivery</span>
-                      <span>{formatKES(deliveryCharge)}</span>
-                    </div>
-                  )}
-                  {discountAmount > 0 && (
-                    <div className="flex justify-between text-sm text-green-600">
-                      <span>Discount</span>
-                      <span>-{formatKES(discountAmount)}</span>
-                    </div>
-                  )}
-                  <div className="flex justify-between text-lg font-bold pt-1">
-                    <span>Total</span>
-                    <span>{formatKES(finalTotal)}</span>
-                  </div>
+                <div className="py-4 border-b border-gray-200">
+                  <MoneyBreakdown rows={orderBreakdownRows({ subtotal: totalPrice, deliveryCharge, discountAmount, total: finalTotal }, tax)} />
                 </div>
 
                 <form onSubmit={handleSubmit} className="mt-6 space-y-4">

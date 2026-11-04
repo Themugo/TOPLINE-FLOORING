@@ -1,4 +1,7 @@
 import { useLocation } from 'wouter';
+import { MoneyBreakdown } from '@/components/finance/MoneyBreakdown';
+import { orderBreakdownRows } from '@/lib/order-breakdown';
+import { useTaxSettings } from '@/lib/tax';
 import { useEffect, useState } from 'react';
 import { CheckCircle, Package, Phone } from 'lucide-react';
 import { CustomerLayout } from '@/components/layout/CustomerLayout';
@@ -21,6 +24,7 @@ interface OrderSummary {
 }
 
 export default function OrderConfirmation() {
+  const tax = useTaxSettings();
   useSeoMeta('order-confirmation', null, { breadcrumbs: [{ label: 'Materials Shop', href: '/shop' }, { label: 'Order Confirmation' }], noIndex: true });
   const [location] = useLocation();
   const orderId = (location.split('/order-confirmation/')[1] || '').replace(/\/+$/, '');
@@ -79,27 +83,8 @@ export default function OrderConfirmation() {
                   </div>
                 ))}
               </div>
-              <div className="pt-3 space-y-1.5">
-                <div className="flex justify-between text-sm text-gray-600">
-                  <span>Subtotal</span>
-                  <span>{formatKES(summary.subtotal)}</span>
-                </div>
-                {summary.deliveryCharge > 0 && (
-                  <div className="flex justify-between text-sm text-gray-600">
-                    <span>Delivery{summary.deliveryZoneName ? ` (${summary.deliveryZoneName})` : ''}</span>
-                    <span>{formatKES(summary.deliveryCharge)}</span>
-                  </div>
-                )}
-                {summary.discountAmount > 0 && (
-                  <div className="flex justify-between text-sm text-green-600">
-                    <span>Discount</span>
-                    <span>-{formatKES(summary.discountAmount)}</span>
-                  </div>
-                )}
-                <div className="flex justify-between font-bold pt-1.5 border-t border-gray-100 mt-1.5">
-                  <span>Total</span>
-                  <span>{formatKES(summary.total)}</span>
-                </div>
+              <div className="pt-3">
+                <MoneyBreakdown rows={orderBreakdownRows(summary, tax)} />
               </div>
               {summary.deliveryAddress && (
                 <p className="text-xs text-gray-500 mt-3 pt-3 border-t border-gray-100">
