@@ -1,4 +1,13 @@
-DO $$ BEGIN EXECUTE 'ALTER TABLE storage.objects ENABLE ROW LEVEL SECURITY'; EXCEPTION WHEN insufficient_privilege THEN NULL; END $$;
+DO $$
+BEGIN
+  -- Supabase already enables RLS on storage.objects and, on current projects, the postgres role does not
+  -- own the table, so only attempt it and ignore a privilege error.
+  BEGIN
+    EXECUTE 'ALTER TABLE storage.objects ENABLE ROW LEVEL SECURITY';
+  EXCEPTION WHEN insufficient_privilege THEN
+    NULL;
+  END;
+END $$;
 -- Private document storage boundary. Existing public images bucket remains public for website/catalog media.
 INSERT INTO storage.buckets(id,name,public,file_size_limit,allowed_mime_types)
 VALUES('private-documents','private-documents',false,10485760,ARRAY['application/pdf','image/jpeg','image/png','image/webp','text/plain','application/vnd.openxmlformats-officedocument.wordprocessingml.document','application/vnd.openxmlformats-officedocument.spreadsheetml.sheet']::text[])

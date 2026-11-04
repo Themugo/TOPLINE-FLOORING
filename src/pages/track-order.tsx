@@ -11,6 +11,7 @@ import { useSiteSettings } from "@/hooks/use-data";
 import { useSeoMeta } from "@/hooks/use-seo";
 import { trackOrder } from "@/lib/delivery";
 import { telHref } from "@/lib/utils";
+import { ManualPaymentDetails } from "@/components/payments/ManualPaymentDetails";
 import { CustomerPaymentMethods } from "@/components/customer/CustomerPaymentMethods";
 import { initiateCustomerPayment } from "@/lib/customer-payments";
 import { navigateToPaymentUrl } from "@/lib/safe-redirect";
@@ -234,6 +235,7 @@ export default function TrackOrder() {
                       <div><p className="text-xs text-slate-500">Order total</p><p className="mt-1 font-display text-xl font-semibold text-[#0C2D57]">{money(result.total_amount)}</p></div>
                     </div>
                     {!cancelled && !["paid", "completed", "succeeded", "success", "refunded"].includes(paymentState) && <div className="mt-6 border-t border-[#E3DFD8] pt-5">
+                      <div className="mb-5"><ManualPaymentDetails amount={Number(result.total_amount)} reference={result.order_number} /></div>
                       <div className="mb-4"><p className="text-xs font-bold uppercase tracking-[0.16em] text-[#566F0D]">Secure payment recovery</p><h3 className="mt-2 font-display text-lg font-semibold text-[#0C2D57]">Complete payment for this order</h3><p className="mt-1 text-sm leading-6 text-slate-600">Your order is already saved. You do not need to rebuild your cart. Confirm the checkout email and choose a payment method to continue.</p></div>
                       <div className="mb-4 space-y-2"><Label htmlFor="resumePaymentEmail">Checkout email</Label><Input id="resumePaymentEmail" type="email" autoComplete="email" maxLength={254} value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Email used when ordering" /></div>
                       <CustomerPaymentMethods context="order" value={paymentMethod} gatewayValue={paymentGatewayKey} onChange={setPaymentMethod} onGatewayChange={setPaymentGatewayKey} />

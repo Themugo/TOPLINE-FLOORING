@@ -6,6 +6,7 @@ import { Breadcrumbs } from '@/components/Breadcrumbs';
 import { useSeoMeta } from '@/hooks/use-seo';
 import { Link } from 'wouter';
 import { formatKES } from '@/lib/utils';
+import { ManualPaymentDetails } from '@/components/payments/ManualPaymentDetails';
 
 interface OrderSummary {
   items: { name: string; quantity: number; price: number }[];
@@ -64,6 +65,8 @@ export default function OrderConfirmation() {
           <p className="text-sm text-gray-500 mb-8">
             Order Number: <span className="font-mono font-medium">{summary?.orderNumber || orderId.slice(0, 8).toUpperCase()}</span>
           </p>
+
+          <div className="mb-8"><ManualPaymentDetails amount={summary?.total} reference={summary?.orderNumber} /></div>
 
           {summary && (
             <div className="bg-white border border-gray-200 rounded-xl p-6 mb-8 text-left">

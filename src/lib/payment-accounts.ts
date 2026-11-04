@@ -1,4 +1,4 @@
-import { supabase } from '@/lib/supabase';
+import { publicSupabase, supabase } from '@/lib/supabase';
 
 export type PaymentAccountKind = 'bank' | 'mpesa_paybill' | 'mpesa_till' | 'mpesa_send_money' | 'other';
 
@@ -111,6 +111,13 @@ export async function deleteBusinessPaymentAccount(id: string): Promise<void> {
 
 export async function getCustomerPaymentAccounts(): Promise<CustomerPaymentAccount[]> {
   const { data, error } = await supabase.rpc('get_customer_payment_accounts');
+  if (error) throw error;
+  return Array.isArray(data) ? (data as CustomerPaymentAccount[]) : [];
+}
+
+/** Payment destinations marked "show to customers"; readable without signing in so guests can pay manually. */
+export async function getPublicPaymentAccounts(): Promise<CustomerPaymentAccount[]> {
+  const { data, error } = await publicSupabase.rpc('get_public_payment_accounts');
   if (error) throw error;
   return Array.isArray(data) ? (data as CustomerPaymentAccount[]) : [];
 }

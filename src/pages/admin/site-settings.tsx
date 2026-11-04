@@ -8,11 +8,13 @@ import { useCMS } from '@/context/CMSContext';
 import { ImageUpload } from '@/components/ui/image-upload';
 import { BrandLockup } from '@/components/layout/BrandLockup';
 import { DEFAULT_BRAND, resolveBrand } from '@/lib/brand';
+import { DEFAULT_CMS_STORE } from '@/lib/cms-defaults';
 
 export default function AdminSiteSettings() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [loadFailed, setLoadFailed] = useState(false);
+  const [usingStarterValues, setUsingStarterValues] = useState(false);
   const { toast } = useToast();
   const { refetch: refetchCms } = useCMS();
   const [activeTab, setActiveTab] = useState('general');
@@ -64,6 +66,26 @@ export default function AdminSiteSettings() {
       newSettings.site_info = { ...settings.site_info, ...newSettings.site_info };
       if (!newSettings.site_info.logo_url && legacyLogo) newSettings.site_info.logo_url = legacyLogo;
       if (!newSettings.site_info.favicon_url && legacyFavicon) newSettings.site_info.favicon_url = legacyFavicon;
+      // A brand-new project has no saved rows, which left every field blank and the page looking dead.
+      // Offer the published defaults as starter values; nothing is stored until Save All Settings is pressed.
+      const starter = DEFAULT_CMS_STORE.website_settings;
+      const fill = (current: string | undefined, fallback: string) => (current && current.trim() ? current : fallback);
+      const hadSiteInfo = data.some((row) => row.setting_key === 'site_info');
+      const hadContact = data.some((row) => row.setting_key === 'contact');
+      newSettings.site_info = {
+        ...newSettings.site_info,
+        name: fill(newSettings.site_info.name, starter.site_info.name),
+        tagline: fill(newSettings.site_info.tagline, starter.site_info.tagline),
+        description: fill(newSettings.site_info.description, starter.site_info.description),
+      };
+      newSettings.contact = {
+        ...newSettings.contact,
+        email: fill(newSettings.contact.email, 'support@toplinefloorandwaterproofing.co.ke'),
+        phone: fill(newSettings.contact.phone, starter.contact.phone),
+        whatsapp: fill(newSettings.contact.whatsapp, starter.contact.whatsapp),
+        address: fill(newSettings.contact.address, starter.contact.address),
+      };
+      setUsingStarterValues(!hadSiteInfo || !hadContact);
       setSettings(newSettings);
     }
     setLoading(false);
@@ -86,6 +108,7 @@ export default function AdminSiteSettings() {
         if (failure) throw new Error(failure);
       }
       await refetchCms();
+      setUsingStarterValues(false);
       toast({ title: 'Settings saved successfully' });
     } catch (err) {
       toast({ title: 'Failed to save settings', description: errorMessage(err), variant: 'destructive' });
@@ -110,6 +133,11 @@ export default function AdminSiteSettings() {
   return (
     <AdminLayout title="Site Settings">
       <div className="max-w-4xl">
+        {usingStarterValues && (
+          <div className="mb-4 rounded-lg border border-blue-200 bg-blue-50 p-4 text-sm text-blue-900">
+            Nothing has been saved here yet, so the form shows starter values. Review every tab, then press <strong>Save All Settings</strong> to publish them.
+          </div>
+        )}
         {/* Tabs */}
         <div className="flex gap-1 mb-6 bg-gray-100 p-1 rounded-lg overflow-x-auto">
           {tabs.map((tab) => (

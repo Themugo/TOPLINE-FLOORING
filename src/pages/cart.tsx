@@ -11,6 +11,7 @@ import { getProductPlaceholder, withFallback } from '@/lib/placeholders';
 import { createCustomerOrder, validateCoupon } from '@/lib/commerce';
 import { useToast } from '@/hooks/use-toast';
 import { useSeoMeta } from '@/hooks/use-seo';
+import { ManualPaymentDetails } from '@/components/payments/ManualPaymentDetails';
 import { CustomerPaymentMethods } from '@/components/customer/CustomerPaymentMethods';
 import { initiateCustomerPayment } from '@/lib/customer-payments';
 import { navigateToPaymentUrl } from '@/lib/safe-redirect';
@@ -586,6 +587,7 @@ export default function Cart() {
 
                   <div>
                     <CustomerPaymentMethods context="checkout" value={paymentMethod} gatewayValue={paymentGatewayKey} onChange={setPaymentMethod} onGatewayChange={setPaymentGatewayKey} />
+                    {paymentMethod === 'bank_transfer' && <div className="mt-4"><ManualPaymentDetails amount={finalTotal} /></div>}
                   </div>
 
                   <div>

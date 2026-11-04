@@ -62,3 +62,8 @@ Supabase (Edge Functions > Secrets) or Vercel; never in `VITE_*` variables, SQL 
 * `communication-provider-readiness` (POST with the worker secret) lists missing keys per provider; email must report `ready: true`.
 * Admin > Site Control > send a Brevo test email to a mailbox you own.
 * Submit a test quotation: you should receive the acknowledgement, and the alert address should receive the staff alert.
+
+
+## Automation scheduler (Vault)
+
+The database scheduler needs two Vault secrets (`topline_project_url`, `topline_worker_secret`) and the `pg_cron`/`pg_net` extensions. Steps and SQL: `docs/AUTOMATION-SCHEDULER.md`. Check status in Admin > Automation.

@@ -289,3 +289,8 @@ Not verifiable from here: live data, payment-gateway callbacks, email delivery, 
 ## Pass 20 — Rebuilt on a new Supabase project
 - The previous project (`zmbsskvnzjdaxuxlauyx`) was deleted; production is now `cvjmfplhdlfvqnnmzqcp`, owned by the client's own Supabase account. Source, config and verifiers point to the new ref.
 - A from-scratch apply of all 138 migrations on an empty PostgreSQL passes (`supabase/tests/local/run-local.sh`).
+- Migration 088 now revokes `public.rls_auto_enable()` only when it exists (a fresh Supabase project may not have it); verified by a from-scratch apply without the stubbed helper.
+
+## Pass 21 — Automation, worker controls and communication gaps
+Findings: nothing ever invoked the workers (no scheduler); the Automation page was read-only and omitted the delivery job; no receipt on payment; no staff alerts for orders, payments, quotation responses or service cases; SMS/WhatsApp rows queued while those channels were off and would have been sent days late; no invoice reminders; customers got noisy "project pending" mails.
+Fixes (migration `20261104100000_automation_scheduler_and_comms_gaps.sql`): in-database scheduler (pg_cron + pg_net + Vault) with `automation_job_settings`; Run now / Pause / Re-sync RPCs (staff `settings:update`); five-job health report; staff alerts and customer receipt via non-blocking triggers; channel gating; expiry of stale queued messages; `invoice_reminders` job; `operations-scheduler` accepts the new job and a `source`. New regression `automation_comms_regression.sql`; verifier `verify:pass19`. Runbook: `docs/AUTOMATION-SCHEDULER.md`.

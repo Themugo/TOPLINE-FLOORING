@@ -7,7 +7,7 @@ const workerSecret = Deno.env.get('TOPLINE_WORKER_SECRET');
 if (!supabaseUrl || !serviceRoleKey || !workerSecret) throw new Error('Operations scheduler is not configured');
 
 const supabase = createClient(supabaseUrl, serviceRoleKey, { auth: { persistSession: false } });
-const jobs = ['deliver_communications','expire_inventory_reservations','reconcile_payment_provider_events','reconcile_communications'] as const;
+const jobs = ['deliver_communications','expire_inventory_reservations','reconcile_payment_provider_events','reconcile_communications','invoice_reminders'] as const;
 type Job = typeof jobs[number];
 
 function authorized(req: Request) {
@@ -16,8 +16,8 @@ function authorized(req: Request) {
   return constantTimeEqual(direct, workerSecret ?? null) || constantTimeEqual(bearer, workerSecret ?? null);
 }
 
-async function runJob(job: Job) {
-  const started = await supabase.rpc('start_automation_job', { p_job_key: job, p_lock_seconds: 300, p_trigger_source: 'operations-scheduler' });
+async function runJob(job: Job, source: string) {
+  const started = await supabase.rpc('start_automation_job', { p_job_key: job, p_lock_seconds: 300, p_trigger_source: source });
   if (started.error) throw started.error;
   const lock = started.data as { acquired: boolean; run_id?: string; locked_until?: string };
   if (!lock.acquired || !lock.run_id) return { job, status: 'skipped', reason: 'already_running', run_id: lock.run_id ?? null };
@@ -47,6 +47,10 @@ async function runJob(job: Job) {
       const response = await supabase.rpc('reconcile_payment_provider_events', { p_since: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString() });
       if (response.error) throw response.error;
       result = response.data;
+    } else if (job === 'invoice_reminders') {
+      const response = await supabase.rpc('queue_invoice_reminders_worker_360');
+      if (response.error) throw response.error;
+      result = response.data;
     } else {
       const response = await supabase.rpc('reconcile_communications_worker_360');
       if (response.error) throw response.error;
@@ -68,16 +72,18 @@ Deno.serve(async (req) => {
   const body = await req.text();
   if (body.length > 16384) return new Response('Payload Too Large', { status: 413 });
   let requested: Job[] = [...jobs];
+  let source = 'operations-scheduler';
   if (body.trim()) {
     try {
-      const parsed = JSON.parse(body) as { job?: string; jobs?: string[] };
+      const parsed = JSON.parse(body) as { job?: string; jobs?: string[]; source?: string };
+      if (typeof parsed.source === 'string' && parsed.source.trim()) source = parsed.source.trim().replace(/[^\w:.@-]/g, '').slice(0, 80) || source;
       const candidate = parsed.job ? [parsed.job] : parsed.jobs ?? [...jobs];
       requested = candidate.filter((value): value is Job => jobs.includes(value as Job));
       if (!requested.length) return Response.json({ success: false, error: 'No supported jobs requested' }, { status: 400 });
     } catch { return Response.json({ success: false, error: 'Invalid JSON payload' }, { status: 400 }); }
   }
   const results = [];
-  for (const job of requested) results.push(await runJob(job));
+  for (const job of requested) results.push(await runJob(job, source));
   const failed = results.filter((r) => r.status === 'failed').length;
   return Response.json({ success: failed === 0, processed_at: new Date().toISOString(), results }, { status: failed ? 500 : 200 });
 });

@@ -97,7 +97,7 @@ BEGIN
     v_res := public.create_secure_customer_order(E'Click http://evil.example now','reg-order@example.org','0733000001',
       jsonb_build_array(jsonb_build_object('product_id',v_pid,'quantity',1)),'',NULL,NULL,'Nairobi','mpesa','reg-0');
     IF NOT coalesce((v_res->>'success')::boolean,false) THEN RAISE EXCEPTION 'baseline guest order was rejected: %', v_res; END IF;
-    SELECT count(*), count(*) FILTER (WHERE message ~* 'http' OR position(E'\n' in message) > 0) INTO v_msgs, v_links
+    SELECT count(*), count(*) FILTER (WHERE message ~* 'evil' OR subject ~* 'evil') INTO v_msgs, v_links
       FROM public.communication_outbox WHERE recipient IN ('reg-order@example.org','+254733000001');
     IF v_msgs = 0 THEN RAISE EXCEPTION 'order notifications were not queued'; END IF;
     IF v_links > 0 THEN RAISE EXCEPTION 'customer name was not sanitized in % notification(s)', v_links; END IF;

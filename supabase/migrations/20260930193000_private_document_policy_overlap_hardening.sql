@@ -12,7 +12,16 @@
 --
 -- Idempotent: every statement is DROP POLICY IF EXISTS + CREATE POLICY.
 
-DO $$ BEGIN EXECUTE 'ALTER TABLE storage.objects ENABLE ROW LEVEL SECURITY'; EXCEPTION WHEN insufficient_privilege THEN NULL; END $$;
+DO $$
+BEGIN
+  -- Supabase already enables RLS on storage.objects and, on current projects, the postgres role does not
+  -- own the table, so only attempt it and ignore a privilege error.
+  BEGIN
+    EXECUTE 'ALTER TABLE storage.objects ENABLE ROW LEVEL SECURITY';
+  EXCEPTION WHEN insufficient_privilege THEN
+    NULL;
+  END;
+END $$;
 
 -- ---------------------------------------------------------------------------
 -- Customer documents and staff media: everything outside projects/

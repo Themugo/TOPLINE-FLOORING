@@ -16,3 +16,14 @@ create function storage.filename(name text) returns text language sql immutable 
 grant usage on schema auth, storage to anon, authenticated, service_role;
 grant execute on all functions in schema auth to anon, authenticated, service_role;
 alter default privileges in schema public grant all on tables to postgres;
+
+-- Stubs for Supabase Vault, pg_net and pg_cron (the real extensions are managed by Supabase).
+create schema vault; create schema net; create schema cron;
+create table vault.secrets(id uuid primary key default gen_random_uuid(), name text unique, secret text, created_at timestamptz default now());
+create view vault.decrypted_secrets as select id, name, secret as decrypted_secret, created_at from vault.secrets;
+create function vault.create_secret(new_secret text, new_name text default null, new_description text default '') returns uuid language sql as $$ insert into vault.secrets(name, secret) values (new_name, new_secret) returning id $$;
+create table net.requests(id bigserial primary key, url text, body jsonb, headers jsonb, created_at timestamptz default now());
+create function net.http_post(url text, body jsonb default '{}', params jsonb default '{}', headers jsonb default '{}', timeout_milliseconds integer default 5000) returns bigint language sql as $$ insert into net.requests(url, body, headers) values (url, body, headers) returning id $$;
+create table cron.job(jobid bigserial primary key, jobname text unique, schedule text, command text, active boolean default true);
+create function cron.schedule(job_name text, schedule text, command text) returns bigint language sql as $$ insert into cron.job(jobname, schedule, command) values (job_name, schedule, command) on conflict (jobname) do update set schedule = excluded.schedule, command = excluded.command, active = true returning jobid $$;
+create function cron.unschedule(job_id bigint) returns boolean language sql as $$ delete from cron.job where jobid = job_id returning true $$;
