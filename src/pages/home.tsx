@@ -282,7 +282,7 @@ export default function Home() {
     return (
       <CustomerLayout>
         <div className="animate-pulse" role="status" aria-label="Loading the homepage">
-          <div className="h-[25rem] bg-[#E9E6DF] sm:h-[28rem] lg:h-[30rem]" />
+          <div className="aspect-[4/3] max-h-[34rem] bg-[#E9E6DF] sm:aspect-[16/8] lg:aspect-[21/8]" />
           <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
             <div className="h-6 w-48 rounded-full bg-slate-200" />
             <div className="mt-4 h-9 w-2/3 max-w-md rounded-lg bg-slate-200" />
@@ -314,7 +314,7 @@ export default function Home() {
 
       {/* Hero Section - Full viewport slider with dark navy overlay */}
       <section
-        className="topline-home-hero relative h-[25rem] min-h-[25rem] sm:h-[28rem] lg:h-[30rem] overflow-hidden bg-[#E9E6DF] touch-pan-y"
+        className="topline-home-hero relative aspect-[4/3] w-full max-h-[34rem] sm:aspect-[16/8] lg:aspect-[21/8] overflow-hidden bg-[#E9E6DF] touch-pan-y"
         style={!heroPending && allSlides.length === 0 ? { display: 'none' } : undefined}
         aria-roledescription="carousel"
         aria-label="Featured products, services and company highlights"
@@ -348,48 +348,50 @@ export default function Home() {
             aria-hidden={index !== currentSlide}
             className={`absolute inset-0 transition-opacity duration-500 ${index === currentSlide ? 'opacity-100' : 'opacity-0'}`}
           >
-            {/* The whole slide (picture + text) appears as one unit, and the picture is shown complete, exactly as uploaded. */}
-            <div className="absolute inset-0 flex flex-col bg-[#0C2D57] lg:flex-row" style={{ opacity: ready ? 1 : 0, transition: 'opacity 400ms ease-out' }}>
-              <div className="order-2 flex flex-1 flex-col justify-center px-5 pb-7 pt-3 sm:px-8 sm:pb-8 sm:pt-5 lg:order-1 lg:w-[38%] lg:flex-none lg:px-10 lg:pb-5">
-                {slide.source_type !== 'hero_slide' && !slide.subtitle && (
-                  <p className="mb-2 inline-flex w-fit items-center rounded-full border border-white/30 bg-white/10 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.16em] text-[#EEFBCF]">
-                    {slide.source_type === 'product' ? 'Featured product' : 'Featured service'}
-                  </p>
-                )}
-                {slide.subtitle && (
-                  <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-[#B4E33D] sm:mb-3 sm:text-sm sm:tracking-[0.18em]">{slide.subtitle}</p>
-                )}
-                <h1 className="mb-2 max-w-2xl font-display text-[1.4rem] font-bold leading-[1.12] tracking-tight text-white text-balance line-clamp-3 lg:line-clamp-5 sm:mb-3 sm:text-3xl lg:text-[2.6rem] lg:leading-[1.06]">{slide.title}</h1>
-                {slide.description && (
-                  <p className="mb-3 line-clamp-2 max-w-xl text-xs leading-snug text-slate-100 sm:mb-5 sm:text-base sm:leading-relaxed lg:line-clamp-4">{slide.description}</p>
-                )}
-                {slide.button_text && slide.button_link && (
-                  <Link
-                    href={slide.button_link}
-                    tabIndex={index === currentSlide ? 0 : -1}
-                    className="inline-flex min-h-9 w-fit items-center justify-center gap-1.5 rounded-lg bg-[#B4E33D] px-4 py-2 text-xs font-bold text-[#0C2D57] shadow-sm hover:bg-[#c4ed5d] sm:min-h-11 sm:px-6 sm:py-3 sm:text-sm"
-                  >
-                    {slide.button_text}
-                    <ArrowRight className="h-4 w-4" />
-                  </Link>
-                )}
-              </div>
-              <div className="relative order-1 h-[14rem] overflow-hidden bg-[#0A2548] sm:h-[17rem] lg:order-2 lg:h-auto lg:flex-1">
-                <img src={slide.image_url} alt="" aria-hidden="true" className="absolute inset-0 h-full w-full scale-110 object-cover opacity-50 blur-2xl" />
-                <img
-                  src={slide.image_url}
-                  alt={slide.title}
-                  className="relative h-full w-full object-contain object-center"
-                  ref={(el) => { if (el && el.complete && el.naturalWidth > 0) markSlideReady(slide.id); }}
-                  onLoad={() => markSlideReady(slide.id)}
-                  loading={index === currentSlide ? 'eager' : 'lazy'}
-                  decoding={index === currentSlide ? 'sync' : 'async'}
-                  fetchPriority={index === currentSlide ? 'high' : 'auto'}
-                  onError={(e) => {
-                    e.currentTarget.src = getRandomRealImage('flooring', index);
-                    window.setTimeout(() => markSlideReady(slide.id), 1500);
-                  }}
-                />
+            {/* Picture, shade and text appear as one unit; the picture fills the frame edge to edge. */}
+            <div className="absolute inset-0 bg-[#0C2D57]" style={{ opacity: ready ? 1 : 0, transition: 'opacity 400ms ease-out' }}>
+              <img
+                src={slide.image_url}
+                alt={slide.title}
+                className="absolute inset-0 h-full w-full object-cover object-center"
+                ref={(el) => { if (el && el.complete && el.naturalWidth > 0) markSlideReady(slide.id); }}
+                onLoad={() => markSlideReady(slide.id)}
+                loading={index === currentSlide ? 'eager' : 'lazy'}
+                decoding={index === currentSlide ? 'sync' : 'async'}
+                fetchPriority={index === currentSlide ? 'high' : 'auto'}
+                onError={(e) => {
+                  e.currentTarget.src = getRandomRealImage('flooring', index);
+                  window.setTimeout(() => markSlideReady(slide.id), 1500);
+                }}
+              />
+              <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-t from-[#0C2D57]/95 via-[#0C2D57]/55 to-[#0C2D57]/5 lg:bg-gradient-to-r lg:from-[#0C2D57]/90 lg:via-[#0C2D57]/55 lg:to-[#0C2D57]/5" />
+              <div className="absolute inset-0 z-20 flex items-end pb-8 sm:pb-10 lg:items-center lg:pb-0">
+                <div className="mx-auto w-full max-w-7xl px-5 sm:px-8 lg:px-10">
+                  <div className="max-w-xl lg:max-w-2xl">
+                    {slide.source_type !== 'hero_slide' && !slide.subtitle && (
+                      <p className="mb-2 inline-flex w-fit items-center rounded-full border border-white/30 bg-white/10 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.16em] text-[#EEFBCF]">
+                        {slide.source_type === 'product' ? 'Featured product' : 'Featured service'}
+                      </p>
+                    )}
+                    {slide.subtitle && (
+                      <p className="mb-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-[#B4E33D] sm:mb-2 sm:text-sm sm:tracking-[0.18em]">{slide.subtitle}</p>
+                    )}
+                    <h1 className="mb-1.5 font-display text-[1.15rem] font-bold leading-[1.12] tracking-tight text-white text-balance line-clamp-3 sm:mb-3 sm:text-3xl lg:text-[2.6rem] lg:leading-[1.06]">{slide.title}</h1>
+                    {slide.description && (
+                      <p className="mb-2.5 line-clamp-1 max-w-xl text-xs leading-snug text-slate-100 sm:mb-5 sm:line-clamp-2 sm:text-base sm:leading-relaxed">{slide.description}</p>
+                    )}
+                    {slide.button_text && slide.button_link && (
+                      <Link
+                        href={slide.button_link}
+                        tabIndex={index === currentSlide ? 0 : -1}
+                        className="inline-flex min-h-9 w-fit items-center justify-center gap-1.5 rounded-lg bg-[#B4E33D] px-4 py-2 text-xs font-bold text-[#0C2D57] shadow-sm hover:bg-[#c4ed5d] sm:min-h-11 sm:px-6 sm:py-3 sm:text-sm"
+                      >
+                        {slide.button_text}
+                        <ArrowRight className="h-4 w-4" />
+                      </Link>
+                    )}
+                  </div>
+                </div>
               </div>
             </div>
           </div>

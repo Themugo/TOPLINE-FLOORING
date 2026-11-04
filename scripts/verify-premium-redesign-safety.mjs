@@ -22,7 +22,7 @@ const tracking = read('src/pages/track-order.tsx');
 
 check(
   'Homepage hero keeps its exact existing responsive height classes',
-  /topline-home-hero relative h-\[25rem\] min-h-\[25rem\] sm:h-\[28rem\] lg:h-\[30rem\]/.test(home)
+  /topline-home-hero relative aspect-\[4\/3\] w-full max-h-\[34rem\] sm:aspect-\[16\/8\] lg:aspect-\[21\/8\]/.test(home)
 );
 check(
   'Hero remains CMS/catalogue driven',

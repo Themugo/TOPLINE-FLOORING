@@ -1,8 +1,8 @@
 import { useMemo, useState } from 'react';
 import { Link } from 'wouter';
 import {
-  ArrowRight, CheckCircle2, ChevronRight, FileCheck2, HardHat,
-  Layers, Layers3, Search, ShieldCheck, Sparkles, Ruler, X,
+  ArrowRight, CheckCircle2, ChevronRight, FileCheck2,
+  Layers, Layers3, Search, Sparkles, Ruler, X,
 } from 'lucide-react';
 import { CustomerLayout } from '@/components/layout/CustomerLayout';
 import { Breadcrumbs } from '@/components/Breadcrumbs';
@@ -79,49 +79,35 @@ export default function Services() {
           <Breadcrumbs items={[{ label: 'Services' }]} />
         </div>
 
-        {/* Compact, image-led hero: the service is the product; materials support the work. */}
-        <section className="relative isolate overflow-hidden bg-[#0A2548] text-white">
-          <div aria-hidden="true" className="absolute inset-0 bg-[radial-gradient(circle_at_18%_0%,rgba(200,242,106,.10),transparent_34%),linear-gradient(120deg,#0A2548_0%,#183B58_100%)]" />
-          <div className="relative mx-auto grid max-w-7xl items-center gap-8 px-4 py-5 sm:px-6 sm:py-8 lg:grid-cols-[1.05fr_.95fr] lg:gap-12 lg:px-8 lg:py-7">
-            <div className="max-w-2xl">
-              <div className="mb-2 hidden sm:inline-flex items-center gap-2 rounded-full border border-[#C8F26A]/30 bg-white/[0.06] px-3 py-1.5 text-[10px] font-bold uppercase tracking-[.17em] text-[#C8F26A] sm:text-[11px]">
-                <Sparkles aria-hidden="true" className="h-3.5 w-3.5" /> Flooring · Waterproofing · Surface systems
-              </div>
-              <h1 className="font-display text-xl font-semibold leading-[1.15] tracking-tight text-white sm:text-4xl lg:text-[2.5rem]">
-                Skilled work.<br /><span className="text-[#C8F26A]">Surfaces built for purpose.</span>
-              </h1>
-              <p className="mt-2 max-w-xl text-xs leading-5 text-slate-200 line-clamp-2 sm:mt-4 sm:text-base sm:leading-7 sm:line-clamp-none">
-                Find a flooring or waterproofing service, review the scope, and tell us about your site. We help you plan the work and identify materials that may be required for the project.
-              </p>
-              <div className="mt-3 flex flex-row gap-2 sm:mt-6 sm:gap-3">
-                <Link href="/quotation" className="inline-flex min-h-9 sm:min-h-11 items-center justify-center gap-2 rounded-xl bg-[#C8F26A] px-4 py-2 text-xs sm:px-5 sm:py-3 sm:text-sm font-bold text-[#0C2D57] shadow-lg shadow-black/10 transition hover:bg-[#DDF79F] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#0A2548]">
-                  Request a quote <ArrowRight aria-hidden="true" className="h-4 w-4" />
-                </Link>
-                <a href="#service-catalogue" className="inline-flex min-h-9 sm:min-h-11 items-center justify-center gap-2 rounded-xl border border-white/20 bg-white/[0.06] px-4 py-2 text-xs sm:px-5 sm:py-3 sm:text-sm font-semibold text-white transition hover:bg-white/[0.12] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white">
-                  Browse services <ChevronRight aria-hidden="true" className="h-4 w-4" />
-                </a>
-              </div>
-              <div className="mt-6 hidden flex-wrap gap-x-5 gap-y-2 text-xs font-medium text-slate-200 sm:flex">
-                <span className="inline-flex items-center gap-2"><ShieldCheck aria-hidden="true" className="h-4 w-4 text-[#C8F26A]" /> Scope-led recommendations</span>
-                <span className="inline-flex items-center gap-2"><HardHat aria-hidden="true" className="h-4 w-4 text-[#C8F26A]" /> Site-specific planning</span>
-              </div>
-            </div>
-
-            <div className="relative hidden min-w-0 lg:block">
-              <div className="absolute -inset-3 rounded-[1.6rem] border border-white/10" aria-hidden="true" />
-              <div className="relative aspect-[5/3] overflow-hidden rounded-2xl border border-white/15 bg-[#213F57] shadow-2xl shadow-black/25 sm:aspect-[16/9] lg:aspect-[16/8]">
-                <img
-                  src={heroImage}
-                  alt={heroService ? `${heroService.name} service image` : 'Flooring and waterproofing service illustration'}
-                  loading="eager"
-                  className="h-full w-full object-cover"
-                  onError={event => { event.currentTarget.onerror = null; event.currentTarget.src = getServicePlaceholder(heroService?.slug || heroService?.name || 'flooring waterproofing'); }}
-                />
-                <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-t from-[#0A2548]/85 via-[#0A2548]/10 to-transparent" />
-                <div className="absolute inset-x-4 bottom-4 rounded-xl border border-white/15 bg-[#0A2548]/80 p-4 backdrop-blur-md sm:inset-x-5 sm:bottom-5">
-                  <p className="text-[10px] font-bold uppercase tracking-[.16em] text-[#C8F26A]">Start with your project</p>
-                  <p className="mt-1 font-display text-lg font-semibold text-white sm:text-xl">The right scope starts on site.</p>
-                  <p className="mt-1 text-xs leading-5 text-slate-200">Tell us what needs to be done, where, and what the surface must withstand.</p>
+        {/* Image hero: the picture fills the frame edge to edge with the text on it; fixed aspect ratios keep it balanced on every screen. */}
+        <section className="relative isolate aspect-[16/10] max-h-[30rem] w-full overflow-hidden bg-[#0A2548] text-white sm:aspect-[16/7] lg:aspect-[21/7]">
+          <img
+            src={heroImage}
+            alt={heroService ? `${heroService.name} service image` : 'Flooring and waterproofing services'}
+            loading="eager"
+            className="absolute inset-0 h-full w-full object-cover object-center"
+            onError={event => { event.currentTarget.onerror = null; event.currentTarget.src = getServicePlaceholder(heroService?.slug || heroService?.name || 'flooring waterproofing'); }}
+          />
+          <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-t from-[#0A2548]/95 via-[#0A2548]/60 to-[#0A2548]/10 lg:bg-gradient-to-r lg:from-[#0A2548]/90 lg:via-[#0A2548]/55 lg:to-[#0A2548]/5" />
+          <div className="absolute inset-0 flex items-end pb-5 sm:pb-8 lg:items-center lg:pb-0">
+            <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
+              <div className="max-w-xl lg:max-w-2xl">
+                <div className="mb-2 hidden items-center gap-2 rounded-full border border-[#C8F26A]/30 bg-white/[0.06] px-3 py-1.5 text-[10px] font-bold uppercase tracking-[.17em] text-[#C8F26A] sm:inline-flex">
+                  <Sparkles aria-hidden="true" className="h-3.5 w-3.5" /> Flooring · Waterproofing · Surface systems
+                </div>
+                <h1 className="font-display text-xl font-semibold leading-[1.15] tracking-tight text-white sm:text-3xl lg:text-[2.6rem]">
+                  Skilled work. <span className="text-[#C8F26A]">Surfaces built for purpose.</span>
+                </h1>
+                <p className="mt-2 line-clamp-2 max-w-xl text-xs leading-5 text-slate-100 sm:mt-3 sm:text-base sm:leading-7">
+                  Find a flooring or waterproofing service, review the scope, and tell us about your site.
+                </p>
+                <div className="mt-3 flex flex-row gap-2 sm:mt-5 sm:gap-3">
+                  <Link href="/quotation" className="inline-flex min-h-9 items-center justify-center gap-2 rounded-xl bg-[#C8F26A] px-4 py-2 text-xs font-bold text-[#0C2D57] shadow-lg shadow-black/10 transition hover:bg-[#DDF79F] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white sm:min-h-11 sm:px-5 sm:py-3 sm:text-sm">
+                    Request a quote <ArrowRight aria-hidden="true" className="h-4 w-4" />
+                  </Link>
+                  <a href="#service-catalogue" className="inline-flex min-h-9 items-center justify-center gap-2 rounded-xl border border-white/30 bg-white/[0.1] px-4 py-2 text-xs font-semibold text-white transition hover:bg-white/[0.18] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white sm:min-h-11 sm:px-5 sm:py-3 sm:text-sm">
+                    Browse services <ChevronRight aria-hidden="true" className="h-4 w-4" />
+                  </a>
                 </div>
               </div>
             </div>

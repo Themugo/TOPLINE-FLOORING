@@ -6,12 +6,12 @@ const css = read('src/index.css');
 const checks = [];
 const check = (name, condition) => checks.push({ name, pass: Boolean(condition) });
 
-check('Homepage hero preserves approved responsive height classes', /topline-home-hero relative h-\[25rem\] min-h-\[25rem\] sm:h-\[28rem\] lg:h-\[30rem\]/.test(home));
+check('Homepage hero preserves approved responsive height classes', /topline-home-hero relative aspect-\[4\/3\] w-full max-h-\[34rem\] sm:aspect-\[16\/8\] lg:aspect-\[21\/8\]/.test(home));
 check('Configured CMS hero slides remain the first and authoritative choice', /if \(configuredSlides\.length > 0\) return configuredSlides/.test(home));
 check('Catalogue hero fallback only uses records with real media and valid routes', /filter\(\(product\) => Boolean\(product\.image_url && product\.slug\)\)/.test(home) && /Boolean\(service\.image_url && service\.slug\)/.test(home));
 check('Product and service hero slides are fallback-only, not appended to curated CMS slides', /const mediaBackedCatalogueSlides = \[\.\.\.productSlides, \.\.\.serviceSlides\]/.test(home) && /return mediaBackedCatalogueSlides\.length > 0 \? mediaBackedCatalogueSlides : \[defaultSlide\]/.test(home));
 check('Hero slide index resets safely when CMS/catalogue content changes', /if \(currentSlide >= allSlides\.length\) setCurrentSlide\(0\)/.test(home));
-check('Hero heading remains high-contrast and mobile-scaled', /text-\[1.4rem\].*text-white/.test(home) && /max-width: 20ch/.test(css));
+check('Hero heading remains high-contrast and mobile-scaled', /text-\[1.15rem\].*text-white/.test(home) && /max-width: 20ch/.test(css));
 check('Hero uses approved Signal Lime accent and primary action', /text-\[#B4E33D\]/.test(home) && /bg-\[#B4E33D\].*text-\[#0C2D57\]/.test(home));
 check('Mobile hero hides overlapping side arrows while retaining slide indicators', /hidden sm:flex absolute left-3/.test(home) && /hidden sm:flex absolute right-3/.test(home) && /aria-label=\{`Show featured slide/.test(home));
 check('Customer intent shortcuts use a compact two-column mobile layout', /customer-intent-grid \{ @apply grid grid-cols-2/.test(css));
