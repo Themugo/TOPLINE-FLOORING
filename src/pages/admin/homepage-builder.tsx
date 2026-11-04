@@ -29,8 +29,39 @@ const SECTION_DEFAULTS: Record<string, Partial<HomepageSection>> = {
   cta: { title: 'Ready to Start Your Project?', subtitle: 'Get in touch with our team for a free consultation and quotation.', content: { cta_text: 'Get Free Quote', cta_link: '/quotation', phone_button_text: 'Call Technical Team' } },
 };
 
+// What the live homepage renders for a section until a row is saved for it (mirrors the fallbacks in src/pages/home.tsx).
+// The builder lists these so the admin always sees every block on the real site, not only the ones already stored.
+const SITE_DEFAULTS: Record<string, Partial<HomepageSection>> = {
+  hero: { title: 'Hero Slider', subtitle: 'Slides come from Hero slides; timing and overlay are set here', content: SECTION_DEFAULTS.hero.content },
+  trust_bar: { title: 'Trust Bar', subtitle: 'Hidden on the site until you add at least one stat', content: { items: [] } },
+  services: { title: 'Our Services', subtitle: 'Professional flooring and waterproofing solutions.', content: SECTION_DEFAULTS.services.content },
+  about: { title: 'Who We Are', subtitle: '', content: { paragraph_1: 'Learn more about our company on our About page.', paragraph_2: '', image_url: '', stats: [], badge_text: 'About Us' } },
+  products: { title: 'Featured Materials', subtitle: 'Premium flooring chemicals and waterproofing products', content: SECTION_DEFAULTS.products.content },
+  partners: { title: 'Our Partners & Manufacturers', subtitle: '', content: SECTION_DEFAULTS.partners.content },
+  testimonials: { title: 'What Our Clients Say', subtitle: '', content: SECTION_DEFAULTS.testimonials.content },
+  cta: { title: 'Ready to Elevate Your Commercial Space?', subtitle: 'Get in touch with our team to arrange an on-site survey and a detailed project quotation.', content: { cta_text: 'Request Free Consultation', cta_link: '/quotation', phone_button_text: 'Call Technical Team' } },
+};
+const SITE_ORDER = ['hero', 'trust_bar', 'services', 'about', 'products', 'partners', 'testimonials', 'cta'];
+const isVirtual = (id: string) => id.startsWith('virtual:');
+
 export default function AdminHomepageBuilder() {
-  const { sections, loading, error, updateSection, createSection, deleteSection, refetch } = useHomepageSections();
+  const { sections: storedSections, loading, error, updateSection, createSection, deleteSection, refetch } = useHomepageSections();
+  const [showPreview, setShowPreview] = useState(true);
+  // Stored rows plus a placeholder for every block the live site shows from built-in defaults.
+  const sections: HomepageSection[] = [
+    ...storedSections,
+    ...SITE_ORDER.filter(t => !storedSections.some(s => s.section_type === t)).map((t, i) => ({
+      id: `virtual:${t}`, section_type: t, section_key: t, is_active: true, display_order: 1000 + i,
+      background_color: '', background_image: '', padding: 'py-16',
+      title: SITE_DEFAULTS[t].title || t, subtitle: SITE_DEFAULTS[t].subtitle || '', content: SITE_DEFAULTS[t].content || {},
+      created_at: '', updated_at: '',
+    } as HomepageSection)),
+  ];
+  const nextOrder = () => (storedSections.length ? Math.max(...storedSections.map(s => s.display_order)) : 0) + 1;
+  const materialize = (v: HomepageSection, overrides: Partial<HomepageSection>) => createSection({
+    section_type: v.section_type, section_key: v.section_key, title: v.title, subtitle: v.subtitle || '', is_active: v.is_active,
+    display_order: nextOrder(), background_color: '', background_image: '', padding: v.padding || 'py-16', content: v.content || {}, ...overrides,
+  } as Omit<HomepageSection, 'id' | 'created_at' | 'updated_at'>);
   const [editing, setEditing] = useState<string | null>(null);
   const [saving, setSaving] = useState<string | null>(null);
   const [showAddMenu, setShowAddMenu] = useState(false);
@@ -39,7 +70,9 @@ export default function AdminHomepageBuilder() {
   const handleToggleActive = async (id: string, isActive: boolean) => {
     setSaving(id);
     try {
-      await updateSection(id, { is_active: !isActive });
+      const v = sections.find(x => x.id === id);
+      if (v && isVirtual(id)) await materialize(v, { is_active: !isActive });
+      else await updateSection(id, { is_active: !isActive });
       toast({ title: isActive ? 'Section hidden from homepage' : 'Section now visible on homepage' });
     } catch (err) {
       toast({ title: 'Failed to update visibility', description: describeDbError(err as { message?: string; code?: string }), variant: 'destructive' });
@@ -49,13 +82,14 @@ export default function AdminHomepageBuilder() {
   };
 
   const handleMove = async (id: string, direction: 'up' | 'down') => {
-    const idx = sections.findIndex(s => s.id === id);
+    const idx = storedSections.findIndex(s => s.id === id);
+    if (idx < 0) return;
     if (direction === 'up' && idx === 0) return;
-    if (direction === 'down' && idx === sections.length - 1) return;
+    if (direction === 'down' && idx === storedSections.length - 1) return;
 
     const swapIdx = direction === 'up' ? idx - 1 : idx + 1;
-    const current = sections[idx];
-    const swap = sections[swapIdx];
+    const current = storedSections[idx];
+    const swap = storedSections[swapIdx];
 
     setSaving(id);
     try {
@@ -72,8 +106,10 @@ export default function AdminHomepageBuilder() {
   const handleSave = async (id: string, updates: Partial<HomepageSection>) => {
     setSaving(id);
     try {
-      await updateSection(id, updates);
-      toast({ title: 'Section updated - changes are live on your homepage now' });
+      const v = sections.find(x => x.id === id);
+      if (v && isVirtual(id)) await materialize(v, updates);
+      else await updateSection(id, updates);
+      toast({ title: 'Section saved - changes are live on your homepage now' });
       setEditing(null);
     } catch (err) {
       toast({ title: 'Failed to save section', description: describeDbError(err as { message?: string; code?: string }), variant: 'destructive' });
@@ -83,7 +119,7 @@ export default function AdminHomepageBuilder() {
   };
 
   const handleAdd = async (sectionType: string) => {
-    const maxOrder = sections.length > 0 ? Math.max(...sections.map(s => s.display_order)) : 0;
+    const maxOrder = storedSections.length > 0 ? Math.max(...storedSections.map(s => s.display_order)) : 0;
     const defaults = SECTION_DEFAULTS[sectionType] || {};
     try {
       await createSection({
@@ -136,14 +172,20 @@ export default function AdminHomepageBuilder() {
 
   return (
     <AdminLayout title="Homepage Builder">
-      <div className="max-w-3xl">
+      <div className="max-w-4xl">
         <div className="mb-6 bg-blue-50 text-blue-700 text-sm rounded-lg p-4">
           This controls everything on your live homepage - text, photos, colors, and the order sections
-          appear in. Click the gear icon on any section to edit it. Changes save instantly to the site.
+          appear in. Every block on the live site is listed below, even ones still showing built-in text. Click the gear icon on any
+          section to edit it; the first save of a built-in block stores it. Changes save instantly to the site.
+          <button onClick={() => setShowPreview(v => !v)} className="ml-3 underline font-medium">{showPreview ? 'Hide' : 'Show'} live preview</button>
         </div>
+        {showPreview && <div className="mb-6 rounded-xl border overflow-hidden bg-white">
+          <div className="flex items-center justify-between px-4 py-2 text-xs text-gray-500 border-b"><span>Live homepage (what visitors see)</span><a href="/" target="_blank" rel="noreferrer" className="underline">Open in new tab</a></div>
+          <iframe key={storedSections.map(x => x.updated_at).join('|')} title="Live homepage preview" src="/" className="w-full h-[480px]" />
+        </div>}
 
         <div className="space-y-3">
-          {sections.map((section, idx) => (
+          {sections.map((section) => (
             <div
               key={section.id}
               className={`bg-white rounded-xl border p-4 flex items-center gap-4 transition-all ${
@@ -157,7 +199,7 @@ export default function AdminHomepageBuilder() {
               <div className="flex flex-col gap-0.5 flex-shrink-0">
                 <button
                   onClick={() => handleMove(section.id, 'up')}
-                  disabled={idx === 0 || saving !== null}
+                  disabled={isVirtual(section.id) || storedSections[0]?.id === section.id || saving !== null}
                   className="p-1 text-gray-400 hover:text-gray-600 disabled:opacity-30"
                   title="Move up"
                 >
@@ -165,7 +207,7 @@ export default function AdminHomepageBuilder() {
                 </button>
                 <button
                   onClick={() => handleMove(section.id, 'down')}
-                  disabled={idx === sections.length - 1 || saving !== null}
+                  disabled={isVirtual(section.id) || storedSections[storedSections.length - 1]?.id === section.id || saving !== null}
                   className="p-1 text-gray-400 hover:text-gray-600 disabled:opacity-30"
                   title="Move down"
                 >
@@ -178,7 +220,9 @@ export default function AdminHomepageBuilder() {
                   <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded">
                     {SECTION_TYPES.find(t => t.value === section.section_type)?.label || section.section_type}
                   </span>
-                  <span className="text-xs text-gray-400">Order: {section.display_order}</span>
+                  {isVirtual(section.id)
+                    ? <span className="text-xs bg-amber-50 text-amber-700 px-2 py-0.5 rounded">Live on site - built-in default</span>
+                    : <span className="text-xs text-gray-400">Order: {section.display_order}</span>}
                 </div>
                 <h3 className="font-medium text-gray-900 mt-1 truncate">{section.title || 'Untitled'}</h3>
                 {section.subtitle && <p className="text-sm text-gray-500 truncate">{section.subtitle}</p>}
@@ -200,13 +244,13 @@ export default function AdminHomepageBuilder() {
                 >
                   {section.is_active ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
                 </button>
-                <button
+                {!isVirtual(section.id) && <button
                   onClick={() => handleDelete(section.id, section.title || section.section_type)}
                   className="p-2 text-gray-400 hover:text-red-600"
                   title="Delete section"
                 >
                   <Trash2 className="w-4 h-4" />
-                </button>
+                </button>}
               </div>
             </div>
           ))}
@@ -222,7 +266,7 @@ export default function AdminHomepageBuilder() {
           </button>
           {showAddMenu && (
             <div className="absolute top-full left-0 mt-2 bg-white border rounded-xl shadow-lg p-2 z-20 w-56">
-              {SECTION_TYPES.filter(t => !sections.some(s => s.section_type === t.value)).map(t => (
+              {SECTION_TYPES.filter(t => !storedSections.some(s => s.section_type === t.value)).map(t => (
                 <button
                   key={t.value}
                   onClick={() => handleAdd(t.value)}
@@ -231,7 +275,7 @@ export default function AdminHomepageBuilder() {
                   {t.label}
                 </button>
               ))}
-              {SECTION_TYPES.every(t => sections.some(s => s.section_type === t.value)) && (
+              {SECTION_TYPES.every(t => storedSections.some(s => s.section_type === t.value)) && (
                 <p className="px-3 py-2 text-sm text-gray-400">All section types already added</p>
               )}
             </div>
