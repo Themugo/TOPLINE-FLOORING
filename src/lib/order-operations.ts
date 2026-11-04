@@ -18,3 +18,14 @@ export async function reconcileOrderPayment(orderId: string): Promise<number> {
   if (error) throw error;
   return Number(data ?? 0);
 }
+
+export interface ManualPaymentResult { success: boolean; payment_id: string; receipt_emailed: boolean; customer_email: string | null; paid_amount: number; balance: number; payment_status?: string; }
+export async function confirmManualPayment(input: { orderId: string; amount: number; method: 'bank_transfer' | 'mpesa' | 'cash' | 'cheque'; reference?: string; receivedInto?: string; notes?: string }): Promise<ManualPaymentResult> {
+  const { data, error } = await supabase.rpc('confirm_manual_order_payment', { p_order_id: input.orderId, p_amount: input.amount, p_method: input.method, p_reference: input.reference || null, p_received_into: input.receivedInto || null, p_notes: input.notes || null });
+  if (error) throw error;
+  return data as ManualPaymentResult;
+}
+export async function resendPaymentReceipt(paymentId: string): Promise<void> {
+  const { error } = await supabase.rpc('resend_payment_receipt', { p_payment_id: paymentId });
+  if (error) throw error;
+}

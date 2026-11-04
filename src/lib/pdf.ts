@@ -1,6 +1,7 @@
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import type { Quotation, QuotationItem, Invoice, InvoiceItem, Payment } from '@/lib/types';
+import type { Quotation, QuotationItem, Invoice, InvoiceItem, Payment, Order, OrderItem } from '@/lib/types';
+import { taxIncludedIn, formatRate, type TaxSettings } from '@/lib/tax';
 import { formatKES } from './utils';
 import type { CustomerPaymentAccount } from '@/lib/payment-accounts';
 
@@ -253,4 +254,87 @@ export function generateInvoicePdf(
   doc.text('Thank you for your business.', 14, 285);
 
   doc.save(`Invoice-${invoice.invoice_number}.pdf`);
+}
+
+function docHeader(doc: jsPDF, company: CompanyInfo, title: string, ref: string, extra: string[] = []) {
+  const w = doc.internal.pageSize.getWidth();
+  doc.setFontSize(18); doc.setFont('helvetica', 'bold'); doc.text(company.name, 14, 20);
+  doc.setFontSize(10); doc.setFont('helvetica', 'normal');
+  if (company.tagline) doc.text(company.tagline, 14, 26);
+  if (company.phone) doc.text(`Tel: ${company.phone}`, 14, 32);
+  if (company.email) doc.text(`Email: ${company.email}`, 14, 37);
+  if (company.address) doc.text(company.address, 14, 42);
+  if (company.taxPin) doc.text(`${company.taxLabel === 'VAT' ? 'KRA PIN' : 'Tax no'}: ${company.taxPin}`, 14, 47);
+  doc.setFontSize(16); doc.setFont('helvetica', 'bold'); doc.text(title, w - 14, 20, { align: 'right' });
+  doc.setFontSize(10); doc.setFont('helvetica', 'normal'); doc.text(`#${ref}`, w - 14, 26, { align: 'right' });
+  extra.forEach((line, i) => doc.text(line, w - 14, 32 + i * 5, { align: 'right' }));
+  doc.setDrawColor(200); doc.line(14, 52, w - 14, 52);
+}
+
+type ReceiptPayment = { amount: number; method: string; provider_reference: string | null; provider_transaction_id: string | null; paid_at: string | null; created_at: string };
+
+export function generatePaymentReceiptPdf(order: Order, items: OrderItem[], payment: ReceiptPayment, paidToDate: number, company: CompanyInfo, tax: TaxSettings) {
+  const doc = new jsPDF(); const w = doc.internal.pageSize.getWidth();
+  const ref = order.order_number || order.id.slice(0, 8).toUpperCase();
+  docHeader(doc, company, 'PAYMENT RECEIPT', ref, [`Date: ${new Date(payment.paid_at || payment.created_at).toLocaleDateString()}`]);
+  doc.setFont('helvetica', 'bold'); doc.text('Received from:', 14, 60); doc.setFont('helvetica', 'normal');
+  doc.text(order.customer_name, 14, 66);
+  if (order.customer_email) doc.text(order.customer_email, 14, 71);
+  if (order.customer_phone) doc.text(order.customer_phone, 14, 76);
+  autoTable(doc, {
+    startY: 84, head: [['Item', 'Qty', 'Unit price', 'Total']],
+    body: items.map((i) => [i.product_name, String(i.quantity), formatKES(i.unit_price), formatKES(i.unit_price * i.quantity)]),
+    styles: { fontSize: 9 }, headStyles: { fillColor: [201, 151, 31] }, columnStyles: { 1: { halign: 'right' }, 2: { halign: 'right' }, 3: { halign: 'right' } },
+  });
+  let y = (doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 6;
+  const rows: string[][] = [['Items subtotal', formatKES(order.subtotal ?? items.reduce((s, i) => s + i.unit_price * i.quantity, 0))]];
+  if ((order.discount_amount || 0) > 0) rows.push(['Discount', '-' + formatKES(order.discount_amount)]);
+  if ((order.delivery_charge || 0) > 0) rows.push(['Delivery', formatKES(order.delivery_charge)]);
+  rows.push(['Order total', formatKES(order.total_amount)]);
+  if (tax.enabled && tax.rate > 0) {
+    const t = taxIncludedIn(order.total_amount, tax);
+    rows.push([`Amount before ${tax.label}`, formatKES(t.net)]);
+    rows.push([`${tax.label} (${formatRate(tax.rate)}) included in total`, formatKES(t.tax)]);
+  }
+  autoTable(doc, { startY: y, margin: { left: w - 14 - 100 }, tableWidth: 100, body: rows, theme: 'plain', styles: { fontSize: 10, cellPadding: 1.6 }, columnStyles: { 0: { cellWidth: 62 }, 1: { cellWidth: 38, halign: 'right' } },
+    didParseCell: (d) => { if (d.row.index === (order.discount_amount > 0 ? 1 : 0) + ((order.delivery_charge || 0) > 0 ? 1 : 0) + 1) d.cell.styles.fontStyle = 'bold'; } });
+  y = (doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 8;
+  const balance = Math.max(order.total_amount - paidToDate, 0);
+  autoTable(doc, { startY: y, head: [['This payment', 'Method', 'Reference', 'Amount received']],
+    body: [[new Date(payment.paid_at || payment.created_at).toLocaleDateString(), payment.method.replace('_', ' '), payment.provider_reference || payment.provider_transaction_id || '-', formatKES(payment.amount)]],
+    styles: { fontSize: 9 }, headStyles: { fillColor: [12, 45, 87] }, columnStyles: { 3: { halign: 'right' } } });
+  y = (doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 8;
+  doc.setFont('helvetica', 'bold'); doc.setFontSize(11);
+  doc.text(`Paid to date: ${formatKES(paidToDate)}`, w - 14, y, { align: 'right' });
+  doc.text(balance > 0 ? `Balance remaining: ${formatKES(balance)}` : 'PAID IN FULL', w - 14, y + 7, { align: 'right' });
+  doc.setFontSize(8); doc.setTextColor(150); doc.setFont('helvetica', 'normal');
+  doc.text('Thank you for your business. This receipt confirms money received by Topline Flooring & Waterproofing.', 14, 285);
+  doc.save(`Receipt-${ref}.pdf`);
+}
+
+export function generateDeliveryNotePdf(order: Order, items: OrderItem[], delivery: { tracking_number?: string | null; driver_name?: string | null; scheduled_date?: string | null } | null, company: CompanyInfo) {
+  const doc = new jsPDF(); const w = doc.internal.pageSize.getWidth();
+  const ref = order.order_number || order.id.slice(0, 8).toUpperCase();
+  docHeader(doc, company, 'DELIVERY NOTE', ref, [
+    `Date: ${new Date().toLocaleDateString()}`,
+    ...(delivery?.tracking_number ? [`Tracking: ${delivery.tracking_number}`] : []),
+    ...(delivery?.scheduled_date ? [`Scheduled: ${new Date(delivery.scheduled_date).toLocaleDateString()}`] : []),
+  ]);
+  doc.setFont('helvetica', 'bold'); doc.text('Deliver to:', 14, 60); doc.setFont('helvetica', 'normal');
+  doc.text(order.customer_name, 14, 66);
+  if (order.customer_phone) doc.text(`Tel: ${order.customer_phone}`, 14, 71);
+  const addr = doc.splitTextToSize(order.delivery_address || 'Collection / no address recorded', w - 28);
+  doc.text(addr, 14, 76);
+  const y0 = 76 + addr.length * 5 + 6;
+  autoTable(doc, { startY: y0, head: [['#', 'Item', 'Qty', 'Checked']], body: items.map((i, n) => [String(n + 1), i.product_name, String(i.quantity), '[   ]']),
+    styles: { fontSize: 10, cellPadding: 3 }, headStyles: { fillColor: [12, 45, 87] }, columnStyles: { 0: { cellWidth: 12 }, 2: { halign: 'right', cellWidth: 20 }, 3: { halign: 'center', cellWidth: 24 } } });
+  const y = (doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 8;
+  doc.setFontSize(10);
+  if (delivery?.driver_name) doc.text(`Driver: ${delivery.driver_name}`, 14, y);
+  doc.text('Goods received in good condition:', 14, y + 18);
+  doc.line(14, y + 36, 95, y + 36); doc.text('Receiver name & signature', 14, y + 42);
+  doc.line(115, y + 36, w - 14, y + 36); doc.text('Date', 115, y + 42);
+  doc.setFontSize(8); doc.setTextColor(150);
+  doc.text('Please check the goods on delivery and report any damage or shortage the same day.', 14, 285);
+  doc.save(`DeliveryNote-${ref}.pdf`);
 }

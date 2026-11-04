@@ -10,6 +10,7 @@ import { Eye, X } from 'lucide-react';
 import type { Order } from '@/lib/types';
 import { getOrderOperations360, reconcileOrderPayment, type OrderOperations360 } from '@/lib/order-operations';
 import { errorMessage } from '@/lib/db';
+import { ManualPaymentPanel } from '@/components/admin/ManualPaymentPanel';
 
 export default function AdminOrders() {
   const { toast } = useToast();
@@ -21,6 +22,7 @@ export default function AdminOrders() {
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [order360, setOrder360] = useState<OrderOperations360 | null>(null);
   const [detailLoading, setDetailLoading] = useState(false);
+  const [awaitingOnly, setAwaitingOnly] = useState(false);
 
   const fetchOrders = useCallback(async () => {
     setLoading(true);
@@ -31,6 +33,7 @@ export default function AdminOrders() {
       .order('created_at', { ascending: false })
       .range(from, to);
 
+    if (awaitingOnly) query = query.in('payment_status', ['pending', 'partial']).neq('status', 'cancelled');
     if (search.trim()) {
       query = query.or(`customer_name.ilike.%${search}%,customer_email.ilike.%${search}%,id.ilike.%${search}%`);
     }
@@ -44,7 +47,7 @@ export default function AdminOrders() {
       setTotal(count || 0);
     }
     setLoading(false);
-  }, [from, to, search, setTotal]);
+  }, [from, to, search, awaitingOnly, setTotal]);
 
   useEffect(() => { fetchOrders(); }, [fetchOrders]);
 
@@ -111,6 +114,7 @@ export default function AdminOrders() {
             className="input pl-9"
           />
           </div>
+          <button type="button" onClick={() => { setPage(1); setAwaitingOnly((v) => !v); }} className={`rounded-lg border px-3 py-2 text-xs font-semibold whitespace-nowrap ${awaitingOnly ? 'border-amber-400 bg-amber-100 text-amber-900' : 'border-gray-200 bg-white text-gray-700'}`}>Awaiting payment</button>
           <button onClick={() => void fetchOrders()} disabled={loading} className="btn-secondary p-2" title="Refresh orders" aria-label="Refresh orders">
             <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
           </button>
@@ -137,6 +141,7 @@ export default function AdminOrders() {
                   <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase">Order</th>
                   <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase">Customer</th>
                   <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase">Amount</th>
+                  <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase">Payment</th>
                   <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase">Status</th>
                   <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase">Date</th>
                   <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase">Actions</th>
@@ -155,6 +160,9 @@ export default function AdminOrders() {
                       </div>
                     </td>
                     <td className="px-6 py-4 font-medium">{formatKES(order.total_amount)}</td>
+                    <td className="px-6 py-4">
+                      <span className={`text-xs font-semibold px-2 py-1 rounded-full ${order.payment_status === 'paid' ? 'bg-green-100 text-green-700' : order.payment_status === 'partial' ? 'bg-amber-100 text-amber-800' : 'bg-red-50 text-red-700'}`}>{order.payment_status === 'paid' ? 'Paid' : order.payment_status === 'partial' ? 'Part paid' : 'Awaiting payment'}</span>
+                    </td>
                     <td className="px-6 py-4">
                       <select
                         value={order.status}
@@ -205,7 +213,7 @@ export default function AdminOrders() {
                 <section className="rounded-xl border p-5"><h3 className="font-semibold flex items-center gap-2"><PackageCheck className="w-4 h-4" /> Items</h3><div className="mt-3 divide-y">{order360.items.map(item => <div key={item.id} className="py-2 flex justify-between gap-4 text-sm"><span>{item.product_name} × {item.quantity}</span><span>{formatKES(item.unit_price * item.quantity)}</span></div>)}</div></section>
                 <section className="rounded-xl border p-5"><h3 className="font-semibold flex items-center gap-2"><Truck className="w-4 h-4" /> Fulfillment</h3><div className="mt-3 space-y-3">{order360.deliveries.length ? order360.deliveries.map(d => <div key={d.id} className="rounded-lg bg-gray-50 p-3 text-sm"><div className="flex justify-between"><span>{d.tracking_number || 'No tracking number'}</span><span className="font-medium capitalize">{d.status.replace(/_/g,' ')}</span></div><p className="text-xs text-gray-500 mt-1">{d.scheduled_date || 'Unscheduled'}{d.driver_name ? ` · ${d.driver_name}` : ''}</p></div>) : <p className="text-sm text-gray-500">No delivery record yet.</p>}</div></section>
                 <section className="rounded-xl border p-5"><h3 className="font-semibold flex items-center gap-2"><ShieldCheck className="w-4 h-4" /> Reservations</h3><div className="mt-3 space-y-2">{order360.inventory_access && order360.reservations.length ? order360.reservations.map(r => <div key={r.id} className="text-sm flex justify-between"><span>{r.variant_id ? 'Variant stock' : 'Product stock'} × {r.quantity}</span><span className="capitalize">{r.status}</span></div>) : <p className="text-sm text-gray-500">{order360.inventory_access ? 'No reservations.' : 'Inventory details restricted.'}</p>}</div></section>
-                <section className="rounded-xl border p-5"><h3 className="font-semibold flex items-center gap-2"><CreditCard className="w-4 h-4" /> Finance</h3>{order360.finance_access ? <><div className="flex gap-2 mt-3"><button onClick={() => void reconcilePayment()} className="btn-secondary">Refresh payment totals</button></div><div className="mt-4 space-y-2">{order360.payments.length ? order360.payments.map(p => <div key={p.id} className="text-sm flex justify-between"><span>{p.method} · {p.status}</span><span>{formatKES(p.amount)}</span></div>) : <p className="text-sm text-gray-500">No payment transactions.</p>}{order360.refunds.length > 0 && <p className="text-sm text-amber-700 pt-2">Refund activity: {formatKES(order360.refunded_amount)}</p>}</div></> : <p className="text-sm text-gray-500 mt-3">Payment details are restricted to finance-authorized staff.</p>}</section>
+                <section className="rounded-xl border p-5"><h3 className="font-semibold flex items-center gap-2"><CreditCard className="w-4 h-4" /> Finance</h3>{order360.finance_access ? <><div className="flex gap-2 mt-3"><button onClick={() => void reconcilePayment()} className="btn-secondary">Refresh payment totals</button></div><ManualPaymentPanel data={order360} onChanged={async () => { await refreshOrder360(); await fetchOrders(); }} /><div className="mt-4 space-y-2">{order360.payments.length ? order360.payments.map(p => <div key={p.id} className="text-sm flex justify-between"><span>{p.method} · {p.status}</span><span>{formatKES(p.amount)}</span></div>) : <p className="text-sm text-gray-500">No payment transactions.</p>}{order360.refunds.length > 0 && <p className="text-sm text-amber-700 pt-2">Refund activity: {formatKES(order360.refunded_amount)}</p>}</div></> : <p className="text-sm text-gray-500 mt-3">Payment details are restricted to finance-authorized staff.</p>}</section>
               </div>
               <div className="mt-6 rounded-xl bg-gray-50 p-4 text-sm"><p className="font-medium">Delivery address</p><p className="text-gray-600 mt-1">{order360.order.delivery_address || 'No delivery address recorded.'}</p></div>
             </> : <div className="py-12 text-center text-gray-500">No operational snapshot available.</div>}

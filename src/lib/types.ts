@@ -170,6 +170,9 @@ export interface Order {
   delivery_charge: number;
   coupon_id: string | null;
   discount_amount: number;
+  subtotal?: number;
+  payment_status?: string;
+  payment_method?: string | null;
   created_at: string;
   updated_at: string;
   items?: OrderItem[];

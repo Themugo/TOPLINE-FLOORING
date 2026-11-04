@@ -10,5 +10,5 @@ P=("$PGBIN/psql" -h "$DIR" -p "$PORT" -d postgres -q -v ON_ERROR_STOP=1)
 "${P[@]}" -f "$HERE/supabase/tests/local/supabase-stub.sql"
 "${P[@]}" -c "create function public.rls_auto_enable() returns void language sql as 'select 1'"   # Supabase-managed helper
 for f in $(ls "$HERE"/supabase/migrations/*.sql | sort); do "${P[@]}" -f "$f" >/dev/null || { echo "MIGRATION FAILED: $f"; exit 1; }; done
-for t in security_regression public_surface_regression business_payment_accounts_regression channel_gated_claim_regression portfolio_privacy_regression portal_business_flow_regression registration_email_flow_regression automation_comms_regression order_flow_e2e_regression staff_registration_regression tax_breakdown_regression; do
+for t in security_regression public_surface_regression business_payment_accounts_regression channel_gated_claim_regression portfolio_privacy_regression portal_business_flow_regression registration_email_flow_regression automation_comms_regression order_flow_e2e_regression staff_registration_regression tax_breakdown_regression manual_payment_confirmation_regression; do
   echo "== $t"; "${P[@]}" -f "$HERE/supabase/tests/$t.sql" | grep -E "ok 1|OK|not ok" ; done
