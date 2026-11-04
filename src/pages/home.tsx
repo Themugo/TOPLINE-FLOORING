@@ -474,53 +474,53 @@ export default function Home() {
                 {services.slice(0, servicesMaxItems).map((service) => (
                   <Link
                     key={service.id}
-                    href="/services"
-                    className="group relative overflow-hidden rounded-2xl flex-shrink-0 w-64 lg:w-80 aspect-[3/4] snap-start shadow-md hover:shadow-2xl transition-all duration-300"
+                    href={service.slug ? `/service/${service.slug}` : '/services'}
+                    aria-label={`View ${service.name}`}
+                    className="group flex flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg w-72 lg:w-80 flex-shrink-0 snap-start"
                   >
-                    <img
-                      src={withFallback(service.image_url, getServicePlaceholder(service.slug || service.name))}
-                      alt={service.name}
-                      loading="lazy"
-                      className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                    />
-                    <ServiceToneBar service={service} />
-                    <div className="absolute inset-0 bg-gradient-to-t from-navy-950 via-navy-900/50 to-transparent opacity-90 group-hover:opacity-80 transition-opacity" />
-                    <div className="absolute bottom-0 left-0 right-0 p-6">
-                      <span className="inline-block text-[11px] font-semibold tracking-widest uppercase text-primary-200 mb-1.5">
-                        Specialized Service
-                      </span>
-                      <h3 className="font-display text-lg lg:text-xl font-bold text-white mb-2 leading-tight group-hover:text-primary-200 transition-colors">
+                    <div className="relative aspect-[4/3] overflow-hidden bg-slate-100">
+                      <img
+                        src={withFallback(service.image_url, getServicePlaceholder(service.slug || service.name))}
+                        alt={service.name}
+                        loading="lazy"
+                        className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
+                      />
+                      <ServiceToneBar service={service} />
+                    </div>
+                    <div className="flex flex-1 flex-col p-4 lg:p-5">
+                      <h3 className="font-display text-base lg:text-lg font-bold leading-snug text-navy-950 group-hover:text-primary-600 transition-colors">
                         {service.name}
                       </h3>
-                      <p className="text-xs lg:text-sm text-gray-200 line-clamp-2 leading-relaxed">{service.short_description || service.description}</p>
+                      <p className="mt-2 line-clamp-3 text-sm leading-relaxed text-slate-600">{service.short_description || service.description}</p>
+                      <span className="mt-auto inline-flex items-center gap-1.5 pt-4 text-sm font-semibold text-primary-600 group-hover:gap-2.5 transition-all">View service <ArrowRight className="h-4 w-4" /></span>
                     </div>
                   </Link>
                 ))}
               </div>
             ) : (
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
                 {services.slice(0, servicesMaxItems).map((service) => (
                   <Link
                     key={service.id}
-                    href="/services"
-                    className="group relative overflow-hidden rounded-xl aspect-[4/3] shadow-sm hover:shadow-lg transition-all duration-300 border border-slate-200"
+                    href={service.slug ? `/service/${service.slug}` : '/services'}
+                    aria-label={`View ${service.name}`}
+                    className="group flex flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg"
                   >
-                    <img
-                      src={withFallback(service.image_url, getServicePlaceholder(service.slug || service.name))}
-                      alt={service.name}
-                      loading="lazy"
-                      className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                    />
-                    <ServiceToneBar service={service} />
-                    <div className="absolute inset-0 bg-gradient-to-t from-navy-950 via-navy-900/60 to-transparent opacity-90 group-hover:opacity-80 transition-opacity" />
-                    <div className="absolute top-3.5 right-3.5 w-8 h-8 rounded-full bg-primary-500/90 backdrop-blur-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-1 group-hover:translate-y-0 shadow-md">
-                      <ArrowRight className="w-4 h-4 text-white" />
+                    <div className="relative aspect-[4/3] overflow-hidden bg-slate-100">
+                      <img
+                        src={withFallback(service.image_url, getServicePlaceholder(service.slug || service.name))}
+                        alt={service.name}
+                        loading="lazy"
+                        className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
+                      />
+                      <ServiceToneBar service={service} />
                     </div>
-                    <div className="absolute bottom-0 left-0 right-0 p-4 lg:p-5">
-                      <h3 className="font-display text-base lg:text-lg font-bold text-white leading-snug group-hover:text-primary-200 transition-colors">
+                    <div className="flex flex-1 flex-col p-4 lg:p-5">
+                      <h3 className="font-display text-base lg:text-lg font-bold leading-snug text-navy-950 group-hover:text-primary-600 transition-colors">
                         {service.name}
                       </h3>
-                      <p className="text-xs text-gray-200 line-clamp-1 mt-1 hidden sm:block">{service.short_description || service.description}</p>
+                      <p className="mt-2 line-clamp-3 text-sm leading-relaxed text-slate-600">{service.short_description || service.description}</p>
+                      <span className="mt-auto inline-flex items-center gap-1.5 pt-4 text-sm font-semibold text-primary-600 group-hover:gap-2.5 transition-all">View service <ArrowRight className="h-4 w-4" /></span>
                     </div>
                   </Link>
                 ))}
