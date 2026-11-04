@@ -86,6 +86,7 @@ BEGIN
   IF NOT EXISTS (SELECT 1 FROM public.leads WHERE email='otieno@t.invalid') THEN RAISE EXCEPTION '8b lead not created'; END IF;
   IF NOT EXISTS (SELECT 1 FROM public.quotations WHERE email='otieno@t.invalid') THEN RAISE EXCEPTION '8c quotation not created'; END IF;
   IF NOT EXISTS (SELECT 1 FROM public.communication_outbox WHERE recipient='staff@t.invalid') THEN RAISE EXCEPTION '8d staff not alerted of the enquiry'; END IF;
-  RAISE NOTICE 'ok order-flow';
+  RAISE NOTICE 'ok 1 order-flow';
 END $t$;
 ROLLBACK;
+\echo ' order_flow_e2e_regression: OK'

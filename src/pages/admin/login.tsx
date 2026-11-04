@@ -18,7 +18,9 @@ export default function AdminLogin() {
   const [resetLoading, setResetLoading] = useState(false);
   const [resetSuccess, setResetSuccess] = useState(false);
   const [resetError, setResetError] = useState('');
-  const { login } = useAdminAuth();
+  const { login, loginIssue } = useAdminAuth();
+  const [signupMode, setSignupMode] = useState(false);
+  const [notice, setNotice] = useState('');
   const [, setLocation] = useLocation();
 
   const goBack = () => {
@@ -55,12 +57,30 @@ export default function AdminLogin() {
 
     setLoading(true);
 
+    if (signupMode) {
+      setNotice('');
+      if (password.length < 8) { setError('Choose a password of at least 8 characters.'); setLoading(false); return; }
+      try {
+        const { data, error: signUpError } = await supabase.auth.signUp({ email: email.trim(), password, options: { emailRedirectTo: `${window.location.origin}/admin/login` } });
+        if (signUpError) throw signUpError;
+        // An already registered address returns no identities; give the same neutral answer either way.
+        void data;
+        setNotice('Account created. Open the confirmation email we sent to ' + email.trim() + ', confirm it, then come back here and sign in. Your access is activated automatically if the owner has invited this email address.');
+        setSignupMode(false);
+        setPassword('');
+      } catch (err) {
+        setError(errorMessage(err, 'Could not create the account. Please try again.') ?? 'Could not create the account.');
+      }
+      setLoading(false);
+      return;
+    }
+
     const success = await login(email, password);
 
     if (success) {
       setLocation('/admin');
     } else {
-      setError('Invalid email or password');
+      setError('Sign-in failed');
     }
 
     setLoading(false);
@@ -194,10 +214,11 @@ export default function AdminLogin() {
 
         <div className="bg-white rounded-xl p-8 border border-gray-200 shadow-sm">
           <form onSubmit={handleSubmit} className="space-y-6" noValidate>
+            {notice && <div className="p-4 bg-green-50 text-green-800 rounded-lg text-sm" role="status">{notice}</div>}
             {error && (
               <div className="flex items-center gap-2 p-4 bg-red-50 text-red-700 rounded-lg text-sm" role="alert">
                 <AlertCircle className="w-4 h-4 flex-shrink-0" />
-                {error}
+                {signupMode ? error : (loginIssue || error)}
               </div>
             )}
 
@@ -295,8 +316,14 @@ export default function AdminLogin() {
               disabled={loading}
               className="btn-primary w-full"
             >
-              {loading ? 'Signing in...' : 'Sign In'}
+              {loading ? (signupMode ? 'Creating account...' : 'Signing in...') : (signupMode ? 'Create staff account' : 'Sign In')}
             </button>
+            <p className="text-center text-sm text-navy-600">
+              {signupMode ? 'Already have an account? ' : 'Invited to join the team? '}
+              <button type="button" onClick={() => { setSignupMode(!signupMode); setError(''); setNotice(''); }} className="text-primary-600 hover:text-primary-700 font-medium">
+                {signupMode ? 'Sign in' : 'Create staff account'}
+              </button>
+            </p>
           </form>
         </div>
 

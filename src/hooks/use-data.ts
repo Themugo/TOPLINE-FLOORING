@@ -3,6 +3,7 @@ import { isSupabaseConfigured, supabase } from '@/lib/supabase';
 import { loadPublicProjects } from '@/lib/public-projects';
 import { useCMS } from '@/context/CMSContext';
 import { getCurrentStaffProfile, type StaffProfile } from '@/lib/staff-rbac';
+import { acceptStaffInvitation } from '@/lib/identity-access-360';
 import { convertLeadToCustomer, createLeadTransaction, updateLeadTransaction, deleteLeadTransaction } from '@/lib/lifecycle';
 import { createInvoiceTransaction, addInvoiceItemTransaction, recordInvoicePaymentTransaction, updateInvoiceStatusTransaction, removeInvoiceItemTransaction, deleteDraftInvoiceTransaction, type InvoiceInput } from '@/lib/finance';
 import type {
@@ -786,13 +787,23 @@ export function useAdminAuth() {
     };
   }, []);
 
+  const [loginIssue, setLoginIssue] = useState('');
   const login = async (email: string, password: string): Promise<boolean> => {
+    setLoginIssue('');
     const { error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) return false;
+    if (error) {
+      setLoginIssue(/confirm/i.test(error.message) ? 'Please confirm your email first. Open the confirmation email we sent, then sign in.' : 'Invalid email or password');
+      return false;
+    }
     try {
-      const profile = await getCurrentStaffProfile();
+      let profile = await getCurrentStaffProfile();
+      if (!profile?.is_active) {
+        // First sign-in of an invited team member: the confirmed email matches an open invitation, which activates their access.
+        try { if ((await acceptStaffInvitation()).accepted) profile = await getCurrentStaffProfile(); } catch { /* no invitation */ }
+      }
       if (!profile?.is_active) {
         await supabase.auth.signOut();
+        setLoginIssue('This account does not have team access. Ask the owner to invite you, or to reactivate your access.');
         return false;
       }
       setStaffProfile(profile);
@@ -800,6 +811,7 @@ export function useAdminAuth() {
       return true;
     } catch {
       await supabase.auth.signOut();
+      setLoginIssue('Sign-in could not be completed. Please try again.');
       return false;
     }
   };
@@ -808,7 +820,7 @@ export function useAdminAuth() {
     await supabase.auth.signOut();
   };
 
-  return { isAuthenticated, loading, user, staffProfile, login, logout };
+  return { isAuthenticated, loading, user, staffProfile, login, logout, loginIssue };
 }
 
 // Media Library
