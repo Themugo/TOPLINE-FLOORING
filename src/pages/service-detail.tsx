@@ -163,7 +163,7 @@ export default function ServiceDetail() {
                   src={withFallback(service.image_url, getServicePlaceholder(service.slug || service.name))}
                   alt={service.name}
                   loading="lazy"
-                  className="h-full w-full object-cover"
+                  className="h-full w-full object-contain"
                   onError={(e) => {
                     e.currentTarget.onerror = null;
                     e.currentTarget.src = getServicePlaceholder(service.slug || service.name);

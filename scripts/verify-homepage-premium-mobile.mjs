@@ -6,7 +6,7 @@ const css = read('src/index.css');
 const checks = [];
 const check = (name, condition) => checks.push({ name, pass: Boolean(condition) });
 
-check('Homepage hero preserves approved responsive height classes', /topline-home-hero relative h-\[17.5rem\] min-h-\[17.5rem\] sm:h-\[24rem\] lg:h-\[30rem\]/.test(home));
+check('Homepage hero preserves approved responsive height classes', /topline-home-hero relative h-\[25rem\] min-h-\[25rem\] sm:h-\[28rem\] lg:h-\[30rem\]/.test(home));
 check('Configured CMS hero slides remain the first and authoritative choice', /if \(configuredSlides\.length > 0\) return configuredSlides/.test(home));
 check('Catalogue hero fallback only uses records with real media and valid routes', /filter\(\(product\) => Boolean\(product\.image_url && product\.slug\)\)/.test(home) && /Boolean\(service\.image_url && service\.slug\)/.test(home));
 check('Product and service hero slides are fallback-only, not appended to curated CMS slides', /const mediaBackedCatalogueSlides = \[\.\.\.productSlides, \.\.\.serviceSlides\]/.test(home) && /return mediaBackedCatalogueSlides\.length > 0 \? mediaBackedCatalogueSlides : \[defaultSlide\]/.test(home));
