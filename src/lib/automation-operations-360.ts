@@ -81,3 +81,29 @@ export async function syncAutomationSchedule() {
   if (error) throw error;
   return data as { registered: number; cron_installed: boolean };
 }
+
+export interface AutomationDispatchLogEntry {
+  id: number;
+  status_code: number | null;
+  timed_out: boolean | null;
+  error_msg: string | null;
+  content: string | null;
+  created: string;
+}
+
+export async function getAutomationDispatchLog(requestId?: number) {
+  const { data, error } = await supabase.rpc('get_automation_dispatch_log', { p_request_id: requestId ?? null });
+  if (error) throw error;
+  return (Array.isArray(data) ? data : []) as AutomationDispatchLogEntry[];
+}
+
+/** Plain-language meaning of the worker function's HTTP response. */
+export function explainDispatch(entry: Pick<AutomationDispatchLogEntry, 'status_code' | 'timed_out' | 'error_msg' | 'content'>): { ok: boolean; text: string } {
+  if (entry.timed_out) return { ok: false, text: 'The worker function did not answer in time. Check the function logs in Supabase.' };
+  if (entry.error_msg) return { ok: false, text: `The request could not be sent: ${entry.error_msg}` };
+  const code = entry.status_code ?? 0;
+  if (code >= 200 && code < 300) return { ok: true, text: 'The worker ran. See the execution history below for the result.' };
+  if (code === 401) return { ok: false, text: 'Rejected (401): the worker secret stored in Vault does not match the TOPLINE_WORKER_SECRET Edge Function secret. Re-save both with the same value.' };
+  if (code === 404) return { ok: false, text: 'Not found (404): the operations-scheduler function is not deployed, or topline_project_url is wrong.' };
+  return { ok: false, text: `The worker function answered ${code}: ${(entry.content ?? '').slice(0, 200)}` };
+}

@@ -27,3 +27,4 @@ create function net.http_post(url text, body jsonb default '{}', params jsonb de
 create table cron.job(jobid bigserial primary key, jobname text unique, schedule text, command text, active boolean default true);
 create function cron.schedule(job_name text, schedule text, command text) returns bigint language sql as $$ insert into cron.job(jobname, schedule, command) values (job_name, schedule, command) on conflict (jobname) do update set schedule = excluded.schedule, command = excluded.command, active = true returning jobid $$;
 create function cron.unschedule(job_id bigint) returns boolean language sql as $$ delete from cron.job where jobid = job_id returning true $$;
+create table net._http_response(id bigint primary key, status_code integer, content_type text, headers jsonb, content text, timed_out boolean, error_msg text, created timestamptz default now());

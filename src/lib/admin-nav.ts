@@ -237,3 +237,138 @@ export function filterAdminNav(
     }))
     .filter((group) => group.items.length > 0);
 }
+
+/**
+ * The sidebar shows one entry per job ("hub"), not one per screen. Related screens open as tabs inside the page,
+ * so an operator picks "Orders" and then switches between Orders, Deliveries and Delivery zones without hunting
+ * through a 70-item menu. Every registered admin route must belong to exactly one hub (enforced by the verifier).
+ */
+export interface AdminHubTab { href: string; label: string }
+export interface AdminHub { id: string; label: string; icon: LucideIcon; keywords?: string; tabs: AdminHubTab[] }
+export interface AdminSidebarGroup { id: string; label: string; hubs: AdminHub[] }
+
+export const ADMIN_SIDEBAR: AdminSidebarGroup[] = [
+  {
+    id: 'daily',
+    label: 'Daily work',
+    hubs: [
+      { id: 'home', label: 'Home', icon: LayoutDashboard, keywords: 'dashboard overview executive', tabs: [
+        { href: '/admin', label: 'Dashboard' }, { href: '/admin/executive-operations-360', label: 'Company overview' } ] },
+      { id: 'sales', label: 'Sales', icon: Briefcase, keywords: 'enquiries pipeline leads quotes quotations', tabs: [
+        { href: '/admin/sales', label: 'Pipeline' }, { href: '/admin/leads', label: 'Leads' }, { href: '/admin/quotations', label: 'Quotations' },
+        { href: '/admin/commercial-lifecycle', label: 'Enquiry to project' } ] },
+      { id: 'orders', label: 'Orders & Delivery', icon: ShoppingCart, keywords: 'shipping dispatch', tabs: [
+        { href: '/admin/orders', label: 'Orders' }, { href: '/admin/deliveries', label: 'Deliveries' },
+        { href: '/admin/fulfillment-delivery-360', label: 'Dispatch & proof' }, { href: '/admin/delivery-zones', label: 'Delivery zones' } ] },
+      { id: 'customers', label: 'Customers', icon: Users, keywords: 'crm accounts portal renewals', tabs: [
+        { href: '/admin/customers', label: 'Customers' }, { href: '/admin/crm', label: 'CRM' },
+        { href: '/admin/customer-lifecycle-360', label: 'After-sales loop' }, { href: '/admin/customer-renewals', label: 'Renewals' },
+        { href: '/admin/customer-portal-operations', label: 'Customer portal' } ] },
+      { id: 'messages', label: 'Messages', icon: Mail, keywords: 'email sms whatsapp communications', tabs: [
+        { href: '/admin/communications', label: 'Inbox & queue' }, { href: '/admin/communications-journey-360', label: 'Rules & journeys' } ] },
+    ],
+  },
+  {
+    id: 'catalogue',
+    label: 'Catalogue & Stock',
+    hubs: [
+      { id: 'products', label: 'Products', icon: Package, keywords: 'materials catalogue', tabs: [
+        { href: '/admin/products', label: 'Products' }, { href: '/admin/categories', label: 'Categories' }, { href: '/admin/product-brands', label: 'Brands' },
+        { href: '/admin/product-variants', label: 'Variants' }, { href: '/admin/product-specifications', label: 'Specifications' },
+        { href: '/admin/product-images', label: 'Images' }, { href: '/admin/product-documents', label: 'Documents' } ] },
+      { id: 'services', label: 'Services', icon: Wrench, tabs: [{ href: '/admin/services', label: 'Services' }] },
+      { id: 'stock', label: 'Stock & Suppliers', icon: Boxes, keywords: 'inventory warehouses procurement purchasing', tabs: [
+        { href: '/admin/inventory', label: 'Stock levels' }, { href: '/admin/warehouses', label: 'Warehouses' },
+        { href: '/admin/inventory-procurement-operations', label: 'Procurement' }, { href: '/admin/suppliers', label: 'Suppliers' },
+        { href: '/admin/supply-chain-360', label: 'Supply overview' } ] },
+    ],
+  },
+  {
+    id: 'projects',
+    label: 'Projects & Service',
+    hubs: [
+      { id: 'projects', label: 'Projects', icon: FolderKanban, keywords: 'portfolio jobs', tabs: [
+        { href: '/admin/projects', label: 'Projects' }, { href: '/admin/project-delivery', label: 'Delivery tracker' },
+        { href: '/admin/project-delivery-360', label: 'Delivery control' } ] },
+      { id: 'field', label: 'Field Work', icon: HardHat, keywords: 'site visits installation crew workforce', tabs: [
+        { href: '/admin/operations', label: 'Command centre' }, { href: '/admin/site-visits', label: 'Site visits' },
+        { href: '/admin/field-operations', label: 'Field execution' }, { href: '/admin/installation-workforce', label: 'Installation team' } ] },
+      { id: 'quality', label: 'Quality & Safety', icon: CheckCircle2, keywords: 'qa hse snag compliance', tabs: [
+        { href: '/admin/quality-assurance-360', label: 'Quality' }, { href: '/admin/hse-site-compliance-360', label: 'Health & safety' } ] },
+      { id: 'aftersales', label: 'Warranty & Service', icon: ShieldCheck, keywords: 'maintenance cases', tabs: [
+        { href: '/admin/service-cases', label: 'Cases' }, { href: '/admin/maintenance-plans', label: 'Maintenance plans' } ] },
+    ],
+  },
+  {
+    id: 'money',
+    label: 'Money',
+    hubs: [
+      { id: 'invoices', label: 'Invoices', icon: FileText, tabs: [{ href: '/admin/invoices', label: 'Invoices' }] },
+      { id: 'finance', label: 'Finance', icon: Landmark, keywords: 'payments profit reports', tabs: [
+        { href: '/admin/finance', label: 'Overview' }, { href: '/admin/finance-operations', label: 'Operations' },
+        { href: '/admin/project-profitability', label: 'Project profit' }, { href: '/admin/reports', label: 'Reports' } ] },
+      { id: 'marketing', label: 'Marketing', icon: Megaphone, keywords: 'discount codes campaigns', tabs: [
+        { href: '/admin/promotions', label: 'Promotions' }, { href: '/admin/coupons', label: 'Coupons' } ] },
+    ],
+  },
+  {
+    id: 'website',
+    label: 'Website',
+    hubs: [
+      { id: 'content', label: 'Website Content', icon: LayoutTemplate, keywords: 'homepage hero banner pages menus testimonials partners', tabs: [
+        { href: '/admin/homepage', label: 'Homepage' }, { href: '/admin/hero-slides', label: 'Hero slides' }, { href: '/admin/pages', label: 'Pages' },
+        { href: '/admin/site-content', label: 'Page text' }, { href: '/admin/testimonials', label: 'Testimonials' },
+        { href: '/admin/partners', label: 'Partners' }, { href: '/admin/navigation', label: 'Menus' } ] },
+      { id: 'media', label: 'Media Library', icon: Folder, keywords: 'images files', tabs: [{ href: '/admin/media-library', label: 'Media Library' }] },
+      { id: 'look', label: 'Look & Search', icon: Palette, keywords: 'theme colours seo brand', tabs: [
+        { href: '/admin/theme', label: 'Theme & colours' }, { href: '/admin/seo', label: 'Search (SEO)' } ] },
+    ],
+  },
+  {
+    id: 'admin',
+    label: 'Settings & System',
+    hubs: [
+      { id: 'settings', label: 'Settings', icon: Settings, keywords: 'business integrations payments email site control', tabs: [
+        { href: '/admin/settings', label: 'Business & payments' }, { href: '/admin/site-settings', label: 'Website info' },
+        { href: '/admin/site-control', label: 'Integrations' } ] },
+      { id: 'team', label: 'Team & Compliance', icon: UserCog, keywords: 'staff roles permissions audit privacy', tabs: [
+        { href: '/admin/identity-access-360', label: 'Staff & roles' }, { href: '/admin/audit-logs', label: 'Audit log' },
+        { href: '/admin/data-governance-360', label: 'Data privacy' } ] },
+      { id: 'system', label: 'System', icon: Activity, keywords: 'automation workers backups incidents health recovery', tabs: [
+        { href: '/admin/system-health', label: 'Health' }, { href: '/admin/automation-operations-360', label: 'Automation' },
+        { href: '/admin/reliability-operations-360', label: 'Incidents' }, { href: '/admin/backups', label: 'Backups' },
+        { href: '/admin/business-continuity-360', label: 'Recovery plan' } ] },
+    ],
+  },
+];
+
+export const ADMIN_HUBS: Array<AdminHub & { groupId: string; group: string }> = ADMIN_SIDEBAR.flatMap((g) =>
+  g.hubs.map((h) => ({ ...h, groupId: g.id, group: g.label })),
+);
+
+/** The hub that owns a route (by the registered item that matches the location). */
+export function hubForHref(href: string | null): (AdminHub & { groupId: string; group: string }) | null {
+  if (!href) return null;
+  return ADMIN_HUBS.find((h) => h.tabs.some((t) => t.href === href)) ?? null;
+}
+
+/** Sidebar filter: hides hubs with no permitted tab, and trims each hub's tabs to the permitted ones. */
+export function filterAdminSidebar(
+  groups: AdminSidebarGroup[],
+  query: string,
+  canSee: (href: string) => boolean = () => true,
+): AdminSidebarGroup[] {
+  const term = query.trim().toLowerCase();
+  return groups
+    .map((group) => ({
+      ...group,
+      hubs: group.hubs
+        .map((hub) => ({ ...hub, tabs: hub.tabs.filter((t) => canSee(t.href)) }))
+        .filter((hub) => {
+          if (hub.tabs.length === 0) return false;
+          if (!term) return true;
+          return `${hub.label} ${group.label} ${hub.keywords ?? ''} ${hub.tabs.map((t) => t.label).join(' ')}`.toLowerCase().includes(term);
+        }),
+    }))
+    .filter((group) => group.hubs.length > 0);
+}

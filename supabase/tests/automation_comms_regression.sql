@@ -62,6 +62,16 @@ BEGIN
   IF NOT denied THEN RAISE EXCEPTION '5c non-staff must not pause jobs'; END IF;
   RESET ROLE;
 
+  -- 5d. Dispatch diagnostics: staff can read worker call responses, others cannot.
+  INSERT INTO net._http_response(id,status_code,content) VALUES (9001,401,'Unauthorized');
+  PERFORM set_config('request.jwt.claim.sub',owner_id::text,true); SET LOCAL ROLE authenticated;
+  IF (public.get_automation_dispatch_log(9001)->0->>'status_code')::int <> 401 THEN RAISE EXCEPTION '5d dispatch log wrong'; END IF;
+  RESET ROLE;
+  PERFORM set_config('request.jwt.claim.sub',stranger::text,true); SET LOCAL ROLE authenticated; denied := false;
+  BEGIN PERFORM public.get_automation_dispatch_log(9001); EXCEPTION WHEN OTHERS THEN denied := true; END;
+  IF NOT denied THEN RAISE EXCEPTION '5e non-staff must not read dispatch log'; END IF;
+  RESET ROLE;
+
   -- 6. Staff alerts and receipt: order, payment, quotation response, service case.
   INSERT INTO public.categories(id,name,slug) VALUES (cat,'C','c-'||cat);
   INSERT INTO public.products(id,name,slug,sku,price,stock_quantity,in_stock,is_active,category_id) VALUES (prod,'Tile','tile-'||prod,'T-'||left(prod::text,6),1000,50,true,true,cat);
@@ -84,6 +94,16 @@ BEGIN
   IF jsonb_array_length(public.get_public_payment_accounts()) <> 2 THEN RAISE EXCEPTION '6f public accounts RPC wrong'; END IF;
   IF NOT (SELECT is_enabled FROM public.payment_gateway_methods WHERE gateway_key='bank_transfer') THEN RAISE EXCEPTION '6g manual gateway must be enabled'; END IF;
   IF private.manual_payment_instructions_text('ORD-1') NOT LIKE '%Till (Buy Goods): 5260389%' OR private.manual_payment_instructions_text('ORD-1') NOT LIKE '%Paybill: 880100, Account number: 208597%' THEN RAISE EXCEPTION '6h instructions text wrong'; END IF;
+
+  -- 6i. Site Control reads gateways as staff, and a non-staff user sees nothing.
+  PERFORM set_config('request.jwt.claim.sub',owner_id::text,true); SET LOCAL ROLE authenticated;
+  SELECT count(*) INTO n FROM public.payment_gateway_methods;
+  IF n < 3 THEN RAISE EXCEPTION '6i staff must read payment gateways, got %', n; END IF;
+  RESET ROLE;
+  PERFORM set_config('request.jwt.claim.sub',stranger::text,true); SET LOCAL ROLE authenticated;
+  SELECT count(*) INTO n FROM public.payment_gateway_methods;
+  IF n <> 0 THEN RAISE EXCEPTION '6j non-staff must not read payment gateways'; END IF;
+  RESET ROLE;
 
   -- 7. Stale queued messages expire instead of being sent days late.
   INSERT INTO public.communication_outbox(channel,recipient,subject,message,dedupe_key,created_at) VALUES

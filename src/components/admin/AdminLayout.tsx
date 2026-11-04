@@ -22,9 +22,12 @@ import { applyUpdate, promptInstall, usePwa } from '@/lib/pwa';
 import {
   ADMIN_NAV_GROUPS,
   ADMIN_NAV_ITEMS,
+  ADMIN_SIDEBAR,
   activeAdminHref,
   filterAdminNav,
-  type AdminNavGroup,
+  filterAdminSidebar,
+  hubForHref,
+  type AdminSidebarGroup,
 } from '@/lib/admin-nav';
 
 interface AdminLayoutProps {
@@ -113,7 +116,9 @@ export function AdminLayout({ children, title, subtitle, actions }: AdminLayoutP
 
   const activeHref = useMemo(() => activeAdminHref(location), [location]);
 
-  const visibleGroups = useMemo(() => filterAdminNav(ADMIN_NAV_GROUPS, navSearch, canSee), [navSearch, canSee]);
+  const visibleGroups = useMemo(() => filterAdminSidebar(ADMIN_SIDEBAR, navSearch, canSee), [navSearch, canSee]);
+  const activeHub = useMemo(() => hubForHref(activeHref), [activeHref]);
+  const hubTabs = useMemo(() => (activeHub ? activeHub.tabs.filter((t) => canSee(t.href)) : []), [activeHub, canSee]);
   const cmdItems = useMemo(
     () => filterAdminNav(ADMIN_NAV_GROUPS, cmdQuery, canSee).flatMap((g) => g.items.map((i) => ({ ...i, group: g.label }))),
     [cmdQuery, canSee],
@@ -283,8 +288,8 @@ export function AdminLayout({ children, title, subtitle, actions }: AdminLayoutP
     }
   };
 
-  const isGroupOpen = (group: AdminNavGroup) =>
-    navSearch.trim() !== '' || !collapsed.has(group.id) || group.items.some((i) => i.href === activeHref);
+  const isGroupOpen = (group: AdminSidebarGroup) =>
+    navSearch.trim() !== '' || !collapsed.has(group.id) || group.hubs.some((h) => h.tabs.some((t) => t.href === activeHref));
 
   const initial = user?.email ? user.email.charAt(0).toUpperCase() : 'A';
 
@@ -473,12 +478,12 @@ export function AdminLayout({ children, title, subtitle, actions }: AdminLayoutP
                     />
                   </button>
                   <ul id={panelId} hidden={!open} className="space-y-0.5 pb-2">
-                    {group.items.map((item) => {
-                      const active = item.href === activeHref;
+                    {group.hubs.map((hub) => {
+                      const active = hub.tabs.some((t) => t.href === activeHref);
                       return (
-                        <li key={item.href}>
+                        <li key={hub.id}>
                           <Link
-                            href={item.href}
+                            href={hub.tabs[0].href}
                             ref={active ? activeLinkRef : undefined}
                             aria-current={active ? 'page' : undefined}
                             className={`flex min-h-11 lg:min-h-9 items-center gap-2.5 rounded-lg px-3 py-2 text-[13px] lg:text-xs font-medium transition-colors ${
@@ -487,11 +492,11 @@ export function AdminLayout({ children, title, subtitle, actions }: AdminLayoutP
                                 : 'text-navy-800 hover:bg-gray-100 hover:text-navy-950'
                             }`}
                           >
-                            <item.icon
+                            <hub.icon
                               className={`w-4 h-4 shrink-0 ${active ? 'text-white' : 'text-navy-600'}`}
                               aria-hidden="true"
                             />
-                            <span className="truncate">{item.label}</span>
+                            <span className="truncate">{hub.label}</span>
                           </Link>
                         </li>
                       );
@@ -579,6 +584,29 @@ export function AdminLayout({ children, title, subtitle, actions }: AdminLayoutP
               {actions && <div className="flex items-center gap-2 flex-wrap">{actions}</div>}
             </div>
           </div>
+
+          {hubTabs.length > 1 && (
+            <nav aria-label={`${activeHub?.label ?? 'Section'} pages`} className="border-b border-gray-200 bg-white">
+              <ul className="flex gap-1 overflow-x-auto px-4 lg:px-8 max-w-[1600px] mx-auto">
+                {hubTabs.map((tab) => {
+                  const active = tab.href === activeHref;
+                  return (
+                    <li key={tab.href} className="shrink-0">
+                      <Link
+                        href={tab.href}
+                        aria-current={active ? 'page' : undefined}
+                        className={`inline-flex min-h-11 items-center border-b-2 px-3 text-sm font-medium transition-colors ${
+                          active ? 'border-navy-900 text-navy-900 font-semibold' : 'border-transparent text-gray-600 hover:text-navy-900'
+                        }`}
+                      >
+                        {tab.label}
+                      </Link>
+                    </li>
+                  );
+                })}
+              </ul>
+            </nav>
+          )}
 
           <div
             className="p-4 lg:p-8 max-w-[1600px] mx-auto w-full flex-1 min-w-0"

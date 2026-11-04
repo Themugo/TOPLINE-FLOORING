@@ -19,4 +19,6 @@ const pm = fs.readFileSync('supabase/migrations/20261104110000_manual_payment_ga
 must(pm.includes('get_public_payment_accounts') && pm.includes("gateway_key = 'bank_transfer'"), 'Manual payment migration incomplete');
 must(fs.existsSync('src/components/payments/ManualPaymentDetails.tsx'), 'ManualPaymentDetails missing');
 for (const f of ['src/pages/cart.tsx', 'src/pages/track-order.tsx', 'src/pages/order-confirmation.tsx']) must(fs.readFileSync(f, 'utf8').includes('ManualPaymentDetails'), 'Manual payment details not shown in ' + f);
+must(fs.readFileSync('supabase/migrations/20261104130000_automation_dispatch_diagnostics.sql', 'utf8').includes('get_automation_dispatch_log'), 'Dispatch diagnostics migration missing');
+must(page.includes('explainDispatch') && lib.includes('get_automation_dispatch_log'), 'Automation page must explain worker call failures');
 console.log('verify-pass19-automation-comms: OK');

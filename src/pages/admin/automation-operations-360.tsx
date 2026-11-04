@@ -3,10 +3,13 @@ import { CheckCircle2, Clock3, Pause, Play, RefreshCw, TimerReset, XCircle, Aler
 import { AdminLayout } from './dashboard';
 import { errorMessage } from '@/lib/db';
 import {
+  explainDispatch,
+  getAutomationDispatchLog,
   getAutomationOperations360,
   runAutomationJobNow,
   setAutomationJobEnabled,
   syncAutomationSchedule,
+  type AutomationDispatchLogEntry,
   type AutomationJob,
   type AutomationSnapshot,
 } from '@/lib/automation-operations-360';
@@ -32,12 +35,14 @@ export default function AutomationOperations360() {
   const [busy, setBusy] = useState<string | null>(null);
   const [message, setMessage] = useState('');
   const [notice, setNotice] = useState('');
+  const [dispatchLog, setDispatchLog] = useState<AutomationDispatchLogEntry[]>([]);
 
   const load = useCallback(async () => {
     setLoading(true);
     setMessage('');
     try {
       setData(await getAutomationOperations360(days));
+      setDispatchLog(await getAutomationDispatchLog().catch(() => []));
     } catch (e) {
       setMessage(errorMessage(e, 'Unable to load automation control.') ?? 'Unable to load automation control.');
     } finally {
@@ -67,7 +72,20 @@ export default function AutomationOperations360() {
     act(`run:${job.job_key}`, async () => {
       const result = await runAutomationJobNow(job.job_key);
       if (!result.ok) throw new Error(result.reason ?? 'Could not start the job.');
-      return `${job.title} was started. Refresh in a few seconds to see the result.`;
+      // The database only queues the call; ask what the worker function answered so a wrong secret or a missing deploy is visible.
+      if (typeof result.request_id === 'number') {
+        for (let attempt = 0; attempt < 6; attempt += 1) {
+          await new Promise((resolve) => setTimeout(resolve, 1500));
+          const [entry] = await getAutomationDispatchLog(result.request_id).catch(() => []);
+          if (entry) {
+            const verdict = explainDispatch(entry);
+            if (!verdict.ok) throw new Error(verdict.text);
+            return `${job.title}: ${verdict.text}`;
+          }
+        }
+        return `${job.title} was sent but no answer was recorded yet. Refresh in a moment.`;
+      }
+      return `${job.title} was started.`;
     });
 
   const toggle = (job: AutomationJob) =>
@@ -107,6 +125,12 @@ export default function AutomationOperations360() {
       {message && <div className="mb-5 rounded-xl border bg-white p-4 text-sm text-destructive">{message}</div>}
       {notice && <div className="mb-5 rounded-xl border bg-white p-4 text-sm">{notice}</div>}
 
+      {data && !data.scheduler && (
+        <div className="mb-5 rounded-xl border bg-white p-4 text-sm">
+          The database has not been updated for the new scheduler yet. Run <code>supabase db push</code>, then refresh this page.
+        </div>
+      )}
+
       {s && (
         <section className="mb-6 rounded-2xl border bg-card p-6">
           <div className="flex flex-wrap items-center justify-between gap-3">
@@ -134,7 +158,7 @@ export default function AutomationOperations360() {
       )}
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
-        {data?.jobs.map((j) => (
+        {data?.scheduler && data.jobs.map((j) => (
           <div key={j.job_key} className="rounded-2xl border bg-card p-5">
             <div className="flex items-center justify-between gap-3">
               <p className="font-semibold">{j.title}</p>
@@ -163,6 +187,26 @@ export default function AutomationOperations360() {
           </div>
         ))}
       </div>
+
+      {dispatchLog.length > 0 && (
+        <section className="mt-6 rounded-2xl border bg-card p-6">
+          <h2 className="font-semibold">Recent calls to the worker function</h2>
+          <ul className="mt-3 space-y-2 text-sm">
+            {dispatchLog.map((entry) => {
+              const verdict = explainDispatch(entry);
+              return (
+                <li key={entry.id} className="flex items-start gap-2">
+                  {verdict.ok ? <CheckCircle2 className="mt-0.5 h-4 w-4 text-green-600" /> : <XCircle className="mt-0.5 h-4 w-4 text-destructive" />}
+                  <span>
+                    {when(entry.created)} · {entry.status_code ?? 'no response'}
+                    <span className="block text-xs text-muted-foreground">{verdict.text}</span>
+                  </span>
+                </li>
+              );
+            })}
+          </ul>
+        </section>
+      )}
 
       <section className="mt-6 rounded-2xl border bg-card p-6">
         <h2 className="font-semibold">Recent execution history</h2>

@@ -351,7 +351,8 @@ button:disabled, input:disabled, textarea:disabled, select:disabled { cursor: no
 /* Homepage hero: restrained premium brand treatment and predictable touch behaviour. */
 .topline-home-hero {
   isolation: isolate;
-  background: linear-gradient(115deg, #0c2d57 0%, #123766 58%, #0e6b78 100%);
+  /* Neutral until the slide image has loaded; a solid navy block here read as a blue page flash. */
+  background: #e9e6df;
 }
 .topline-home-hero img {
   object-position: center 52%;

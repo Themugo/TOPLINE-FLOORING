@@ -23,13 +23,16 @@ const offline = read('public/offline.html');
 
 // ---- Admin navigation completeness -------------------------------------------------------------
 const routes = [...app.matchAll(/'(\/admin\/[a-z0-9-]+)':\s*Admin/g)].map((m) => m[1]);
-const navHrefs = [...nav.matchAll(/href: '(\/admin[a-z0-9/-]*)'/g)].map((m) => m[1]);
+const navRegistry = nav.split('The sidebar shows one entry per job')[0];
+const hubHrefs = [...nav.split('The sidebar shows one entry per job')[1].matchAll(/href: '(\/admin[a-z0-9/-]*)'/g)].map((m) => m[1]);
+const navHrefs = [...navRegistry.matchAll(/href: '(\/admin[a-z0-9/-]*)'/g)].map((m) => m[1]);
 const permHrefs = new Set([...perms.matchAll(/'(\/admin[a-z0-9/-]*)':\s*\{/g)].map((m) => m[1]));
 const missingFromNav = routes.filter((r) => !navHrefs.includes(r));
 const unknownInNav = navHrefs.filter((h) => h !== '/admin' && !routes.includes(h));
 const duplicates = navHrefs.filter((h, i) => navHrefs.indexOf(h) !== i);
 check(`Every admin route (${routes.length}) is reachable from the sidebar${missingFromNav.length ? ` — missing: ${missingFromNav.join(', ')}` : ''}`, routes.length > 60 && missingFromNav.length === 0);
 check('Sidebar has no links to unregistered routes and no duplicates', unknownInNav.length === 0 && duplicates.length === 0 && navHrefs.includes('/admin'));
+check('Every route belongs to exactly one sidebar hub (short, task-based menu)', hubHrefs.length === navHrefs.length && new Set(hubHrefs).size === hubHrefs.length && navHrefs.every((h) => hubHrefs.includes(h)));
 check('Every admin route has a permission rule', routes.every((r) => permHrefs.has(r)) && permHrefs.has('/admin'));
 check('Guard looks permissions up with a normalised path (trailing slash cannot bypass the rule)', guard.includes('ROUTE_PERMISSIONS[normalizeAdminPath(window.location.pathname)]'));
 check('Active nav item uses segment-boundary, longest-match logic', nav.includes('path.startsWith(`${item.href}/`)') && nav.includes('best.length'));
@@ -39,7 +42,7 @@ check('Sidebar is sticky with its own scroll on desktop and a fixed drawer on ph
 check('Mobile drawer: aria-expanded/controls, Escape, focus trap, scroll lock, closes on route change', layout.includes('aria-expanded={drawerOpen}') && layout.includes("event.key === 'Escape'") && layout.includes('trapTab') && layout.includes('useBodyScrollLock(drawerOpen || cmdOpen)') && layout.includes('setDrawerOpen(false);\n    setCmdOpen(false);'));
 check('Closed drawer is removed from tab order (invisible) and active link exposes aria-current', layout.includes("'-translate-x-full invisible'") && layout.includes("aria-current={active ? 'page' : undefined}"));
 check('Quick navigate is a labelled modal dialog with arrow-key/Enter support and backdrop dismissal', layout.includes('role="dialog"') && layout.includes('aria-modal="true"') && layout.includes("event.key === 'ArrowDown'") && layout.includes("event.key === 'Enter'") && layout.includes('e.target === e.currentTarget'));
-check('Navigation is filtered by staff permissions (display only; server remains authority)', layout.includes('useStaffPermissions') && layout.includes('filterAdminNav(ADMIN_NAV_GROUPS, navSearch, canSee)'));
+check('Navigation is filtered by staff permissions (display only; server remains authority)', layout.includes('useStaffPermissions') && layout.includes('filterAdminSidebar(ADMIN_SIDEBAR, navSearch, canSee)'));
 check('Layout renders at most one <h1> (page title only, never the brand) and does not render an empty one', (layout.match(/<h1/g) || []).length === 1 && layout.includes('{title && ('));
 check('Layout has skip link, breadcrumb landmark, labelled controls and 44px touch targets', layout.includes('Skip to content') && layout.includes('aria-label="Breadcrumb"') && layout.includes('h-11 w-11') && layout.includes('aria-label="Filter menu"'));
 check('Layout makes scrolling tables keyboard-focusable and associates orphan labels', layout.includes("el.tabIndex = 0") && layout.includes('label.htmlFor = control.id'));

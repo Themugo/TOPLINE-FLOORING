@@ -48,6 +48,7 @@ INSERT INTO browser_rpc_names (name) VALUES
   ('dispatch_order_delivery'),
   ('fail_order_delivery'),
   ('get_active_delivery_drivers'),
+  ('get_automation_dispatch_log'),
   ('get_automation_operations_360'),
   ('get_business_analytics'),
   ('get_business_continuity_360'),

@@ -76,7 +76,7 @@ Never put a service-role or worker secret in a `VITE_*` variable.
 
 ## Current active chain (Phases 30–32 verification baseline)
 
-The current production candidate contains 140 uniquely timestamped active migrations, ending with `20261104110000_manual_payment_gateway_default.sql`. Run the complete verification suite before any linked database deployment.
+The current production candidate contains 142 uniquely timestamped active migrations, ending with `20261104130000_automation_dispatch_diagnostics.sql`. Run the complete verification suite before any linked database deployment.
 
 Current active chain additions: `20260930170000_service_catalog_and_communications_worker_hardening.sql`, `20260930180000_project_documents_private_storage.sql`, `20260930190000_staff_read_inactive_cms_catalog_rows.sql`, `20260930193000_private_document_policy_overlap_hardening.sql`, `20260930200000_project_templates.sql`, `20260930210000_close_legacy_public_read_policies.sql`, `20260930220000_projects_admin_contract_columns.sql`, `20260930230000_move_product_cost_prices_staff_only.sql`, `20260930240000_coupon_validation_throttle.sql`, `20260930250000_finance_permission_resource.sql`, `20261001090000_project_template_persistence_360.sql`, `20261001100000_admin_notification_state_360.sql`, `20261001110000_catalog_product_service_upload_integrity_360.sql`.
 
@@ -231,3 +231,5 @@ These files were present in `supabase/migrations/` but not yet listed above. App
 - `20261103170000_new_domain_defaults.sql` — site URL helper and default Brevo sender/reply-to move to toplinefloorandwaterproofing.co.ke
 - `20261104100000_automation_scheduler_and_comms_gaps.sql` — in-database scheduler (pg_cron + pg_net + Vault), `automation_job_settings`, Run now/Pause RPCs, staff alerts for orders/payments/quotation responses/service cases, payment receipt, SMS/WhatsApp channel gating, stale-message expiry, invoice reminders job
 - `20261104110000_manual_payment_gateway_default.sql` — manual payment (M-Pesa Till/Paybill/bank) gateway enabled by default; `get_public_payment_accounts()` for guests
+- `20261104120000_site_control_gateway_read_grant.sql` — restores staff SELECT on `payment_gateway_methods` (Site Control failed to load without it)
+- `20261104130000_automation_dispatch_diagnostics.sql` — `get_automation_dispatch_log()` exposes recent worker call responses (401/404/5xx) to staff on the Automation page

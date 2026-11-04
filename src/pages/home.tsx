@@ -64,6 +64,9 @@ export default function Home() {
   const brand = useBrand();
   const [, setLocation] = useLocation();
   const [currentSlide, setCurrentSlide] = useState(0);
+  // Slides stay neutral until their image has really loaded, so the page never flashes a solid navy block.
+  const [readySlides, setReadySlides] = useState<Record<string, boolean>>({});
+  const markSlideReady = (id: string | number) => setReadySlides((prev) => (prev[String(id)] ? prev : { ...prev, [String(id)]: true }));
   const [isSliderPaused, setIsSliderPaused] = useState(false);
   const [touchStartX, setTouchStartX] = useState<number | null>(null);
   const [selectedFeaturedVariants, setSelectedFeaturedVariants] = useState<Record<string, string>>({});
@@ -205,6 +208,14 @@ export default function Home() {
   }, [allSlides]);
 
   useEffect(() => {
+    // Never leave the hero blank if an image is very slow: reveal the text after 6 seconds regardless.
+    const id = allSlides[currentSlide]?.id;
+    if (id === undefined) return;
+    const t = window.setTimeout(() => markSlideReady(id), 6000);
+    return () => window.clearTimeout(t);
+  }, [allSlides, currentSlide]);
+
+  useEffect(() => {
     if (currentSlide >= allSlides.length) setCurrentSlide(0);
   }, [currentSlide, allSlides.length]);
 
@@ -267,8 +278,8 @@ export default function Home() {
 
       {/* Hero Section - Full viewport slider with dark navy overlay */}
       <section
-        className="topline-home-hero relative h-[30rem] min-h-[30rem] sm:h-[32rem] lg:h-[35rem] overflow-hidden bg-[#0C2D57] touch-pan-y"
-        style={{ backgroundImage: allSlides[currentSlide]?.image_url ? `linear-gradient(90deg, rgba(12,45,87,.90), rgba(12,45,87,.52)), url("${allSlides[currentSlide].image_url.replace(/"/g, '%22')}")` : undefined, backgroundSize: 'cover', backgroundPosition: 'center' }}
+        className="topline-home-hero relative h-[30rem] min-h-[30rem] sm:h-[32rem] lg:h-[35rem] overflow-hidden bg-[#E9E6DF] touch-pan-y"
+        style={!heroPending && allSlides.length === 0 ? { display: 'none' } : undefined}
         aria-roledescription="carousel"
         aria-label="Featured products, services and company highlights"
         onMouseEnter={() => setIsSliderPaused(true)}
@@ -284,11 +295,11 @@ export default function Home() {
           <div className="absolute inset-0 z-20 flex items-center" aria-hidden="true">
             <div className="max-w-7xl mx-auto px-5 sm:px-8 lg:px-10 w-full">
               <div className="max-w-2xl space-y-4 py-10 animate-pulse">
-                <div className="h-5 w-40 rounded-full bg-white/15" />
-                <div className="h-9 w-4/5 rounded-lg bg-white/15" />
-                <div className="h-9 w-3/5 rounded-lg bg-white/15" />
-                <div className="h-4 w-2/3 rounded bg-white/10" />
-                <div className="h-11 w-44 rounded-lg bg-[#B4E33D]/30" />
+                <div className="h-5 w-40 rounded-full bg-[#0C2D57]/10" />
+                <div className="h-9 w-4/5 rounded-lg bg-[#0C2D57]/10" />
+                <div className="h-9 w-3/5 rounded-lg bg-[#0C2D57]/10" />
+                <div className="h-4 w-2/3 rounded bg-[#0C2D57]/10" />
+                <div className="h-11 w-44 rounded-lg bg-[#0C2D57]/10" />
               </div>
             </div>
           </div>
@@ -303,20 +314,23 @@ export default function Home() {
           >
             <div
               className="absolute inset-0 z-10 bg-gradient-to-r from-[#0C2D57]/90 via-[#0C2D57]/70 to-[#0C2D57]/15"
-              style={{ opacity: Math.min(1, Math.max(0.55, overlayOpacity / 100)) }}
+              style={{ opacity: readySlides[String(slide.id)] ? Math.min(1, Math.max(0.55, overlayOpacity / 100)) : 0, transition: 'opacity 500ms ease-out' }}
             />
             <img
               src={slide.image_url}
               alt={slide.title}
-              className="w-full h-full object-cover object-center transition-transform duration-1000 ease-out"
+              className={`w-full h-full object-cover object-center transition-opacity duration-500 ease-out ${readySlides[String(slide.id)] ? 'opacity-100' : 'opacity-0'}`}
+              ref={(el) => { if (el && el.complete && el.naturalWidth > 0) markSlideReady(slide.id); }}
+              onLoad={() => markSlideReady(slide.id)}
               loading={index === currentSlide ? 'eager' : 'lazy'}
               decoding={index === currentSlide ? 'sync' : 'async'}
               fetchPriority={index === currentSlide ? 'high' : 'auto'}
               onError={(e) => {
                 e.currentTarget.src = getRandomRealImage('flooring', index);
+                window.setTimeout(() => markSlideReady(slide.id), 1500);
               }}
             />
-            <div className="absolute inset-0 z-20 flex items-center">
+            <div className="absolute inset-0 z-20 flex items-center transition-opacity duration-500" style={{ opacity: readySlides[String(slide.id)] ? 1 : 0 }}>
               <div className="max-w-7xl mx-auto px-5 sm:px-8 lg:px-10 w-full">
                 <div className="max-w-2xl py-10">
                   {slide.source_type !== 'hero_slide' && (
