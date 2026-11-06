@@ -41,6 +41,16 @@ export async function getCustomerPortalDocuments(): Promise<CustomerPortalDocume
   return (data || []) as CustomerPortalDocument[];
 }
 
+export async function getCustomerPortalDocumentUrl(documentId: string): Promise<string> {
+  const { data, error } = await supabase.functions.invoke('customer-document-download', {
+    body: { document_id: documentId },
+  });
+  if (error) throw error;
+  const url = data?.url;
+  if (typeof url !== 'string' || !url) throw new Error('Document download is temporarily unavailable');
+  return url;
+}
+
 
 export interface CustomerCommunicationTimelineItem {
   id: string; channel: string; direction: string; subject: string | null; message: string;

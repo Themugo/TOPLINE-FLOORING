@@ -143,6 +143,7 @@ INSERT INTO browser_rpc_names (name) VALUES
   ('schedule_maintenance_visit_360'),
   ('set_automation_job_enabled'),
   ('set_primary_product_image'),
+  ('set_product_variant_stock'),
   ('set_warehouse_stock'),
   ('signoff_installation'),
   ('submit_quotation_request'),

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { CustomerLayout } from '@/components/layout/CustomerLayout';
 import { CustomerPaymentMethods } from '@/components/customer/CustomerPaymentMethods';
 import { initiateCustomerPayment } from '@/lib/customer-payments';
@@ -21,7 +21,7 @@ import { telHref } from '@/lib/utils';
 import { useSiteSettings } from '@/hooks/use-data';
 import { createServiceCase } from '@/lib/service-cases';
 import { submitServiceCaseFeedback } from '@/lib/service-quality-360';
-import { getCustomerPortalDocuments, getCustomerPortalPreferences, updateCustomerNotificationPreferences, getCustomerCommunicationsSelfService360, type CustomerNotificationPreferences, type CustomerPortalDocument, type CustomerCommunicationTimelineItem } from '@/lib/customer-self-service';
+import { getCustomerPortalDocuments, getCustomerPortalDocumentUrl, getCustomerPortalPreferences, updateCustomerNotificationPreferences, getCustomerCommunicationsSelfService360, type CustomerNotificationPreferences, type CustomerPortalDocument, type CustomerCommunicationTimelineItem } from '@/lib/customer-self-service';
 
 type PortalRecord =
   | { type: 'quotation'; value: CustomerPortal360Data['quotations'][number] }
@@ -184,7 +184,7 @@ function SetNewPassword({ onDone }: { onDone: () => void }) {
   );
 }
 
-let claimInFlight: ReturnType<typeof claimCustomerPortalAccess> | null = null;
+let claimInFlight: { userId: string; promise: ReturnType<typeof claimCustomerPortalAccess> } | null = null;
 
 export default function Portal() {
   useSeoMeta('customer-portal', null, { noIndex: true });
@@ -215,10 +215,13 @@ export default function Portal() {
   const [feedbackMessage, setFeedbackMessage] = useState<Record<string, string>>({});
   const [feedbackSending, setFeedbackSending] = useState<string | null>(null);
   const [documents, setDocuments] = useState<CustomerPortalDocument[]>([]);
+  const [documentUrls, setDocumentUrls] = useState<Record<string, string>>({});
+  const [documentLoading, setDocumentLoading] = useState<string | null>(null);
   const [notificationPrefs, setNotificationPrefs] = useState<CustomerNotificationPreferences | null>(null);
   const [prefsSaving, setPrefsSaving] = useState(false);
   const [prefsMessage, setPrefsMessage] = useState<string | null>(null);
   const [communications, setCommunications] = useState<CustomerCommunicationTimelineItem[]>([]);
+  const latestDashboardRequest = useRef(0);
 
   const submitServiceCase = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -266,6 +269,16 @@ export default function Portal() {
     finally { setPrefsSaving(false); }
   };
 
+  const loadDocumentUrl = async (documentId: string) => {
+    setDocumentLoading(documentId);
+    try {
+      const url = await getCustomerPortalDocumentUrl(documentId);
+      setDocumentUrls((current) => ({ ...current, [documentId]: url }));
+    } catch (err) {
+      setError(errorMessage(err, 'This document is temporarily unavailable.') ?? 'This document is temporarily unavailable.');
+    } finally { setDocumentLoading(null); }
+  };
+
   const submitFeedback = async (caseId: string) => {
     const rating = feedbackRating[caseId];
     if (!rating) return;
@@ -302,11 +315,19 @@ export default function Portal() {
   };
 
   const loadDashboard = useCallback(async () => {
+    const requestId = ++latestDashboardRequest.current;
+    const isCurrentRequest = () => requestId === latestDashboardRequest.current;
     setLoading(true); setError(null); setAuthenticatedError(false);
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) { setSignedIn(false); setData(null); setLoading(false); return; }
-    setSignedIn(true);
     try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!isCurrentRequest()) return;
+      if (!session) {
+        setSignedIn(false); setData(null); setPaymentAccounts([]);
+        setJourney([]); setNotificationPrefs(null); setDocuments([]); setCommunications([]);
+        setLoading(false);
+        return;
+      }
+      setSignedIn(true);
       // The canonical customer payload is required for the dashboard. Ancillary
       // timeline, preference, document and communication services are independent: a
       // temporary failure in one must not hide a customer's orders and quotations.
@@ -314,42 +335,73 @@ export default function Portal() {
       try { portal = await getCustomerPortal360(); }
       catch (first) {
         if (!isPortalAccessMissing(first)) throw first;
-        // loadDashboard can run twice at once (mount + auth event); share one claim request.
-        claimInFlight = claimInFlight ?? claimCustomerPortalAccess().finally(() => { claimInFlight = null; });
-        const claim = await claimInFlight;
+        // Share a claim only between concurrent requests for the same Auth identity.
+        if (!claimInFlight || claimInFlight.userId !== session.user.id) {
+          const promise = claimCustomerPortalAccess();
+          claimInFlight = { userId: session.user.id, promise };
+          void promise.finally(() => {
+            if (claimInFlight?.promise === promise) claimInFlight = null;
+          }).catch(() => {});
+        }
+        const pendingClaim = claimInFlight;
+        if (!pendingClaim || pendingClaim.userId !== session.user.id) throw new Error('PORTAL_CLAIM_UNAVAILABLE');
+        const claim = await pendingClaim.promise;
+        if (!isCurrentRequest()) return;
         if (claim === 'unverified') throw new Error('PORTAL_UNVERIFIED');
         if (claim === 'ambiguous' || claim === 'conflict') throw new Error('PORTAL_CONFLICT');
         portal = await getCustomerPortal360();
       }
+      if (!isCurrentRequest()) return;
       setData(portal);
       setAuthenticatedError(false);
       // Independent of the dashboard: if bank details fail to load the rest of the account still works.
-      void getCustomerPaymentAccounts().then(setPaymentAccounts).catch(() => setPaymentAccounts([]));
+      void getCustomerPaymentAccounts().then((accounts) => {
+        if (isCurrentRequest()) setPaymentAccounts(accounts);
+      }).catch(() => {
+        if (isCurrentRequest()) setPaymentAccounts([]);
+      });
       const [journeyResult, prefsResult, docsResult, communicationsResult] = await Promise.allSettled([
         getCustomerJourney(),
         getCustomerPortalPreferences(),
         getCustomerPortalDocuments(),
         getCustomerCommunicationsSelfService360(),
       ]);
+      if (!isCurrentRequest()) return;
       setJourney(journeyResult.status === 'fulfilled' ? journeyResult.value ?? [] : []);
       setNotificationPrefs(prefsResult.status === 'fulfilled' ? prefsResult.value?.notification_preferences ?? null : null);
       setDocuments(docsResult.status === 'fulfilled' ? docsResult.value ?? [] : []);
       setCommunications(communicationsResult.status === 'fulfilled' ? communicationsResult.value?.timeline || [] : []);
       const failedSections = [journeyResult, prefsResult, docsResult, communicationsResult].some((result) => result.status === 'rejected');
       setError(failedSections ? 'Some account extras are temporarily unavailable. Your orders and quotations are still available; try refreshing later.' : null);
-    } catch (err) { setAuthenticatedError(true); console.error('Customer dashboard failed to load', err);
+    } catch (err) {
+      if (!isCurrentRequest()) return;
+      setAuthenticatedError(true);
+      console.error('Customer dashboard failed to load', err);
       const m = (errorMessage(err, '') ?? '');
       if (m === 'PORTAL_UNVERIFIED') setError('Please verify your email address first. Open the confirmation email we sent you, then press Try again.');
       else if (m === 'PORTAL_CONFLICT') setError('This email is already linked to another customer account. Please contact our team and we will connect it for you.');
-      else setError('Your customer dashboard could not be loaded right now. Please try again, or contact our team if this continues.' + (m ? ' (Ref: ' + m.slice(0, 80) + ')' : '')); }
-    finally { setLoading(false); }
+      else setError('Your customer dashboard could not be loaded right now. Please try again, or contact our team if this continues.' + (m ? ' (Ref: ' + m.slice(0, 80) + ')' : ''));
+    } finally {
+      if (isCurrentRequest()) setLoading(false);
+    }
   }, []);
 
   useEffect(() => {
     if (!isSupabaseConfigured) { setLoading(false); return; }
+    let mounted = true;
     void loadDashboard();
-    const { data: listener } = supabase.auth.onAuthStateChange((event) => { if (event === 'PASSWORD_RECOVERY') setRecovering(true); void loadDashboard(); });
-    return () => listener.subscription.unsubscribe();
+    const { data: listener } = supabase.auth.onAuthStateChange((event) => {
+      if (event === 'PASSWORD_RECOVERY' && mounted) setRecovering(true);
+      // Defer Supabase work until the auth callback releases its internal lock.
+      window.setTimeout(() => {
+        if (mounted) void loadDashboard();
+      }, 0);
+    });
+    return () => {
+      mounted = false;
+      latestDashboardRequest.current += 1;
+      listener.subscription.unsubscribe();
+    };
   }, [loadDashboard]);
 
   if (emailLink) return (
@@ -404,7 +456,7 @@ export default function Portal() {
       <Card className="rounded-2xl border-slate-200 shadow-sm"><CardHeader><CardTitle>Invoices</CardTitle></CardHeader><CardContent className="space-y-3">{data.invoices.length ? data.invoices.map(i => <button type="button" key={i.id} className="w-full text-left border rounded-md p-4 flex justify-between gap-4 hover:bg-muted/40" onClick={() => { setInvoicePaymentMethod(null); setSelectedRecord({ type: 'invoice', value: i }); }}><div><p className="font-medium">{i.invoice_number || i.id.slice(0,8)}</p><p className="text-xs text-muted-foreground">Due {i.due_date || '—'} · Paid KES {Number(i.amount_paid).toLocaleString()}</p></div><div className="text-right"><p className="text-sm font-medium capitalize">{i.status}</p><p className="text-sm">KES {Number(i.total_amount).toLocaleString()}</p><p className="text-xs text-primary mt-1">View details</p></div></button>) : <p className="text-sm text-muted-foreground">No invoices are linked to this account yet.</p>}</CardContent></Card>
       <Card className="rounded-2xl border-slate-200 shadow-sm"><CardHeader><CardTitle>After-sales support</CardTitle></CardHeader><CardContent className="space-y-5"><form onSubmit={submitServiceCase} className="grid md:grid-cols-[180px_1fr_auto] gap-3"><select className="input" value={serviceType} onChange={e=>setServiceType(e.target.value)}><option value="warranty">Warranty</option><option value="service">Service</option><option value="maintenance">Maintenance</option></select><div className="grid gap-2"><Input required placeholder="Issue or request title" value={serviceTitle} onChange={e=>setServiceTitle(e.target.value)}/><textarea required className="input min-h-20" placeholder="Tell us what you need help with…" value={serviceDescription} onChange={e=>setServiceDescription(e.target.value)}/></div><Button type="submit" disabled={serviceSending}>{serviceSending?'Submitting…':'Submit request'}</Button></form>{serviceMessage&&<p className="text-sm text-muted-foreground">{serviceMessage}</p>}{data.service_cases.length ? <div className="border-t pt-5 space-y-4"><div><p className="font-semibold">Your service cases</p><p className="text-sm text-muted-foreground">Resolved cases can be rated once.</p></div>{data.service_cases.map(c => <div key={c.id} className="border rounded-md p-4"><div className="flex justify-between gap-4"><div><p className="font-medium">{c.case_number} · {c.issue_title}</p><p className="text-xs text-muted-foreground capitalize">{c.type} · {c.status.replace('_',' ')}</p></div><span className="chip">{c.priority}</span></div>{['resolved','closed'].includes(c.status) && !feedbackMessage[c.id]?.startsWith('Thank you') ? <div className="mt-4 grid gap-2 md:grid-cols-[140px_1fr_auto]"><select className="input" value={feedbackRating[c.id]||''} onChange={e=>setFeedbackRating(prev=>({...prev,[c.id]:Number(e.target.value)}))}><option value="">Rate service…</option><option value="5">5 — Excellent</option><option value="4">4 — Good</option><option value="3">3 — Okay</option><option value="2">2 — Poor</option><option value="1">1 — Very poor</option></select><Input placeholder="Optional comment" value={feedbackComment[c.id]||''} onChange={e=>setFeedbackComment(prev=>({...prev,[c.id]:e.target.value}))}/><Button onClick={()=>void submitFeedback(c.id)} disabled={feedbackSending===c.id || !feedbackRating[c.id]}>{feedbackSending===c.id?'Sending…':'Rate service'}</Button></div> : null}{feedbackMessage[c.id]&&<p className="text-sm text-muted-foreground mt-2">{feedbackMessage[c.id]}</p>}</div>)}</div> : null}</CardContent></Card>
             <div className="grid md:grid-cols-2 gap-6">
-        <Card className="rounded-2xl border-slate-200 shadow-sm"><CardHeader><CardTitle>Documents</CardTitle></CardHeader><CardContent>{documents.length ? <div className="space-y-3">{documents.map(d => <div key={d.id} className="border rounded-md p-4"><p className="font-medium">{d.document_name}</p><p className="text-xs text-muted-foreground capitalize">{d.document_type.replace(/_/g,' ')} · {new Date(d.created_at).toLocaleDateString('en-KE')}</p>{d.description ? <p className="text-sm text-muted-foreground mt-1">{d.description}</p> : null}</div>)}</div> : <p className="text-sm text-muted-foreground">Your shared documents will appear here.</p>}<p className="text-xs text-muted-foreground mt-4">Documents are listed securely; private file locations are never exposed through the portal data API.</p></CardContent></Card>
+        <Card className="rounded-2xl border-slate-200 shadow-sm"><CardHeader><CardTitle>Documents</CardTitle></CardHeader><CardContent>{documents.length ? <div className="space-y-3">{documents.map(d => <div key={d.id} className="border rounded-md p-4"><p className="font-medium">{d.document_name}</p><p className="text-xs text-muted-foreground capitalize">{d.document_type.replace(/_/g,' ')} · {new Date(d.created_at).toLocaleDateString('en-KE')}</p>{d.description ? <p className="text-sm text-muted-foreground mt-1">{d.description}</p> : null}<div className="mt-3">{documentUrls[d.id] ? <a className="text-sm text-primary underline" href={documentUrls[d.id]} target="_blank" rel="noreferrer">Open document</a> : <Button type="button" variant="outline" size="sm" onClick={() => void loadDocumentUrl(d.id)} disabled={documentLoading === d.id}>{documentLoading === d.id ? 'Preparing secure link…' : 'Open document'}</Button>}</div></div>)}</div> : <p className="text-sm text-muted-foreground">Your shared documents will appear here.</p>}<p className="text-xs text-muted-foreground mt-4">Each document link is customer-bound and expires after five minutes. Private file locations are never exposed through the portal data API.</p></CardContent></Card>
         <Card className="rounded-2xl border-slate-200 shadow-sm"><CardHeader><CardTitle>Notification preferences</CardTitle></CardHeader><CardContent>{notificationPrefs ? <div className="space-y-3">{([['email_enabled','Email updates'],['sms_enabled','SMS updates'],['whatsapp_enabled','WhatsApp updates'],['marketing_email_enabled','Marketing email'],['marketing_sms_enabled','Marketing SMS']] as const).map(([key,label]) => <label key={key} className="flex items-center justify-between gap-4 border rounded-md p-3 text-sm"><span>{label}</span><input type="checkbox" checked={notificationPrefs[key]} onChange={e=>setNotificationPrefs(prev=>prev ? {...prev,[key]:e.target.checked} : prev)} /></label>)}<Button onClick={()=>void saveNotificationPreferences()} disabled={prefsSaving}>{prefsSaving ? 'Saving…' : 'Save preferences'}</Button>{prefsMessage&&<p className="text-sm text-muted-foreground">{prefsMessage}</p>}<p className="text-xs text-muted-foreground">Operational messages may still be sent when required to fulfil an order, project or service obligation.</p></div> : <p className="text-sm text-muted-foreground">Preferences are unavailable right now.</p>}</CardContent></Card>
       </div>
       <Card className="rounded-2xl border-slate-200 shadow-sm"><CardHeader><CardTitle>Communication history</CardTitle></CardHeader><CardContent>{communications.length ? <div className="space-y-3 max-h-[28rem] overflow-y-auto">{communications.slice(0,30).map(item => <div key={`${item.id}-${item.created_at}`} className="border rounded-md p-4"><div className="flex items-center justify-between gap-3"><span className="text-xs uppercase font-semibold">{item.channel} · {item.direction}</span><span className="text-xs text-muted-foreground">{new Date(item.created_at).toLocaleString('en-KE')}</span></div>{item.subject ? <p className="font-medium mt-1">{item.subject}</p> : null}<p className="text-sm text-muted-foreground mt-1 whitespace-pre-wrap">{item.message}</p><p className="text-xs text-muted-foreground mt-2 capitalize">Status: {item.status}</p></div>)}</div> : <p className="text-sm text-muted-foreground">Your communication history will appear here as messages are sent or received.</p>}<p className="text-xs text-muted-foreground mt-4">Only communications belonging to your authenticated customer account are shown.</p></CardContent></Card>

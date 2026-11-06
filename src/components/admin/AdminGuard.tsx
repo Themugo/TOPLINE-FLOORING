@@ -61,10 +61,12 @@ export function AdminAuthGuard({ children, permission }: AdminGuardProps) {
   const [state, setState] = useState<'checking' | 'authorized' | 'forbidden'>('checking');
   const [, setLocation] = useLocation();
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const latestVerification = useRef(0);
 
   const effectivePermission = permission ?? ROUTE_PERMISSIONS[normalizeAdminPath(window.location.pathname)];
 
   const signOutToLogin = useCallback(async () => {
+    latestVerification.current += 1;
     if (timerRef.current) clearTimeout(timerRef.current);
     await supabase.auth.signOut();
     setState('forbidden');
@@ -72,8 +74,10 @@ export function AdminAuthGuard({ children, permission }: AdminGuardProps) {
   }, [setLocation]);
 
   const verify = useCallback(async () => {
+    const requestId = ++latestVerification.current;
     try {
       const result = await verifyAdminIdentity();
+      if (requestId !== latestVerification.current) return;
       if (!result) {
         setState('forbidden');
         setLocation('/admin/login');
@@ -85,6 +89,7 @@ export function AdminAuthGuard({ children, permission }: AdminGuardProps) {
       }
       setState('authorized');
     } catch {
+      if (requestId !== latestVerification.current) return;
       setState('forbidden');
       setLocation('/admin/login');
     }
@@ -102,6 +107,7 @@ export function AdminAuthGuard({ children, permission }: AdminGuardProps) {
 
     return () => {
       mounted = false;
+      latestVerification.current += 1;
       listener.subscription.unsubscribe();
     };
   }, [verify]);

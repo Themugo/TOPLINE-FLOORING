@@ -27,7 +27,7 @@ function walk(dir) {
 }
 
 // 1. Repository / deterministic release contract.
-for (const required of ['package.json', 'package-lock.json', '.env.example', 'vercel.json', 'vite.config.ts', 'index.html', 'src/main.tsx', 'src/App.tsx', 'supabase/config.toml', 'supabase/MIGRATION_MANIFEST.md', 'DEPLOYMENT.md', 'docs/PHASE_6_PRODUCTION_LAUNCH_RUNBOOK.md']) {
+for (const required of ['package.json', 'package-lock.json', '.env.example', 'vercel.json', 'vite.config.ts', 'index.html', 'src/main.tsx', 'src/App.tsx', 'supabase/config.toml', 'supabase/MIGRATION_MANIFEST.md', 'DEPLOYMENT.md', 'docs/AUDIT_6_PRODUCTION_LAUNCH_RUNBOOK.md']) {
   if (!exists(required)) fail(`Missing release-critical file: ${required}`);
 }
 const pkg = JSON.parse(read('package.json'));
@@ -108,7 +108,7 @@ if (!JSON.stringify(vercel).includes('X-Content-Type-Options') || !JSON.stringif
 if (!JSON.stringify(vercel).includes(expectedSiteUrl)) fail('Canonical site URL is missing from Vercel configuration.');
 
 // 8. Production operations remain explicitly external/manual rather than falsely certified by source checks.
-const runbook = read('docs/PHASE_6_PRODUCTION_LAUNCH_RUNBOOK.md');
+const runbook = read('docs/AUDIT_6_PRODUCTION_LAUNCH_RUNBOOK.md');
 for (const required of ['Supabase', 'Email', 'SMS', 'Vercel / DNS', 'Business UAT', 'Cutover']) if (!runbook.includes(required)) fail(`Production launch runbook is missing section: ${required}`);
 for (const manual of ['db push --dry-run --linked', 'Real inbox delivery test passed', 'Real Kenyan handset test passed', 'Business UAT', 'HTTPS certificate active']) if (!runbook.includes(manual)) fail(`Launch runbook is missing explicit external validation: ${manual}`);
 warn('Remote Supabase migration application is not certified by source inspection; perform linked dry-run, review, then authorized db push.');

@@ -5,7 +5,7 @@
  */
 export const TOPLINE_COMPANY = {
   name: 'Topline Flooring and Waterproofing',
-  email: 'toplineflooringandwaterproofin@gmail.com',
+  email: 'toplineflooringandwaterproofing@gmail.com',
   phone: '0720 859 737 / 0755 293 372',
   whatsapp: '+254720859737',
   url: 'https://toplinefloorandwaterproofing.co.ke',

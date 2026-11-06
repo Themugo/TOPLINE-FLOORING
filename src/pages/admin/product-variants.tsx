@@ -1,4 +1,4 @@
-import { dbFailure } from '@/lib/db';
+import { dbFailure, describeDbError } from '@/lib/db';
 import { useToast } from '@/hooks/use-toast';
 import { useState, useEffect } from "react";
 import { AdminLayout } from './dashboard';
@@ -44,31 +44,40 @@ export default function ProductVariants() {
   const [variants, setVariants] = useState<ProductVariant[]>([]);
   const [products, setProducts] = useState<{ id: string; name: string }[]>([]);
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
 
   const fetchVariants = async () => {
-    if (!supabase) return;
+    if (!supabase) { setLoading(false); return; }
     setLoading(true);
-    const { data } = await supabase
-      .from('product_variants')
-      .select('*, products!inner(name)')
-      .order('display_order');
-    if (data) {
-      setVariants(data.map((variant: ProductVariant & { products?: { name?: string | null } | null }) => ({
+    try {
+      const { data, error } = await supabase
+        .from('product_variants')
+        .select('*, products!inner(name)')
+        .order('display_order');
+      if (error) throw error;
+      setVariants((data || []).map((variant: ProductVariant & { products?: { name?: string | null } | null }) => ({
         ...variant,
         product_name: variant.products?.name ?? undefined,
       })));
+    } catch (err) {
+      toast({ title: 'Could not load variants', description: describeDbError(err as { message?: string; code?: string }), variant: 'destructive' });
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   const fetchProducts = async () => {
     if (!supabase) return;
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from('products')
       .select('id, name')
       .eq('is_active', true)
       .order('name');
-    if (data) setProducts(data);
+    if (error) {
+      toast({ title: 'Could not load products for variants', description: describeDbError(error), variant: 'destructive' });
+      return;
+    }
+    setProducts(data || []);
   };
 
   useEffect(() => {
@@ -99,50 +108,100 @@ export default function ProductVariants() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!supabase) return;
-    let attributes;
+    if (!supabase || saving) return;
+
+    let attributes: Record<string, unknown>;
     try {
-      attributes = JSON.parse(form.attributes);
-    } catch {
-      attributes = {};
+      const parsed: unknown = JSON.parse(form.attributes);
+      if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) throw new Error('Attributes must be a JSON object.');
+      attributes = parsed as Record<string, unknown>;
+    } catch (parseError) {
+      toast({ title: 'Invalid attributes', description: `Enter a valid JSON object (for example {"finish":"matte"}). ${String(parseError).slice(0, 140)}`, variant: 'destructive' });
+      return;
     }
 
-    const data = {
-      product_id: form.product_id,
-      variant_name: form.variant_name,
-      sku: form.sku || null,
-      price_adjustment: Number(form.price_adjustment),
-      stock_quantity: Number(form.stock_quantity),
-      attributes,
-      display_order: Number(form.display_order),
-      is_active: form.is_active,
-    };
-
-    if (editId) {
-      const failure0 = await dbFailure(supabase.from('product_variants').update(data).eq('id', editId).select('id'), { requireRows: true });
-      if (failure0) {
-        toast({ title: 'Save failed', description: failure0, variant: 'destructive' });
-        return;
-      }
-    } else {
-      const failure1 = await dbFailure(supabase.from('product_variants').insert(data));
-      if (failure1) {
-        toast({ title: 'Save failed', description: failure1, variant: 'destructive' });
-        return;
-      }
+    const priceAdjustment = Number(form.price_adjustment);
+    const desiredStock = Number(form.stock_quantity);
+    const displayOrder = Number(form.display_order);
+    if (!form.product_id || !form.variant_name.trim()) {
+      toast({ title: 'Product and variant name are required', variant: 'destructive' });
+      return;
     }
-    fetchVariants();
-    setOpen(false);
+    if (!Number.isFinite(priceAdjustment) || !Number.isInteger(desiredStock) || desiredStock < 0 || !Number.isInteger(displayOrder)) {
+      toast({ title: 'Check the variant numbers', description: 'Price adjustment must be valid; stock and display order must be whole numbers, and stock cannot be negative.', variant: 'destructive' });
+      return;
+    }
+
+    setSaving(true);
+    try {
+      const data = {
+        product_id: form.product_id,
+        variant_name: form.variant_name.trim(),
+        sku: form.sku.trim() || null,
+        price_adjustment: priceAdjustment,
+        attributes,
+        display_order: displayOrder,
+        is_active: form.is_active,
+      };
+
+      let variantId = editId;
+      if (editId) {
+        const { error } = await supabase.from('product_variants').update(data).eq('id', editId).select('id').single();
+        if (error) throw error;
+      } else {
+        const { data: created, error } = await supabase.from('product_variants')
+          .insert({ ...data, stock_quantity: 0 })
+          .select('id').single();
+        if (error) throw error;
+        variantId = created.id;
+      }
+
+      if (!variantId) throw new Error('Variant could not be identified after saving.');
+      const previousStock = editId
+        ? (variants.find((variant) => variant.id === editId)?.stock_quantity ?? 0)
+        : 0;
+      if (desiredStock !== previousStock) {
+        const { error: stockError } = await supabase.rpc('set_product_variant_stock', {
+          p_variant_id: variantId,
+          p_quantity: desiredStock,
+          p_notes: editId ? 'Variant stock count from product variant editor' : 'Opening variant stock',
+        });
+        if (stockError) {
+          toast({ title: editId ? 'Variant details saved; stock was not updated' : 'Variant created; opening stock was not recorded', description: describeDbError(stockError as { message?: string; code?: string }) || 'Use Inventory to retry the stock count.', variant: 'destructive' });
+          await fetchVariants();
+          return;
+        }
+      }
+
+      toast({ title: editId ? 'Variant updated' : 'Variant created', description: desiredStock !== previousStock ? 'Stock changes were recorded in the inventory movement ledger.' : undefined });
+      await fetchVariants();
+      setOpen(false);
+    } catch (err) {
+      toast({ title: 'Save failed', description: describeDbError(err as { message?: string; code?: string }), variant: 'destructive' });
+    } finally {
+      setSaving(false);
+    }
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Delete this variant?") || !supabase) return;
-    const failure2 = await dbFailure(supabase.from('product_variants').delete().eq('id', id).select('id'), { requireRows: true });
-    if (failure2) {
-      toast({ title: 'Delete failed', description: failure2, variant: 'destructive' });
+    if (!supabase) return;
+    const variant = variants.find((item) => item.id === id);
+    if (!variant) return;
+    if (variant.stock_quantity > 0) {
+      toast({ title: 'Stock must be cleared first', description: 'Record an audited stock adjustment to zero before archiving this variant.', variant: 'destructive' });
       return;
     }
-    fetchVariants();
+    if (!confirm("Archive this variant? Its inventory and order history will be preserved.")) return;
+    const failure = await dbFailure(
+      supabase.from('product_variants').update({ is_active: false }).eq('id', id).select('id'),
+      { requireRows: true },
+    );
+    if (failure) {
+      toast({ title: 'Archive failed', description: failure, variant: 'destructive' });
+      return;
+    }
+    toast({ title: 'Variant archived' });
+    await fetchVariants();
   };
 
   const setF = (k: keyof typeof form, v: string | boolean) => setForm(f => ({ ...f, [k]: v }));
@@ -248,8 +307,8 @@ export default function ProductVariants() {
               <Input type="number" value={form.price_adjustment} onChange={e => setF("price_adjustment", e.target.value)} className="mt-1 rounded-sm" placeholder="0" />
             </div>
             <div>
-              <Label className="text-xs uppercase tracking-widest font-sans">Stock Quantity</Label>
-              <Input type="number" value={form.stock_quantity} onChange={e => setF("stock_quantity", e.target.value)} className="mt-1 rounded-sm" min={0} />
+              <Label className="text-xs uppercase tracking-widest font-sans">Counted Stock Quantity</Label>
+              <Input type="number" value={form.stock_quantity} onChange={e => setF("stock_quantity", e.target.value)} className="mt-1 rounded-sm" min={0} step={1} required />
             </div>
             <div>
               <Label className="text-xs uppercase tracking-widest font-sans">Attributes (JSON)</Label>

@@ -32,13 +32,18 @@ const CartContext = createContext<CartContextValue | null>(null);
 /** Highest quantity the shopper can hold for a line, from the stock the catalogue last reported. */
 export function maxQuantityFor(product: Product, variant?: ProductVariant): number {
   const stock = variant ? variant.stock_quantity : product.stock_quantity;
-  return Number.isFinite(stock) && stock > 0 ? Math.floor(stock) : Number.POSITIVE_INFINITY;
+  // Unknown/zero stock is not an unlimited allowance. The catalogue must report
+  // a positive finite integer before the cart can accept a line.
+  return Number.isFinite(stock) && stock > 0 ? Math.floor(stock) : 0;
 }
 
 function cartReducer(state: CartState, action: CartAction): CartState {
   switch (action.type) {
     case 'ADD_ITEM': {
-      const qty = action.quantity ?? 1;
+      const requested = action.quantity ?? 1;
+      const qty = Number.isFinite(requested) ? Math.floor(requested) : 0;
+      const max = maxQuantityFor(action.product, action.variant);
+      if (qty <= 0 || max <= 0) return state;
       const existingItem = state.items.find(
         (item) => item.product.id === action.product.id && item.variant?.id === action.variant?.id
       );
@@ -47,14 +52,14 @@ function cartReducer(state: CartState, action: CartAction): CartState {
           ...state,
           items: state.items.map((item) =>
             item.product.id === action.product.id && item.variant?.id === action.variant?.id
-              ? { ...item, quantity: Math.min(item.quantity + qty, maxQuantityFor(action.product, action.variant)) }
+              ? { ...item, quantity: Math.min(item.quantity + qty, max) }
               : item
           ),
         };
       }
       return {
         ...state,
-        items: [...state.items, { product: action.product, quantity: Math.min(qty, maxQuantityFor(action.product, action.variant)), variant: action.variant }],
+        items: [...state.items, { product: action.product, quantity: Math.min(qty, max), variant: action.variant }],
       };
     }
     case 'REMOVE_ITEM':
@@ -63,7 +68,7 @@ function cartReducer(state: CartState, action: CartAction): CartState {
         items: state.items.filter((item) => !(item.product.id === action.productId && item.variant?.id === action.variantId)),
       };
     case 'UPDATE_QUANTITY':
-      if (action.quantity <= 0) {
+      if (!Number.isFinite(action.quantity) || action.quantity <= 0) {
         return {
           ...state,
           items: state.items.filter(
@@ -75,7 +80,7 @@ function cartReducer(state: CartState, action: CartAction): CartState {
         ...state,
         items: state.items.map((item) =>
           item.product.id === action.productId && item.variant?.id === action.variantId
-            ? { ...item, quantity: Math.min(action.quantity, maxQuantityFor(item.product, item.variant)) }
+            ? { ...item, quantity: Math.min(Math.floor(action.quantity), maxQuantityFor(item.product, item.variant)) }
             : item
         ),
       };

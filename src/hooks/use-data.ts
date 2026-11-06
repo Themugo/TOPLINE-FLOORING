@@ -725,6 +725,7 @@ export function useAdminAuth() {
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<{ email?: string } | null>(null);
   const [staffProfile, setStaffProfile] = useState<StaffProfile | null>(null);
+  const latestAuthCheck = useRef(0);
 
   useEffect(() => {
     let mounted = true;
@@ -736,8 +737,8 @@ export function useAdminAuth() {
       return () => { mounted = false; };
     }
 
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
-      if (!mounted) return;
+    const checkCurrentStaff = async (session: Awaited<ReturnType<typeof supabase.auth.getSession>>['data']['session']) => {
+      const requestId = ++latestAuthCheck.current;
       setUser(session?.user ?? null);
       if (!session) {
         setStaffProfile(null);
@@ -747,42 +748,39 @@ export function useAdminAuth() {
       }
       try {
         const profile = await getCurrentStaffProfile();
+        if (!mounted || requestId !== latestAuthCheck.current) return;
         setStaffProfile(profile);
         setIsAuthenticated(Boolean(profile?.is_active));
       } catch {
+        if (!mounted || requestId !== latestAuthCheck.current) return;
         setStaffProfile(null);
         setIsAuthenticated(false);
       } finally {
-        setLoading(false);
+        if (mounted && requestId === latestAuthCheck.current) setLoading(false);
       }
+    };
+
+    void supabase.auth.getSession().then(({ data: { session } }) => {
+      if (mounted) void checkCurrentStaff(session);
     }).catch(() => {
       if (!mounted) return;
+      latestAuthCheck.current += 1;
       setIsAuthenticated(false);
       setUser(null);
+      setStaffProfile(null);
       setLoading(false);
     });
 
     const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (!mounted) return;
-      setUser(session?.user ?? null);
-      if (!session) {
-        setStaffProfile(null);
-        setIsAuthenticated(false);
-        return;
-      }
-      void getCurrentStaffProfile().then((profile) => {
-        if (!mounted) return;
-        setStaffProfile(profile);
-        setIsAuthenticated(Boolean(profile?.is_active));
-      }).catch(() => {
-        if (!mounted) return;
-        setStaffProfile(null);
-        setIsAuthenticated(false);
-      });
+      // Do not call Supabase Auth methods while its onAuthStateChange lock is held.
+      window.setTimeout(() => {
+        if (mounted) void checkCurrentStaff(session);
+      }, 0);
     });
 
     return () => {
       mounted = false;
+      latestAuthCheck.current += 1;
       listener.subscription.unsubscribe();
     };
   }, []);
@@ -790,12 +788,12 @@ export function useAdminAuth() {
   const [loginIssue, setLoginIssue] = useState('');
   const login = async (email: string, password: string): Promise<boolean> => {
     setLoginIssue('');
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) {
-      setLoginIssue(/confirm/i.test(error.message) ? 'Please confirm your email first. Open the confirmation email we sent, then sign in.' : 'Invalid email or password');
-      return false;
-    }
     try {
+      const { error } = await supabase.auth.signInWithPassword({ email: email.trim().toLowerCase(), password });
+      if (error) {
+        setLoginIssue(/confirm/i.test(error.message) ? 'Please confirm your email first. Open the confirmation email we sent, then sign in.' : 'Invalid email or password');
+        return false;
+      }
       let profile = await getCurrentStaffProfile();
       if (!profile?.is_active) {
         // First sign-in of an invited team member: the confirmed email matches an open invitation, which activates their access.
@@ -810,8 +808,7 @@ export function useAdminAuth() {
       setIsAuthenticated(true);
       return true;
     } catch {
-      await supabase.auth.signOut();
-      setLoginIssue('Sign-in could not be completed. Please try again.');
+      setLoginIssue('Sign-in could not be completed. Check your connection and try again.');
       return false;
     }
   };
@@ -1373,14 +1370,18 @@ export function useWarehouses() {
   };
 
   const updateWarehouse = async (id: string, updates: Partial<Warehouse>) => {
-    const { error: err } = await supabase.from('warehouses').update({ ...updates, updated_at: new Date().toISOString() }).eq('id', id);
+    const { data, error: err } = await supabase.from('warehouses')
+      .update({ ...updates, updated_at: new Date().toISOString() })
+      .eq('id', id).select('id');
     if (err) throw err;
+    if (!data?.length) throw new Error('Warehouse was not updated. It may no longer exist or you may lack permission.');
     await refetch();
   };
 
   const deleteWarehouse = async (id: string) => {
-    const { error: err } = await supabase.from('warehouses').delete().eq('id', id);
+    const { data, error: err } = await supabase.from('warehouses').delete().eq('id', id).select('id');
     if (err) throw err;
+    if (!data?.length) throw new Error('Warehouse was not deleted. It may no longer exist or you may lack permission.');
     await refetch();
   };
 

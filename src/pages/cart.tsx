@@ -210,7 +210,7 @@ export default function Cart() {
         checkoutIdempotencyKey,
         checkoutFingerprint({
           lines: items.map((item) => ({ productId: item.product.id, variantId: item.variant?.id, quantity: item.quantity })),
-          deliveryZoneId: selectedZoneId, couponId: appliedCoupon?.id, email: form.email, phone: form.phone, deliveryAddress: form.deliveryAddress,
+          deliveryZoneId: selectedZoneId, couponId: appliedCoupon?.id, email: form.email, phone: form.phone, deliveryAddress: form.deliveryAddress, customerName: form.name, notes: form.notes, paymentMethod,
         }),
         window.localStorage,
       );

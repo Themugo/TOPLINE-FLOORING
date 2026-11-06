@@ -288,8 +288,15 @@ function PurchaseOrderDetail({ po, onClose }: { po: PurchaseOrder; onClose: () =
   const items = current.items || [];
 
   const handleAddItem = async () => {
-    if (!newItem.description.trim()) {
-      toast({ title: 'Enter a description', variant: 'destructive' });
+    const orderedQuantity = Number(newItem.quantity_ordered);
+    const unitCost = Number(newItem.unit_cost);
+    if (!newItem.product_id) {
+      toast({ title: 'Select a catalogue product', description: 'Stock purchase order lines must be linked to a product so receipts can update inventory.', variant: 'destructive' });
+      return;
+    }
+    if (!newItem.description.trim() || !Number.isInteger(orderedQuantity) || orderedQuantity <= 0 ||
+      !Number.isFinite(unitCost) || unitCost < 0) {
+      toast({ title: 'Check the purchase order line', description: 'Enter a description, a positive whole quantity and a nonnegative unit cost.', variant: 'destructive' });
       return;
     }
     setSaving(true);
@@ -297,8 +304,8 @@ function PurchaseOrderDetail({ po, onClose }: { po: PurchaseOrder; onClose: () =
       await addPurchaseOrderItem(current.id, {
         product_id: newItem.product_id || null,
         description: newItem.description,
-        quantity_ordered: Number(newItem.quantity_ordered) || 1,
-        unit_cost: Number(newItem.unit_cost) || 0,
+        quantity_ordered: orderedQuantity,
+        unit_cost: unitCost,
       });
       setNewItem({ product_id: '', description: '', quantity_ordered: '1', unit_cost: '0' });
     } catch (err) {
@@ -309,11 +316,11 @@ function PurchaseOrderDetail({ po, onClose }: { po: PurchaseOrder; onClose: () =
   };
 
   const handleReceive = async (itemId: string, ordered: number, currentReceived: number) => {
-    const input = prompt(`Quantity received (ordered: ${ordered}):`, String(ordered));
+    const input = prompt(`Total quantity received to date (ordered: ${ordered}):`, String(ordered));
     if (input === null) return;
     const qty = Number(input);
-    if (isNaN(qty) || qty < 0) {
-      toast({ title: 'Enter a valid quantity', variant: 'destructive' });
+    if (!Number.isInteger(qty) || qty < currentReceived || qty > ordered) {
+      toast({ title: 'Enter a valid whole received quantity', description: `The total must be between ${currentReceived} and ${ordered}.`, variant: 'destructive' });
       return;
     }
     try {
@@ -360,15 +367,15 @@ function PurchaseOrderDetail({ po, onClose }: { po: PurchaseOrder; onClose: () =
           </div>
 
           <div className="grid grid-cols-4 gap-2">
-            <select className="input text-sm col-span-2" value={newItem.product_id} onChange={(e) => {
+            <select required aria-label="Purchase order product" className="input text-sm col-span-2" value={newItem.product_id} onChange={(e) => {
               const product = products.find(p => p.id === e.target.value);
               setNewItem({ ...newItem, product_id: e.target.value, description: product ? product.name : newItem.description });
             }}>
-              <option value="">Link to product (optional)</option>
+              <option value="">Select catalogue product *</option>
               {products.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
             </select>
-            <input type="number" placeholder="Qty" className="input text-sm" value={newItem.quantity_ordered} onChange={(e) => setNewItem({ ...newItem, quantity_ordered: e.target.value })} />
-            <input type="number" placeholder="Unit cost" className="input text-sm" value={newItem.unit_cost} onChange={(e) => setNewItem({ ...newItem, unit_cost: e.target.value })} />
+            <input type="number" min="1" step="1" placeholder="Qty" className="input text-sm" value={newItem.quantity_ordered} onChange={(e) => setNewItem({ ...newItem, quantity_ordered: e.target.value })} />
+            <input type="number" min="0" step="0.01" placeholder="Unit cost" className="input text-sm" value={newItem.unit_cost} onChange={(e) => setNewItem({ ...newItem, unit_cost: e.target.value })} />
           </div>
           <input placeholder="Description" className="input text-sm mt-2" value={newItem.description} onChange={(e) => setNewItem({ ...newItem, description: e.target.value })} />
           <button onClick={handleAddItem} disabled={saving} className="btn-secondary text-sm mt-2 flex items-center gap-1">

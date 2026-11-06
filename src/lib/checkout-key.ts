@@ -8,12 +8,20 @@ export interface CheckoutFingerprintInput {
   email: string;
   phone: string;
   deliveryAddress?: string | null;
+  customerName?: string | null;
+  notes?: string | null;
+  paymentMethod?: string | null;
 }
 
 /** Stable description of exactly what is being ordered (line order does not matter). */
 export function checkoutFingerprint(input: CheckoutFingerprintInput): string {
   const lines = input.lines.map((l) => [l.productId, l.variantId || null, l.quantity]).sort((a, b) => JSON.stringify(a).localeCompare(JSON.stringify(b)));
-  return JSON.stringify([lines, input.deliveryZoneId || null, input.couponId || null, input.email.trim().toLowerCase(), input.phone.trim(), (input.deliveryAddress || '').trim()]);
+  return JSON.stringify([
+    lines, input.deliveryZoneId || null, input.couponId || null,
+    input.email.trim().toLowerCase(), input.phone.trim(),
+    (input.deliveryAddress || '').trim(), (input.customerName || '').trim(),
+    (input.notes || '').trim(), input.paymentMethod || null,
+  ]);
 }
 
 type KeyStorage = Pick<Storage, 'getItem' | 'setItem'>;

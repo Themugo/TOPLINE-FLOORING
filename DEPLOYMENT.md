@@ -85,7 +85,7 @@ Run the static release gate before deployment:
 npm run verify:phase-5-hosting
 ```
 
-Follow `docs/PHASE_5_PRODUCTION_HOSTING_DOMAIN_RELEASE.md` for the safe DNS/Vercel cutover sequence. Keep existing cPanel MX/mail records unchanged during the web migration.
+Follow `docs/AUDIT_5_PRODUCTION_HOSTING_DOMAIN_RELEASE.md` for the safe DNS/Vercel cutover sequence. Keep existing cPanel MX/mail records unchanged during the web migration.
 
 ## Remote database deployment gate
 

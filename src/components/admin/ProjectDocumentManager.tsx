@@ -17,7 +17,7 @@ import {
 import type { ProjectDocument, ProjectDocumentType, Project } from '@/lib/types';
 import { supabase } from '@/lib/supabase';
 import { useToast } from '@/hooks/use-toast';
-import { errorMessage } from '@/lib/db';
+import { errorMessage as getErrorMessage } from '@/lib/db';
 
 const DOCUMENT_BUCKET = 'private-documents';
 const MAX_FILE_BYTES = 10 * 1024 * 1024; // matches bucket file_size_limit
@@ -59,7 +59,7 @@ function formatBytes(bytes: number): string {
 }
 
 function errorMessage(err: unknown): string {
-  return errorMessage(err, 'Unexpected error');
+  return getErrorMessage(err, 'Unexpected error') ?? 'Unexpected error';
 }
 
 interface ProjectDocumentManagerProps {

@@ -76,7 +76,7 @@ Never put a service-role or worker secret in a `VITE_*` variable.
 
 ## Current active chain (Phases 30–32 verification baseline)
 
-The current production candidate contains 147 uniquely timestamped active migrations, ending with `20261104180000_about_page_public_setting.sql`. Run the complete verification suite before any linked database deployment.
+The current production candidate contains 159 uniquely timestamped active migrations, ending with `20261106230000_audit12_journey_regression_hardening.sql`. Phase 12 combines source-only UI/journey hardening with an explicit storage RLS replay guard. Run the complete verification suite before any linked database deployment.
 
 Current active chain additions: `20260930170000_service_catalog_and_communications_worker_hardening.sql`, `20260930180000_project_documents_private_storage.sql`, `20260930190000_staff_read_inactive_cms_catalog_rows.sql`, `20260930193000_private_document_policy_overlap_hardening.sql`, `20260930200000_project_templates.sql`, `20260930210000_close_legacy_public_read_policies.sql`, `20260930220000_projects_admin_contract_columns.sql`, `20260930230000_move_product_cost_prices_staff_only.sql`, `20260930240000_coupon_validation_throttle.sql`, `20260930250000_finance_permission_resource.sql`, `20261001090000_project_template_persistence_360.sql`, `20261001100000_admin_notification_state_360.sql`, `20261001110000_catalog_product_service_upload_integrity_360.sql`.
 
@@ -238,3 +238,18 @@ These files were present in `supabase/migrations/` but not yet listed above. App
 - `20261104160000_tax_settings_and_receipt_breakdown.sql` — configurable tax (default Kenya VAT 16%, KRA PIN), public allow-list for tax_settings, itemised subtotal/discount/delivery/VAT-included lines on order and payment emails
 - `20261104170000_manual_payment_confirmation_and_receipts.sql` — staff confirm manual payments (reference required, duplicate-reference and overpayment guards), shared receipt builder, resend receipt; same ledger as automatic provider payments
 - `20261104180000_about_page_public_setting.sql` — allow-lists the about_page setting for public reading (About page editor)
+
+- `20261106120000_customer_auth_trigger_order_hardening.sql` — orders the customer-registration trigger before verified portal-link binding so auto-confirmed signups cannot miss the customer profile created in the same Auth INSERT.
+
+- `20261106130000_inventory_stock_adjustment_hardening.sql` — permits zero stock counts; makes warehouse counts adjust global stock by the warehouse delta; audits variant stock and paid variant consumption against the exact variant; blocks deletion of warehouses holding stock and hard deletion of variants with stock/history; serializes stock transfers; validates product-linked, whole-unit purchase order receipts; automatically creates, updates, resolves and backfills low-stock alerts for products and variants.
+
+- `20261106140000_cart_checkout_variant_integrity.sql` — prevents order lines from bypassing active variant-level stock and validates product/variant ownership.
+- `20261106150000_audit4_payment_target_integrity.sql` — binds provider callback targets to the payment transaction being reconciled and rejects ambiguous or mismatched order/invoice targets.
+- `20261106160000_audit5_order_lifecycle_end_to_end.sql` — gates direct completion on payment/delivery evidence and atomically cancels open deliveries with unpaid-order cancellation.
+- `20261106170000_audit6_payment_callbacks_reconciliation.sql` — restores stale-event protection and late-success inventory recovery while preventing unknown provider IDs from selecting another pending attempt.
+- `20261106180000_audit7_customer_documents_self_service.sql` — records the customer-bound signed-download boundary for private customer documents; binary access is authenticated by the customer-document-download Edge Function.
+- `20261106190000_audit8_communications_delivery_hardening.sql` — scopes provider callbacks by provider/channel and hardens SMS destination matching while preserving monotonic delivery-state audit transitions.
+- `20261106200000_audit9_admin_permissions_operational_actions.sql` — hardens staff-only fulfillment actions against unpaid picking, terminal-delivery mutation, closed-order recovery and inactive-driver dispatch while preserving operational event history.
+- `20261106210000_audit10_background_workers_scheduled_processes.sql` — makes named pg_cron schedule reconciliation idempotent while preserving the five-job scheduler, service-role boundary, run ledger and locks.
+- `20261106220000_audit11_database_integrity_rls.sql` — binds private customer-document update destinations to the authenticated customer namespace while preserving staff media and project-document isolation.
+- `20261106230000_audit12_journey_regression_hardening.sql` — explicitly enables RLS on `storage.objects`, repairs the published CMS contact-email typo, and preserves administrator-managed addresses during fresh migration replay.

@@ -42,7 +42,7 @@ export default function AdminWarehouses() {
 }
 
 function WarehousesTab() {
-  const { warehouses, loading, createWarehouse, updateWarehouse, deleteWarehouse } = useWarehouses();
+  const { warehouses, loading, error, createWarehouse, updateWarehouse, deleteWarehouse } = useWarehouses();
   const { toast } = useToast();
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState<Warehouse | null>(null);
@@ -75,7 +75,7 @@ function WarehousesTab() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Delete this warehouse? Stock records tied to it will also be removed.')) return;
+    if (!confirm('Delete this warehouse? Any remaining stock must first be transferred or written off; warehouses holding stock cannot be deleted.')) return;
     try {
       await deleteWarehouse(id);
       toast({ title: 'Warehouse deleted' });
@@ -86,6 +86,7 @@ function WarehousesTab() {
 
   return (
     <div>
+      {error && <p role="alert" className="mb-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-800">Warehouses could not be loaded: {error}</p>}
       <div className="mb-4">
         <button onClick={() => setShowForm(true)} className="btn-primary flex items-center gap-2">
           <Plus className="w-4 h-4" /> Add Warehouse
@@ -186,7 +187,7 @@ function WarehousesTab() {
 function StockTab() {
   const { warehouses } = useWarehouses();
   const [filterWarehouse, setFilterWarehouse] = useState('');
-  const { stock, loading, refetch } = useWarehouseStock(filterWarehouse || undefined);
+  const { stock, loading, error, refetch } = useWarehouseStock(filterWarehouse || undefined);
   const { products } = useProducts();
   const { toast } = useToast();
   const [showForm, setShowForm] = useState(false);
@@ -219,6 +220,7 @@ function StockTab() {
 
   return (
     <div>
+      {error && <p role="alert" className="mb-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-800">Warehouse stock could not be loaded: {error} <button onClick={() => void refetch()} className="font-semibold underline">Retry</button></p>}
       <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
         <select value={filterWarehouse} onChange={(e) => setFilterWarehouse(e.target.value)} className="input max-w-xs">
           <option value="">All warehouses</option>
@@ -284,7 +286,7 @@ function StockTab() {
               <input type="number" required min={0} placeholder="Quantity" value={form.quantity || ''} onChange={(e) => setForm({ ...form, quantity: parseInt(e.target.value) || 0 })} className="input" />
               <textarea placeholder="Notes (optional)" value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} className="input min-h-[60px]" />
               <p className="text-xs text-gray-600 bg-blue-50 rounded-lg p-3">
-                This sets the exact quantity held at this location and logs an inventory movement. It does not change the product's total stock used storefront-wide - use Transfers to move stock between warehouses, or the main Inventory page to adjust total stock.
+                This sets the exact quantity held at this location and logs an inventory movement. The product's storefront stock total is adjusted by the difference, so the total remains aligned with the sum held across warehouses. Use Transfers to move existing stock between warehouses without changing the overall total.
               </p>
               <div className="flex gap-3">
                 <button type="button" onClick={() => setShowForm(false)} className="btn-secondary flex-1">Cancel</button>
@@ -301,7 +303,7 @@ function StockTab() {
 function TransfersTab() {
   const { warehouses } = useWarehouses();
   const { products } = useProducts();
-  const { transfers, loading, createTransfer } = useStockTransfers();
+  const { transfers, loading, error, createTransfer } = useStockTransfers();
   const { toast } = useToast();
   const [showForm, setShowForm] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -326,8 +328,8 @@ function TransfersTab() {
       setShowForm(false);
       setForm({ from_warehouse_id: '', to_warehouse_id: '', product_id: '', quantity: 1, notes: '' });
     } catch (err) {
-      const message = errorMessage(err, 'Failed to transfer stock');
-      toast({ title: message.includes('Insufficient stock') ? 'Insufficient stock at source warehouse' : 'Failed to transfer stock', variant: 'destructive' });
+      const message = errorMessage(err, 'Failed to transfer stock') ?? 'Failed to transfer stock';
+      toast({ title: message.includes('Insufficient stock') ? 'Insufficient stock at source warehouse' : 'Failed to transfer stock', description: message, variant: 'destructive' });
     } finally {
       setSaving(false);
     }
@@ -335,6 +337,7 @@ function TransfersTab() {
 
   return (
     <div>
+      {error && <p role="alert" className="mb-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-800">Stock transfers could not be loaded: {error}</p>}
       <div className="mb-4">
         <button onClick={() => setShowForm(true)} className="btn-primary flex items-center gap-2" disabled={warehouses.length < 2}>
           <ArrowLeftRight className="w-4 h-4" /> Transfer Stock

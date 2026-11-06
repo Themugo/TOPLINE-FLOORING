@@ -39,6 +39,10 @@ for (const banned of ['localStorage', 'w3.org', 'SAMPLE_PROJECT_DOCUMENTS', 'dum
 for (const required of [".from('project_documents')", "'private-documents'", 'createSignedUrl', '.upload(', '.remove([', 'projects/${project.id}/'])
   check(cmp.includes(required), `ProjectDocumentManager missing: ${required}`);
 check(!cmp.includes('getPublicUrl'), 'Private documents must never use public URLs');
+// Catch import/local declaration collisions that a feature-presence check misses.
+check(cmp.includes("import { errorMessage as getErrorMessage } from '@/lib/db';"), 'ProjectDocumentManager must alias the shared errorMessage import');
+check(/function errorMessage\(err: unknown\): string\s*\{\s*return getErrorMessage\(err, 'Unexpected error'\)/.test(cmp), 'ProjectDocumentManager error helper must delegate to the shared helper without recursion');
+check(!/import \{ errorMessage \} from ['"]@\/lib\/db['"];[\s\S]*?function errorMessage/.test(cmp), 'ProjectDocumentManager must not redeclare an imported errorMessage identifier');
 
 if (failures.length) {
   console.error('Project documents verification FAILED.');

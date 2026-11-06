@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 
 export interface PaginationState {
   page: number;
@@ -12,6 +12,14 @@ export function usePagination(initialLimit = 20) {
   const limit = initialLimit;
 
   const totalPages = Math.ceil(total / limit);
+
+  // Keep the current page valid when filters, searches, deletions or permission-scoped
+  // result counts shrink. PostgREST rejects ranges that start beyond the result set.
+  useEffect(() => {
+    const lastValidPage = Math.max(0, totalPages - 1);
+    if (page > lastValidPage) setPage(lastValidPage);
+  }, [page, totalPages]);
+
   const from = page * limit;
   const to = from + limit - 1;
 

@@ -1,0 +1,174 @@
+source_file,area,source_lines,hex_color_literals,inline_style_objects,gray_utility_occurrences,primary_utility_occurrences,navy_utility_occurrences,raw_style_or_css_color_occurrences,source_audit_status,rendered_visual_status
+src/pages/about.tsx,Public / customer page,139,0,0,0,0,0,0,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/pages/admin/audit-logs.tsx,Admin / operations,136,0,0,0,0,0,0,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/pages/admin/automation-operations-360.tsx,Admin / operations,16,0,0,0,0,0,0,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/pages/admin/backups.tsx,Admin / operations,27,0,0,0,0,0,0,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/pages/admin/business-continuity-360.tsx,Admin / operations,19,0,0,1,1,0,0,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/pages/admin/categories.tsx,Admin / operations,270,0,0,42,12,2,0,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/pages/admin/commercial-lifecycle.tsx,Admin / operations,60,0,0,12,3,4,0,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/pages/admin/communications-journey-360.tsx,Admin / operations,33,0,0,0,0,0,0,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/pages/admin/communications.tsx,Admin / operations,36,0,0,21,3,1,0,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/pages/admin/coupons.tsx,Admin / operations,496,0,0,53,17,0,0,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/pages/admin/crm.tsx,Admin / operations,307,0,0,18,9,10,0,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/pages/admin/customer-lifecycle-360.tsx,Admin / operations,46,0,0,0,0,0,0,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/pages/admin/customer-portal-operations.tsx,Admin / operations,45,0,0,0,0,0,0,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/pages/admin/customer-renewals.tsx,Admin / operations,6,0,0,0,0,0,0,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/pages/admin/customers.tsx,Admin / operations,199,0,0,26,3,0,0,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/pages/admin/dashboard.tsx,Admin / operations,618,1,0,81,17,28,2,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/pages/admin/data-governance-360.tsx,Admin / operations,13,0,0,1,1,0,0,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/pages/admin/deliveries.tsx,Admin / operations,23,0,0,0,1,0,0,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/pages/admin/delivery-zones.tsx,Admin / operations,174,0,0,12,0,0,0,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/pages/admin/executive-operations-360.tsx,Admin / operations,36,0,0,21,3,4,0,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/pages/admin/field-operations.tsx,Admin / operations,129,0,1,0,3,0,0,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/pages/admin/finance-operations.tsx,Admin / operations,55,0,0,1,0,21,0,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/pages/admin/financial-command-center.tsx,Admin / operations,10,0,0,4,0,0,0,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/pages/admin/fulfillment-delivery-360.tsx,Admin / operations,23,0,0,0,0,0,0,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/pages/admin/hero-slides.tsx,Admin / operations,165,0,0,4,1,10,0,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/pages/admin/homepage-builder.tsx,Admin / operations,696,6,0,41,6,0,6,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/pages/admin/hse-site-compliance-360.tsx,Admin / operations,17,0,0,0,0,0,0,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/pages/admin/identity-access-360.tsx,Admin / operations,13,0,0,0,0,0,0,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/pages/admin/installation-workforce.tsx,Admin / operations,22,0,0,0,0,0,0,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/pages/admin/inventory-procurement-operations.tsx,Admin / operations,110,0,0,7,0,20,0,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/pages/admin/inventory.tsx,Admin / operations,256,0,0,10,0,36,0,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/pages/admin/invoices.tsx,Admin / operations,393,0,0,10,2,37,0,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/pages/admin/leads.tsx,Admin / operations,73,0,0,0,0,0,0,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/pages/admin/login.tsx,Admin / operations,306,0,0,6,8,20,0,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/pages/admin/maintenance-plans.tsx,Admin / operations,22,0,0,0,0,0,0,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/pages/admin/media-library.tsx,Admin / operations,1197,0,0,182,20,0,0,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/pages/admin/navigation.tsx,Admin / operations,222,0,0,0,0,0,0,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/pages/admin/operations-command-center.tsx,Admin / operations,163,0,0,42,12,14,0,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/pages/admin/orders.tsx,Admin / operations,216,0,0,35,0,0,0,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/pages/admin/pages.tsx,Admin / operations,40,0,0,6,2,0,0,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/pages/admin/partners.tsx,Admin / operations,145,0,0,5,1,12,0,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/pages/admin/product-brands.tsx,Admin / operations,264,0,0,0,0,0,0,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/pages/admin/product-documents.tsx,Admin / operations,260,0,0,0,0,0,0,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/pages/admin/product-images.tsx,Admin / operations,264,0,0,0,0,0,0,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/pages/admin/product-specifications.tsx,Admin / operations,228,0,0,0,0,0,0,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/pages/admin/product-variants.tsx,Admin / operations,277,0,0,0,0,0,0,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/pages/admin/products.tsx,Admin / operations,487,0,0,9,6,33,0,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/pages/admin/project-delivery-360.tsx,Admin / operations,65,0,1,0,0,0,0,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/pages/admin/project-delivery.tsx,Admin / operations,34,0,1,17,2,2,0,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/pages/admin/project-profitability.tsx,Admin / operations,18,0,0,0,1,0,0,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/pages/admin/projects.tsx,Admin / operations,954,0,0,102,18,0,0,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/pages/admin/promotions.tsx,Admin / operations,219,0,0,13,0,0,0,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/pages/admin/quality-assurance-360.tsx,Admin / operations,15,0,0,0,0,0,0,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/pages/admin/quotations.tsx,Admin / operations,338,0,0,44,4,1,0,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/pages/admin/reliability-operations-360.tsx,Admin / operations,37,0,0,4,1,0,0,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/pages/admin/reports.tsx,Admin / operations,347,7,2,32,9,1,7,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/pages/admin/sales-command-center.tsx,Admin / operations,34,0,0,14,3,5,0,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/pages/admin/seo.tsx,Admin / operations,422,0,0,42,17,0,0,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/pages/admin/service-cases.tsx,Admin / operations,23,0,0,0,0,0,0,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/pages/admin/services.tsx,Admin / operations,224,0,0,11,2,2,0,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/pages/admin/settings.tsx,Admin / operations,137,0,0,8,0,0,0,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/pages/admin/site-content.tsx,Admin / operations,16,0,0,1,0,0,0,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/pages/admin/site-control.tsx,Admin / operations,242,0,0,18,3,0,0,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/pages/admin/site-settings.tsx,Admin / operations,413,0,0,46,0,0,0,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/pages/admin/site-visits.tsx,Admin / operations,81,0,0,10,1,3,0,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/pages/admin/suppliers.tsx,Admin / operations,391,0,0,14,7,41,0,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/pages/admin/supply-chain-360.tsx,Admin / operations,20,0,0,0,0,0,0,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/pages/admin/system-health.tsx,Admin / operations,36,0,0,0,0,0,0,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/pages/admin/testimonials.tsx,Admin / operations,151,0,0,5,2,13,0,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/pages/admin/theme.tsx,Admin / operations,149,21,1,14,1,0,21,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/pages/admin/warehouses.tsx,Admin / operations,415,0,0,17,9,57,0,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/pages/cart.tsx,Public / customer page,508,0,0,38,1,0,0,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/pages/checkout-success.tsx,Public / customer page,75,0,0,8,4,0,0,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/pages/compare.tsx,Public / customer page,68,0,0,4,0,1,0,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/pages/contact.tsx,Public / customer page,431,0,1,36,23,20,0,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/pages/custom-page.tsx,Public / customer page,276,0,1,2,0,0,0,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/pages/faq.tsx,Public / customer page,127,0,0,4,1,1,0,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/pages/home.tsx,Public / customer page,709,0,1,29,44,18,0,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/pages/industries.tsx,Public / customer page,129,0,0,0,1,2,0,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/pages/market.tsx,Public / customer page,127,0,0,0,0,0,0,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/pages/not-found.tsx,Public / customer page,33,0,0,1,1,1,0,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/pages/order-confirmation.tsx,Public / customer page,152,0,0,16,2,0,0,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/pages/payment-return.tsx,Public / customer page,39,0,0,0,0,0,0,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/pages/portal.tsx,Public / customer page,231,0,1,0,0,0,0,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/pages/portfolio.tsx,Public / customer page,473,0,0,37,33,30,0,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/pages/quotation.tsx,Public / customer page,561,0,0,57,34,34,0,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/pages/service-detail.tsx,Public / customer page,211,0,0,10,12,12,0,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/pages/services.tsx,Public / customer page,250,0,0,15,23,16,0,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/pages/shop-detail.tsx,Public / customer page,472,0,0,41,21,19,0,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/pages/shop.tsx,Public / customer page,475,0,0,48,35,19,0,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/pages/track-order.tsx,Public / customer page,202,0,0,0,0,0,0,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/components/Breadcrumbs.tsx,Shared component,41,0,0,6,2,1,0,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/components/ErrorBoundary.tsx,Shared component,119,0,0,0,0,0,0,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/components/InitializationScreen.tsx,Shared component,87,0,0,0,0,0,0,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/components/ProductVariantSelector.tsx,Shared component,30,0,0,2,1,1,0,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/components/ThemeApplier.tsx,Shared component,36,0,0,0,0,0,0,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/components/admin/AdminGuard.tsx,Shared component,232,0,0,7,1,0,0,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/components/admin/AdminNotificationCenter.tsx,Shared component,326,0,0,26,0,0,0,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/components/admin/BulkCsvImportModal.tsx,Shared component,822,0,1,59,21,0,0,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/components/admin/MediaAssetAuditor.tsx,Shared component,577,0,0,51,7,0,0,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/components/admin/MediaLibraryModal.tsx,Shared component,144,0,0,25,6,0,0,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/components/admin/Pagination.tsx,Shared component,61,0,0,7,1,0,0,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/components/admin/ProjectBudgetTracker.tsx,Shared component,171,0,1,42,5,0,0,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/components/admin/ProjectDistributionMap.tsx,Shared component,396,11,1,27,3,0,11,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/components/admin/ProjectDocumentManager.tsx,Shared component,575,0,0,52,0,0,0,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/components/admin/ProjectGanttTimeline.tsx,Shared component,485,0,4,39,1,0,0,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/components/admin/ProjectStatsWidget.tsx,Shared component,82,0,0,5,5,1,0,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/components/admin/ProjectTemplateLibrary.tsx,Shared component,604,0,0,72,26,0,0,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/components/admin/RevenueTrendChart.tsx,Shared component,94,7,0,3,0,2,7,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/components/comparison/ComparisonBar.tsx,Shared component,54,0,0,4,0,1,0,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/components/comparison/ProductComparison.tsx,Shared component,281,0,0,42,4,3,0,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/components/customer/CustomerPaymentMethods.tsx,Shared component,22,0,0,0,0,0,0,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/components/dashboard/ExecutiveDashboard.tsx,Shared component,240,0,0,27,0,10,0,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/components/filter/ProductFilters.tsx,Shared component,398,0,0,40,39,1,0,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/components/home/HeroSlider.tsx,Shared component,221,0,2,0,0,0,3,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/components/home/RecentProjects.tsx,Shared component,501,0,0,49,37,31,0,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/components/layout/CustomerLayout.tsx,Shared component,34,0,0,0,6,4,0,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/components/layout/Footer.tsx,Shared component,196,0,0,2,12,12,0,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/components/layout/Header.tsx,Shared component,236,0,0,5,22,18,1,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/components/leads/LeadForm.tsx,Shared component,280,0,0,35,16,3,0,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/components/leads/LeadList.tsx,Shared component,255,0,0,36,4,2,0,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/components/product/ProductGallery.tsx,Shared component,209,0,0,9,1,0,0,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/components/product/ProductSpecifications.tsx,Shared component,179,0,0,17,5,4,0,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/components/product/StickyPurchasePanel.tsx,Shared component,235,0,0,15,5,5,0,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/components/search/AdvancedSearch.tsx,Shared component,261,0,0,25,3,4,0,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/components/ui/LoadingSpinner.tsx,Shared component,49,0,0,10,0,0,0,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/components/ui/OptimizedImage.tsx,Shared component,99,0,0,3,0,0,0,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/components/ui/WhatsAppButton.tsx,Shared component,111,0,0,8,0,0,0,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/components/ui/accordion.tsx,Shared component,55,0,0,0,0,0,0,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/components/ui/alert-dialog.tsx,Shared component,139,0,0,0,0,0,0,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/components/ui/alert.tsx,Shared component,59,0,0,0,0,0,0,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/components/ui/badge.tsx,Shared component,43,0,0,0,0,0,0,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/components/ui/breadcrumb.tsx,Shared component,115,0,0,0,0,0,0,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/components/ui/button-group.tsx,Shared component,83,0,0,0,0,0,0,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/components/ui/button.tsx,Shared component,65,0,0,0,0,0,0,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/components/ui/card.tsx,Shared component,76,0,0,0,0,0,0,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/components/ui/checkbox.tsx,Shared component,28,0,0,0,0,0,0,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/components/ui/collapsible.tsx,Shared component,11,0,0,0,0,0,0,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/components/ui/context-menu.tsx,Shared component,198,0,0,0,0,0,0,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/components/ui/dialog.tsx,Shared component,120,0,0,0,0,0,0,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/components/ui/dropdown-menu.tsx,Shared component,201,0,0,0,0,0,0,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/components/ui/empty.tsx,Shared component,104,0,0,0,0,0,0,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/components/ui/field.tsx,Shared component,244,0,0,0,0,0,0,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/components/ui/hover-card.tsx,Shared component,27,0,0,0,0,0,0,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/components/ui/image-upload.tsx,Shared component,280,0,0,21,9,0,0,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/components/ui/input-group.tsx,Shared component,168,0,0,0,0,0,0,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/components/ui/input.tsx,Shared component,22,0,0,0,0,0,0,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/components/ui/item.tsx,Shared component,193,0,0,0,0,0,0,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/components/ui/kbd.tsx,Shared component,28,0,0,0,0,0,0,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/components/ui/label.tsx,Shared component,26,0,0,0,0,0,0,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/components/ui/menubar.tsx,Shared component,254,0,0,0,0,0,0,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/components/ui/navigation-menu.tsx,Shared component,128,0,0,0,0,0,0,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/components/ui/pagination.tsx,Shared component,117,0,0,0,0,0,0,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/components/ui/popover.tsx,Shared component,31,0,0,0,0,0,0,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/components/ui/progress.tsx,Shared component,28,0,1,0,0,0,0,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/components/ui/scroll-area.tsx,Shared component,46,0,0,0,0,0,0,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/components/ui/select.tsx,Shared component,159,0,0,0,0,0,0,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/components/ui/separator.tsx,Shared component,29,0,0,0,0,0,0,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/components/ui/sheet.tsx,Shared component,140,0,0,0,0,0,0,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/components/ui/sidebar.tsx,Shared component,727,0,3,0,0,0,2,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/components/ui/skeleton.tsx,Shared component,15,0,0,0,0,0,0,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/components/ui/spinner.tsx,Shared component,16,0,0,0,0,0,0,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/components/ui/switch.tsx,Shared component,27,0,0,0,0,0,0,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/components/ui/table.tsx,Shared component,120,0,0,0,0,0,0,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/components/ui/tabs.tsx,Shared component,53,0,0,0,0,0,0,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/components/ui/textarea.tsx,Shared component,22,0,0,0,0,0,0,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/components/ui/toast.tsx,Shared component,38,0,0,3,0,0,0,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/components/ui/toggle-group.tsx,Shared component,61,0,0,0,0,0,0,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/components/ui/toggle.tsx,Shared component,43,0,0,0,0,0,0,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/components/ui/tooltip.tsx,Shared component,32,0,0,0,0,0,0,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/index.css,Global styling infrastructure,333,44,0,0,13,43,56,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+tailwind.config.js,Global styling infrastructure,100,59,0,0,0,0,61,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required
+src/lib/theme-engine.ts,Theme engine / supporting infrastructure,261,10,0,0,0,0,10,SOURCE SCANNED; centralized tokens applied where safe,NOT RUN — browser inspection required

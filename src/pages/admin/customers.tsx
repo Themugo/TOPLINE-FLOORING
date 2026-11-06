@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { Search, X, Phone, Mail, MapPin, Building2, ShoppingCart, FileText, Wallet, RefreshCw } from 'lucide-react';
 import { AdminLayout } from './dashboard';
 import { formatDateTime, formatKES } from '@/lib/utils';
@@ -8,6 +8,7 @@ import { Pagination } from '@/components/admin/Pagination';
 import type { Customer, Order, Quotation } from '@/lib/types';
 
 export default function AdminCustomers() {
+  const latestRequest = useRef(0);
   const { page, setPage, limit, total, totalPages, from, to, setTotal } = usePagination(20);
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [loading, setLoading] = useState(true);
@@ -16,6 +17,7 @@ export default function AdminCustomers() {
   const [selected, setSelected] = useState<Customer | null>(null);
 
   const fetchCustomers = useCallback(async () => {
+    const requestId = ++latestRequest.current;
     setLoading(true);
     setLoadError(null);
     let query = supabase
@@ -24,11 +26,13 @@ export default function AdminCustomers() {
       .order('created_at', { ascending: false })
       .range(from, to);
 
-    if (search.trim()) {
-      query = query.or(`name.ilike.%${search}%,email.ilike.%${search}%,phone.ilike.%${search}%,company.ilike.%${search}%`);
+    const term = search.trim().replace(/[%_,()*\\]/g, ' ').replace(/\s+/g, ' ').trim();
+    if (term) {
+      query = query.or(`name.ilike.%${term}%,email.ilike.%${term}%,phone.ilike.%${term}%,company.ilike.%${term}%`);
     }
 
     const { data, count, error } = await query;
+    if (requestId !== latestRequest.current) return;
     if (error) {
       setLoadError(error.message || 'Could not load customers.');
     } else {
@@ -47,7 +51,7 @@ export default function AdminCustomers() {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
           <input
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => { setSearch(e.target.value); setPage(0); }}
             placeholder="Search customers by name, phone or email..."
             className="input pl-9"
           />

@@ -1,4 +1,4 @@
-Contact: mailto:toplineflooringandwaterproofin@gmail.com
+Contact: mailto:toplineflooringandwaterproofing@gmail.com
 Expires: 2027-09-12T00:00:00Z
 Preferred-Languages: en
 Canonical: https://toplinefloorandwaterproofing.co.ke/.well-known/security.txt

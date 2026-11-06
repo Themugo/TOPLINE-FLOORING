@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { Plus, Pencil, Trash2, X, Package, Images, Star, Search } from 'lucide-react';
 import { AdminLayout } from './dashboard';
 import { formatKES } from '@/lib/utils';
@@ -14,6 +14,7 @@ import { describeDbError } from '@/lib/db';
 import type { Product, ProductImage } from '@/lib/types';
 
 export default function AdminProducts() {
+  const latestRequest = useRef(0);
   const { toast } = useToast();
   const { categories } = useCategories();
   const { brands } = useBrands();
@@ -42,10 +43,11 @@ export default function AdminProducts() {
   });
 
   const fetchProducts = useCallback(async () => {
+    const requestId = ++latestRequest.current;
     setLoading(true);
     let query = supabase
       .from('products')
-      .select('*, category:categories(*), brand:product_brands(*)', { count: 'exact' })
+      .select('*, category:categories(*), brand:product_brands(*), variants:product_variants(id, stock_quantity, is_active)', { count: 'exact' })
       .order('display_order', { ascending: true })
       .range(from, to);
 
@@ -56,6 +58,7 @@ export default function AdminProducts() {
     }
 
     const { data, count, error } = await query;
+    if (requestId !== latestRequest.current) return;
     if (error) {
       setProducts([]);
       setTotal(0);
@@ -88,8 +91,8 @@ export default function AdminProducts() {
       return;
     }
 
-    const price = parseFloat(form.price);
-    if (isNaN(price) || price < 0) {
+    const price = Number(form.price);
+    if (!Number.isFinite(price) || price < 0) {
       toast({ title: 'Enter a valid price', variant: 'destructive' });
       return;
     }
@@ -118,7 +121,11 @@ export default function AdminProducts() {
     };
 
     try {
-      const stockToAdd = Math.floor(Number(form.stock_to_add));
+      const stockToAdd = form.stock_to_add.trim() === '' ? 0 : Number(form.stock_to_add);
+      if (!Number.isInteger(stockToAdd) || stockToAdd < 0) {
+        toast({ title: 'Opening stock must be a whole quantity of zero or more', variant: 'destructive' });
+        return;
+      }
       let productId = editing?.id ?? null;
       if (editing) {
         await updateProductAdmin(editing.id, data);
@@ -194,7 +201,7 @@ export default function AdminProducts() {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <input
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              onChange={(e) => { setSearch(e.target.value); setPage(0); }}
               placeholder="Search by product name or SKU..."
               className="input pl-9"
             />
@@ -226,7 +233,15 @@ export default function AdminProducts() {
                 </tr>
               </thead>
               <tbody className="divide-y">
-                {products.map((product) => (
+                {products.map((product) => {
+                  const activeVariants = product.variants?.filter((variant) => variant.is_active) ?? [];
+                  const sellableStock = activeVariants.length
+                    ? activeVariants.reduce((sum, variant) => sum + variant.stock_quantity, 0)
+                    : product.stock_quantity;
+                  const isAvailable = activeVariants.length
+                    ? activeVariants.some((variant) => variant.stock_quantity > 0)
+                    : product.in_stock && product.stock_quantity > 0;
+                  return (
                   <tr key={product.id} className="hover:bg-gray-50">
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
@@ -248,9 +263,9 @@ export default function AdminProducts() {
                       {product.category?.name || '-'}
                     </td>
                     <td className="px-6 py-4 text-sm">{formatKES(product.price)}/{product.unit}</td>
-                    <td className="px-6 py-4 text-sm font-semibold text-navy-800">{product.stock_quantity ?? 0}</td>
+                    <td className="px-6 py-4 text-sm font-semibold text-navy-800">{sellableStock ?? 0}{activeVariants.length > 0 && <span className="block text-xs font-normal text-gray-600">Across {activeVariants.length} variants</span>}</td>
                     <td className="px-6 py-4">
-                      {product.in_stock && product.stock_quantity > 0 ? (
+                      {isAvailable ? (
                         <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded">In Stock</span>
                       ) : (
                         <span className="text-xs bg-red-100 text-red-700 px-2 py-1 rounded">Out of Stock</span>
@@ -271,7 +286,8 @@ export default function AdminProducts() {
                       </button>
                     </td>
                   </tr>
-                ))}
+                  );
+                })}
               </tbody>
             </table>
           </div>
@@ -317,7 +333,7 @@ export default function AdminProducts() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-navy-700 mb-1">Price (KES) *</label>
-                  <input type="number" required value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} className="input" />
+                  <input type="number" required min="0" step="0.01" value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} className="input" />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-navy-700 mb-1">Unit</label>
@@ -360,8 +376,10 @@ export default function AdminProducts() {
               </div>
               <div>
                 <label htmlFor="product-stock-to-add" className="block text-sm font-medium text-navy-700 mb-1">{editing ? 'Add received stock (optional)' : 'Opening stock quantity'}</label>
-                <input id="product-stock-to-add" type="number" min="0" step="1" inputMode="numeric" className="input" value={form.stock_to_add} onChange={(e) => setForm({ ...form, stock_to_add: e.target.value })} placeholder="e.g. 120" />
-                <p className="mt-1 text-xs text-gray-600">{editing ? `Currently ${editing.stock_quantity ?? 0} in stock. Quantity entered here is added to it.` : 'Customers can only add a product to the cart once it has stock.'} Further changes and write-offs are recorded in <a href="/admin/inventory" className="font-semibold underline underline-offset-2">Inventory</a>.</p>
+                <input id="product-stock-to-add" type="number" min="0" step="1" inputMode="numeric" className="input" value={form.stock_to_add} onChange={(e) => setForm({ ...form, stock_to_add: e.target.value })} placeholder="e.g. 120" disabled={Boolean(editing?.variants?.some((variant) => variant.is_active))} />
+                <p className="mt-1 text-xs text-gray-600">{editing?.variants?.some((variant) => variant.is_active)
+                  ? 'This product is variant-managed. Record stock against each active variant in Product Variants.'
+                  : editing ? `Currently ${editing.stock_quantity ?? 0} in stock. Quantity entered here is added to it.` : 'Customers can only add a product to the cart once it has stock.'} Further changes and write-offs are recorded in <a href="/admin/inventory" className="font-semibold underline underline-offset-2">Inventory</a>.</p>
               </div>
               <div className="flex gap-3 pt-4">
                 <button type="button" onClick={resetForm} className="btn-secondary flex-1">Cancel</button>

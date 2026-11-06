@@ -1,0 +1,182 @@
+{
+  "audit_date": "2026-11-06",
+  "foundation": "TOPLINE-FLOORING-PHASE-2-PRODUCT-INVENTORY-2026-11-06.zip",
+  "execution_status": "PHASE 12 SOURCE REPAIR COMPLETE \u2014 dependency/runtime and production gates remain blocked",
+  "static_verification": {
+    "passed": 159,
+    "full_suite": "159/159 verifier scripts passed",
+    "failed": 0,
+    "new_regression_check": "verify-admin-list-pagination-and-search.mjs",
+    "phase2_regression_check": "verify-audit-2-product-inventory-hardening.mjs (51/51)",
+    "phase3_regression_check": "verify-audit-3-cart-quotations-checkout.mjs (16/16)",
+    "phase4_regression_check": "payment/order/fulfilment/document/communications/RLS static verifier set passed",
+    "phase4_repair_migration": "20261106150000_audit4_payment_target_integrity.sql",
+    "phase5_repair_migration": "20261106160000_audit5_order_lifecycle_end_to_end.sql",
+    "phase6_repair_migration": "20261106170000_audit6_payment_callbacks_reconciliation.sql",
+    "phase7_repair_migration": "20261106180000_audit7_customer_documents_self_service.sql",
+    "phase8_repair_migration": "20261106190000_audit8_communications_delivery_hardening.sql",
+    "phase9_repair_migration": "20261106200000_audit9_admin_permissions_operational_actions.sql",
+    "phase9_repair_check": "verify-audit9-admin-permissions-operational-actions.mjs",
+    "phase10_repair_migration": "20261106210000_audit10_background_workers_scheduled_processes.sql",
+    "phase10_repair_check": "verify-audit10-background-workers-scheduled-processes.mjs",
+    "phase11_repair_migration": "20261106220000_audit11_database_integrity_rls.sql",
+    "phase11_repair_check": "verify-audit11-database-integrity-rls.mjs",
+    "phase12_repair_migration": "20261106230000_audit12_journey_regression_hardening.sql",
+    "phase12_repair_check": "verify-audit12-customer-admin-journeys-mobile-desktop.mjs"
+  },
+  "workflow_register": [
+    {
+      "workflow_id": "WF-00",
+      "workflow_domain": "Foundation/toolchain",
+      "roles": "Owner/operator",
+      "entry_points": "Repository root; package.json; lockfile; CI",
+      "backend_and_data_dependencies": "Source tree, Node/npm, scripts, environment contract",
+      "phase0_status": "INVENTORY COMPLETE; INSTALL BLOCKED",
+      "repair_phase": "Phase 0"
+    },
+    {
+      "workflow_id": "WF-01",
+      "workflow_domain": "Registration/authentication/account lifecycle",
+      "roles": "Guest/customer/staff/admin",
+      "entry_points": "Public registration, sign-in, portal, admin login",
+      "backend_and_data_dependencies": "Supabase Auth; profiles/staff RBAC; verification and recovery",
+      "phase0_status": "PHASE 1 SOURCE REPAIRS COMPLETE; 15/15 AUTH HARDENING + 17/17 REGISTRATION CONTRACT + 16/16 ADMIN AUTH + SECURITY/MIGRATION STATIC PASS; LIVE AUTH/EMAIL/DB REPLAY PENDING",
+      "repair_phase": "Phase 1"
+    },
+    {
+      "workflow_id": "WF-02",
+      "workflow_domain": "Product catalogue/inventory/pricing",
+      "roles": "Guest/customer/staff/admin",
+      "entry_points": "/shop; /product/:slug; admin products/inventory",
+      "backend_and_data_dependencies": "Supabase catalogue, variants, stock, pricing, RLS",
+      "phase0_status": "PHASE 2 SOURCE REPAIRS COMPLETE; 51/51 PHASE 2 ASSERTIONS PASS; 152/152 AGGREGATE STATIC VERIFIERS PASS; LIVE DB/EMAIL/ORDER/BROWSER/CONCURRENCY UAT PENDING; INTEGER STOCK AND NON-WAREHOUSE VARIANT PROCUREMENT LIMITATIONS DOCUMENTED",
+      "repair_phase": "Phase 2"
+    },
+    {
+      "workflow_id": "WF-03",
+      "workflow_domain": "Cart/quotation/project requirements",
+      "roles": "Guest/customer/staff/admin",
+      "entry_points": "/cart; /quotation; contact; admin quotations/projects",
+      "backend_and_data_dependencies": "Cart state; quotation/enquiry RPCs; pricing and project records",
+      "phase0_status": "PHASE 3 SOURCE REPAIRS COMPLETE; CART/QUOTATION/CHECKOUT AUDIT DOCUMENTED; STATIC REGRESSION CHECKS PASS; LIVE DB/PROVIDER/BROWSER/CONCURRENCY UAT PENDING",
+      "repair_phase": "Phase 3"
+    },
+    {
+      "workflow_id": "WF-04",
+      "workflow_domain": "Checkout/orders/fulfilment",
+      "roles": "Guest/customer/staff/admin",
+      "entry_points": "Checkout flow; /checkout-success; /order-confirmation/:id; /track-order",
+      "backend_and_data_dependencies": "Order RPCs; stock reservation; delivery and fulfilment records",
+      "phase0_status": "PHASE 5 DEEP LIFECYCLE AUDIT COMPLETE; COMPLETION/CANCELLATION GATES REPAIRED; LIVE DB/PAYMENT/BROWSER/CONCURRENCY UAT PENDING",
+      "repair_phase": "Phase 5"
+    },
+    {
+      "workflow_id": "WF-05",
+      "workflow_domain": "Payment initiation/M-Pesa/card",
+      "roles": "Guest/customer/admin/worker",
+      "entry_points": "/payment-return; checkout; payment Edge Functions",
+      "backend_and_data_dependencies": "Payment tables/RPCs; payment-initiate; payment-callback; payment-webhook",
+      "phase0_status": "PHASE 6 DEEP PAYMENT AUDIT COMPLETE; CALLBACK RECOVERY AND UNKNOWN-REFERENCE BINDING REPAIRED; PROVIDER UAT PENDING",
+      "repair_phase": "Phase 6"
+    },
+    {
+      "workflow_id": "WF-06",
+      "workflow_domain": "Reconciliation/refunds/ledger",
+      "roles": "Customer/finance/admin/worker",
+      "entry_points": "Portal payment history; admin finance/payment/refund views",
+      "backend_and_data_dependencies": "Financial ledger; provider references; reconciliation/refund RPCs",
+      "phase0_status": "PHASE 4 AUDIT COMPLETE; REFUND/LEDGER CONTRACTS STATIC-PASS; FINANCIAL UAT PENDING",
+      "repair_phase": "Phase 4"
+    },
+    {
+      "workflow_id": "WF-07",
+      "workflow_domain": "Customer self-service/document management",
+      "roles": "Customer/staff/admin",
+      "entry_points": "/portal; admin projects/documents",
+      "backend_and_data_dependencies": "Customer RPCs; customer-document-download; project_documents; private-documents Storage bucket",
+      "phase0_status": "PHASE 7 SIGNED-DOWNLOAD REPAIR COMPLETE; STATIC CUSTOMER-DOCUMENT CONTRACTS PASS; LEGACY FILE LINK BACKFILL AND ROLE UAT PENDING",
+      "repair_phase": "Phase 7"
+    },
+    {
+      "workflow_id": "WF-08",
+      "workflow_domain": "Email/SMS/WhatsApp communications",
+      "roles": "Customer/staff/admin/worker",
+      "entry_points": "Portal preferences; admin communications; notification events",
+      "backend_and_data_dependencies": "Outbox, templates, delivery worker and provider webhooks",
+      "phase0_status": "PHASE 8 CALLBACK CORRELATION AND SMS STATE REPAIR COMPLETE; STATIC COMMUNICATION CONTRACTS PASS; PROVIDER DELIVERY UAT PENDING",
+      "repair_phase": "Phase 8"
+    },
+    {
+      "workflow_id": "WF-09",
+      "workflow_domain": "Administration/control plane/RBAC",
+      "roles": "Staff/admin/owner",
+      "entry_points": "/admin and 69 mapped admin routes",
+      "backend_and_data_dependencies": "AdminAuthGuard; staff profiles; permission RPCs; RLS",
+      "phase0_status": "PHASE 9 SOURCE REPAIR COMPLETE; STAFF/RBAC CONTROL PLANE AND FULFILLMENT OPERATIONAL ACTIONS STATIC-PASS; LIVE SESSION/ROLE-CONSTRAINED UAT PENDING",
+      "repair_phase": "Phase 9"
+    },
+    {
+      "workflow_id": "WF-10",
+      "workflow_domain": "Support/business operations",
+      "roles": "Customer/staff/admin",
+      "entry_points": "Contact, CRM, service cases, project and field-operation routes",
+      "backend_and_data_dependencies": "Leads, tickets/service cases, projects, delivery/installation records",
+      "phase0_status": "SOURCE COVERAGE PRESENT; FULL LIFECYCLE AUDIT PENDING",
+      "repair_phase": "Phase 10"
+    },
+    {
+      "workflow_id": "WF-11",
+      "workflow_domain": "Background workers/scheduling",
+      "roles": "Worker/admin/operator",
+      "entry_points": "operations-scheduler; expire-reservations; deliver-communications",
+      "backend_and_data_dependencies": "pg_cron/pg_net/Vault, Edge Functions, automation jobs and run logs",
+      "phase0_status": "PHASE 10 SOURCE REPAIR COMPLETE; FIVE-JOB SCHEDULER, SERVICE-ROLE BOUNDARY, RUN LEDGER/LOCKS AND IDEMPOTENT SCHEDULE SYNC STATIC-PASS; LIVE SCHEDULE EXECUTION PENDING",
+      "repair_phase": "Phase 10"
+    },
+    {
+      "workflow_id": "WF-12",
+      "workflow_domain": "Database/Supabase/RLS/data integrity",
+      "roles": "Anonymous/customer/staff/admin/service role",
+      "entry_points": "158 SQL migrations; Supabase config; local DB test harness",
+      "backend_and_data_dependencies": "Database constraints; RLS policies; Storage boundaries; RPC privileges; audit triggers",
+      "phase0_status": "PHASE 11 SOURCE REPAIR COMPLETE; DATABASE INTEGRITY/RLS/STORAGE STATIC-PASS; LOCAL/REMOTE DB REPLAY AND ADVERSARIAL ROLE TESTS PENDING",
+      "repair_phase": "Phase 11"
+    },
+    {
+      "workflow_id": "WF-13",
+      "workflow_domain": "Application security/trust boundary",
+      "roles": "All roles and anonymous callers",
+      "entry_points": "API/Edge Functions/RPCs/Storage/webhooks",
+      "backend_and_data_dependencies": "Auth, RLS, CSRF, rate limits, secrets, signatures, idempotency",
+      "phase0_status": "STATIC SECURITY CONTRACTS PASS; DYNAMIC PENETRATION/UAT PENDING",
+      "repair_phase": "Phase 13"
+    },
+    {
+      "workflow_id": "WF-14",
+      "workflow_domain": "UI/responsive/accessibility",
+      "roles": "Guest/customer/staff/admin",
+      "entry_points": "Public pages, portal, admin shell",
+      "backend_and_data_dependencies": "React/Vite UI, CSS, PWA, accessibility contracts",
+      "phase0_status": "PHASE 12 SOURCE REPAIR COMPLETE; CUSTOMER/ADMIN JOURNEY, MOBILE DIALOG, PAYMENT-ERROR RECOVERY AND RESPONSIVE STATIC CONTRACTS PASS; DEVICE VISUAL UAT PENDING",
+      "repair_phase": "Phase 12"
+    },
+    {
+      "workflow_id": "WF-15",
+      "workflow_domain": "End-to-end regression",
+      "roles": "Customer/staff/admin/worker",
+      "entry_points": "Complete customer and admin journeys",
+      "backend_and_data_dependencies": "Browser, API, database, provider and worker interactions",
+      "phase0_status": "PHASE 12 SOURCE JOURNEY AUDIT COMPLETE; FULL BROWSER/API/DATABASE/PROVIDER/WORKER E2E AND CONCURRENCY CERTIFICATION PENDING",
+      "repair_phase": "Phase 12"
+    },
+    {
+      "workflow_id": "WF-16",
+      "workflow_domain": "Production deployment/live certification",
+      "roles": "Release operator/owner",
+      "entry_points": "CI, Vercel, Supabase and provider dashboards",
+      "backend_and_data_dependencies": "Build artifact, environment variables, migrations, domains, monitoring",
+      "phase0_status": "BLOCKED ON DEPENDENCIES/CREDENTIALS/OWNER AUTHORIZATION",
+      "repair_phase": "Phase 16"
+    }
+  ]
+}

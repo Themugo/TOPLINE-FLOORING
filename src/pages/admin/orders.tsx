@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { Search, RefreshCw, ShieldCheck, Truck, CreditCard, PackageCheck } from 'lucide-react';
 import { AdminLayout } from './dashboard';
 import { formatKES, formatDateTime } from '@/lib/utils';
@@ -13,6 +13,7 @@ import { errorMessage } from '@/lib/db';
 import { ManualPaymentPanel } from '@/components/admin/ManualPaymentPanel';
 
 export default function AdminOrders() {
+  const latestRequest = useRef(0);
   const { toast } = useToast();
   const { page, setPage, limit, total, totalPages, from, to, setTotal } = usePagination(20);
   const [orders, setOrders] = useState<Order[]>([]);
@@ -25,6 +26,7 @@ export default function AdminOrders() {
   const [awaitingOnly, setAwaitingOnly] = useState(false);
 
   const fetchOrders = useCallback(async () => {
+    const requestId = ++latestRequest.current;
     setLoading(true);
     setLoadError(null);
     let query = supabase
@@ -34,11 +36,13 @@ export default function AdminOrders() {
       .range(from, to);
 
     if (awaitingOnly) query = query.in('payment_status', ['pending', 'partial']).neq('status', 'cancelled');
-    if (search.trim()) {
-      query = query.or(`customer_name.ilike.%${search}%,customer_email.ilike.%${search}%,id.ilike.%${search}%`);
+    const term = search.trim().replace(/[%_,()*\\]/g, ' ').replace(/\s+/g, ' ').trim();
+    if (term) {
+      query = query.or(`customer_name.ilike.%${term}%,customer_email.ilike.%${term}%,id.ilike.%${term}%`);
     }
 
     const { data, count, error } = await query;
+    if (requestId !== latestRequest.current) return;
     if (error) {
       console.error('Failed to fetch orders:', error);
       setLoadError(error.message || 'Could not load orders.');
@@ -109,12 +113,15 @@ export default function AdminOrders() {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
           <input
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setPage(0);
+            }}
             placeholder="Search orders or customers..."
             className="input pl-9"
           />
           </div>
-          <button type="button" onClick={() => { setPage(1); setAwaitingOnly((v) => !v); }} className={`rounded-lg border px-3 py-2 text-xs font-semibold whitespace-nowrap ${awaitingOnly ? 'border-amber-400 bg-amber-100 text-amber-900' : 'border-gray-200 bg-white text-gray-700'}`}>Awaiting payment</button>
+          <button type="button" onClick={() => { setPage(0); setAwaitingOnly((v) => !v); }} className={`rounded-lg border px-3 py-2 text-xs font-semibold whitespace-nowrap ${awaitingOnly ? 'border-amber-400 bg-amber-100 text-amber-900' : 'border-gray-200 bg-white text-gray-700'}`}>Awaiting payment</button>
           <button onClick={() => void fetchOrders()} disabled={loading} className="btn-secondary p-2" title="Refresh orders" aria-label="Refresh orders">
             <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
           </button>

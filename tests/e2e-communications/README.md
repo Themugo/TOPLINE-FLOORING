@@ -12,7 +12,7 @@ It exists so that "the email would be sent" can be checked by executing the code
 | `deliver-communications`, `communication-provider-webhook`, `email-inbound`, `operations-scheduler` | **Real source**, unmodified, run in Deno |
 | Brevo email + contacts, Africa's Talking SMS, WhatsApp Graph API | **Mocked** (`wrapper.ts`). Records every message it would have sent and can simulate rejection, rate limits, outages, timeouts and "accepted but the response was lost" |
 | Supabase Auth (GoTrue): sign-up, confirmation email, links, sessions | **Not run.** Tests reproduce what GoTrue does to the database (insert into `auth.users`, then set `email_confirmed_at`) |
-| Real inbox delivery, DNS (SPF/DKIM/DMARC), provider dashboards | **Not covered.** See `TOPLINE-PRODUCTION-EMAIL-CHECKLIST.md` |
+| Real inbox delivery, DNS (SPF/DKIM/DMARC), provider dashboards | **Not covered.** See `docs/archive/docs\archive\TOPLINE-PRODUCTION-EMAIL-CHECKLIST.md` |
 
 A passing run therefore proves the application's own behaviour end to end. It does **not** prove that Brevo delivers to a
 real mailbox or that Supabase Auth emails are configured. Never point this at a production database.

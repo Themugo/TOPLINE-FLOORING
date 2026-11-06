@@ -391,6 +391,12 @@ export default function Home() {
                         <ArrowRight className="h-4 w-4" />
                       </Link>
                     )}
+                    <div className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-1.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-white/75 sm:mt-5 sm:text-[11px]" aria-label="Topline project capabilities">
+                      <span>Survey</span><span aria-hidden="true" className="text-[#B4E33D]">•</span>
+                      <span>Specify</span><span aria-hidden="true" className="text-[#B4E33D]">•</span>
+                      <span>Install</span><span aria-hidden="true" className="text-[#B4E33D]">•</span>
+                      <span>Support</span>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -478,7 +484,7 @@ export default function Home() {
       {isSectionVisible('services') && (
       <section className={`${servicesSection?.padding || 'py-7 sm:py-14 lg:py-20'} bg-white`} style={sectionStyle('services')}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-left max-w-3xl mb-3 sm:mb-3 sm:mb-9">
+          <div className="text-left max-w-3xl mb-3 sm:mb-9">
             <span className="inline-block px-3 py-1 rounded-full bg-primary-50 text-primary-600 border border-primary-100 text-xs font-semibold uppercase tracking-wider mb-2">
               {servicesBadgeText}
             </span>
