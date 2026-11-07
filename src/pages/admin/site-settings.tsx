@@ -80,7 +80,7 @@ export default function AdminSiteSettings() {
       };
       newSettings.contact = {
         ...newSettings.contact,
-        email: fill(newSettings.contact.email, 'toplineflooringandwaterproofing@gmail.com'),
+        email: fill(newSettings.contact.email, 'support@toplinefloorandwaterproofing.co.ke'),
         phone: fill(newSettings.contact.phone, starter.contact.phone),
         whatsapp: fill(newSettings.contact.whatsapp, starter.contact.whatsapp),
         address: fill(newSettings.contact.address, starter.contact.address),

@@ -16,6 +16,7 @@ const STAGE_COLORS = {
   qualified: 'bg-green-100 text-green-700',
   proposal: 'bg-yellow-100 text-yellow-700',
   negotiation: 'bg-orange-100 text-orange-700',
+  negotiating: 'bg-orange-100 text-orange-700',
   won: 'bg-emerald-100 text-emerald-700',
   lost: 'bg-red-100 text-red-700',
   on_hold: 'bg-gray-100 text-gray-700',
@@ -28,17 +29,18 @@ export function LeadList({ leads, loading, onEdit, onDelete, onAddNew }: LeadLis
 
   const filteredLeads = leads.filter((lead) => {
     const matchesSearch = 
-      lead.customer_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      lead.company_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (lead.customer_name || lead.name || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (lead.company_name || lead.company || '')?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       lead.phone?.includes(searchQuery) ||
       lead.email?.toLowerCase().includes(searchQuery.toLowerCase());
     
-    const matchesStage = stageFilter === 'all' || lead.lead_stage === stageFilter;
+    const canonicalStatus = lead.status || (lead.lead_stage === 'negotiation' ? 'negotiating' : lead.lead_stage) || 'new';
+    const matchesStage = stageFilter === 'all' || canonicalStatus === stageFilter;
     
     return matchesSearch && matchesStage;
   });
 
-  const stages = ['all', 'new', 'contacted', 'qualified', 'proposal', 'negotiation', 'won', 'lost', 'on_hold'];
+  const stages = ['all', 'new', 'contacted', 'qualified', 'proposal', 'negotiating', 'won', 'lost', 'on_hold'];
 
   if (loading) {
     return (
@@ -138,9 +140,9 @@ export function LeadList({ leads, loading, onEdit, onDelete, onAddNew }: LeadLis
                   <tr key={lead.id} className="hover:bg-gray-50 transition-colors">
                     <td className="px-6 py-4">
                       <div>
-                        <p className="font-medium text-navy-900">{lead.customer_name}</p>
-                        {lead.company_name && (
-                          <p className="text-sm text-gray-500">{lead.company_name}</p>
+                        <p className="font-medium text-navy-900">{lead.customer_name || lead.name || 'Unnamed lead'}</p>
+                        {(lead.company_name || lead.company) && (
+                          <p className="text-sm text-gray-500">{lead.company_name || lead.company}</p>
                         )}
                         <p className="text-xs text-gray-400 mt-1">{lead.lead_number}</p>
                       </div>
@@ -173,8 +175,8 @@ export function LeadList({ leads, loading, onEdit, onDelete, onAddNew }: LeadLis
                       </span>
                     </td>
                     <td className="px-6 py-4">
-                      <span className={`inline-block px-2 py-1 text-xs font-medium rounded-full ${STAGE_COLORS[lead.lead_stage as keyof typeof STAGE_COLORS]}`}>
-                        {lead.lead_stage?.replace('_', ' ') || ''}
+                      <span className={`inline-block px-2 py-1 text-xs font-medium rounded-full ${STAGE_COLORS[(lead.status || (lead.lead_stage === 'negotiation' ? 'negotiating' : lead.lead_stage) || 'new') as keyof typeof STAGE_COLORS] || STAGE_COLORS.new}`}>
+                        {(lead.status || (lead.lead_stage === 'negotiation' ? 'negotiating' : lead.lead_stage) || 'new').replace('_', ' ')}
                       </span>
                     </td>
                     <td className="px-6 py-4">
@@ -240,10 +242,10 @@ export function LeadList({ leads, loading, onEdit, onDelete, onAddNew }: LeadLis
         <p>Showing {filteredLeads.length} of {leads.length} leads</p>
         <div className="flex gap-4">
           {stages.slice(1).map((stage) => {
-            const count = leads.filter(l => l.lead_stage === stage).length;
+            const count = leads.filter(l => (l.status || (l.lead_stage === 'negotiation' ? 'negotiating' : l.lead_stage) || 'new') === stage).length;
             return count > 0 ? (
               <span key={stage} className="flex items-center gap-1">
-                <span className={`w-2 h-2 rounded-full ${STAGE_COLORS[stage as keyof typeof STAGE_COLORS].split(' ')[0]}`} />
+                <span className={`w-2 h-2 rounded-full ${(STAGE_COLORS[stage as keyof typeof STAGE_COLORS] || STAGE_COLORS.new).split(' ')[0]}`} />
                 <span className="capitalize">{stage.replace('_', ' ')}</span>
                 <span>({count})</span>
               </span>

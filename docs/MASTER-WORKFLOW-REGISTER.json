@@ -1,28 +1,41 @@
 {
-  "audit_date": "2026-11-06",
-  "foundation": "TOPLINE-FLOORING-PHASE-2-PRODUCT-INVENTORY-2026-11-06.zip",
-  "execution_status": "PHASE 12 SOURCE REPAIR COMPLETE \u2014 dependency/runtime and production gates remain blocked",
+  "audit_date": "2026-11-07",
+  "foundation": "TOPLINE-FLOORING-PHASE-19-COMPLETE-2026-11-07.zip",
+  "execution_status": "PHASE 19 ORDER CONFIRMATION EVENT-TO-OUTBOX HANDOFF RESTORED; TRANSACTIONAL ORDER EMAIL NOT SUPPRESSED BY OPTIONAL EMAIL PREFERENCE; STAFF ORDER DELIVERY EVIDENCE ADDED; 15/15 TARGETED AND 166/166 AGGREGATE STATIC VERIFIERS PASS; STAGING DATABASE REPLAY AND LIVE BREVO DELIVERY UAT PENDING",
   "static_verification": {
-    "passed": 159,
-    "full_suite": "159/159 verifier scripts passed",
+    "passed": 166,
     "failed": 0,
-    "new_regression_check": "verify-admin-list-pagination-and-search.mjs",
-    "phase2_regression_check": "verify-audit-2-product-inventory-hardening.mjs (51/51)",
-    "phase3_regression_check": "verify-audit-3-cart-quotations-checkout.mjs (16/16)",
-    "phase4_regression_check": "payment/order/fulfilment/document/communications/RLS static verifier set passed",
-    "phase4_repair_migration": "20261106150000_audit4_payment_target_integrity.sql",
-    "phase5_repair_migration": "20261106160000_audit5_order_lifecycle_end_to_end.sql",
-    "phase6_repair_migration": "20261106170000_audit6_payment_callbacks_reconciliation.sql",
-    "phase7_repair_migration": "20261106180000_audit7_customer_documents_self_service.sql",
-    "phase8_repair_migration": "20261106190000_audit8_communications_delivery_hardening.sql",
-    "phase9_repair_migration": "20261106200000_audit9_admin_permissions_operational_actions.sql",
-    "phase9_repair_check": "verify-audit9-admin-permissions-operational-actions.mjs",
-    "phase10_repair_migration": "20261106210000_audit10_background_workers_scheduled_processes.sql",
-    "phase10_repair_check": "verify-audit10-background-workers-scheduled-processes.mjs",
-    "phase11_repair_migration": "20261106220000_audit11_database_integrity_rls.sql",
-    "phase11_repair_check": "verify-audit11-database-integrity-rls.mjs",
-    "phase12_repair_migration": "20261106230000_audit12_journey_regression_hardening.sql",
-    "phase12_repair_check": "verify-audit12-customer-admin-journeys-mobile-desktop.mjs"
+    "new_regression_check": "verify-phase-19-order-confirmation-delivery.mjs (12/12)",
+    "phase2_regression_check": "verify-phase-2-product-inventory-hardening.mjs (51/51)",
+    "phase3_regression_check": "verify-phase-3-cart-quotations-checkout.mjs (16/16)",
+    "phase4_regression_check": "verify-phase-4-order-fulfillment-finance.mjs (22/22)",
+    "phase4_scope_status": "SOURCE-LEVEL REPAIRS; NOT PRODUCTION-CERTIFIED",
+    "aggregate_command": "node scripts/verify-all.mjs (166/166 passed after Phase 19 hardening)",
+    "phase5_regression_check": "verify-phase-5-payment-initiation-atomicity.mjs (18/18)",
+    "phase5_scope_status": "SOURCE-LEVEL ATOMIC PAYMENT ATTEMPT RESERVATION; NOT PROVIDER OR PRODUCTION CERTIFIED",
+    "phase5_callback_hardening": "POST-only callback; 64 KiB payload ceiling; card HMAC over raw body",
+    "phase6_regression_check": "verify-phase-6-finance-refund-reconciliation.mjs (20/20)",
+    "phase7_regression_check": "verify-phase-7-customer-self-service-documents.mjs (21/21; foundation continuity assertions refreshed)",
+    "phase8_regression_check": "verify-phase-8-communications-hardening.mjs (23/23)",
+    "phase9_regression_check": "verify-phase-9-admin-rbac-fail-closed.mjs",
+    "phase9_scope_status": "UNKNOWN PROTECTED ADMIN ROUTES NOW FAIL CLOSED; EXPLICIT ROUTE PERMISSIONS AND SERVER-DERIVED STAFF PERMISSIONS RETAINED; LIVE ROLE MATRIX AND SESSION UAT PENDING",
+    "phase10_regression_check": "verify-phase-10-finance-billing-hardening.mjs (25/25)",
+    "phase10_scope_status": "PHASE 10 FINANCE & BILLING SOURCE HARDENING: PARTIAL/PAID/OVERDUE LIFECYCLE TRANSITIONS VALIDATED AGAINST CANONICAL PAYMENT ROWS; REFRESH REPAIRS STALE PAYMENT TOTALS; REPORTS/SELECT PERMISSION ALIGNED; STAGING DATABASE AND FINANCE ROLE UAT PENDING",
+    "phase11_regression_check": "verify-phase-11-inventory-procurement-hardening.mjs (permission alignment, fail-closed snapshot, PO lifecycle UI, RPC grants)",
+    "phase11_scope_status": "INVENTORY & PROCUREMENT 360 SOURCE HARDENING; INVENTORY:SELECT SNAPSHOT/RECONCILIATION AUTHORIZATION; PROCUREMENT EVENT RLS; EXPLICIT RPC EXECUTE GRANTS; FAIL-CLOSED SNAPSHOT UI; VALID PO TRANSITION OPTIONS; STAGING REPLAY AND LIVE STOCK/PROCUREMENT UAT PENDING; RETAINED AS PHASE 12 FOUNDATION; REGRESSION VERIFIED",
+    "phase11_targeted_result": "17/17 passed",
+    "phase12_regression_check": "verify-phase-12-customer-portal-360.mjs (identity field allow-list, fail-closed admin metrics, RPC grants and draft exclusions)",
+    "phase12_scope_status": "CUSTOMER PORTAL 360 SOURCE HARDENING: CUSTOMER RPC RETURNS EXPLICIT IDENTITY FIELD ALLOW-LIST; ADMIN OPERATIONS METRICS FAIL CLOSED ON ANY COUNT QUERY ERROR; EMPTY SEARCH PATH AND AUTHENTICATED-ONLY RPC GRANT RETAINED; STAGING RLS/DOCUMENT SIGNED-URL/CUSTOMER JOURNEY UAT PENDING; RETAINED AS PHASE 13 FOUNDATION",
+    "phase12_targeted_result": "PASS",
+    "phase13_regression_check": "verify-phase-13-backup-export-360.mjs (SHA-256 over payload.tables, deterministic row ordering, system.read-only audit visibility, RPC grants, Edge POST contract)",
+    "phase13_scope_status": "BACKUP & EXPORT OPERATIONS 360 SOURCE HARDENING: SUPABASE REMAINS POSTGRESQL BACKUP PROVIDER; STAFF-ONLY OPERATIONAL JSON EXPORT; SHA-256 DATASET DIGEST EXCLUDES PER-EXPORT METADATA; EXPORT AUDIT READ REQUIRES SYSTEM:READ; LIVE MIGRATION REPLAY, SUPABASE BACKUP RETENTION/RESTORE TEST AND STAFF ROLE UAT PENDING",
+    "phase13_targeted_result": "PASS",
+    "phase18_regression_check": "verify-phase-18-inbound-provider-response.mjs (16/16; bounded callback bodies, mandatory provider message identity, idempotent inbound timeline/notification side effects)",
+    "phase18_scope_status": "PHASE 18 INBOUND PROVIDER RESPONSE SOURCE HARDENING: 64 KiB SMS, 256 KiB email, 1 MiB Brevo/Meta streamed body limits; mandatory provider message IDs; idempotent inbound persistence; local DB replay and provider sandbox UAT pending",
+    "phase18_targeted_result": "16/16 passed",
+    "phase19_regression_check": "verify-phase-19-order-confirmation-delivery.mjs (restored customer-journey outbox call, unique legacy customer match, order delivery evidence RPC/UI)",
+    "phase19_scope_status": "PHASE 19 SOURCE HARDENING: RESTORED THE MISSING queue_customer_notification_for_event CALL REMOVED BY THE 2026-10-04 RUNTIME SQL REPAIR; ORDER INSERT/STATUS EVENTS NOW CREATE DURABLE OUTBOX ROWS AGAIN; STAFF ORDER DETAIL SHOWS QUEUED/ACCEPTED/DELIVERED/FAILED STATES; STAGING REPLAY AND LIVE PROVIDER UAT PENDING",
+    "phase19_targeted_result": "15/15 passed"
   },
   "workflow_register": [
     {
@@ -49,7 +62,7 @@
       "roles": "Guest/customer/staff/admin",
       "entry_points": "/shop; /product/:slug; admin products/inventory",
       "backend_and_data_dependencies": "Supabase catalogue, variants, stock, pricing, RLS",
-      "phase0_status": "PHASE 2 SOURCE REPAIRS COMPLETE; 51/51 PHASE 2 ASSERTIONS PASS; 152/152 AGGREGATE STATIC VERIFIERS PASS; LIVE DB/EMAIL/ORDER/BROWSER/CONCURRENCY UAT PENDING; INTEGER STOCK AND NON-WAREHOUSE VARIANT PROCUREMENT LIMITATIONS DOCUMENTED",
+      "phase0_status": "PHASE 2 SOURCE REPAIRS COMPLETE; 51/51 PHASE 2 ASSERTIONS PASS; 152/152 AGGREGATE STATIC VERIFIERS PASS; LIVE DB/EMAIL/ORDER/BROWSER/CONCURRENCY UAT PENDING; INTEGER STOCK AND NON-WAREHOUSE VARIANT PROCUREMENT LIMITATIONS DOCUMENTED; PHASE 11 INVENTORY/PROCUREMENT 360 HARDENING: INVENTORY:SELECT RPC AUTHORIZATION, PROCUREMENT EVENT RLS AND EXPLICIT EXECUTE GRANTS, FAIL-CLOSED SNAPSHOT, VALID PO TRANSITIONS; STAGING UAT PENDING",
       "repair_phase": "Phase 2"
     },
     {
@@ -67,8 +80,8 @@
       "roles": "Guest/customer/staff/admin",
       "entry_points": "Checkout flow; /checkout-success; /order-confirmation/:id; /track-order",
       "backend_and_data_dependencies": "Order RPCs; stock reservation; delivery and fulfilment records",
-      "phase0_status": "PHASE 5 DEEP LIFECYCLE AUDIT COMPLETE; COMPLETION/CANCELLATION GATES REPAIRED; LIVE DB/PAYMENT/BROWSER/CONCURRENCY UAT PENDING",
-      "repair_phase": "Phase 5"
+      "phase0_status": "PHASE 4 SOURCE REPAIRS: order cancellation replay-safe; legal status transitions enforced; active pre-dispatch deliveries cancelled/audited; post-dispatch cancellation blocked; staging DB and browser UAT pending",
+      "repair_phase": "Phase 4"
     },
     {
       "workflow_id": "WF-05",
@@ -76,8 +89,8 @@
       "roles": "Guest/customer/admin/worker",
       "entry_points": "/payment-return; checkout; payment Edge Functions",
       "backend_and_data_dependencies": "Payment tables/RPCs; payment-initiate; payment-callback; payment-webhook",
-      "phase0_status": "PHASE 6 DEEP PAYMENT AUDIT COMPLETE; CALLBACK RECOVERY AND UNKNOWN-REFERENCE BINDING REPAIRED; PROVIDER UAT PENDING",
-      "repair_phase": "Phase 6"
+      "phase0_status": "PHASE 5 SOURCE HARDENING: payment transaction+attempt creation is atomic under locked order/invoice; concurrent different idempotency keys cannot start duplicate online charges; outstanding balance rechecked; 14/14 targeted assertions and 155/155 aggregate static verifiers pass; M-Pesa/card sandbox, callback replay, real RLS and staging DB UAT pending",
+      "repair_phase": "Phase 5"
     },
     {
       "workflow_id": "WF-06",
@@ -85,16 +98,16 @@
       "roles": "Customer/finance/admin/worker",
       "entry_points": "Portal payment history; admin finance/payment/refund views",
       "backend_and_data_dependencies": "Financial ledger; provider references; reconciliation/refund RPCs",
-      "phase0_status": "PHASE 4 AUDIT COMPLETE; REFUND/LEDGER CONTRACTS STATIC-PASS; FINANCIAL UAT PENDING",
-      "repair_phase": "Phase 4"
+      "phase0_status": "PHASE 6 SOURCE HARDENING: refund completion uses order-before-refund locking; refund outcomes are audited; reconciliation derives fully-refunded status from successful paid/refunded ledger totals, including partial-payment refunds; 20/20 targeted assertions and 156/156 aggregate static verifiers pass; provider/staging UAT pending; PHASE 10 INVOICE LIFECYCLE HARDENING VALIDATES PARTIAL/PAID/OVERDUE AGAINST PAYMENT ROWS AND REPAIRS REFRESH TOTALS; STAGING UAT PENDING",
+      "repair_phase": "Phase 6"
     },
     {
       "workflow_id": "WF-07",
       "workflow_domain": "Customer self-service/document management",
       "roles": "Customer/staff/admin",
       "entry_points": "/portal; admin projects/documents",
-      "backend_and_data_dependencies": "Customer RPCs; customer-document-download; project_documents; private-documents Storage bucket",
-      "phase0_status": "PHASE 7 SIGNED-DOWNLOAD REPAIR COMPLETE; STATIC CUSTOMER-DOCUMENT CONTRACTS PASS; LEGACY FILE LINK BACKFILL AND ROLE UAT PENDING",
+      "backend_and_data_dependencies": "Customer RPCs; project_documents; private-documents Storage bucket",
+      "phase0_status": "PHASE 7 CUSTOMER DOCUMENT SELF-SERVICE CONTRACT RETAINED; PHASE 12 CUSTOMER PORTAL 360 HARDENING: IDENTITY FIELD ALLOW-LIST AND FAIL-CLOSED ADMIN METRICS; STAGING RLS/PRIVATE DOCUMENT SIGNED-URL/DEVICE UAT PENDING",
       "repair_phase": "Phase 7"
     },
     {
@@ -103,7 +116,7 @@
       "roles": "Customer/staff/admin/worker",
       "entry_points": "Portal preferences; admin communications; notification events",
       "backend_and_data_dependencies": "Outbox, templates, delivery worker and provider webhooks",
-      "phase0_status": "PHASE 8 CALLBACK CORRELATION AND SMS STATE REPAIR COMPLETE; STATIC COMMUNICATION CONTRACTS PASS; PROVIDER DELIVERY UAT PENDING",
+      "phase0_status": "PHASE 8 SOURCE HARDENING: SMS DELIVERY REPORTS USE SHARED MONOTONIC PROVIDER-EVENT LEDGER; SERVICE-ROLE-ONLY CALLBACK RPC; 64 KiB EDGE CALLBACK BODY LIMIT; WHATSAPP PHONE NUMBER ID REQUIRED FOR READINESS; 23/23 TARGETED ASSERTIONS AND 158/158 AGGREGATE STATIC VERIFIERS PASS; LIVE PROVIDER/MAILBOX/SMS/WHATSAPP UAT PENDING",
       "repair_phase": "Phase 8"
     },
     {
@@ -112,7 +125,7 @@
       "roles": "Staff/admin/owner",
       "entry_points": "/admin and 69 mapped admin routes",
       "backend_and_data_dependencies": "AdminAuthGuard; staff profiles; permission RPCs; RLS",
-      "phase0_status": "PHASE 9 SOURCE REPAIR COMPLETE; STAFF/RBAC CONTROL PLANE AND FULFILLMENT OPERATIONAL ACTIONS STATIC-PASS; LIVE SESSION/ROLE-CONSTRAINED UAT PENDING",
+      "phase0_status": "PHASE 9 SOURCE HARDENING: UNKNOWN PROTECTED ADMIN ROUTES FAIL CLOSED; ALL 69 REGISTERED ADMIN ROUTES HAVE EXPLICIT PERMISSION RULES; SERVER-DERIVED RBAC AND PRIVILEGED RPC BOUNDARIES RETAINED; LIVE ROLE MATRIX AND SESSION UAT PENDING",
       "repair_phase": "Phase 9"
     },
     {
@@ -121,8 +134,8 @@
       "roles": "Customer/staff/admin",
       "entry_points": "Contact, CRM, service cases, project and field-operation routes",
       "backend_and_data_dependencies": "Leads, tickets/service cases, projects, delivery/installation records",
-      "phase0_status": "SOURCE COVERAGE PRESENT; FULL LIFECYCLE AUDIT PENDING",
-      "repair_phase": "Phase 10"
+      "phase0_status": "ORDER/DELIVERY OPERATIONAL TRANSITIONS HARDENED; delivery events retained; full project/installation/support journey UAT pending",
+      "repair_phase": "Phase 4"
     },
     {
       "workflow_id": "WF-11",
@@ -130,17 +143,17 @@
       "roles": "Worker/admin/operator",
       "entry_points": "operations-scheduler; expire-reservations; deliver-communications",
       "backend_and_data_dependencies": "pg_cron/pg_net/Vault, Edge Functions, automation jobs and run logs",
-      "phase0_status": "PHASE 10 SOURCE REPAIR COMPLETE; FIVE-JOB SCHEDULER, SERVICE-ROLE BOUNDARY, RUN LEDGER/LOCKS AND IDEMPOTENT SCHEDULE SYNC STATIC-PASS; LIVE SCHEDULE EXECUTION PENDING",
-      "repair_phase": "Phase 10"
+      "phase0_status": "EXISTING PG_CRON/PG_NET/VAULT SCHEDULER AND WORKER LOCKS RETAINED; scheduler registration and real execution not verified in this environment",
+      "repair_phase": "Phase 4"
     },
     {
       "workflow_id": "WF-12",
       "workflow_domain": "Database/Supabase/RLS/data integrity",
       "roles": "Anonymous/customer/staff/admin/service role",
       "entry_points": "158 SQL migrations; Supabase config; local DB test harness",
-      "backend_and_data_dependencies": "Database constraints; RLS policies; Storage boundaries; RPC privileges; audit triggers",
-      "phase0_status": "PHASE 11 SOURCE REPAIR COMPLETE; DATABASE INTEGRITY/RLS/STORAGE STATIC-PASS; LOCAL/REMOTE DB REPLAY AND ADVERSARIAL ROLE TESTS PENDING",
-      "repair_phase": "Phase 11"
+      "backend_and_data_dependencies": "167 tables; 274 functions; 290 FK references (repository verifier report)",
+      "phase0_status": "158 ACTIVE MIGRATIONS; MIGRATION INTEGRITY AND SQL STATIC SAFETY PASS; DISPOSABLE/STAGING POSTGRESQL REPLAY AND RLS ROLE-MATRIX TESTS PENDING",
+      "repair_phase": "Phase 6"
     },
     {
       "workflow_id": "WF-13",
@@ -157,8 +170,8 @@
       "roles": "Guest/customer/staff/admin",
       "entry_points": "Public pages, portal, admin shell",
       "backend_and_data_dependencies": "React/Vite UI, CSS, PWA, accessibility contracts",
-      "phase0_status": "PHASE 12 SOURCE REPAIR COMPLETE; CUSTOMER/ADMIN JOURNEY, MOBILE DIALOG, PAYMENT-ERROR RECOVERY AND RESPONSIVE STATIC CONTRACTS PASS; DEVICE VISUAL UAT PENDING",
-      "repair_phase": "Phase 12"
+      "phase0_status": "EXISTING RESPONSIVE UI AND ACCESSIBILITY CONTRACTS RETAINED; no browser/device visual certification performed in Phase 4",
+      "repair_phase": "Phase 4"
     },
     {
       "workflow_id": "WF-15",
@@ -166,8 +179,8 @@
       "roles": "Customer/staff/admin/worker",
       "entry_points": "Complete customer and admin journeys",
       "backend_and_data_dependencies": "Browser, API, database, provider and worker interactions",
-      "phase0_status": "PHASE 12 SOURCE JOURNEY AUDIT COMPLETE; FULL BROWSER/API/DATABASE/PROVIDER/WORKER E2E AND CONCURRENCY CERTIFICATION PENDING",
-      "repair_phase": "Phase 12"
+      "phase0_status": "PHASE 4 TARGETED SOURCE REGRESSION ADDED; full customer/admin desktop/mobile browser journey not run",
+      "repair_phase": "Phase 4"
     },
     {
       "workflow_id": "WF-16",
@@ -175,7 +188,7 @@
       "roles": "Release operator/owner",
       "entry_points": "CI, Vercel, Supabase and provider dashboards",
       "backend_and_data_dependencies": "Build artifact, environment variables, migrations, domains, monitoring",
-      "phase0_status": "BLOCKED ON DEPENDENCIES/CREDENTIALS/OWNER AUTHORIZATION",
+      "phase0_status": "BLOCKED ON DEPENDENCIES, STAGING DATABASE, PROVIDER CREDENTIALS, DEVICE/BROWSER TESTING AND OWNER AUTHORIZATION",
       "repair_phase": "Phase 16"
     }
   ]

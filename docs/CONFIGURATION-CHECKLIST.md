@@ -39,7 +39,6 @@ Supabase (Edge Functions > Secrets) or Vercel; never in `VITE_*` variables, SQL 
 | `PAYMENT_WEBHOOK_SECRET` | Secret for `payment-webhook` | payment-webhook | Required for payments | Edge secret |
 | `SUPABASE_SERVICE_ROLE_KEY` | Server-side database key | brevo-test-email, communication-provider-webhook, deliver-communications, email-inbound, payment-initiate, payment-status, payment-webhook, sms-delivery-report, sms-inbound, whatsapp-webhook | Required | Automatically provided to every Edge Function |
 | `SUPABASE_URL` | Supabase project URL | brevo-test-email, communication-provider-webhook, deliver-communications, email-inbound, payment-initiate, payment-status, payment-webhook, sms-delivery-report, sms-inbound, whatsapp-webhook | Required | Automatically provided to every Edge Function |
-| `SUPABASE_ANON_KEY` | Public/anon key used to forward the authenticated customer session | customer-data-export, customer-document-download | Required | Automatically provided to every Edge Function |
 | `TOPLINE_SITE_URL` | Public site address used in email links | deliver-communications | Optional | Edge secret (defaults to the .co.ke address) |
 | `TOPLINE_WEB_ORIGIN` | Extra allowed browser origins (previews, staging), comma separated | _shared | Optional | Edge secret |
 | `TOPLINE_WORKER_SECRET` | Shared secret for the scheduler and delivery worker (sent as header `x-topline-worker-secret`) | communication-provider-readiness, deliver-communications | Required | Supabase > Edge Functions > Secrets |

@@ -23,7 +23,7 @@ checks.push(
   ['server refuses to charge an already-paid order', /payment_status === "paid"\) return reply\(409/.test(initiateSrc)],
   ['server refuses to charge a refunded order', /payment_status === "refunded"\) return reply\(409/.test(initiateSrc)],
   ['server charges only the outstanding order balance', /settledTotal/.test(initiateSrc) && /Number\(order\.total_amount\) - settledTotal/.test(initiateSrc)],
-  ['server blocks a second live charge while another attempt is in flight', /already in progress/.test(initiateSrc) && /neq\("method", "bank_transfer"\)/.test(initiateSrc)],
+  ['server blocks a second live charge atomically across concurrent idempotency keys', /create_payment_attempt_atomic_360/.test(initiateSrc) && /already in progress/.test(initiateSrc) && /t\.method<>'bank_transfer'/.test(fs.readFileSync(path.join(root, 'supabase/migrations/20261107110000_payment_initiation_atomic_reservation.sql'), 'utf8'))],
 );
 const cartSrc = fs.readFileSync(path.join(root, 'src/pages/cart.tsx'), 'utf8');
 const appSrc = fs.readFileSync(path.join(root, 'src/App.tsx'), 'utf8');

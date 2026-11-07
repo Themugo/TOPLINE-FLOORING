@@ -119,3 +119,14 @@ npm run verify:phase-4-sms
 ```
 
 Then run the normal lint/typecheck/build and deploy the functions. Live provider delivery requires real provider credentials and provider-side webhook configuration.
+
+
+## Phase 18 — inbound response integrity hardening (2026-11-07)
+
+- Inbound SMS and email endpoints authenticate before reading request bodies and enforce streamed body ceilings (64 KiB SMS; 256 KiB email).
+- Brevo delivery/conversation and Meta WhatsApp webhook bodies use streamed 1 MiB ceilings, including chunked requests.
+- The database worker requires a stable provider message ID, validates provider/channel/sender/message/payload bounds, and uses the provider/channel/message ID unique key as the idempotency boundary.
+- A repeated provider callback resolves to the existing inbound row and does not create another customer timeline entry or staff notification.
+- `npm run verify:phase-18-inbound-provider-response` certifies the Phase 18 source contract; the combined Phase 18–20 verifier remains in place.
+
+Live provider callback replay and local PostgreSQL migration replay remain required before production activation.

@@ -9,6 +9,8 @@ import type { Supplier, PurchaseOrder, PurchaseOrderStatus } from '@/lib/types';
 
 const PO_STATUS_STYLES: Record<PurchaseOrderStatus, string> = {
   draft: 'bg-gray-100 text-navy-600',
+  pending: 'bg-amber-100 text-amber-800',
+  ordered: 'bg-indigo-100 text-indigo-700',
   sent: 'bg-blue-100 text-blue-700',
   partial: 'bg-yellow-100 text-yellow-700',
   received: 'bg-green-100 text-green-700',
@@ -224,14 +226,18 @@ function PurchaseOrdersTab() {
                     <td className="px-6 py-4">
                       <select
                         value={po.status}
+                        disabled={['received', 'cancelled'].includes(po.status)}
                         onChange={(e) => updatePurchaseOrderStatus(po.id, e.target.value)}
                         className={`text-xs font-medium px-2 py-1 rounded-full border-0 ${PO_STATUS_STYLES[po.status]}`}
+                        aria-label={`Purchase order ${po.po_number} status`}
                       >
-                        <option value="draft">draft</option>
-                        <option value="sent">sent</option>
-                        <option value="partial">partial</option>
-                        <option value="received">received</option>
-                        <option value="cancelled">cancelled</option>
+                        <option value={po.status}>{po.status}</option>
+                        {(po.status === 'draft' ? ['pending', 'sent', 'cancelled']
+                          : po.status === 'pending' ? ['sent', 'ordered', 'cancelled']
+                          : po.status === 'sent' ? ['ordered', 'cancelled']
+                          : po.status === 'ordered' ? ['partial', 'received', 'cancelled']
+                          : po.status === 'partial' ? ['received', 'cancelled'] : [])
+                          .map((nextStatus) => <option key={nextStatus} value={nextStatus}>{nextStatus}</option>)}
                       </select>
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-700">{po.expected_date ? new Date(po.expected_date).toLocaleDateString() : '-'}</td>

@@ -10,7 +10,7 @@ export const ROUTE_PERMISSIONS: Record<string, { resource: string; action: strin
   '/admin/services': { resource: 'content', action: 'select' },
   '/admin/invoices': { resource: 'invoices', action: 'select' },
   '/admin/finance': { resource: 'payments', action: 'select' },
-  '/admin/finance-operations': { resource: 'payments', action: 'select' },
+  '/admin/finance-operations': { resource: 'reports', action: 'select' },
   '/admin/inventory-procurement-operations': { resource: 'inventory', action: 'select' },
   '/admin/customer-portal-operations': { resource: 'customers', action: 'select' },
   '/admin/suppliers': { resource: 'procurement', action: 'select' },

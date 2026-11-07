@@ -1,6 +1,6 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { constantTimeEqual, headerOrQuery } from "../_shared/security.ts";
+import { constantTimeEqual, headerOrQuery, readBoundedBody } from "../_shared/security.ts";
 
 const url = Deno.env.get("SUPABASE_URL");
 const key = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
@@ -70,8 +70,8 @@ async function handle(body: Record<string, any>): Promise<Response> { // deno-li
 Deno.serve(async (req) => {
   if (req.method !== "POST") return new Response("Method Not Allowed", { status: 405 });
   if (!constantTimeEqual(presentedSecret(req), secret)) return new Response("Unauthorized", { status: 401 });
-  const raw = await req.text();
-  if (raw.length > 1_048_576) return new Response("Payload Too Large", { status: 413 });
+  const { body: raw, tooLarge } = await readBoundedBody(req, 1_048_576);
+  if (tooLarge) return new Response("Payload Too Large", { status: 413 });
   let parsed: unknown;
   try {
     parsed = JSON.parse(raw);

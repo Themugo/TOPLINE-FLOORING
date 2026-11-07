@@ -76,25 +76,16 @@ Secrets must remain server-side. Never place Brevo credentials in browser code, 
 
 Do not claim that email is production-ready until a real environment test proves delivery.
 
-## Priority 3 — FIX the project-document manager
-This is a known real gap.
+## Priority 3 — Project-document manager (COMPLETED; do not rebuild)
+The project-document manager now uses the existing production architecture:
+- `private-documents` Supabase Storage bucket and project-scoped object paths
+- canonical `public.project_documents` metadata table
+- staff permission/RLS gates and audit trigger
+- real file upload, metadata persistence, signed access, and delete handling
+- no sample records, dummy PDF URLs, or browser business-record persistence
 
-`src/components/admin/ProjectDocumentManager.tsx` currently contains sample document records, W3C dummy PDF URLs, localStorage persistence and a fake upload result.
-
-Replace that behavior with the existing production document architecture:
-- use the existing `private-documents` Supabase Storage bucket
-- use the existing permission/RLS trust boundary
-- add a canonical `project_documents` metadata table only if no suitable existing table exists
-- add the minimum required RPC/policies/indexes
-- upload real selected files
-- persist storage path, filename, MIME type, size, document type, notes, uploader and timestamps
-- load real records from Supabase
-- use authorized/signed access rather than public dummy URLs
-- delete both metadata and storage object safely
-- enforce staff permissions
-- preserve auditability
-
-Before creating anything, search all migrations for existing document/storage infrastructure.
+Evidence: `scripts/verify-project-documents.mjs` and migration `20260930180000_project_documents_private_storage.sql`.
+The 2026-11-06 audit also repaired an imported/local `errorMessage` naming collision in the manager and extended the verifier to prevent its recurrence. Do not recreate the table, bucket, or migration.
 
 ## Priority 4 — Remove remaining fake operational behavior
 Search the whole repository for:

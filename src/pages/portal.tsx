@@ -21,7 +21,7 @@ import { telHref } from '@/lib/utils';
 import { useSiteSettings } from '@/hooks/use-data';
 import { createServiceCase } from '@/lib/service-cases';
 import { submitServiceCaseFeedback } from '@/lib/service-quality-360';
-import { getCustomerPortalDocuments, getCustomerPortalDocumentUrl, getCustomerPortalPreferences, updateCustomerNotificationPreferences, getCustomerCommunicationsSelfService360, type CustomerNotificationPreferences, type CustomerPortalDocument, type CustomerCommunicationTimelineItem } from '@/lib/customer-self-service';
+import { getCustomerPortalDocuments, getCustomerProjectDocuments, createCustomerProjectDocumentUrl, getCustomerPortalPreferences, updateCustomerNotificationPreferences, getCustomerCommunicationsSelfService360, type CustomerNotificationPreferences, type CustomerPortalDocument, type CustomerProjectDocument, type CustomerCommunicationTimelineItem } from '@/lib/customer-self-service';
 
 type PortalRecord =
   | { type: 'quotation'; value: CustomerPortal360Data['quotations'][number] }
@@ -215,13 +215,29 @@ export default function Portal() {
   const [feedbackMessage, setFeedbackMessage] = useState<Record<string, string>>({});
   const [feedbackSending, setFeedbackSending] = useState<string | null>(null);
   const [documents, setDocuments] = useState<CustomerPortalDocument[]>([]);
-  const [documentUrls, setDocumentUrls] = useState<Record<string, string>>({});
-  const [documentLoading, setDocumentLoading] = useState<string | null>(null);
+  const [projectDocuments, setProjectDocuments] = useState<CustomerProjectDocument[]>([]);
+  const [openingDocumentId, setOpeningDocumentId] = useState<string | null>(null);
   const [notificationPrefs, setNotificationPrefs] = useState<CustomerNotificationPreferences | null>(null);
   const [prefsSaving, setPrefsSaving] = useState(false);
   const [prefsMessage, setPrefsMessage] = useState<string | null>(null);
   const [communications, setCommunications] = useState<CustomerCommunicationTimelineItem[]>([]);
   const latestDashboardRequest = useRef(0);
+
+  const openProjectDocument = async (doc: CustomerProjectDocument) => {
+    const viewer = window.open('', '_blank');
+    if (viewer) viewer.opener = null;
+    setOpeningDocumentId(doc.id);
+    try {
+      const url = await createCustomerProjectDocumentUrl(doc.storage_path);
+      if (viewer) viewer.location.href = url;
+      else window.location.assign(url);
+    } catch (err) {
+      viewer?.close();
+      setError('This document could not be opened. Please refresh the portal and try again.');
+    } finally {
+      setOpeningDocumentId(null);
+    }
+  };
 
   const submitServiceCase = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -267,16 +283,6 @@ export default function Portal() {
       setPrefsMessage('Notification preferences saved.');
     } catch (err) { setPrefsMessage(errorMessage(err, 'Unable to save preferences.') ?? 'Unable to save preferences.'); }
     finally { setPrefsSaving(false); }
-  };
-
-  const loadDocumentUrl = async (documentId: string) => {
-    setDocumentLoading(documentId);
-    try {
-      const url = await getCustomerPortalDocumentUrl(documentId);
-      setDocumentUrls((current) => ({ ...current, [documentId]: url }));
-    } catch (err) {
-      setError(errorMessage(err, 'This document is temporarily unavailable.') ?? 'This document is temporarily unavailable.');
-    } finally { setDocumentLoading(null); }
   };
 
   const submitFeedback = async (caseId: string) => {
@@ -360,18 +366,20 @@ export default function Portal() {
       }).catch(() => {
         if (isCurrentRequest()) setPaymentAccounts([]);
       });
-      const [journeyResult, prefsResult, docsResult, communicationsResult] = await Promise.allSettled([
+      const [journeyResult, prefsResult, docsResult, projectDocsResult, communicationsResult] = await Promise.allSettled([
         getCustomerJourney(),
         getCustomerPortalPreferences(),
         getCustomerPortalDocuments(),
+        getCustomerProjectDocuments(),
         getCustomerCommunicationsSelfService360(),
       ]);
       if (!isCurrentRequest()) return;
       setJourney(journeyResult.status === 'fulfilled' ? journeyResult.value ?? [] : []);
       setNotificationPrefs(prefsResult.status === 'fulfilled' ? prefsResult.value?.notification_preferences ?? null : null);
       setDocuments(docsResult.status === 'fulfilled' ? docsResult.value ?? [] : []);
+      setProjectDocuments(projectDocsResult.status === 'fulfilled' ? projectDocsResult.value ?? [] : []);
       setCommunications(communicationsResult.status === 'fulfilled' ? communicationsResult.value?.timeline || [] : []);
-      const failedSections = [journeyResult, prefsResult, docsResult, communicationsResult].some((result) => result.status === 'rejected');
+      const failedSections = [journeyResult, prefsResult, docsResult, projectDocsResult, communicationsResult].some((result) => result.status === 'rejected');
       setError(failedSections ? 'Some account extras are temporarily unavailable. Your orders and quotations are still available; try refreshing later.' : null);
     } catch (err) {
       if (!isCurrentRequest()) return;
@@ -456,7 +464,8 @@ export default function Portal() {
       <Card className="rounded-2xl border-slate-200 shadow-sm"><CardHeader><CardTitle>Invoices</CardTitle></CardHeader><CardContent className="space-y-3">{data.invoices.length ? data.invoices.map(i => <button type="button" key={i.id} className="w-full text-left border rounded-md p-4 flex justify-between gap-4 hover:bg-muted/40" onClick={() => { setInvoicePaymentMethod(null); setSelectedRecord({ type: 'invoice', value: i }); }}><div><p className="font-medium">{i.invoice_number || i.id.slice(0,8)}</p><p className="text-xs text-muted-foreground">Due {i.due_date || '—'} · Paid KES {Number(i.amount_paid).toLocaleString()}</p></div><div className="text-right"><p className="text-sm font-medium capitalize">{i.status}</p><p className="text-sm">KES {Number(i.total_amount).toLocaleString()}</p><p className="text-xs text-primary mt-1">View details</p></div></button>) : <p className="text-sm text-muted-foreground">No invoices are linked to this account yet.</p>}</CardContent></Card>
       <Card className="rounded-2xl border-slate-200 shadow-sm"><CardHeader><CardTitle>After-sales support</CardTitle></CardHeader><CardContent className="space-y-5"><form onSubmit={submitServiceCase} className="grid md:grid-cols-[180px_1fr_auto] gap-3"><select className="input" value={serviceType} onChange={e=>setServiceType(e.target.value)}><option value="warranty">Warranty</option><option value="service">Service</option><option value="maintenance">Maintenance</option></select><div className="grid gap-2"><Input required placeholder="Issue or request title" value={serviceTitle} onChange={e=>setServiceTitle(e.target.value)}/><textarea required className="input min-h-20" placeholder="Tell us what you need help with…" value={serviceDescription} onChange={e=>setServiceDescription(e.target.value)}/></div><Button type="submit" disabled={serviceSending}>{serviceSending?'Submitting…':'Submit request'}</Button></form>{serviceMessage&&<p className="text-sm text-muted-foreground">{serviceMessage}</p>}{data.service_cases.length ? <div className="border-t pt-5 space-y-4"><div><p className="font-semibold">Your service cases</p><p className="text-sm text-muted-foreground">Resolved cases can be rated once.</p></div>{data.service_cases.map(c => <div key={c.id} className="border rounded-md p-4"><div className="flex justify-between gap-4"><div><p className="font-medium">{c.case_number} · {c.issue_title}</p><p className="text-xs text-muted-foreground capitalize">{c.type} · {c.status.replace('_',' ')}</p></div><span className="chip">{c.priority}</span></div>{['resolved','closed'].includes(c.status) && !feedbackMessage[c.id]?.startsWith('Thank you') ? <div className="mt-4 grid gap-2 md:grid-cols-[140px_1fr_auto]"><select className="input" value={feedbackRating[c.id]||''} onChange={e=>setFeedbackRating(prev=>({...prev,[c.id]:Number(e.target.value)}))}><option value="">Rate service…</option><option value="5">5 — Excellent</option><option value="4">4 — Good</option><option value="3">3 — Okay</option><option value="2">2 — Poor</option><option value="1">1 — Very poor</option></select><Input placeholder="Optional comment" value={feedbackComment[c.id]||''} onChange={e=>setFeedbackComment(prev=>({...prev,[c.id]:e.target.value}))}/><Button onClick={()=>void submitFeedback(c.id)} disabled={feedbackSending===c.id || !feedbackRating[c.id]}>{feedbackSending===c.id?'Sending…':'Rate service'}</Button></div> : null}{feedbackMessage[c.id]&&<p className="text-sm text-muted-foreground mt-2">{feedbackMessage[c.id]}</p>}</div>)}</div> : null}</CardContent></Card>
             <div className="grid md:grid-cols-2 gap-6">
-        <Card className="rounded-2xl border-slate-200 shadow-sm"><CardHeader><CardTitle>Documents</CardTitle></CardHeader><CardContent>{documents.length ? <div className="space-y-3">{documents.map(d => <div key={d.id} className="border rounded-md p-4"><p className="font-medium">{d.document_name}</p><p className="text-xs text-muted-foreground capitalize">{d.document_type.replace(/_/g,' ')} · {new Date(d.created_at).toLocaleDateString('en-KE')}</p>{d.description ? <p className="text-sm text-muted-foreground mt-1">{d.description}</p> : null}<div className="mt-3">{documentUrls[d.id] ? <a className="text-sm text-primary underline" href={documentUrls[d.id]} target="_blank" rel="noreferrer">Open document</a> : <Button type="button" variant="outline" size="sm" onClick={() => void loadDocumentUrl(d.id)} disabled={documentLoading === d.id}>{documentLoading === d.id ? 'Preparing secure link…' : 'Open document'}</Button>}</div></div>)}</div> : <p className="text-sm text-muted-foreground">Your shared documents will appear here.</p>}<p className="text-xs text-muted-foreground mt-4">Each document link is customer-bound and expires after five minutes. Private file locations are never exposed through the portal data API.</p></CardContent></Card>
+        <Card className="rounded-2xl border-slate-200 shadow-sm"><CardHeader><CardTitle>Project documents</CardTitle></CardHeader><CardContent>{projectDocuments.length ? <div className="space-y-3">{projectDocuments.map(doc => <div key={doc.id} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border rounded-md p-4"><div className="min-w-0"><p className="font-medium break-words">{doc.file_name}</p><p className="text-xs text-muted-foreground">{doc.project_title || 'Project'} · {doc.doc_type.replace(/_/g,' ')} · {new Date(doc.created_at).toLocaleDateString('en-KE')}</p><p className="text-xs text-muted-foreground">{Math.max(1, Math.round(doc.file_size_bytes / 1024))} KB</p></div><Button type="button" variant="outline" size="sm" disabled={openingDocumentId === doc.id} onClick={() => void openProjectDocument(doc)}>{openingDocumentId === doc.id ? 'Opening…' : 'Open document'}</Button></div>)}</div> : <p className="text-sm text-muted-foreground">Project documents shared with your account will appear here.</p>}<p className="text-xs text-muted-foreground mt-4">Files are private and opened using short-lived, customer-authorized links.</p></CardContent></Card>
+      <Card className="rounded-2xl border-slate-200 shadow-sm"><CardHeader><CardTitle>Documents</CardTitle></CardHeader><CardContent>{documents.length ? <div className="space-y-3">{documents.map(d => <div key={d.id} className="border rounded-md p-4"><p className="font-medium">{d.document_name}</p><p className="text-xs text-muted-foreground capitalize">{d.document_type.replace(/_/g,' ')} · {new Date(d.created_at).toLocaleDateString('en-KE')}</p>{d.description ? <p className="text-sm text-muted-foreground mt-1">{d.description}</p> : null}</div>)}</div> : <p className="text-sm text-muted-foreground">Your shared documents will appear here.</p>}<p className="text-xs text-muted-foreground mt-4">Documents are listed securely; private file locations are never exposed through the portal data API.</p></CardContent></Card>
         <Card className="rounded-2xl border-slate-200 shadow-sm"><CardHeader><CardTitle>Notification preferences</CardTitle></CardHeader><CardContent>{notificationPrefs ? <div className="space-y-3">{([['email_enabled','Email updates'],['sms_enabled','SMS updates'],['whatsapp_enabled','WhatsApp updates'],['marketing_email_enabled','Marketing email'],['marketing_sms_enabled','Marketing SMS']] as const).map(([key,label]) => <label key={key} className="flex items-center justify-between gap-4 border rounded-md p-3 text-sm"><span>{label}</span><input type="checkbox" checked={notificationPrefs[key]} onChange={e=>setNotificationPrefs(prev=>prev ? {...prev,[key]:e.target.checked} : prev)} /></label>)}<Button onClick={()=>void saveNotificationPreferences()} disabled={prefsSaving}>{prefsSaving ? 'Saving…' : 'Save preferences'}</Button>{prefsMessage&&<p className="text-sm text-muted-foreground">{prefsMessage}</p>}<p className="text-xs text-muted-foreground">Operational messages may still be sent when required to fulfil an order, project or service obligation.</p></div> : <p className="text-sm text-muted-foreground">Preferences are unavailable right now.</p>}</CardContent></Card>
       </div>
       <Card className="rounded-2xl border-slate-200 shadow-sm"><CardHeader><CardTitle>Communication history</CardTitle></CardHeader><CardContent>{communications.length ? <div className="space-y-3 max-h-[28rem] overflow-y-auto">{communications.slice(0,30).map(item => <div key={`${item.id}-${item.created_at}`} className="border rounded-md p-4"><div className="flex items-center justify-between gap-3"><span className="text-xs uppercase font-semibold">{item.channel} · {item.direction}</span><span className="text-xs text-muted-foreground">{new Date(item.created_at).toLocaleString('en-KE')}</span></div>{item.subject ? <p className="font-medium mt-1">{item.subject}</p> : null}<p className="text-sm text-muted-foreground mt-1 whitespace-pre-wrap">{item.message}</p><p className="text-xs text-muted-foreground mt-2 capitalize">Status: {item.status}</p></div>)}</div> : <p className="text-sm text-muted-foreground">Your communication history will appear here as messages are sent or received.</p>}<p className="text-xs text-muted-foreground mt-4">Only communications belonging to your authenticated customer account are shown.</p></CardContent></Card>

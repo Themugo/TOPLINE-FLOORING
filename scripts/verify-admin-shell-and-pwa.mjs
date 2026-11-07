@@ -34,7 +34,7 @@ check(`Every admin route (${routes.length}) is reachable from the sidebar${missi
 check('Sidebar has no links to unregistered routes and no duplicates', unknownInNav.length === 0 && duplicates.length === 0 && navHrefs.includes('/admin'));
 check('Every route belongs to exactly one sidebar hub (short, task-based menu)', hubHrefs.length === navHrefs.length && new Set(hubHrefs).size === hubHrefs.length && navHrefs.every((h) => hubHrefs.includes(h)));
 check('Every admin route has a permission rule', routes.every((r) => permHrefs.has(r)) && permHrefs.has('/admin'));
-check('Guard looks permissions up with a normalised path (trailing slash cannot bypass the rule)', guard.includes('ROUTE_PERMISSIONS[normalizeAdminPath(window.location.pathname)]'));
+check('Guard looks permissions up with a normalised path (trailing slash cannot bypass the rule)', guard.includes('ROUTE_PERMISSIONS[normalizedPath]') && guard.includes('normalizeAdminPath(window.location.pathname)'));
 check('Active nav item uses segment-boundary, longest-match logic', nav.includes('path.startsWith(`${item.href}/`)') && nav.includes('best.length'));
 
 // ---- Admin layout quality ---------------------------------------------------------------------

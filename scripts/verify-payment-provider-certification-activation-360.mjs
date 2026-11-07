@@ -11,6 +11,6 @@ const admin=fs.readFileSync(path.join(root,'src/pages/admin/site-control.tsx'),'
 if(!admin.includes('save_payment_gateway_control_360')) console.warn('WARN: Admin UI still writes payment gateway rows directly; route it through the certification control RPC before production activation.');
 const secrets=['MPESA_CONSUMER_SECRET','MPESA_PASSKEY','CARD_GATEWAY_SECRET','PAYMENT_CARD_WEBHOOK_SECRET'];
 for(const secret of secrets){if(sql.includes(secret)) fail(`Provider secret name must not be embedded in certification SQL: ${secret}`)}
-const report=fs.readFileSync(path.join(root,'docs','archive','PAYMENT-PROVIDER-CERTIFICATION-ACTIVATION-360.md'),'utf8');
+const report=fs.readFileSync(path.join(root,'PAYMENT-PROVIDER-CERTIFICATION-ACTIVATION-360.md'),'utf8');
 if(!report.includes('no named card provider')) fail('Card provider selection boundary missing.');
 console.log(`Payment Provider Certification + Activation 360: STRUCTURAL PASS (${migrations.length} migrations)`);

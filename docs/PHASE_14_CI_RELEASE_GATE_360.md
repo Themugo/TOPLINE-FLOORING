@@ -9,9 +9,10 @@ Make every change to `main` pass the same deterministic quality and architecture
 - Workflow concurrency cancels superseded runs for the same branch/PR.
 - Repository/toolchain, Supabase target, migration, payment, commerce, order, authorization and release contracts run before frontend compilation.
 - ESLint, TypeScript and production Vite build are mandatory gates.
-- The production build is uploaded as a CI artifact for inspection/handoff.
+- The production build is uploaded as a CI artifact for inspection/handoff only after every verification and frontend quality gate succeeds.
+- Phase 15–17 lifecycle verification and Operations 17–18 production automation and theme-governance checks are explicit CI steps.
 - CI has explicit job timeout protection so a stalled external/database operation cannot run indefinitely.
-- A dedicated Phase 14 source verifier checks that the workflow itself cannot silently lose critical gates.
+- A dedicated Phase 14 source verifier checks that the workflow itself cannot silently lose critical gates, omit current lifecycle/operations contracts, or upload a build artifact before all gates pass.
 - Migration timestamps are checked for uniqueness and strict chronological ordering.
 - Secret-bearing local environment files are rejected by the release-gate verifier.
 

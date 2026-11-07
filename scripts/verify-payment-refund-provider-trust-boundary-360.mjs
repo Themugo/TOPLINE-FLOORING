@@ -12,7 +12,7 @@ if(!manifest.includes('20260914105846_111_payment_refund_provider_trust_boundary
 if(!manifest.includes(`contains ${files.length} uniquely timestamped active migrations`)) failures.push(`Manifest count is stale; expected ${files.length}.`);
 const docs=fs.readFileSync(path.join(root,'docs','PAYMENT-REFUND-PROVIDER-TRUST-BOUNDARY-360.md'),'utf8');
 for(const t of ['service-role-only','Successful provider events require a provider transaction ID.','Provider payload replays are rejected','Refunds cannot exceed successful payments.','search_path =']) if(!docs.includes(t)) failures.push(`Runbook missing: ${t}`);
-if(!fs.existsSync(path.join(root,'scripts','operations','COMMIT-PUSH-PAYMENT-REFUND-PROVIDER-TRUST-BOUNDARY-360.cmd'))) failures.push('Commit helper missing.');
+if(!fs.existsSync(path.join(root,'COMMIT-PUSH-PAYMENT-REFUND-PROVIDER-TRUST-BOUNDARY-360.cmd'))) failures.push('Commit helper missing.');
 for(const f of files) if(!/^\d{14}_.*\.sql$/.test(f)) failures.push(`Invalid migration filename: ${f}`);
 const versions=files.map(f=>f.slice(0,14)); if(new Set(versions).size!==versions.length) failures.push('Duplicate migration timestamps detected.'); for(let i=1;i<versions.length;i++) if(versions[i-1]>=versions[i]) failures.push('Migration ordering is not strictly increasing.');
 if(failures.length){console.error('Payment/Refund/Provider Trust Boundary 360 FAILED.'); failures.forEach(x=>console.error(`- ${x}`)); process.exit(1);} console.log('Payment/Refund/Provider Trust Boundary 360: 14/14 PASSED'); console.log(`- Active migrations: ${files.length}`); console.log(`- Latest migration: ${files.at(-1)}`);

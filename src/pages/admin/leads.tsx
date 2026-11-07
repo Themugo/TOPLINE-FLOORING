@@ -7,7 +7,7 @@ import { useToast } from '@/hooks/use-toast';
 import type { Lead } from '@/lib/types';
 
 export default function AdminLeads() {
-  const { leads, loading, createLead, updateLead, deleteLead } = useLeads();
+  const { leads, loading, error, refetch, createLead, updateLead, deleteLead } = useLeads();
   const { toast } = useToast();
   const [showForm, setShowForm] = useState(false);
   const [editingLead, setEditingLead] = useState<Lead | null>(null);
@@ -53,6 +53,13 @@ export default function AdminLeads() {
 
   return (
     <AdminLayout title="Sales & Enquiries" subtitle="Keep new customer enquiries moving from first contact to the next action.">
+      {error && !showForm && (
+        <div role="alert" className="mb-4 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-800">
+          <p className="font-semibold">Leads could not be loaded.</p>
+          <p className="mt-1">{error}</p>
+          <button type="button" onClick={() => void refetch()} className="mt-3 rounded-md border border-red-300 px-3 py-1.5 font-medium hover:bg-red-100">Retry</button>
+        </div>
+      )}
       {showForm ? (
         <LeadForm
           lead={editingLead || undefined}

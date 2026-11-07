@@ -123,3 +123,5 @@ Phase 3 adds `deliver-communications` plus service-role-only worker RPCs for rea
 
 - `20260913140000_087_health_safety_site_compliance_360.sql` — Operation 15 Health, Safety & Site Compliance 360.
 - `20260913150000_088_client_owned_infrastructure_hardening.sql` — Operation 16 Client-Owned Supabase Integration & Infrastructure Hardening 360.
+
+- `20261107180000_phase13_export_integrity_and_audit_access_hardening.sql` — hardens operational export integrity and staff-only audit visibility; this does not replace Supabase PostgreSQL backups.

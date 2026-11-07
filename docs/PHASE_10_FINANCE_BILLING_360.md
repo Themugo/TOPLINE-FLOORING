@@ -23,3 +23,14 @@ Existing canonical invoice, invoice item and payment tables remain authoritative
 
 ## Verification
 Run `npm run verify:phase-10-finance-billing-360`, migration integrity, typecheck and build before release.
+
+
+## Phase 10 hardening addendum — 2026-11-07
+- Invoice `partial` transitions now require a positive canonical payment total below the invoice total.
+- Invoice `paid` transitions require a positive total fully covered by canonical payment rows.
+- Invoice `overdue` transitions require a past due date and a positive outstanding balance.
+- Lifecycle changes fail closed when `invoices.amount_paid` differs from the canonical `payments` sum; finance reconciliation must run first.
+- Automatic lifecycle refresh recomputes `amount_paid` from payment rows and repairs paid/partial/overdue/sent status drift.
+- Finance Operations reporting uses the same `reports:select` permission contract as the Finance Control snapshot and its protected route.
+- Lifecycle and snapshot RPCs pin an empty search path; anonymous and PUBLIC execution are revoked, with authenticated execution explicitly granted and staff permission checks retained.
+- Targeted hardening verifier: 25/25. Aggregate static verification: 160/160. Staging PostgreSQL replay and role-based finance UAT remain release gates.

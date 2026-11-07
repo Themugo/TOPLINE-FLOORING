@@ -1,6 +1,6 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { constantTimeEqual, hmacSha256Hex } from "../_shared/security.ts";
+import { constantTimeEqual, hmacSha256Hex, readBoundedBody } from "../_shared/security.ts";
 type JsonValue = null | boolean | number | string | JsonValue[] | { [key:string]: JsonValue };
 type JsonRecord = { [key:string]: JsonValue };
 const asRecord=(value:JsonValue):JsonRecord|null=>typeof value==='object'&&value!==null&&!Array.isArray(value)?value as JsonRecord:null;
@@ -11,7 +11,7 @@ const admin=createClient(url,key,{auth:{persistSession:false,autoRefreshToken:fa
 Deno.serve(async(req)=>{
  if(req.method==='GET'){const u=new URL(req.url);if(!constantTimeEqual(u.searchParams.get('hub.verify_token'),verifyToken))return new Response('Forbidden',{status:403});return new Response(u.searchParams.get('hub.challenge')||'',{status:200});}
  if(req.method!=='POST')return new Response('Method Not Allowed',{status:405});
- const rawBody=await req.text();if(rawBody.length>1048576)return new Response('Payload Too Large',{status:413});
+ const {body:rawBody,tooLarge}=await readBoundedBody(req,1_048_576);if(tooLarge)return new Response('Payload Too Large',{status:413});
  const signature=req.headers.get('x-hub-signature-256')||'';if(!signature.startsWith('sha256=')||!constantTimeEqual(signature.slice(7),await hmacSha256Hex(appSecret,rawBody)))return new Response('Unauthorized',{status:401});
  let body:JsonValue;try{body=JSON.parse(rawBody) as JsonValue;}catch{return Response.json({error:'Invalid JSON'},{status:400});}
  const root=asRecord(body);const entries=Array.isArray(root?.entry)?root.entry:[];

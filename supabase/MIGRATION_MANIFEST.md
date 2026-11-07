@@ -76,7 +76,7 @@ Never put a service-role or worker secret in a `VITE_*` variable.
 
 ## Current active chain (Phases 30–32 verification baseline)
 
-The current production candidate contains 159 uniquely timestamped active migrations, ending with `20261106230000_audit12_journey_regression_hardening.sql`. Phase 12 combines source-only UI/journey hardening with an explicit storage RLS replay guard. Run the complete verification suite before any linked database deployment.
+The manifest contains 163 uniquely timestamped active migrations. The current source candidate ends with `20261107210000_phase_19_order_confirmation_delivery_reliability.sql`. Run the complete verification suite before any linked database deployment. This source count is not confirmation that the migration has been applied remotely.
 
 Current active chain additions: `20260930170000_service_catalog_and_communications_worker_hardening.sql`, `20260930180000_project_documents_private_storage.sql`, `20260930190000_staff_read_inactive_cms_catalog_rows.sql`, `20260930193000_private_document_policy_overlap_hardening.sql`, `20260930200000_project_templates.sql`, `20260930210000_close_legacy_public_read_policies.sql`, `20260930220000_projects_admin_contract_columns.sql`, `20260930230000_move_product_cost_prices_staff_only.sql`, `20260930240000_coupon_validation_throttle.sql`, `20260930250000_finance_permission_resource.sql`, `20261001090000_project_template_persistence_360.sql`, `20261001100000_admin_notification_state_360.sql`, `20261001110000_catalog_product_service_upload_integrity_360.sql`.
 
@@ -153,7 +153,7 @@ Current active chain additions: `20260930170000_service_catalog_and_communicatio
 
 ## Current active chain — payment and communications hardening (2026-10-02)
 
-The current active chain contains 128 uniquely timestamped active migrations. The latest migrations are:
+The current active chain contains 161 uniquely timestamped active migrations. The latest migrations are:
 
 - `20261001110000_catalog_product_service_upload_integrity_360.sql` — catalogue/product/service upload integrity hardening.
 - `20261002130000_customer_registration_and_reconciliation_360.sql` — customer registration, verified identity binding and dashboard reconciliation.
@@ -244,12 +244,23 @@ These files were present in `supabase/migrations/` but not yet listed above. App
 - `20261106130000_inventory_stock_adjustment_hardening.sql` — permits zero stock counts; makes warehouse counts adjust global stock by the warehouse delta; audits variant stock and paid variant consumption against the exact variant; blocks deletion of warehouses holding stock and hard deletion of variants with stock/history; serializes stock transfers; validates product-linked, whole-unit purchase order receipts; automatically creates, updates, resolves and backfills low-stock alerts for products and variants.
 
 - `20261106140000_cart_checkout_variant_integrity.sql` — prevents order lines from bypassing active variant-level stock and validates product/variant ownership.
-- `20261106150000_audit4_payment_target_integrity.sql` — binds provider callback targets to the payment transaction being reconciled and rejects ambiguous or mismatched order/invoice targets.
-- `20261106160000_audit5_order_lifecycle_end_to_end.sql` — gates direct completion on payment/delivery evidence and atomically cancels open deliveries with unpaid-order cancellation.
-- `20261106170000_audit6_payment_callbacks_reconciliation.sql` — restores stale-event protection and late-success inventory recovery while preventing unknown provider IDs from selecting another pending attempt.
-- `20261106180000_audit7_customer_documents_self_service.sql` — records the customer-bound signed-download boundary for private customer documents; binary access is authenticated by the customer-document-download Edge Function.
-- `20261106190000_audit8_communications_delivery_hardening.sql` — scopes provider callbacks by provider/channel and hardens SMS destination matching while preserving monotonic delivery-state audit transitions.
-- `20261106200000_audit9_admin_permissions_operational_actions.sql` — hardens staff-only fulfillment actions against unpaid picking, terminal-delivery mutation, closed-order recovery and inactive-driver dispatch while preserving operational event history.
-- `20261106210000_audit10_background_workers_scheduled_processes.sql` — makes named pg_cron schedule reconciliation idempotent while preserving the five-job scheduler, service-role boundary, run ledger and locks.
-- `20261106220000_audit11_database_integrity_rls.sql` — binds private customer-document update destinations to the authenticated customer namespace while preserving staff media and project-document isolation.
-- `20261106230000_audit12_journey_regression_hardening.sql` — explicitly enables RLS on `storage.objects`, repairs the published CMS contact-email typo, and preserves administrator-managed addresses during fresh migration replay.
+- `20261107100000_order_fulfillment_finance_integrity.sql` — makes same-state order cancellation replay-safe (coupon use is released once), enforces valid order status transitions, prevents cancellation after dispatch/delivery, cancels and audits pre-dispatch deliveries, and binds refund requests to a single payment transaction with per-transaction balance checks and accurate fully-refunded status derivation.
+- `20261107110000_payment_initiation_atomic_reservation.sql` — serializes payment-attempt creation under an order/invoice row lock; atomically inserts the payment transaction and attempt, rechecks the outstanding balance, and blocks concurrent online charge attempts across different idempotency keys.
+
+- `20261107120000_finance_refund_reconciliation_hardening.sql` — enforces order-before-refund lock ordering to prevent refund/reconciliation deadlocks, records refund outcomes in the finance control event ledger, validates completable refund states, and derives fully-refunded status from actual successful payment totals (including partial-payment refunds).
+
+- `20261107130000_customer_document_access_hardening.sql` — grants authenticated customers read-only access to documents attached to their own projects, issues customer-scoped private document metadata, retains short-lived signed URL access, and closes a Storage UPDATE path-ownership gap for customer-owned objects.
+
+- `20261107140000_communications_delivery_callback_hardening.sql` — routes Africa's Talking SMS delivery reports through the shared monotonic provider-event ledger, restricts the callback RPC to service role, validates callback references/cost, and prevents stale provider callbacks from downgrading newer delivery states.
+
+- `20261107150000_finance_invoice_lifecycle_hardening.sql` — validates invoice lifecycle changes against the canonical payment ledger; prevents unsupported partial/paid/overdue statuses; repairs stale invoice totals during refresh; aligns finance snapshot authorization with the reporting permission; pins function search paths and explicitly revokes anonymous/PUBLIC execution.
+
+- `20261107160000_phase11_inventory_procurement_access_and_snapshot_hardening.sql` — aligns Inventory & Procurement 360 snapshot/reconciliation RPCs with the route's `inventory:select` permission, fixes procurement event read-policy action, includes inactive warehouse rows in orphan reconciliation, and explicitly revokes PUBLIC/anon execution from privileged procurement RPCs.
+- `20261107170000_customer_portal_identity_data_minimization.sql` — narrows the authenticated customer portal RPC identity object to explicit customer-facing fields and retains the current draft exclusions, empty search path and authenticated-only execution grant.
+- `20261107180000_phase13_export_integrity_and_audit_access_hardening.sql` — replaces the effective operational export RPC with a deterministic SHA-256 digest over the allowlisted data tables, stabilizes row ordering, and restricts export-event reads to staff with `system.read`.
+- `20261107120100_phase_16_quotation_order_project_integrity.sql` — hardens quotation-to-order-to-project conversion with complete permission requirements, fail-closed customer email validation, normalized-email serialization, downstream-link integrity checks for idempotent retries, and explicit authenticated-only RPC execution.
+- `20261107190000_phase_17_site_visit_execution_integrity.sql` — hardens canonical site-visit scheduling with required project-insert authorization, quotation/customer/project relationship validation, active-staff assignment, past-time and bounded-input rejection, and prevents status-only rescheduling while retaining transactional status audit events.
+
+- `20261107200000_phase_18_inbound_provider_identity_hardening.sql` — requires stable provider message IDs for inbound email/SMS/WhatsApp responses, validates bounded provider payload fields, and guarantees retries cannot duplicate customer timeline entries or staff notifications.
+
+- `20261107210000_phase_19_order_confirmation_delivery_reliability.sql` — Phase 19 order confirmation event-to-outbox restoration, unambiguous legacy customer matching, and staff order-delivery evidence RPC.

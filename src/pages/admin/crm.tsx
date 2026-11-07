@@ -20,7 +20,7 @@ const PIPELINE: { status: LeadStatus; label: string; color: string }[] = [
 const emptyForm = { name: '', email: '', phone: '', company: '', source: 'manual', estimated_value: '' };
 
 export default function AdminCRM() {
-  const { leads, loading, createLead, updateLead, deleteLead, convertLead } = useLeads();
+  const { leads, loading, error, refetch, createLead, updateLead, deleteLead, convertLead } = useLeads();
   const { toast } = useToast();
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState(emptyForm);
@@ -101,6 +101,12 @@ export default function AdminCRM() {
         </button>
       </div>
 
+      {error && (
+        <div role="alert" className="mb-4 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-800">
+          <p className="font-semibold">CRM leads could not be loaded.</p><p className="mt-1">{error}</p>
+          <button type="button" onClick={() => void refetch()} className="mt-3 rounded-md border border-red-300 px-3 py-1.5 font-medium hover:bg-red-100">Retry</button>
+        </div>
+      )}
       {loading ? (
         <div className="text-center py-12 text-gray-500">Loading leads...</div>
       ) : (

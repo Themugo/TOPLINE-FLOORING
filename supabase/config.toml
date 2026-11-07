@@ -49,9 +49,6 @@ verify_jwt = false
 [functions.customer-data-export]
 verify_jwt = true
 
-[functions.customer-document-download]
-verify_jwt = true
-
 [functions.expire-reservations]
 verify_jwt = false
 

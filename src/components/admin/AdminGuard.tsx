@@ -63,7 +63,9 @@ export function AdminAuthGuard({ children, permission }: AdminGuardProps) {
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const latestVerification = useRef(0);
 
-  const effectivePermission = permission ?? ROUTE_PERMISSIONS[normalizeAdminPath(window.location.pathname)];
+  const normalizedPath = normalizeAdminPath(window.location.pathname);
+  const isProtectedAdminPath = normalizedPath === '/admin' || normalizedPath.startsWith('/admin/');
+  const effectivePermission = permission ?? ROUTE_PERMISSIONS[normalizedPath];
 
   const signOutToLogin = useCallback(async () => {
     latestVerification.current += 1;
@@ -83,6 +85,13 @@ export function AdminAuthGuard({ children, permission }: AdminGuardProps) {
         setLocation('/admin/login');
         return;
       }
+      // Every protected admin route must resolve to an explicit permission.
+      // A newly-added or misspelled route must never inherit access merely
+      // because the caller has an active staff profile.
+      if (isProtectedAdminPath && !effectivePermission) {
+        setState('forbidden');
+        return;
+      }
       if (effectivePermission && !hasPermission(result.permissions, effectivePermission.resource, effectivePermission.action)) {
         setState('forbidden');
         return;
@@ -93,7 +102,7 @@ export function AdminAuthGuard({ children, permission }: AdminGuardProps) {
       setState('forbidden');
       setLocation('/admin/login');
     }
-  }, [effectivePermission, setLocation]);
+  }, [effectivePermission, isProtectedAdminPath, setLocation]);
 
   useEffect(() => {
     let mounted = true;

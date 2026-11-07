@@ -101,7 +101,7 @@ const rows = [...routes.values()].sort((a,b) => a.route.localeCompare(b.route));
 const csvCell = (v) => `"${String(v ?? '').replaceAll('"', '""')}"`;
 const header = ['route_pattern','audience','component_symbol','source_file','source_contract_status','browser_visual_status','responsive_status','interaction_status','notes'];
 const csv = [header, ...rows.map(r => [r.route, r.route.startsWith('/admin') ? 'Admin / operations' : 'Public / customer', r.symbol, `src/pages/${r.file}`, 'SOURCE INVENTORY GENERATED', 'NOT RUN — browser inspection required', 'NOT RUN — desktop/tablet/mobile required', 'NOT RUN — representative interaction tests required', r.note])].map(row => row.map(csvCell).join(',')).join('\n') + '\n';
-fs.writeFileSync(path.join(root, 'docs/archive/docs\archive\TOPLINE-THEME-ROUTE-VERIFICATION-MATRIX-2026-10-14.csv'), csv);
+fs.writeFileSync(path.join(root, 'TOPLINE-THEME-ROUTE-VERIFICATION-MATRIX-2026-10-14.csv'), csv);
 
 // Exercise the actual TypeScript theme engine under the project's Node 22 runtime,
 // not only source-string assertions. This remains local and requires no services.

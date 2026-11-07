@@ -14,7 +14,8 @@ if(!init.includes("get_payment_provider_release_gate_360")) fail('Payment initia
 if(!init.includes('allowedBankKeys')) fail('Bank-transfer customer configuration is not allowlisted.');
 if(!init.includes('payment ledger could not be updated')) fail('Provider acceptance is not fail-closed on ledger persistence failure.');
 const callback=read('supabase/functions/payment-callback/index.ts');
-if(!callback.includes('rawBody=await req.text()')) fail('Card callback signature verification does not use the raw request body.');
+if(!callback.includes('rawBody=new TextDecoder().decode(bytes)') || !callback.includes('const raw=rawBody')) fail('Card callback signature verification does not use the exact raw request body.');
+if(!callback.includes('bytes.byteLength>65536') || !callback.includes("req.method!=='POST'")) fail('Provider callback method and payload-size boundaries are missing.');
 if(!callback.includes('merchantRequest&&tx.provider_reference!==merchantRequest')) fail('M-Pesa callback does not bind MerchantRequestID to the initiated transaction.');
 if(!callback.includes("status==='successful'?'payment.success':'payment.failed'") || !callback.includes('if(applyError||data?.success===false)')) fail('M-Pesa failure/success callbacks must reconcile through the atomic payment RPC and fail closed when it rejects.');
 if(callback.includes("payment_attempts').update({status:'failed'")) fail('M-Pesa callback must not bypass atomic payment reconciliation with a direct failure mutation.');

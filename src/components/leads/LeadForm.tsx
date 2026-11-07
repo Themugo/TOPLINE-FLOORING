@@ -9,13 +9,13 @@ interface LeadFormProps {
 }
 
 const SOURCES = ['google', 'facebook', 'referral', 'walk-in', 'website', 'whatsapp', 'phone', 'email', 'other'] as const;
-const STAGES = ['new', 'contacted', 'qualified', 'proposal', 'negotiation', 'won', 'lost', 'on_hold'] as const;
+const STAGES = ['new', 'contacted', 'qualified', 'proposal', 'negotiating', 'won', 'lost', 'on_hold'] as const;
 const COMMUNICATION_METHODS = ['phone', 'email', 'whatsapp'] as const;
 
 export function LeadForm({ lead, onSubmit, onCancel }: LeadFormProps) {
   const [formData, setFormData] = useState<Partial<Lead>>({
-    customer_name: lead?.customer_name || '',
-    company_name: lead?.company_name || '',
+    customer_name: lead?.customer_name || lead?.name || '',
+    company_name: lead?.company_name || lead?.company || '',
     email: lead?.email || '',
     phone: lead?.phone || '',
     preferred_contact_method: lead?.preferred_contact_method || 'phone',
@@ -23,7 +23,7 @@ export function LeadForm({ lead, onSubmit, onCancel }: LeadFormProps) {
     budget_range: lead?.budget_range || '',
     project_location: lead?.project_location || '',
     project_address: lead?.project_address || '',
-    lead_stage: lead?.lead_stage || 'new',
+    lead_stage: lead?.lead_stage || lead?.status || 'new',
     follow_up_date: lead?.follow_up_date || '',
     follow_up_notes: lead?.follow_up_notes || '',
   });
@@ -177,7 +177,7 @@ export function LeadForm({ lead, onSubmit, onCancel }: LeadFormProps) {
                 Lead Stage
               </label>
               <select
-                value={formData.lead_stage || ''}
+                value={formData.lead_stage || 'new'}
                 onChange={(e) => setFormData({ ...formData, lead_stage: e.target.value })}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
               >

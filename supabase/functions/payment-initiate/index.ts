@@ -256,6 +256,12 @@ Deno.serve(async (req: Request) => {
       .select("amount,currency,method,checkout_url,metadata")
       .eq("id", existing.payment_transaction_id).maybeSingle();
     const replayMetadata = (replayTx?.metadata || {}) as { initiation_outcome?: string; instructions?: Record<string, unknown> };
+    // If an order/invoice was reduced or otherwise settled after this attempt was
+    // created, never hand the customer a stale provider request whose amount now
+    // exceeds the remaining balance. The operator must reconcile/cancel that request.
+    if (!replayTx || !Number.isFinite(Number(replayTx.amount)) || Number(replayTx.amount) > amount) {
+      return reply(409, { success: false, error: "The outstanding balance changed after this payment attempt was created. Please contact Topline support before retrying." });
+    }
     if (existing.status === "failed" && replayMetadata.initiation_outcome === "not_dispatched") {
       // This attempt is known not to have reached the provider, so retrying it cannot
       // create a duplicate charge. Keep the original ledger IDs and idempotency key.
@@ -292,64 +298,40 @@ Deno.serve(async (req: Request) => {
       });
     }
   } else {
-    // A fresh idempotency key (new browser session, second device, different gateway) must not
-    // start a second live provider charge while an earlier attempt for the same target is still
-    // awaiting its callback. Bank-transfer instructions are excluded: they do not move money here.
-    const { data: inflightRows, error: inflightError } = await db
-      .from("payment_transactions")
-      .select("id,created_at,checkout_expires_at,method")
-      .eq(targetType === "order" ? "order_id" : "invoice_id", targetId)
-      .eq("status", "pending")
-      .neq("method", "bank_transfer")
-      .order("created_at", { ascending: false })
-      .limit(10);
-    if (inflightError) return reply(503, { success: false, error: "Unable to verify existing payment attempts. Please try again shortly." });
-    const nowMs = Date.now();
-    const inflight = (inflightRows ?? []).some((row: { created_at: string; checkout_expires_at: string | null }) => {
-      const expiresAt = row.checkout_expires_at ? Date.parse(row.checkout_expires_at) : Date.parse(row.created_at) + 3 * 60_000;
-      return Number.isFinite(expiresAt) && expiresAt > nowMs;
+    // Reserve the payment attempt atomically under the order/invoice row lock.
+    // The database RPC serializes distinct idempotency keys for the same target,
+    // preventing two simultaneous browser sessions from dispatching two charges.
+    const { data: reservation, error: reservationError } = await db.rpc("create_payment_attempt_atomic_360", {
+      p_target_type: targetType,
+      p_target_id: targetId,
+      p_gateway_key: gatewayKey,
+      p_payment_method: method,
+      p_provider: gateway.provider,
+      p_amount: amount,
+      p_currency: "KES",
+      p_customer_phone: customerPhone,
+      p_idempotency_key: idempotency,
+      p_public_token_hash: await tokenHash(accessToken),
+      p_return_url: returnUrl,
     });
-    if (inflight) {
-      return reply(409, { success: false, error: `A payment for this ${targetType} is already in progress. Please wait a few minutes for the provider confirmation before trying again.` });
+    if (reservationError || !reservation?.success) {
+      const reason = reservation?.reason;
+      const status = reason === "payment_in_progress" || reason === "idempotency_replay" ? 409 : 503;
+      return reply(status, {
+        success: false,
+        error: reason === "payment_in_progress"
+          ? `A payment for this ${targetType} is already in progress. Please wait for provider confirmation before trying again.`
+          : reason === "idempotency_replay"
+            ? "This payment attempt was created by a concurrent request. Retry with the same checkout key to recover it."
+            : reservation?.error || "Unable to safely reserve this payment attempt. Please try again shortly.",
+        retryable: reason === "idempotency_replay",
+      });
     }
-
-    const { data: createdTx, error: txError } = await db
-      .from("payment_transactions")
-      .insert({
-        order_id: targetType === "order" ? targetId : null,
-        invoice_id: targetType === "invoice" ? targetId : null,
-        amount,
-        currency: "KES",
-        method,
-        provider: gateway.provider,
-        status: "pending",
-        idempotency_key: `attempt:${idempotency}`,
-        metadata: { gateway_key: gatewayKey, target_type: targetType, initiation_outcome: "not_dispatched" },
-        customer_phone: customerPhone,
-        initiated_at: nowIso(),
-      })
-      .select("id")
-      .single();
-    if (txError || !createdTx) return reply(500, { success: false, error: "Unable to create payment transaction" });
-    tx = { id: createdTx.id };
-
-    const { data: createdAttempt, error: attemptError } = await db
-      .from("payment_attempts")
-      .insert({
-        payment_transaction_id: tx.id,
-        target_type: targetType,
-        target_id: targetId,
-        gateway_key: gatewayKey,
-        payment_method: method,
-        idempotency_key: idempotency,
-        public_token_hash: await tokenHash(accessToken),
-        status: "initiated",
-        return_url: returnUrl,
-      })
-      .select("id")
-      .single();
-    if (attemptError || !createdAttempt) return reply(500, { success: false, error: "Unable to create payment attempt" });
-    attempt = { id: createdAttempt.id };
+    if (reservation.created !== true || !reservation.attempt_id || !reservation.payment_transaction_id) {
+      return reply(409, { success: false, error: "A matching payment attempt already exists. Retry with the same checkout key to recover its status." });
+    }
+    tx = { id: reservation.payment_transaction_id };
+    attempt = { id: reservation.attempt_id };
   }
 
   // 5. Start the payment with the provider. Once a charge request is dispatched, a timeout

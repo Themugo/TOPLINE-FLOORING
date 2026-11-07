@@ -17,7 +17,7 @@ const migrations = fs.readdirSync(path.join(root, 'supabase/migrations')).filter
 if (migrations.length < 40) errors.push(`Expected at least 40 active migrations, found ${migrations.length}.`);
 if (migrations.some((f) => !/^\d{14}_[a-z0-9][a-z0-9_-]*\.sql$/.test(f))) errors.push('One or more migration filenames violate the production naming contract.');
 
-const readme = fs.readFileSync(path.join(root, 'docs/AUDITS_33_35_DATABASE_VALIDATION.md'), 'utf8');
+const readme = fs.readFileSync(path.join(root, 'docs/PHASES_33_35_DATABASE_VALIDATION.md'), 'utf8');
 if (!readme.includes(projectRef)) warnings.push('Phase documentation should retain the dedicated project reference.');
 
 if (errors.length) {

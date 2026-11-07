@@ -7,7 +7,7 @@ Supabase Auth magic-link access is now the customer identity boundary. A matchin
 The admin backup screen no longer simulates a backup. Supabase remains responsible for PostgreSQL backups. Topline provides a staff-authenticated operational JSON export for controlled data recovery/handoff workflows.
 
 ## Phase 14 — CI / Launch Quality Gate
-GitHub Actions now runs `npm ci`, ESLint, TypeScript validation and the production Vite build on pushes and pull requests targeting `main`.
+GitHub Actions runs `npm ci`, source/architecture contracts, ESLint, TypeScript validation and the production Vite build on pushes and pull requests targeting `main`. Phase 15–17 lifecycle and Operations 17–18 contracts are also explicit gates. The build artifact is published only after all checks pass.
 
 ## Validation note
 The workflow is designed for GitHub-hosted execution. Local dependency installation was not assumed during implementation, and no remote Supabase migration was applied by this phase.

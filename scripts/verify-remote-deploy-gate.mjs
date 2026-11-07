@@ -29,7 +29,7 @@ for (const file of migrations) {
 }
 
 const executableFiles = [
-  ...fs.readdirSync(path.join(root, 'scripts')).filter((f) => f.endsWith('.mjs') && f !== 'verify-remote-deploy-gate.mjs' && f !== 'verify-audits-36-38.mjs').map((f) => path.join(root, 'scripts', f)),
+  ...fs.readdirSync(path.join(root, 'scripts')).filter((f) => f.endsWith('.mjs') && f !== 'verify-remote-deploy-gate.mjs' && f !== 'verify-phases-36-38.mjs').map((f) => path.join(root, 'scripts', f)),
   ...fs.readdirSync(root).filter((f) => f.endsWith('.cmd')).map((f) => path.join(root, f)),
 ];
 for (const file of executableFiles) {

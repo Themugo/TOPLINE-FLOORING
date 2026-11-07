@@ -92,7 +92,9 @@ jobs:
           npm run verify:public-order-tracking-privacy
           npm run verify:phase-8-field-operations
           npm run verify:phase-10-finance-billing-360
+          npm run verify:phase-10-finance-billing-hardening
           npm run verify:phase-11-inventory-procurement-360
+          npm run verify:phase-11-inventory-procurement-hardening
           npm run verify:phase-12-customer-portal-360
           npm run verify:phase-13-backup-export-360
           npm run verify:phase-14-ci-release-gate
@@ -109,14 +111,6 @@ jobs:
           npm run lint
           npm run typecheck
           npm run build
-
-      - name: Upload production build
-        uses: actions/upload-artifact@v4
-        with:
-          name: topline-production-dist-${{ github.sha }}
-          path: dist
-          if-no-files-found: error
-          retention-days: 7
 
 
       - name: Phase 80–82 verification
@@ -178,3 +172,38 @@ jobs:
 
       - name: Verify Operation 16 — Client-Owned Supabase Integration
         run: npm run verify:operation-16-client-owned-supabase
+
+      - name: Phase 15 CRM conversion integrity
+        run: npm run verify:phase-15-crm-lifecycle
+
+      - name: Phase 16 quotation to order to project integrity
+        run: npm run verify:phase-16-quotation-order-project
+
+      - name: Phase 17 site survey execution integrity
+        run: npm run verify:phase-17-site-visit-execution
+
+      - name: Phase 18 inbound provider-response integrity
+        run: npm run verify:phase-18-inbound-provider-response
+
+      - name: Phase 19 order confirmation and delivery reliability
+        run: npm run verify:phase-19-order-confirmation-delivery
+
+      - name: Leads end-to-end schema, intake, CRUD and rendering contract
+        run: npm run verify:leads-end-to-end-360
+
+      - name: Phase 15–17 lifecycle verification
+        run: npm run verify:phases-15-17
+
+      - name: Operation 17 production automation verification
+        run: npm run verify:operation-17-production-automation
+
+      - name: Operation 18 theme and brand governance verification
+        run: npm run verify:operation-18-theme-brand-governance
+
+      - name: Upload production build
+        uses: actions/upload-artifact@v4
+        with:
+          name: topline-production-dist-${{ github.sha }}
+          path: dist
+          if-no-files-found: error
+          retention-days: 7

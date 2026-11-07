@@ -1,0 +1,1055 @@
+PASS no text-primary-300 (fails contrast on dark surfaces)
+PASS headings on dark sections set an explicit light colour
+PASS quotation selects are label-associated
+PASS footer contact values can wrap (no sitewide horizontal scroll)
+PASS App does not overwrite the per-page document title
+PASS fallback page titles are humanised (no "Track-order")
+PASS CardTitle can render a real heading
+PASS customer portal exposes an h1
+PASS vite never inlines fonts (CSP font-src)
+PASS CSP font-src stays strict (no data: fonts)
+
+Accessibility and SEO contract verified.
+PASS Admin guard verifies Auth identity with getUser
+PASS Admin guard requires active staff profile
+PASS Admin guard loads effective permissions
+PASS unknown protected admin routes fail closed
+PASS route permission is resolved from normalized path
+PASS explicit route permission is checked before rendering children
+PASS Admin guard has explicit unauthorized UI
+PASS Admin guard owns inactivity timeout
+PASS Auth callback defers async verification
+PASS login page no longer owns session timeout
+PASS RBAC exposes permission type
+PASS RBAC loads server-derived permissions
+PASS all Admin routes remain behind AdminAuthGuard
+PASS DB permission RPC uses SECURITY DEFINER
+PASS DB permission RPC has fixed empty search_path
+PASS DB permission RPC is not callable by anon
+PASS DB permission RPC is executable by authenticated
+PASS authorization helpers use fixed empty search_path
+PASS profile RPC uses fixed empty search_path
+
+Admin Authentication & Authorization 360: 19/19 passed, 0 failed.
+PASS control-plane migration exists
+PASS audit trigger pins empty search_path
+PASS role helper pins empty search_path
+PASS bootstrap owner pins empty search_path
+PASS operational export requires system.read
+PASS operational export no longer accepts customers.read fallback
+PASS anonymous export execution revoked
+PASS authenticated export execution explicitly retained
+
+Admin Control-Plane & Privileged Operations 360: 8/8 passed.
+Admin feedback contract static verification PASSED.
+PASS Shared pagination hook clamps page when filtered result count shrinks
+PASS Shared pagination clamp never permits a page beyond the last valid page
+PASS Orders search resets to first page
+PASS Awaiting-payment filter resets to first page
+PASS Orders search neutralizes PostgREST filter metacharacters
+PASS Products search resets to first page
+PASS Customers search resets to first page
+PASS Customer search neutralizes PostgREST filter metacharacters
+PASS orders list ignores stale responses from older overlapping searches
+PASS products list ignores stale responses from older overlapping searches
+PASS customers list ignores stale responses from older overlapping searches
+Admin list pagination/filter regression checks: 11/11 passed.
+Admin management and upload static verification PASSED.
+Admin orders pagination regression checks: 3/3 passed.
+PASS Every admin route (69) is reachable from the sidebar
+PASS Sidebar has no links to unregistered routes and no duplicates
+PASS Every route belongs to exactly one sidebar hub (short, task-based menu)
+PASS Every admin route has a permission rule
+PASS Guard looks permissions up with a normalised path (trailing slash cannot bypass the rule)
+PASS Active nav item uses segment-boundary, longest-match logic
+PASS Sidebar is sticky with its own scroll on desktop and a fixed drawer on phones
+PASS Mobile drawer: aria-expanded/controls, Escape, focus trap, scroll lock, closes on route change
+PASS Closed drawer is removed from tab order (invisible) and active link exposes aria-current
+PASS Quick navigate is a labelled modal dialog with arrow-key/Enter support and backdrop dismissal
+PASS Navigation is filtered by staff permissions (display only; server remains authority)
+PASS Layout renders at most one <h1> (page title only, never the brand) and does not render an empty one
+PASS Layout has skip link, breadcrumb landmark, labelled controls and 44px touch targets
+PASS Layout makes scrolling tables keyboard-focusable and associates orphan labels
+PASS Layout honours device safe areas and shows an offline notice
+PASS Manifest declares name, short_name, start_url, scope, standalone display and brand colours
+PASS Manifest theme_color matches <meta name="theme-color">
+PASS Manifest icons exist and match their declared sizes
+PASS Icons cover 192/512 "any" and a maskable 512 (Android adaptive icons)
+PASS Apple touch icon is a 180×180 PNG and linked from index.html
+PASS index.html links the manifest, enables viewport-fit=cover and iOS standalone meta
+PASS Manifest shortcuts point at real public routes
+PASS Service worker parses
+PASS Service worker only handles same-origin GET requests (Supabase, payments and other hosts are never intercepted)
+PASS Service worker never caches HTML navigations or the SPA shell; offline page is the only fallback
+PASS Service worker updates only on user request (SKIP_WAITING), never auto-skips waiting
+PASS Service worker precache files exist
+PASS Offline page is self-contained and CSP-safe (no inline script)
+PASS Vercel serves sw.js uncached with Service-Worker-Allowed, and the manifest with the right type
+PASS CSP permits the worker, manifest and icons without loosening script-src ('self' only)
+PASS Service worker is registered in production only and update/install flows are wired
+PASS Public mobile menu locks background scroll and has a tap-outside backdrop; no duplicated route effect
+PASS Mobile action bar shows the current section (aria-current) and the page clears it plus the device safe area
+PASS Global CSS: scroll-padding under fixed header, tap-delay removal, no horizontal overscroll
+
+34/34 checks passed.
+Application Security & Trust Boundary static verification PASSED
+Authorization + Order Operations 360 verification PASSED.
+- RBAC helper repaired
+- legacy read/select compatibility enforced
+- refund RLS repaired
+- permission-aware order operations snapshot added
+PASS Wordmark is driven by the brand setting with a Topline default
+PASS Default FLOORING & WATERPROOFING descriptor is defined once and editable
+PASS Brand promise is presented on large desktop layouts
+PASS Header references the dedicated scalable brand mark asset
+PASS Logo uses approved Ocean and Signal Lime tokens
+PASS Logo mark includes house/roof and flooring geometry
+PASS Desktop primary navigation remains responsive
+PASS Mobile navigation retains an accessible menu control
+PASS Mobile menu includes a dedicated quotation call to action
+PASS Navigation closes on route changes
+PASS Escape closes open navigation menus
+PASS Header actions expose keyboard focus styling
+
+Summary: 12/12 passed.
+PASS Brevo migration exists
+PASS Brevo API secret is named
+PASS No secret value in migration
+PASS Transactional worker uses Brevo API
+PASS Transactional worker uses idempotency header
+PASS Webhook is provider-scoped
+PASS Brevo test function requires authenticated staff
+PASS Brevo test function handles CORS preflight
+PASS Brevo test function records provider test state
+PASS Brevo test function requires settings permission
+PASS Brevo test function reads secret only from Edge env
+PASS Admin control plane keeps secrets out of browser
+PASS Public site-control reads use non-session client
+PASS Auth SMTP setup is documented in env/config docs
+Brevo verifier: 14/14 passed
+PASS: shop/cart reliability and brand uniformity (15 assertions)
+PASS: cart stock eligibility and admin inventory guidance (6 assertions)
+Catalog/Product/Service/Upload integrity verification PASSED.
+- Images bucket capped at 10 MiB with explicit image MIME allow-list.
+- Frontend upload guard remains 5 MiB and non-overwriting.
+- Product/service pricing, ordering and media metadata constraints hardened.
+- Product gallery has at most one primary image.
+- Product and service image upload paths remain preserved.
+Clean project integrity passed: 155 migrations, 155 unique timestamps.
+Commerce Entry-Point Consistency 360 verification PASSED.
+- Product listings load active variants
+- Shop, homepage and related-product entry points are variant-aware
+- Cart and checkout preserve variant identity and authoritative pricing
+- Customer checkout surfaces authoritative validation failures
+Commerce Fulfillment 360 verification PASSED.
+- Variant-aware checkout contract
+- Duplicate-line aggregate stock validation
+- Variant-aware payment stock consumption
+- Reservation expiry cancels unpaid orders and releases coupon usage
+COMM-01–03 static verification PASSED: 20261002140000_communications_comm_01_03_contract_state_matching_360.sql
+Communications COMM-04–06 static sweep: 23/23 passed.
+PASS migration timestamps are unique
+PASS COMM-04 provider contract exists
+PASS all three production providers are contracted
+PASS delivery worker contains all provider adapters
+PASS provider credentials are environment-only
+PASS Brevo callback is secret-authenticated
+PASS SMS callback is secret-authenticated
+PASS WhatsApp callback is HMAC-authenticated
+PASS COMM-05 template governance exists
+PASS template/routing contract covers quotation.status
+PASS template/routing contract covers order.status
+PASS template/routing contract covers project.status
+PASS template/routing contract covers invoice.status
+PASS template/routing contract covers payment.received
+PASS template/routing contract covers site_visit.scheduled
+PASS template/routing contract covers delivery.status
+PASS template/routing contract covers installation.status
+PASS template/routing contract covers service_case.status
+PASS quotation customer matching is strict
+PASS delivery status is wired
+PASS installation status is wired
+PASS service-case status is wired
+PASS wired event catalogue is updated
+PASS get_customer_communications_self_service_360 contract present
+PASS get_communications_center_360 contract present
+PASS get_current_customer_id contract present
+PASS require_staff_permission contract present
+PASS Customer portal communication contract: getCustomerCommunicationsSelfService360
+PASS Customer portal communication contract: Communication history
+PASS Customer portal communication contract: Only communications belonging to your authenticated customer account
+PASS Admin Communication Center contract: get_communications_center_360
+PASS Admin Communication Center contract: Communication Center 360
+PASS Admin Communication Center contract: Inbound customer responses
+PASS Admin Communication Center contract: Outbound communications
+PASS COMM-07-09 static sweep complete
+PASS COMM-10 communication_conversations contract present
+PASS COMM-10 ensure_communication_conversation_worker contract present
+PASS COMM-10 queue_communication_conversation_reply contract present
+PASS COMM-10 get_communication_conversations_360 contract present
+PASS COMM-10 update_communication_conversation_360 contract present
+PASS COMM-11 deliver_communications contract present
+PASS COMM-11 automation_job_runs contract present
+PASS COMM-11 get_communications_worker_certification_360 contract present
+PASS COMM-11 timed_out contract present
+PASS COMM-12 communication_provider_activation contract present
+PASS COMM-12 get_communication_provider_activation_360 contract present
+PASS COMM-12 database_does_not_store_provider_credentials contract present
+PASS Scheduler deliver_communications
+PASS Scheduler start_automation_job
+PASS Scheduler finish_automation_job
+PASS Scheduler x-topline-worker-secret
+PASS COMM-12 readiness TOPLINE_WORKER_SECRET
+PASS COMM-12 readiness constantTimeEqual
+PASS COMM-12 readiness configured
+PASS COMM-12 readiness credentials_exposed
+PASS Delivery worker TOPLINE_WORKER_SECRET
+PASS Delivery worker claim_communication_outbox_worker
+PASS Delivery worker complete_communication_delivery_worker
+PASS Delivery worker fail_communication_delivery_worker
+PASS Delivery worker mark_communication_delivery_uncertain_worker
+PASS Provider gate supabase/functions/communication-provider-webhook/index.ts: COMMUNICATION_WEBHOOK_SECRET
+PASS Provider gate supabase/functions/communication-provider-webhook/index.ts: constantTimeEqual
+PASS Provider gate supabase/functions/sms-delivery-report/index.ts: AT_DLR_SECRET
+PASS Provider gate supabase/functions/sms-delivery-report/index.ts: constantTimeEqual
+PASS Provider gate supabase/functions/whatsapp-webhook/index.ts: WHATSAPP_VERIFY_TOKEN
+PASS Provider gate supabase/functions/whatsapp-webhook/index.ts: WHATSAPP_APP_SECRET
+PASS Provider gate supabase/functions/whatsapp-webhook/index.ts: hmacSha256Hex
+COMM-10-12 static sweep complete (155 migrations)
+COMM-13–17 static certification/release sweep PASSED
+PASS contact has no retired colour #E4D8BF
+PASS contact has no retired colour #2B4C78
+PASS contact has no retired colour #5F6B7A
+PASS contact has no retired colour #D6D2CA
+PASS contact has no retired colour #DCE2E8
+PASS contact has no retired colour #C6D0DA
+PASS contact has no retired colour #C9D1DA
+PASS contact has no retired colour #E5E9ED
+PASS contact has no retired colour #EEF0F2
+PASS contact has no retired colour #A8B9CA
+PASS contact has no retired colour #203E5D
+PASS contact uses no emerald/orange/amber or low-contrast slate-400 text
+PASS track has no retired colour #E4D8BF
+PASS track has no retired colour #2B4C78
+PASS track has no retired colour #5F6B7A
+PASS track has no retired colour #D6D2CA
+PASS track has no retired colour #DCE2E8
+PASS track has no retired colour #C6D0DA
+PASS track has no retired colour #C9D1DA
+PASS track has no retired colour #E5E9ED
+PASS track has no retired colour #EEF0F2
+PASS track has no retired colour #A8B9CA
+PASS track has no retired colour #203E5D
+PASS track uses no emerald/orange/amber or low-contrast slate-400 text
+PASS contact inputs use the petrol focus colour
+PASS contact address is not shown twice
+PASS track delivered/paid state uses the success token
+PASS track pending payment uses the warning token (not orange)
+PASS track completed stages use petrol
+
+Contact and Track Order palette checks passed.
+PASS Migration exists to make customer auth trigger order deterministic
+PASS Old portal-link trigger is removed
+PASS Portal-link trigger runs after registration trigger on INSERT
+PASS Trigger ordering is explicit and documented
+PASS Customer portal dashboard ignores stale auth/data responses
+PASS Customer portal invalidates pending requests on unmount
+PASS Customer portal defers Supabase calls outside the auth callback lock
+PASS Admin auth hook defers Supabase calls outside the auth callback lock
+PASS Admin auth hook ignores stale profile checks after sign-out or identity changes
+PASS Admin sign-in handles thrown network failures without leaving loading state stuck
+PASS Admin route guard ignores stale authorization results
+PASS Customer sign-in normalizes email consistently
+PASS Customer registration normalizes email consistently
+PASS Marketing consent is explicit and opt-in only
+PASS Email links are confirmed only by explicit token-hash verification action
+Customer registration and account-access hardening: 15/15 passed.
+PASS My Account route remains registered
+PASS Cart route remains registered
+PASS Quotation route remains registered
+PASS Customer account uses Supabase auth and existing portal service
+PASS Customer account retains password, magic-link and registration flows
+PASS Customer portal retains customer lifecycle self-service workflows
+PASS Customer portal retains invoice/order payment gateway initiation
+PASS Cart retains local persistence and variant-aware cart identity
+PASS Cart uses authoritative secure order RPC wrapper
+PASS Cart requires available payment method before order creation
+PASS Cart coupon validation remains server-backed and invalidates after subtotal changes
+PASS Cart payment initiation retains idempotency and return route
+PASS Quotation submission preserves canonical quotation RPC
+PASS Quotation validates positive area and project location
+PASS Quotation shows no invented prices and avoids unsupported guarantees
+PASS Forms expose customer-facing accessible labels and status feedback
+
+16/16 checks passed.
+PASS portal identity comes only from auth.uid
+PASS customer payload is filtered by bound customer id
+PASS quotations are filtered by bound customer id or exact bound email
+PASS orders are filtered by bound customer id or exact bound email
+PASS projects are filtered by bound customer id
+PASS invoices are filtered by bound customer id
+PASS service cases are filtered by bound customer id
+PASS site visits are filtered by bound customer id
+PASS installations are filtered through customer-owned project/order
+PASS customer cannot select another customer id from dashboard
+PASS service submission uses current dashboard customer only
+PASS cross-account direct table access is not needed by portal
+Customer cross-account isolation: 12/12 passed.
+PASS registration uses Supabase Auth signUp
+PASS registration carries explicit Topline metadata
+PASS registration requires name and phone
+PASS registration creates customer only for explicit registration metadata
+PASS existing unique customer email is reused rather than duplicated
+PASS ambiguous customer email is not auto-bound
+PASS portal binding requires verified email
+PASS active identity is never rebound to another customer
+PASS dashboard has retry
+PASS dashboard has manual refresh
+PASS service submission refreshes dashboard
+PASS dashboard distinguishes signed-in load failure
+PASS order details are available
+PASS quotation details are available
+PASS project details are available
+PASS invoice details are available
+PASS customer isolation resolves through auth uid
+Customer Registration + Dashboard 360: 17/17 passed.
+Customer Self-Service Experience 360 static verification PASSED
+PASS migration exists
+PASS verified-email gate exists
+PASS ambiguous customer email does not auto-link
+PASS automatic customer rebinding is blocked
+PASS active Auth identity uniqueness is enforced
+PASS customer RPC search paths are emptied
+PASS public checkout search path is emptied
+PASS checkout idempotency replay is bound to contact identity
+PASS authenticated checkout uses linked customer profile
+PASS quotation input length is bounded
+PASS quotation visibility prevents cross-customer email collision
+PASS coupon validation rejects negative discount outcomes
+PASS anonymous quotation execution remains explicit
+PASS anonymous checkout remains explicit
+
+Customer Self-Service RPC / Public Trust Boundary 360: 14/14 passed.
+Database contract verification passed (155 active migrations).
+Database dependency verification passed (155 migrations, 167 tables, 274 functions, 290 FK references).
+Database read boundary static verification PASSED.
+PASS database source-of-truth: 155 migrations, unique timestamps, required customer + COMM-01–17 contracts present
+DB-9–11 verification PASSED.
+- Local migration files: 155
+- DB-9 Data Governance & Privacy hardening: passed
+- DB-10 Identity & Privileged Access hardening: passed
+- DB-11 Quality & Corrective Action hardening: passed
+PASS storage overlap migration exists
+PASS legacy broad private-document read policy is explicitly removed
+PASS legacy broad private-document upload policy is explicitly removed
+PASS legacy broad private-document update policy is explicitly removed
+PASS legacy broad private-document delete policy is explicitly removed
+PASS project document reads are scoped to projects.select inside the projects/ namespace
+PASS project document upload requires an existing project folder
+PASS project document update is metadata scoped
+PASS project document delete is metadata scoped
+PASS legacy media/customer document policies exclude the projects/ namespace
+PASS customer export no longer uses wildcard CORS
+PASS customer export has configurable canonical origin
+PASS document deletion removes metadata before storage cleanup
+PASS document deletion retries storage cleanup
+PASS document deletion reports cleanup failure honestly
+PASS mock-data has no active source import
+PASS mock-data module is not shipped
+Deep hardening static gate passed.
+Delivery worker hardening and service detail static verification PASSED.
+Topline ecommerce stability verification passed. Active migrations: 155
+Edge function deploy configuration verified for 15 functions.
+PASS Quotation submission persists lead and quotation before mail is queued
+PASS Quotation customer acknowledgement is queued transactionally
+PASS Admin quotation alert has configurable CMS fallback
+PASS Admin recipient is validated before email enqueue
+PASS Quotation emails use durable existing communication outbox
+PASS Marketing sync queue has valid typed status and is RLS locked down
+PASS Marketing queue supports verified Auth signups without requiring a customer row
+PASS Registration marketing opt-in is optional and unchecked by default
+PASS Registration sends explicit opt-in metadata only when checked
+PASS Signup marketing sync waits for verified email
+PASS Quote request creates durable staff notification if email destination is missing
+PASS Marketing sync requires preference opt-in transition
+PASS Marketing consent timestamp and source recorded
+PASS Brevo marketing list is server-side configured
+PASS Brevo contact API adds opt-ins to selected list
+PASS Opt-out unlinks list instead of global blacklist
+PASS Marketing worker has retry and stale-lock recovery
+PASS Marketing preference UI remains connected to existing RPC
+PASS Runbook documents SMTP, list sync, scheduler and live UAT
+PASS Marketing subscription remains separate from quote-only consent
+Email/registration communications verifier: 20/20 passed
+Environment contract verification passed.
+PASS Comparison state is shared inside a tab (custom event, not only cross-tab storage)
+PASS Shoppers can add materials to comparison from the shop and product pages
+PASS Comparison bar is mounted and cannot sit under the WhatsApp or mobile bars
+PASS Header search works on desktop as well as phones, and Escape closes it
+PASS Portal tolerates empty ancillary data and never shows raw JavaScript errors
+PASS Portal phone field uses a telephone keyboard
+PASS Contact page keeps a visible confirmation after sending
+PASS No unverifiable claims in default copy (years in business, certification)
+PASS Home product buttons name the product for assistive tech
+
+Final sweep: 9/9 passed.
+PASS  index.html paints a branded splash, not a blank page
+PASS  hero preload script is external (CSP script-src self)
+PASS  hero shows a placeholder until its data has loaded
+PASS  hero never draws a stock default before real slides arrive
+PASS  first hero image is remembered for next-visit preload
+PASS  mobile bar uses business-relevant icons
+PASS  WhatsApp uses the real brand mark everywhere
+Fulfillment Operations 360 verification PASSED.
+- Controlled delivery scheduling and assignment
+- Auditable delivery event history
+- Proof-of-delivery capture and enforcement
+- Customer delivery outcome events
+- Admin Delivery Operations 360 view
+Generated database types contract passed (308,993 bytes).
+PASS  brand defaults live in one module
+PASS  header and footer render the shared lockup
+PASS  no hardcoded logo file, descriptor or slogan in header/footer/admin
+PASS  admin sidebar uses the brand logo and name
+PASS  lockup adapts to custom logos and can hide brand text
+PASS  editor saves logo and favicon into site_info (the row the site reads)
+PASS  editor carries over logo/favicon saved under the old keys
+PASS  editor edits wordmark, descriptor, slogan with live preview
+PASS  favicon follows the editor
+PASS  footer copyright no longer repeats the business name suffix
+PASS  brand documentation exists
+PASS guest recovery begins with the existing private order lookup
+PASS recovery requires the checkout email to be supplied
+PASS order email is normalized before payment initiation
+PASS recovery does not require cart reconstruction
+PASS only unpaid non-cancelled orders expose payment recovery
+PASS payment options are loaded for order context
+PASS resumption targets the persisted order id
+PASS resumption uses stable per-order and per-gateway idempotency
+PASS provider checkout URL is safely navigated
+PASS non-redirect payments return through token-protected status route
+PASS payment initiation server validates checkout email against stored order
+PASS payment status access token remains hash-verified
+PASS server refuses to charge an already-paid order
+PASS server refuses to charge a refunded order
+PASS server charges only the outstanding order balance
+PASS server blocks a second live charge atomically across concurrent idempotency keys
+PASS checkout retry key is bound to a cart fingerprint (no stale order replay)
+PASS router tolerates trailing slashes
+PASS portal hides Pay Now for refunded/cancelled orders
+
+Guest payment resume checks: 19/19 passed.
+PASS Homepage hero keeps the approved responsive height contract
+PASS Homepage hero stays neutral (no solid navy flash) until the slide image has loaded
+PASS Active hero image is eager and synchronously decoded
+PASS Mobile header provides accessible product search
+PASS Mobile header search routes to the real shop catalogue
+PASS Shop restores search term from URL
+PASS Mobile header has a settings-driven direct call action
+PASS Mobile bottom navigation exposes Services and Shop
+PASS Mobile bottom navigation exposes WhatsApp and quotation
+PASS Mobile bottom navigation respects safe-area inset
+PASS Customer dashboard core payload loads independently of optional sections
+PASS Optional customer account sections degrade independently
+PASS Account identity backfill requires verified email
+PASS Account identity backfill rejects ambiguous email matches
+PASS Account identity backfill avoids existing identity/customer mappings
+
+Homepage/mobile/account reliability verification: 15/15 passed.
+PASS Homepage hero preserves approved responsive height classes
+PASS Configured CMS hero slides remain the first and authoritative choice
+PASS Catalogue hero fallback only uses records with real media and valid routes
+PASS Product and service hero slides are fallback-only, not appended to curated CMS slides
+PASS Hero slide index resets safely when CMS/catalogue content changes
+PASS Hero heading remains high-contrast and mobile-scaled
+PASS Hero uses approved Signal Lime accent and primary action
+PASS Mobile hero hides overlapping side arrows while retaining slide indicators
+PASS Customer intent shortcuts use a compact two-column mobile layout
+PASS Customer intent cards adapt spacing and text sizes for small screens
+PASS Hero respects reduced-motion preferences
+PASS Hero focus indicators remain explicitly visible
+
+Homepage premium/mobile verification: 12/12 passed.
+Invoice hook contract verification PASSED.
+- Frontend invoice item mutations do not carry unused tax-rate parameters
+- Invoice tax recalculation remains server-side and derives tax_rate from the persisted invoice
+Launch gap verification passed.
+Active migrations: 155
+Production provider credentials remain external secrets; none were added to the repository.
+PASS Service repair migration exists
+PASS Service slug column reconciled
+PASS Service short description reconciled
+PASS Service icon reconciled
+PASS Service features reconciled as JSON
+PASS Existing service slugs are backfilled
+PASS Service slugs are unique
+PASS Project-service direct relation added safely
+PASS Admin service form writes canonical fields
+PASS Service hook reads/writes services
+PASS Frontend Service type matches repaired schema
+PASS Scheduler includes delivery worker
+PASS Scheduler calls delivery Edge Function
+PASS Scheduler authenticates delivery call
+PASS Delivery worker uses Brevo API
+PASS Delivery worker uses idempotency
+PASS Brevo test remains server-secret based
+Launch repair verifier: 17/17 passed
+Migration deployment static verification PASSED (155 migrations)
+Topline migration integrity verification passed.
+PASS mobile action bar remains fixed to the bottom on small screens
+PASS footer reserves clearance for the fixed mobile action bar
+PASS header has one shared Escape listener for open navigation menus
+PASS shared Escape handler closes both mobile and More menus
+Mobile/footer clearance checks: 4/4 passed
+PASS Mobile menu is an opaque, dedicated navigation surface
+PASS Mobile menu no longer uses translucent white or backdrop blur
+PASS Mobile navigation uses the existing CMS header menu with safe fallback
+PASS Home route has a dedicated navigation icon
+PASS Services and portfolio routes have relevant navigation icons
+PASS Shop and tracking routes have relevant navigation icons
+PASS Contact and quotation routes have relevant navigation icons
+PASS Mobile navigation links expose at least 48px minimum height
+PASS Active route remains explicitly exposed to assistive technology
+PASS Menu button exposes expanded state and controls the menu
+PASS Escape closes the mobile menu
+PASS Route changes close both navigation menus
+PASS Mobile menu actions retain customer account, tracking and quotation routes
+PASS Phone and email actions remain settings-driven
+PASS Keyboard focus treatment is present on menu links
+PASS Mobile menu honours safe-area inset at the bottom
+PASS Mobile menu pins the quotation action outside the scrolling list
+PASS Mobile menu does not repeat quotation, account or tracking in the main list
+PASS Mobile menu moves focus in on open and back to the toggle on close
+PASS Staff sign-in is demoted to a quiet link
+PASS Menu entrance animation honours reduced motion
+
+Mobile navigation refinement: 21/21 passed.
+PASS Active-route families live in one shared helper
+PASS External/new-tab links are safe and announced
+PASS Header and footer use NavAnchor for CMS links
+PASS Company pages are reachable from header and footer
+PASS Footer services link to their own pages
+PASS Footer staff link is demoted
+PASS Menu location alias (main→header) is honoured
+PASS Router restores anchors, focus and announces routes
+PASS 404 offers helpful destinations
+
+Navigation master: 9/9 passed.
+Operation 1 Commercial Lifecycle 360 verification passed.
+Operation 10 Reliability & Incident Response 360: STRUCTURAL GATE PASSED
+- Active migrations: 155
+- Latest migration: 20261107140000_communications_delivery_callback_hardening.sql
+- Incident RPC authorization and RLS boundary: passed
+- Admin route/client workflow: passed
+- CI + manifest registration: passed
+Operation 11 Business Continuity & Disaster Recovery 360: STRUCTURAL GATE PASSED
+- Active migrations: 155
+- Latest migration: 20261107140000_communications_delivery_callback_hardening.sql
+- Recovery plan/drill/checkpoint RPC boundary: passed
+- Admin route/client workflow: passed
+- CI + manifest registration: passed
+Operation 12 Data Governance & Privacy 360: STRUCTURAL GATE PASSED
+- Active migrations: 155
+- Latest migration: 20261107140000_communications_delivery_callback_hardening.sql
+- Governance/request/access-review RPC boundary: passed
+- Admin route/client workflow: passed
+- CI + manifest registration: passed
+Operation 13 Identity & Privileged Access 360: STRUCTURAL GATE PASSED
+- Active migrations: 155
+- Latest migration: 20261107140000_communications_delivery_callback_hardening.sql
+- Controlled staff lifecycle and role mutation boundary: passed
+- Privileged access request workflow: passed
+- Admin route/client workflow: passed
+- CI + manifest registration: passed
+Operation 14 Quality Assurance & Corrective Action 360: STRUCTURAL GATE PASSED
+- Active migrations: 155
+- Latest migration: 20261107140000_communications_delivery_callback_hardening.sql
+- Inspection + corrective action workflow: passed
+- Verification-before-closure control: passed
+- Admin route/client workflow: passed
+- CI + manifest registration: passed
+Operation 15 HSE Site Compliance 360: PASS
+Active migrations: 155
+Site controls: PASS
+HSE events: PASS
+Corrective-action verification gate: PASS
+RLS/RPC security boundary: PASS
+Admin route/UI: PASS
+CI registration: PASS
+Operation 16 client-owned Supabase verification PASSED.
+- Canonical project: cvjmfplhdlfvqnnmzqcp
+- Canonical URL: https://cvjmfplhdlfvqnnmzqcp.supabase.co
+- Active migrations: 155
+- Retired project reference scan: PASS
+Operation 17 Production Automation Control 360: STRUCTURAL GATE PASSED (155 migrations)
+Operation 18 Theme & Brand Governance 360: STRUCTURAL GATE PASSED
+- Active migrations: 155
+- Latest migration: 20261107140000_communications_delivery_callback_hardening.sql
+- Governed theme RPC boundary: passed
+- Theme UI version history/rollback: passed
+- CSS token application boundary: passed
+- Manifest + package verifier registration: passed
+Operation 2 verification passed: 155 migrations; Project Delivery 360 contracts present.
+Operation 3 verification passed: 155 migrations; Supply Chain 360 contracts present.
+Operation 4 Finance 360 PASSED
+- Active migrations: 155
+- Payment, invoice, refund and reconciliation controls present
+Operation 5 verification passed: 155 migrations, 20260913050000_078_fulfillment_delivery_control_360.sql
+Operation 6 verification passed: 155 migrations, 20261107140000_communications_delivery_callback_hardening.sql
+Operation 7 verification passed: 155 migrations, 20260913070000_080_communications_customer_journey_360.sql
+Operation 8 executive operations verification: PASS
+Operation 9 Production Certification: STRUCTURAL GATE PASSED
+- Dedicated Supabase project: cvjmfplhdlfvqnnmzqcp
+- Active migrations: 155
+- Latest migration: 20261107140000_communications_delivery_callback_hardening.sql
+- Application route/import integrity: passed
+- Cumulative operations 1–8 + Operation 9 CI registration: passed
+- Credential boundary and payment fail-closed checks: passed
+- Vercel/security header contract: passed
+- External deployment/UAT evidence: manual and not falsely claimed
+WARNING: Remote Supabase migration application is not certified by source inspection; perform linked dry-run, review, then authorized db push.
+WARNING: Payment, email, SMS, DNS, backup/restore and business UAT remain external evidence requirements.
+Order Operations 360 type contract verification PASSED.
+- Order type includes canonical order_number
+- 058 RPC returns the complete orders row
+- frontend Order Operations 360 uses the shared Order type
+- admin order operations view reads order_number from the shared contract
+PASS late success can locate failed attempts
+PASS stale failure cannot downgrade successful/reversed/refunded transaction
+PASS provider transaction must match target order/invoice
+PASS late success reuses existing transaction rather than inventing a duplicate
+PASS duplicate success callback cannot double-apply invoice payment
+PASS provider identifier mismatch cannot fall back to a different order attempt
+PASS customer payment path consumes reserved stock on first full payment
+PASS late paid order with expired stock reservation creates fulfillment exception
+PASS M-Pesa callback matches stable CheckoutRequestID
+PASS M-Pesa callback does not acknowledge failed reconciliation
+PASS provider dispatch outcome is tracked
+PASS idempotent replay reissues secure recovery token without new charge
+PASS only known pre-dispatch failures can be retried on the same ledger attempt
+PASS checkout idempotency survives a browser reload until payment attempt is returned
+PASS uncertain provider response remains pending
+PASS uncertain initiation returns customer recovery token
+PASS payment status remains protected by hashed one-time token
+
+Order/payment recovery checks: 17/17 passed.
+verify-pass13-payment-portal: OK
+verify-pass14-settings: OK
+verify-pass15-portal-business: OK
+verify-pass18-registration-email-config: OK
+verify-pass19-automation-comms: OK
+PASS  payment accounts table has RLS enabled
+PASS  payment accounts policies use settings permission
+PASS  payment accounts changes are audited
+PASS  anon cannot read payment accounts or call customer function
+PASS  customer function is SECURITY DEFINER with empty search_path
+PASS  customer function only returns active shared accounts
+PASS  payment accounts regression test exists
+PASS  claim RPC accepts a channel list
+PASS  claim RPC is service_role only
+PASS  channel gating regression test exists
+PASS  worker only claims configured channels
+PASS  webhook accepts header, query or bearer secret
+PASS  readiness treats SMS/WhatsApp as optional
+PASS  payment-initiate returns managed accounts
+PASS  client lib validates and uses the customer RPC
+PASS  admin settings mounts the manager
+PASS  portal shows how-to-pay card
+PASS  payment return renders managed accounts
+PASS  admin product form can record opening stock
+PASS  home page unavailable product does not dead-end
+PASS  migration manifest lists both new migrations
+21/21 checks passed
+Payment Audit 360: PASS
+Payment Gateway Customer Visibility 360: PASS (155 migrations; target migration verified by name)
+PASS payment selector accepts an exact gateway value
+PASS radio selection is keyed by gateway, not only payment type
+PASS selecting a payment option updates both method and gateway
+PASS checkout passes the selected gateway back into the selector
+PASS customer order and invoice payment flows pass their selected gateways
+PASS regression test covers two gateways sharing M-Pesa
+
+6/6 payment gateway selection checks passed
+Payment Initiation + Reconciliation 360: PASS (155 migrations, unique timestamps)
+Topline payment/inventory lifecycle verification passed.
+Payment provider boundary verification passed.
+Payment Provider Certification + Activation 360: STRUCTURAL PASS (155 migrations)
+Payment/refund/expiry verification passed.
+Payment/Refund/Provider Trust Boundary 360: 14/14 PASSED
+- Active migrations: 155
+- Latest migration: 20261107140000_communications_delivery_callback_hardening.sql
+Production Payments + Reconciliation + Provider Webhooks 360 verification PASSED
+Phase 10 Finance & Billing 360 verification passed. 155 migrations; unique versions confirmed.
+Phase 11 Inventory & Procurement Operations 360 verification passed. 155 unique migrations.
+Phase 12–14 source verification passed.
+Phase 12 Customer Portal 360 source verification passed.
+Phase 13 Backup & Export Operations 360 verification passed.
+Phase 14 CI / Release Gate source verification PASSED.
+- Active migrations: 155
+- Node/npm toolchain: Node 22 + npm ci
+- CI permissions: contents: read
+- Frontend gate: lint + typecheck + build
+- Release gate: architecture, migration and production contracts
+Communications Provider + Response 360 source verification PASSED.
+PASS Product price input rejects non-finite values
+PASS Product opening stock rejects fractional values rather than truncating
+PASS Opening product stock uses audited stock-in RPC
+PASS Variant stock changes use the audited variant stock RPC
+PASS Variant catalogue metadata writes do not directly overwrite stock quantity
+PASS Invalid variant attributes JSON is rejected instead of silently replaced
+PASS Variant stock quantity must be a nonnegative whole number
+PASS Variant stock RPC writes variant-linked inventory movements
+PASS Paid order variant consumption is linked to the exact variant in movement ledger
+PASS Stock count supports a legitimate zero count
+PASS Stock count input permits zero whole units
+PASS Inventory dashboard surfaces failed data requests rather than rendering empty stock
+PASS Stock count can target a warehouse or the global product total
+PASS Manual stock in/out can target a warehouse
+PASS Warehouse exact count changes global total only by the counted delta
+PASS Warehouse stock cannot be set on inactive or missing warehouses
+PASS Warehouse with nonzero stock cannot be deleted through cascading stock loss
+PASS Warehouse UI accurately explains its effect on global product stock
+PASS Inventory movement history identifies the exact variant
+PASS Variant stock RPC is not exposed to anonymous/public callers
+PASS Purchase order receipts reject fractional quantities that integer stock cannot represent
+PASS Stock purchase order lines must reference a catalogue product
+PASS Adding a PO line locks the purchase order before checking its lifecycle status
+PASS Unlinked historical PO lines cannot be sent or ordered
+PASS PO receiving prompt clearly asks for cumulative received quantity
+PASS PO receipt UI rejects fractional, decreasing and over-order quantities
+PASS PO item UI requires a product link before stock can be received
+PASS Variant stock adjustment locks product before variant
+PASS Paid variant stock consumption follows product-before-variant lock order
+PASS Warehouse stock setting follows product-before-warehouse lock order
+PASS Stock transfers serialize on the product row before warehouse row locks
+PASS Database prevents variant deletion from cascading inventory/order history
+PASS Admin archives only zero-stock variants instead of hard-deleting them
+PASS Only one active product low-stock alert can exist per product
+PASS Only one active variant low-stock alert can exist per variant
+PASS Product and variant stock changes automatically maintain low-stock alerts
+PASS Variant low-stock alert refreshes the current count and threshold
+PASS Existing low-stock products and variants are backfilled into the alert queue
+PASS Inventory overview loads variant stock separately from parent stock
+PASS Parent product count cannot overwrite active variant stock
+PASS Low-stock alert identifies the exact affected variant
+PASS Parent-product stock adjustment rejects variant-managed products
+PASS Product-only warehouse stock operations reject variant-managed products
+PASS PO receipt rejects variant-managed products rather than crediting the wrong stock counter
+PASS Legacy PO lines cannot silently credit parent stock for variant-managed products
+PASS Purchase receipts are blocked for draft, sent and cancelled orders
+PASS Purchase receipt locks purchase order before its line item
+PASS Purchase order line removal uses the same PO-before-item lock order
+PASS Every goods receipt creates a procurement lifecycle event
+PASS Product admin list reports sellable stock across active variants
+PASS Stock adjustment and transfer RPCs are not publicly executable
+Phase 2 Product & Inventory hardening: 51/51 passed.
+Phase 2 Supabase production infrastructure static verification passed.
+PASS: Phase 3 cart, quotation and checkout source contracts (16 assertions)
+Phase 3 production email architecture verification passed.
+Phase 33–35 database validation passed (155 migrations, 167 tables, 275 functions).
+PASS: Phase 4 order, cancellation, delivery and refund integrity source contracts (22 assertions)
+Phase 4 SMS and customer notification operations verification passed.
+Phase 5 hosting/release verification PASSED.
+- .env.example exists
+- .env.example pins the dedicated Topline Supabase URL
+- .env.example documents the public Supabase key
+- .env.example defines the canonical Topline production URL
+- .env.example contains no service-role/server secret contract
+- Local environment files are ignored/untracked or absent; release packaging must exclude them
+- Node 22.x remains pinned for hosting builds
+- Vercel uses the repository build contract
+- Vercel serves dist
+- Vercel security headers are configured
+- Content-Security-Policy is configured
+- X-Content-Type-Options is configured
+- X-Frame-Options is configured
+- Canonical host redirect rules are explicitly declared
+- www host redirects to the canonical non-www host
+- robots blocks the admin portal
+- robots advertises the canonical sitemap
+- security.txt is published under /.well-known/
+- security.txt uses the real Topline security contact
+- security.txt declares its canonical URL
+- frontend Supabase target guard remains pinned to Topline
+External activation remains required: Vercel project/domain, DNS, Supabase Auth URLs, and production UAT.
+PASS payment initiation delegates transaction+attempt creation to atomic RPC
+PASS atomic RPC locks order target
+PASS atomic RPC locks invoice target
+PASS atomic RPC serializes concurrent starts before pending check
+PASS atomic RPC checks idempotency within target lock
+PASS atomic RPC rejects idempotency key reuse for a different target or gateway
+PASS atomic RPC rejects duplicate in-flight online charge
+PASS atomic RPC leaves bank transfer outside immediate-charge lockout
+PASS atomic RPC revalidates outstanding order/invoice balance
+PASS atomic RPC inserts transaction and attempt in one database transaction
+PASS atomic RPC is service-role only
+PASS atomic RPC denies public and authenticated execution
+PASS migration is registered in canonical manifest
+PASS package exposes Phase 5 targeted verifier
+PASS payment retry refuses a stale attempt larger than the live outstanding balance
+PASS provider callback accepts POST only
+PASS provider callback caps payload at 64 KiB before parsing
+PASS provider callback authenticates raw request bytes for signed card events
+Phase 5 payment initiation atomicity: 18/18 passed
+Phase 6–8 source verification passed.
+PASS: Phase 6 finance refund/reconciliation hardening (20 assertions)
+Phase 6 launch-readiness verification PASSED.
+- Active migration timestamps are unique.
+- Supabase config remains pinned to the dedicated Topline project.
+- Environment contract points at the dedicated Topline Supabase project.
+- Frontend Supabase client retains the dedicated project guard.
+- Vercel uses the repository production build command.
+- Vercel serves the Vite dist output.
+- Vercel SPA routing is defined.
+- Robots policy declares the canonical sitemap.
+- Security contact file exists.
+- Phase 6 launch runbook exists.
+- Production launch check script exists.
+- Transactional communications worker remains present.
+- SMS delivery-report callback remains present.
+- Environment contract declares VITE_SUPABASE_URL.
+- Environment contract declares VITE_SUPABASE_PUBLISHABLE_KEY.
+- Environment contract declares VITE_SITE_URL.
+- Canonical site URL is fixed in the environment contract.
+PASS customer project-document RLS is read-only
+PASS customer ownership helper uses SECURITY DEFINER and fixed search_path
+PASS customer metadata is scoped through the ownership helper
+PASS customer Storage reads require a registered metadata row
+PASS staff projects.select access is retained
+PASS customer Storage UPDATE USING checks current ownership
+PASS customer Storage UPDATE WITH CHECK checks destination ownership
+PASS customer project document RPC is security definer with empty search path
+PASS RPC returns only documents joined to customer-owned projects
+PASS RPC is unavailable to anon and public
+PASS RPC is granted to authenticated users
+PASS portal calls customer project document RPC
+PASS portal creates short-lived signed links from private bucket
+PASS portal validates project namespace before signing
+PASS portal presents project documents with open action
+PASS portal does not expose public URLs for project documents
+PASS generated database RPC type is present
+PASS migration manifest lists new migration
+PASS migration manifest count is current
+PASS workflow register advances to the Phase 8 authoritative foundation
+PASS workflow register records Phase 7 scope
+Phase 7 verification: 21/21 passed, 0 failed.
+Phase 7 operations command center verification passed.
+PASS SMS callback uses SECURITY DEFINER and empty search_path
+PASS SMS callback rejects non-service-role execution
+PASS SMS callback requires a provider message reference
+PASS SMS callback rejects negative provider cost
+PASS SMS callback delegates to shared delivery event ledger
+PASS SMS callback maps sent to supported submitted state
+PASS SMS callback preserves cost metadata
+PASS SMS callback execution revoked from public clients
+PASS SMS callback execution granted only to service role
+PASS SMS Edge callback enforces 64 KiB payload ceiling
+PASS SMS Edge callback parses JSON safely
+PASS SMS Edge callback rejects non-object JSON
+PASS SMS Edge callback parses URL-encoded provider payloads
+PASS SMS Edge callback safely reconstructs multipart form parsing
+PASS SMS Edge callback authenticates before parsing body
+PASS WhatsApp readiness requires phone number ID
+PASS WhatsApp sender independently requires phone number ID
+PASS Existing email/SMS/WhatsApp provider adapters remain
+PASS Existing consent-driven marketing sync remains
+PASS Migration manifest records Phase 8 migration
+PASS Package verifier command is registered
+PASS Workflow register records Phase 8 communications
+PASS Workflow register advances to the Phase 8 authoritative foundation
+Phase 8 communications hardening: 23/23 passed, 0 failed.
+Phase 8 Field Operations 360 verification PASSED.
+- 155 active migrations with unique versions
+- Normalized measurement, material, progress, issue and sign-off records
+- Server-side permission enforcement and RLS
+- Integrated admin Field Operations 360 workspace
+Phase 9–11 source verification passed.
+PASS protected admin paths are identified explicitly
+PASS unknown admin paths fail closed
+PASS route permission lookup uses normalized path
+PASS permission denial occurs before child render
+PASS route map remains explicit
+PASS staff permissions remain server-derived
+PASS manage permission compatibility remains explicit
+PASS navigation normalization remains in place
+PASS active staff profile remains required
+PASS session inactivity timeout remains enforced
+Phase 9 Admin RBAC fail-closed verification: 10/10 passed, 0 failed.
+PASS Phase 1 launch-gap runbook exists
+PASS CMS fails closed when Supabase is unavailable
+PASS CMS query errors are not replaced by demo defaults
+PASS CMS mutations persist before updating local cache
+PASS unsupported public CMS statistics are not embedded
+PASS fictional public project map records are not embedded
+PASS project templates no longer use browser persistence
+PASS custom project templates use canonical Supabase persistence
+PASS project template table has RLS
+PASS project template writes require project permissions
+PASS project template delete requires project permission
+PASS notification center does not use browser business persistence
+PASS notification center uses server-derived operational alerts
+PASS notification center does not claim provider delivery
+PASS fake CRM alert is removed
+Phases 1-7 hardening static gate passed.
+Phase 15–17 source verification passed.
+Phase 18-20 source verification passed.
+Phases 21–23 Finance, Communications & Analytics 360 hardening verification passed.
+Phase 21–23 source verification passed.
+Phases 24–26 Reporting Operational Intelligence 360 verification passed.
+Phase 24–26 source verification passed.
+Phase 27–29 source verification passed.
+Phases 30-32 production verification passed (155 active migrations).
+Database dependency verification passed (155 migrations, 167 tables, 274 functions, 290 FK references).
+Generated database types contract passed (308,993 bytes).
+Remote deployment safety gate passed (155 active migrations, project cvjmfplhdlfvqnnmzqcp).
+Phases 36–38 Database Reconciliation & Deployment Safety 360 passed.
+Phase 39–41 source verification passed.
+Phase 42–44 source verification passed.
+Phase 45–47 source verification passed.
+Active migrations: 155
+Phase 80–82 source verification passed.
+Active migrations: 155
+Phase 83–85 source verification passed.
+Active migrations: 155
+PASS: Phases 86-88 static gate (155 migrations)
+PASS: Phases 89-91 static gate (155 migrations)
+PASS portfolio reads through the public view
+PASS portfolio distinguishes request failure
+PASS portfolio has searchable project fields
+PASS portfolio supports category filtering
+PASS portfolio does not hard-code old project metrics
+PASS portfolio avoids invented client/location/scope fallbacks
+PASS portfolio has accessible case-study dialog
+PASS gallery supports keyboard dismissal/navigation
+PASS gallery query failure does not discard project text
+PASS known unused Loader2 import removed from services page
+
+Portfolio static checks: 10/10 passed
+PASS Homepage hero keeps its exact existing responsive height classes
+PASS Hero remains CMS/catalogue driven
+PASS Shared main exposes a focusable semantic page landmark with responsive spacing
+PASS Premium CSS does not assign hero dimensions
+PASS Approved Ocean/Lime/Petrol palette tokens exist
+PASS Service catalogue hook and detail route remain
+PASS Portfolio continues through the safe public-project loader
+PASS Shop still uses product and category data hooks
+PASS Cart order and coupon contracts remain present
+PASS Contact enquiry contract remains present
+PASS Customer portal source remains intact
+PASS Quotation submission and server-derived reference remain present
+PASS Tracking page and privacy-oriented workflow remain present
+PASS Shared header uses approved signal-lime accent
+
+Summary: 14/14 passed.
+Production Communications Integration 360 static verification PASSED (155 migrations)
+Project document vault verification PASSED.
+- Canonical project_documents table and metadata contract present.
+- Private Storage upload/signed URL/delete flow present.
+- Staff RLS and audit trigger present.
+- Fake/localStorage document fallback removed.
+Project documents static verification PASSED.
+PASS Public product listing loader includes active commerce variant data.
+PASS Default variant selection prefers an in-stock active option.
+PASS Shop, homepage and product-detail add-to-cart actions use shared purchasability rules.
+PASS Out-of-stock variant options remain visibly unavailable.
+PASS Cart checkout uses the canonical secure order path with idempotency protection.
+PASS Cart coupon validation remains wired to the canonical RPC wrapper.
+Public Commerce UI Contract: PASS
+Public order tracking privacy initiative verification PASSED.
+- Tracking requires both order number and checkout phone number.
+- Canonical order number is carried into the confirmation receipt.
+- Confirmation receipt survives refresh for a bounded 24-hour session.
+- Confirmation provides a direct tracking path.
+Public surface and email abuse controls verified.
+Public tracking contract verification PASSED.
+- track_order_public has an explicit frontend result type
+- the tracking page guards missing order details
+- the frontend contract matches the JSONB RPC shape
+- public tracking requires both order number and checkout phone number
+Release candidate gate PASSED.
+- Dedicated Supabase project: cvjmfplhdlfvqnnmzqcp
+- Active migrations: 155
+- Payment webhook: fail-closed until a real provider adapter is configured
+- Next external validation: local DB replay, linked dry-run, provider UAT
+Remote deployment safety gate passed (155 active migrations, project cvjmfplhdlfvqnnmzqcp).
+RPC Authorization Certification static verification PASSED
+Schema contract verification passed (155 active migrations).
+PASS public services page has no hard-coded feature catalog
+PASS public services page renders persisted service features only
+PASS empty persisted feature lists do not fabricate feature claims
+PASS service update requires an affected database row
+PASS service delete requires an affected database row
+Service content authority verification PASSED.
+PASS Quotation reads ?product, ?sku and ?service handoffs
+PASS Quotation service list comes from the catalogue, not a hard-coded price table
+PASS Quotation waits for the catalogue before defaulting the service
+PASS Service cards and detail pages carry the service into the quotation
+PASS Product page quote links carry the product
+PASS Shop honours ?category=<slug>
+PASS Industries no longer links to the meaningless ?type=service filter
+PASS Cart quantity is clamped to known stock
+PASS Cart refreshes price, stock and availability from the live catalogue without trusting an empty answer
+PASS Cart increase button stops at stock
+PASS Payment return shows the order number, totals and a tracking link
+
+Services + shop workflows: 11/11 passed.
+PASS: shop/cart end-to-end source contracts (21 assertions)
+PASS Loads complete active catalogue for correct category counts
+PASS Combines category filtering locally
+PASS Searches product metadata and variant fields
+PASS Retains in-stock filtering
+PASS Retains all sort modes
+PASS Retains retry state
+PASS Retains product detail navigation
+PASS Retains variant-aware purchasability guard
+PASS Adds visible cart continuation
+PASS Removes unsupported certification headline
+PASS Search control has accessible name
+PASS Sort control has accessible name
+Shop static checks: 12/12 passed
+SQL runtime safety static verification PASSED.
+No .env file found. Target identity is still pinned in supabase/config.toml.
+Theme engine runtime tests passed (17/17).
+TOPLINE theme unification verification PASSED.
+- Required design-token/runtime contracts: passed
+- WCAG AA contrast pairs checked: 10/10 passed
+- Router inventory rows written: 93
+- Browser visual and responsive verification: explicitly pending; not represented as complete.
+Topline toolchain verification PASSED.
+- Node: v22.16.0
+- Active migrations: 155
+- Supabase target: cvjmfplhdlfvqnnmzqcp
+PASS Track page uses established trackOrder client function
+PASS Tracking requires order reference and checkout phone
+PASS Tracking does not query orders directly from browser
+PASS Tracking handles not-found and missing RPC payload
+PASS Tracking displays order items and delivery data from RPC contract
+PASS Tracking displays safe contact and contact-form continuation
+PASS Checkout confirmation still deep-links to tracking
+PASS Contact preserves submitQuotationRequest workflow
+PASS Quotation RPC continues creating both lead and quotation
+PASS Contact blocks duplicate submission and validates fields
+PASS Contact success and failure feedback are retained
+PASS Contact channels are driven by configured site settings
+PASS More navigation still retains tracking and contact destinations
+PASS Contact form has explicit accessible labels and bounded message
+PASS No unsupported 24-hour or free-assessment promise added
+PASS Contact hero heading explicitly uses high-contrast white text
+PASS Contact hero guidance heading explicitly uses white text
+PASS Track Order hero heading explicitly uses high-contrast white text
+PASS Contact and Track Order use the approved Signal Lime accent
+
+Track Order + Contact workflow checks: 19/19 passed.
+Vercel deployment verification PASSED.
+- package.json uses ESM mode
+- Vercel Node runtime is pinned to 22.x
+- production build script delegates to the Vite CLI
+- Vercel delegates the build to package.json
+- Vercel serves the Vite dist directory
+- Vercel framework is explicitly Vite
+- vite.config.ts exists
+- index.html exists
+- src/main.tsx exists
+- Vercel config does not hard-code an internal node_modules Vite path
+Vercel/CLI production contract verified.
+Verification summary: 159/159 passed, 0 failed.

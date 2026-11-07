@@ -9412,6 +9412,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: Json
       }
+      get_customer_project_documents: {
+        Args: Record<PropertyKey, never>
+        Returns: Json
+      }
       get_customer_portal_preferences: {
         Args: Record<PropertyKey, never>
         Returns: Json
@@ -9461,6 +9465,7 @@ export type Database = {
         Returns: Json
       }
       get_order_operations_360: { Args: { p_order_id: string }; Returns: Json }
+      get_order_communication_delivery_360: { Args: { p_order_id: string }; Returns: Json }
       get_payment_provider_release_gate_360: {
         Args: { p_gateway_key: string }
         Returns: Json

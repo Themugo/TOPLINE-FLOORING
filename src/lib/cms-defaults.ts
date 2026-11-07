@@ -69,7 +69,7 @@ export const DEFAULT_CMS_STORE: CMSContentStore = {
       registration_number: '',
     },
     contact: {
-      email: 'toplineflooringandwaterproofing@gmail.com',
+      email: 'toplineflooringandwaterproofin@gmail.com',
       phone: '0720 859 737 / 0755 293 372',
       whatsapp: '+254720859737',
       address: 'Kenya',

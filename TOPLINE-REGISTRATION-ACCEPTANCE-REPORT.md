@@ -43,7 +43,7 @@ mocked (see `tests/e2e-communications/README.md`). Nothing in this report was ob
 | Existing short passwords can still attempt sign-in | PASS after repair | `minLength` removed from the sign-in field |
 | Invalid credentials message | PASS | customer-auth-flows (message mapping) |
 | Session refresh, expiry, sign-out, protected routes | NOT TESTED | Supabase client behaviour; existing route smoke tests cover rendering only |
-| Customer password reset | **NOT IMPLEMENTED** | No such flow exists; email sign-in link is the only recovery |
+| Customer password reset | **IMPLEMENTED — PROVIDER DELIVERY PENDING** | Customer portal exposes reset request and password update through Supabase Auth (`requestCustomerPasswordReset`, `updateCustomerPassword`); real recovery-email delivery and redirect completion still require Auth SMTP/redirect UAT |
 | Email sign-in link delivery | NOT TESTED | Provider-side |
 | Administrator password reset | NOT TESTED | Provider-side |
 

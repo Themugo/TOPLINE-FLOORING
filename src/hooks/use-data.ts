@@ -929,6 +929,24 @@ export function useServices(options?: { activeOnly?: boolean }) {
 // ============================================================
 // CRM: Leads
 // ============================================================
+// The database's canonical lead columns are name/company/status. The legacy
+// Leads list still consumes customer_name/company_name/lead_stage aliases.
+// Normalize once at the data boundary so every consumer receives both shapes.
+function normalizeLeadRecord(row: Record<string, unknown>): Lead {
+  const name = String(row.name ?? row.customer_name ?? '');
+  const company = (row.company ?? row.company_name ?? null) as string | null;
+  const status = String(row.status ?? row.lead_stage ?? 'new');
+  return {
+    ...(row as unknown as Lead),
+    name,
+    customer_name: name,
+    company,
+    company_name: company,
+    status: status as Lead['status'],
+    lead_stage: status === 'negotiating' ? 'negotiation' : status,
+  };
+}
+
 export function useLeads(options?: { status?: string }) {
   const [leads, setLeads] = useState<Lead[]>([]);
   const [loading, setLoading] = useState(true);
@@ -942,7 +960,7 @@ export function useLeads(options?: { status?: string }) {
       if (options?.status) query = query.eq('status', options.status);
       const { data, error: err } = await query;
       if (err) throw err;
-      setLeads(data || []);
+      setLeads((data || []).map((row) => normalizeLeadRecord(row as Record<string, unknown>)));
     } catch (err) {
       setError(errorMessage(err, 'Failed to load leads'));
     } finally {
@@ -954,8 +972,8 @@ export function useLeads(options?: { status?: string }) {
 
   const createLead = async (lead: Partial<Lead>) => {
     const result = await createLeadTransaction({
-      name: String(lead.name || ''), email: lead.email, phone: lead.phone, company: lead.company,
-      source: lead.source ?? undefined, status: lead.status, estimatedValue: lead.estimated_value,
+      name: String(lead.name || lead.customer_name || ''), email: lead.email, phone: lead.phone, company: lead.company ?? lead.company_name,
+      source: lead.source ?? undefined, status: lead.status ?? (lead.lead_stage === 'negotiation' ? 'negotiating' : lead.lead_stage), estimatedValue: lead.estimated_value,
       projectLocation: lead.project_location, projectAddress: lead.project_address, notes: lead.notes,
       assignedTo: lead.assigned_to, followUpDate: lead.follow_up_date, followUpNotes: lead.follow_up_notes,
     });
@@ -963,11 +981,15 @@ export function useLeads(options?: { status?: string }) {
     await refetch();
     const { data, error: err } = await supabase.from('leads').select('*').eq('id', result.lead_id).single();
     if (err) throw err;
-    return data;
+    return normalizeLeadRecord(data as Record<string, unknown>);
   };
 
   const updateLead = async (id: string, updates: Partial<Lead>) => {
-    const result = await updateLeadTransaction(id, updates as Record<string, unknown>);
+    const normalizedUpdates = { ...updates } as Record<string, unknown>;
+    normalizedUpdates.name ??= normalizedUpdates.customer_name;
+    normalizedUpdates.company ??= normalizedUpdates.company_name;
+    normalizedUpdates.status ??= normalizedUpdates.lead_stage === 'negotiation' ? 'negotiating' : normalizedUpdates.lead_stage;
+    const result = await updateLeadTransaction(id, normalizedUpdates);
     if (!result.success) throw new Error(result.error || 'Lead update failed');
     await refetch();
   };

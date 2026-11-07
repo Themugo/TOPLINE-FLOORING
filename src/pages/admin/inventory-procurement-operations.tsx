@@ -13,6 +13,7 @@ const count = (v: unknown) => Number(v || 0).toLocaleString();
 export default function InventoryProcurementOperations() {
   const [data, setData] = useState<Snapshot>({});
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [reconciling, setReconciling] = useState(false);
   const { toast } = useToast();
 
@@ -20,8 +21,11 @@ export default function InventoryProcurementOperations() {
     setLoading(true);
     try {
       setData(await getInventoryProcurementOperations360(30));
+      setLoadError(null);
     } catch (e) {
-      toast({ title: 'Operations snapshot failed', description: errorMessage(e, 'Unable to load inventory/procurement data'), variant: 'destructive' });
+      const message = errorMessage(e, 'Unable to load inventory/procurement data');
+      setLoadError(message);
+      toast({ title: 'Operations snapshot failed', description: message, variant: 'destructive' });
     } finally { setLoading(false); }
   }, [toast]);
 
@@ -38,6 +42,7 @@ export default function InventoryProcurementOperations() {
         description: `${discrepancies} stock discrepancy(ies), ${orphans} warehouse orphan(s).`,
         variant: discrepancies === 0 && orphans === 0 ? undefined : 'destructive',
       });
+      await load();
     } catch (e) {
       toast({ title: 'Reconciliation failed', description: errorMessage(e, 'Unable to reconcile inventory'), variant: 'destructive' });
     } finally { setReconciling(false); }
@@ -70,11 +75,17 @@ export default function InventoryProcurementOperations() {
         </div>
       </div>
 
+      {loadError && <div role="alert" className="mb-5 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-800">
+        <p className="font-semibold">Inventory & procurement data is unavailable</p>
+        <p className="mt-1">{loadError}</p>
+        <button onClick={() => void load()} className="mt-2 font-semibold underline">Retry snapshot</button>
+      </div>}
+
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
         {cards.map(([label, value, Icon]) => (
           <div key={label} className="bg-white border border-gray-200 rounded-xl p-5">
             <div className="flex justify-between"><p className="text-sm text-gray-700">{label}</p><Icon className="w-4 h-4 text-gray-600" /></div>
-            <p className="text-2xl font-display font-bold text-navy-900 mt-2">{loading ? '—' : count(value)}</p>
+            <p className="text-2xl font-display font-bold text-navy-900 mt-2">{loading || loadError ? '—' : count(value)}</p>
           </div>
         ))}
       </div>
@@ -83,17 +94,17 @@ export default function InventoryProcurementOperations() {
         <section className="lg:col-span-2 bg-white border rounded-xl p-5">
           <h2 className="font-semibold text-navy-900">Procurement exposure</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
-            <div className="rounded-lg bg-gray-50 p-4"><p className="text-xs text-gray-700">30-day procurement value</p><p className="text-xl font-semibold text-navy-900 mt-1">{loading ? '—' : money(data.procurement_value)}</p></div>
-            <div className="rounded-lg bg-gray-50 p-4"><p className="text-xs text-gray-700">30-day received value</p><p className="text-xl font-semibold text-navy-900 mt-1">{loading ? '—' : money(data.received_value)}</p></div>
-            <div className="rounded-lg bg-gray-50 p-4"><p className="text-xs text-gray-700">Current stock units</p><p className="text-xl font-semibold text-navy-900 mt-1">{loading ? '—' : count(data.stock_units)}</p></div>
-            <div className="rounded-lg bg-gray-50 p-4"><p className="text-xs text-gray-700">Inventory movements</p><p className="text-xl font-semibold text-navy-900 mt-1">{loading ? '—' : count(data.movement_count)}</p></div>
+            <div className="rounded-lg bg-gray-50 p-4"><p className="text-xs text-gray-700">30-day procurement value</p><p className="text-xl font-semibold text-navy-900 mt-1">{loading || loadError ? '—' : money(data.procurement_value)}</p></div>
+            <div className="rounded-lg bg-gray-50 p-4"><p className="text-xs text-gray-700">30-day received value</p><p className="text-xl font-semibold text-navy-900 mt-1">{loading || loadError ? '—' : money(data.received_value)}</p></div>
+            <div className="rounded-lg bg-gray-50 p-4"><p className="text-xs text-gray-700">Current stock units</p><p className="text-xl font-semibold text-navy-900 mt-1">{loading || loadError ? '—' : count(data.stock_units)}</p></div>
+            <div className="rounded-lg bg-gray-50 p-4"><p className="text-xs text-gray-700">Inventory movements</p><p className="text-xl font-semibold text-navy-900 mt-1">{loading || loadError ? '—' : count(data.movement_count)}</p></div>
           </div>
         </section>
 
         <section className="bg-white border rounded-xl p-5">
           <h2 className="font-semibold text-navy-900">PO status</h2>
           <div className="space-y-3 mt-4">
-            {Object.entries((data.status_breakdown || {}) as Record<string, unknown>).length === 0
+            {loadError ? <p className="text-sm text-red-700">Status breakdown unavailable until the snapshot loads successfully.</p> : Object.entries((data.status_breakdown || {}) as Record<string, unknown>).length === 0
               ? <p className="text-sm text-gray-700">No purchase orders.</p>
               : Object.entries((data.status_breakdown || {}) as Record<string, unknown>).map(([status, value]) => (
                 <div key={status} className="flex justify-between text-sm"><span className="text-gray-700 capitalize">{status.replaceAll('_',' ')}</span><span className="font-semibold text-navy-900">{count(value)}</span></div>

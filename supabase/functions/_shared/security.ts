@@ -17,3 +17,32 @@ export async function hmacSha256Hex(secret: string, body: string): Promise<strin
 export function headerOrQuery(req: Request, header: string, query: string): string | null {
   return req.headers.get(header) ?? new URL(req.url).searchParams.get(query);
 }
+
+
+/** Read a request body with a hard byte ceiling, including chunked requests. */
+export async function readBoundedBody(req: Request, maxBytes: number): Promise<{ body: string; tooLarge: boolean }> {
+  const declared = Number(req.headers.get("content-length") ?? "0");
+  if (Number.isFinite(declared) && declared > maxBytes) return { body: "", tooLarge: true };
+  if (!req.body) return { body: "", tooLarge: false };
+  const reader = req.body.getReader();
+  const chunks: Uint8Array[] = [];
+  let total = 0;
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      total += value.byteLength;
+      if (total > maxBytes) {
+        await reader.cancel();
+        return { body: "", tooLarge: true };
+      }
+      chunks.push(value);
+    }
+  } finally {
+    reader.releaseLock();
+  }
+  const bytes = new Uint8Array(total);
+  let offset = 0;
+  for (const chunk of chunks) { bytes.set(chunk, offset); offset += chunk.byteLength; }
+  return { body: new TextDecoder().decode(bytes), tooLarge: false };
+}

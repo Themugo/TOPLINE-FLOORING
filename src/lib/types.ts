@@ -746,7 +746,7 @@ export interface Supplier {
   updated_at: string;
 }
 
-export type PurchaseOrderStatus = 'draft' | 'sent' | 'partial' | 'received' | 'cancelled';
+export type PurchaseOrderStatus = 'draft' | 'pending' | 'sent' | 'ordered' | 'partial' | 'received' | 'cancelled';
 
 export interface PurchaseOrder {
   id: string;

@@ -23,6 +23,18 @@ export interface CustomerPortalDocument {
   created_at: string;
 }
 
+export interface CustomerProjectDocument {
+  id: string;
+  project_id: string;
+  project_title: string | null;
+  file_name: string;
+  doc_type: string;
+  mime_type: string;
+  file_size_bytes: number;
+  created_at: string;
+  storage_path: string;
+}
+
 export async function getCustomerPortalPreferences(): Promise<CustomerPortalPreferences> {
   const { data, error } = await supabase.rpc('get_customer_portal_preferences');
   if (error) throw error;
@@ -41,14 +53,19 @@ export async function getCustomerPortalDocuments(): Promise<CustomerPortalDocume
   return (data || []) as CustomerPortalDocument[];
 }
 
-export async function getCustomerPortalDocumentUrl(documentId: string): Promise<string> {
-  const { data, error } = await supabase.functions.invoke('customer-document-download', {
-    body: { document_id: documentId },
-  });
+export async function getCustomerProjectDocuments(): Promise<CustomerProjectDocument[]> {
+  const { data, error } = await supabase.rpc('get_customer_project_documents');
   if (error) throw error;
-  const url = data?.url;
-  if (typeof url !== 'string' || !url) throw new Error('Document download is temporarily unavailable');
-  return url;
+  return (data || []) as CustomerProjectDocument[];
+}
+
+export async function createCustomerProjectDocumentUrl(storagePath: string, downloadName?: string): Promise<string> {
+  if (!storagePath.startsWith('projects/')) throw new Error('Invalid project document path');
+  const { data, error } = await supabase.storage.from('private-documents').createSignedUrl(
+    storagePath, 60, downloadName ? { download: downloadName } : undefined
+  );
+  if (error || !data?.signedUrl) throw error ?? new Error('Could not create a secure document link');
+  return data.signedUrl;
 }
 
 

@@ -21,6 +21,9 @@ else {
     'npm run verify:migration-integrity',
     'npm run verify:release-candidate',
     'npm run verify:phase-14-ci-release-gate',
+    'npm run verify:phases-15-17',
+    'npm run verify:operation-17-production-automation',
+    'npm run verify:operation-18-theme-brand-governance',
     'npm run lint',
     'npm run typecheck',
     'npm run build',
@@ -31,6 +34,14 @@ else {
   for (const token of required) if (!workflow.includes(token)) failures.push(`CI workflow missing required contract: ${token}`);
   if (/pull_request_target:/i.test(workflow)) failures.push('CI must not use pull_request_target.');
   if (!/permissions:\s*\n\s+contents:\s+read/m.test(workflow)) failures.push('CI must use least-privilege contents: read permissions.');
+  const artifactIndex = workflow.indexOf('uses: actions/upload-artifact@v4');
+  const lastVerificationIndex = Math.max(
+    workflow.lastIndexOf('npm run verify:operation-18-theme-brand-governance'),
+    workflow.lastIndexOf('npm run verify:phases-15-17'),
+    workflow.lastIndexOf('npm run build'),
+  );
+  if (artifactIndex < 0 || artifactIndex < lastVerificationIndex) failures.push('Production build artifact must be uploaded only after all quality and architecture gates pass.');
+  if (workflow.trim().split('\n').slice(-7).join('\n').includes('run: npm run')) failures.push('No verification command may follow the production artifact upload.');
 }
 
 const pkg = JSON.parse(read('package.json'));

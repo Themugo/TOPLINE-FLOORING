@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { Search, RefreshCw, ShieldCheck, Truck, CreditCard, PackageCheck } from 'lucide-react';
+import { Search, RefreshCw, ShieldCheck, Truck, CreditCard, PackageCheck, MailCheck } from 'lucide-react';
 import { AdminLayout } from './dashboard';
 import { formatKES, formatDateTime } from '@/lib/utils';
 import { supabase } from '@/lib/supabase';
@@ -24,6 +24,9 @@ export default function AdminOrders() {
   const [order360, setOrder360] = useState<OrderOperations360 | null>(null);
   const [detailLoading, setDetailLoading] = useState(false);
   const [awaitingOnly, setAwaitingOnly] = useState(false);
+  const [orderCommunications, setOrderCommunications] = useState<Array<Record<string, unknown>>>([]);
+  const [communicationsLoading, setCommunicationsLoading] = useState(false);
+  const [communicationsError, setCommunicationsError] = useState<string | null>(null);
 
   const fetchOrders = useCallback(async () => {
     const requestId = ++latestRequest.current;
@@ -55,9 +58,24 @@ export default function AdminOrders() {
 
   useEffect(() => { fetchOrders(); }, [fetchOrders]);
 
+  const refreshOrderCommunications = async (orderId: string) => {
+    setCommunicationsLoading(true);
+    setCommunicationsError(null);
+    try {
+      const { data, error } = await supabase.rpc('get_order_communication_delivery_360', { p_order_id: orderId });
+      if (error) throw error;
+      setOrderCommunications(((data as { communications?: Array<Record<string, unknown>> } | null)?.communications ?? []));
+    } catch (error) {
+      setCommunicationsError(errorMessage(error, 'Order communication status is unavailable.'));
+      setOrderCommunications([]);
+    } finally { setCommunicationsLoading(false); }
+  };
+
   const openOrder = async (order: Order) => {
     setSelectedOrder(order);
     setDetailLoading(true);
+    setOrderCommunications([]);
+    void refreshOrderCommunications(order.id);
     try { setOrder360(await getOrderOperations360(order.id)); }
     catch (error) { toast({ title: 'Unable to load order operations', description: errorMessage(error, 'Please try again'), variant: 'destructive' }); setOrder360(null); }
     finally { setDetailLoading(false); }
@@ -95,6 +113,7 @@ export default function AdminOrders() {
     await fetchOrders();
     if (selectedOrder?.id === orderId) {
       await refreshOrder360();
+      await refreshOrderCommunications(orderId);
     }
   };
 
@@ -206,7 +225,7 @@ export default function AdminOrders() {
           <div className="bg-white rounded-2xl max-w-4xl w-full p-6 max-h-[92vh] overflow-y-auto shadow-2xl">
             <div className="flex justify-between items-start gap-4 mb-6">
               <div><p className="text-xs uppercase tracking-wider text-gray-500">Order details</p><h2 className="font-semibold text-xl">{selectedOrder.id.slice(0, 8).toUpperCase()}</h2><p className="text-sm text-gray-500 mt-1">{selectedOrder.customer_name} · {selectedOrder.customer_phone}</p></div>
-              <div className="flex items-center gap-2"><button onClick={() => void refreshOrder360()} className="p-2 rounded-lg border" title="Refresh"><RefreshCw className={`w-4 h-4 ${detailLoading ? 'animate-spin' : ''}`} /></button><button onClick={() => { setSelectedOrder(null); setOrder360(null); }} className="p-2 rounded-lg border"><X className="w-5 h-5" /></button></div>
+              <div className="flex items-center gap-2"><button onClick={() => { void refreshOrder360(); void refreshOrderCommunications(selectedOrder.id); }} className="p-2 rounded-lg border" title="Refresh"><RefreshCw className={`w-4 h-4 ${detailLoading ? 'animate-spin' : ''}`} /></button><button onClick={() => { setSelectedOrder(null); setOrder360(null); setOrderCommunications([]); setCommunicationsError(null); }} className="p-2 rounded-lg border"><X className="w-5 h-5" /></button></div>
             </div>
             {detailLoading && !order360 ? <div className="py-16 text-center text-gray-500">Loading order details…</div> : order360 ? <>
               <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-6">
@@ -216,6 +235,23 @@ export default function AdminOrders() {
                 <div className="rounded-xl border p-4"><p className="text-xs text-gray-500">Paid</p><p className="font-semibold mt-1">{order360.finance_access ? formatKES(order360.paid_amount) : 'Restricted'}</p></div>
                 <div className="rounded-xl border p-4"><p className="text-xs text-gray-500">Outstanding</p><p className="font-semibold mt-1">{order360.finance_access ? formatKES(order360.outstanding_amount) : 'Restricted'}</p></div>
               </div>
+              <section className="mb-6 rounded-xl border p-5">
+                <div className="flex items-center justify-between gap-3">
+                  <div><h3 className="font-semibold flex items-center gap-2"><MailCheck className="w-4 h-4" /> Customer confirmation & delivery</h3><p className="text-xs text-gray-500 mt-1">Order status and email delivery are separate. Provider acceptance does not mean the message reached the inbox.</p></div>
+                  <button type="button" onClick={() => void refreshOrderCommunications(selectedOrder.id)} disabled={communicationsLoading} className="btn-secondary text-xs"><RefreshCw className={`w-3.5 h-3.5 inline mr-1 ${communicationsLoading ? 'animate-spin' : ''}`} />Refresh</button>
+                </div>
+                {communicationsError ? <p className="mt-3 text-sm text-red-700">{communicationsError}</p> : communicationsLoading && !orderCommunications.length ? <p className="mt-3 text-sm text-gray-500">Loading communication evidence…</p> : orderCommunications.length ? <div className="mt-4 divide-y">
+                  {orderCommunications.map((item) => {
+                    const deliveryState = String(item.delivery_status || 'unknown');
+                    const status = deliveryState === 'unknown' || deliveryState === 'pending' ? String(item.status || deliveryState) : deliveryState;
+                    const label = status === 'accepted' ? 'Accepted by provider — delivery not yet confirmed' : status === 'delivered' ? 'Delivered' : status === 'failed' || status === 'rejected' ? 'Failed' : status === 'queued' || status === 'pending' ? 'Queued / awaiting worker' : status;
+                    return <div key={String(item.id)} className="py-3 flex flex-wrap items-start justify-between gap-3 text-sm">
+                      <div><p className="font-medium capitalize">{String(item.channel || 'message')} · {String(item.recipient || '')}</p><p className="text-xs text-gray-500 mt-1">{String(item.subject || 'Order update')} · Attempts {String(item.attempt_count ?? 0)}/{String(item.max_attempts ?? 0)}</p>{item.error_message ? <p className="text-xs text-red-700 mt-1">{String(item.error_message)}</p> : null}{item.provider_message_id ? <p className="text-[11px] text-gray-400 mt-1">Provider ID: {String(item.provider_message_id)}</p> : null}</div>
+                      <div className="text-right"><span className={`text-xs font-semibold ${status === 'delivered' ? 'text-green-700' : status === 'failed' || status === 'rejected' ? 'text-red-700' : status === 'accepted' ? 'text-blue-700' : 'text-amber-700'}`}>{label}</span><p className="text-[11px] text-gray-400 mt-1">{item.sent_at ? `Accepted ${formatDateTime(String(item.sent_at))}` : item.last_attempt_at ? `Last attempt ${formatDateTime(String(item.last_attempt_at))}` : `Queued ${formatDateTime(String(item.created_at || ''))}`}</p></div>
+                    </div>;
+                  })}
+                </div> : <p className="mt-3 text-sm text-amber-700">No order confirmation or status message is recorded in the outbox. Check the event trigger and customer email before marking communication complete.</p>}
+              </section>
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <section className="rounded-xl border p-5"><h3 className="font-semibold flex items-center gap-2"><PackageCheck className="w-4 h-4" /> Items</h3><div className="mt-3 divide-y">{order360.items.map(item => <div key={item.id} className="py-2 flex justify-between gap-4 text-sm"><span>{item.product_name} × {item.quantity}</span><span>{formatKES(item.unit_price * item.quantity)}</span></div>)}</div></section>
                 <section className="rounded-xl border p-5"><h3 className="font-semibold flex items-center gap-2"><Truck className="w-4 h-4" /> Fulfillment</h3><div className="mt-3 space-y-3">{order360.deliveries.length ? order360.deliveries.map(d => <div key={d.id} className="rounded-lg bg-gray-50 p-3 text-sm"><div className="flex justify-between"><span>{d.tracking_number || 'No tracking number'}</span><span className="font-medium capitalize">{d.status.replace(/_/g,' ')}</span></div><p className="text-xs text-gray-500 mt-1">{d.scheduled_date || 'Unscheduled'}{d.driver_name ? ` · ${d.driver_name}` : ''}</p></div>) : <p className="text-sm text-gray-500">No delivery record yet.</p>}</div></section>
