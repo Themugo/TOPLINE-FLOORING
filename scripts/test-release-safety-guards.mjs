@@ -11,7 +11,7 @@ function run(file, env) {
 {
   const result = run('scripts/validate-local-supabase.mjs', { TOPLINE_ALLOW_LOCAL_DB_RESET: '' });
   assert.equal(result.status, 2, result.stdout + result.stderr);
-  assert.match(result.stderr, /No Supabase CLI command was executed/);
+  assert.match(result.stdout, /BLOCKED: set TOPLINE_ALLOW_LOCAL_DB_RESET=true only when the target is a disposable local database/);
 }
 
 // Payment webhook UAT must reject the known production hostname before network I/O.

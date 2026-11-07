@@ -27,6 +27,7 @@ jobs:
         with:
           node-version: 22
           cache: npm
+          cache-dependency-path: package-lock.json
 
       - name: Install dependencies
         run: npm ci
@@ -58,7 +59,21 @@ jobs:
           npm run verify:delivery-worker-hardening
 
       - name: Local Supabase replay
+        env:
+          # This opt-in is scoped to the disposable GitHub Actions Supabase stack only.
+          # The validator uses --local for every database operation and never links/pushes.
+          TOPLINE_ALLOW_LOCAL_DB_RESET: 'true'
+          TOPLINE_EXPECTED_MIGRATION_COUNT: '163'
         run: npm run validate:local-db
+
+      - name: Upload disposable database replay evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: topline-database-replay-${{ github.sha }}
+          path: artifacts/database-replay/
+          if-no-files-found: warn
+          retention-days: 14
 
       - name: Commerce Fulfillment 360 contract
         run: npm run verify:commerce-fulfillment-360
@@ -85,6 +100,7 @@ jobs:
           npm run verify:phases-45-47
           npm run verify:ecommerce-stability
           npm run verify:migration-integrity
+          npm run verify:g03-linked-supabase
           npm run verify:payment-inventory-lifecycle
           npm run verify:payment-refund-expiry
           npm run verify:payment-provider-boundary
@@ -106,11 +122,41 @@ jobs:
       - name: Brevo email integration contract
         run: npm run verify:brevo-email
 
-      - name: Frontend quality
+      - name: G-04 frontend build CI contract
+        run: npm run verify:g04-frontend-build
+
+      - name: G-05 payment provider UAT safety and callback contract
         run: |
-          npm run lint
-          npm run typecheck
-          npm run build
+          npm run verify:g05-payment-provider-uat
+          npm run verify:payment-provider-boundary
+          npm run verify:payment-webhook-reconciliation-360
+          npm run verify:phase-5-payment-initiation-atomicity
+
+      - name: Record frontend certification environment
+        run: node scripts/record-frontend-certification.mjs
+
+      - name: Frontend lint (ESLint)
+        run: npm run lint
+        timeout-minutes: 10
+
+      - name: Frontend TypeScript certification
+        run: npm run typecheck
+        timeout-minutes: 10
+
+      - name: Frontend production build (Vite)
+        run: npm run build
+        timeout-minutes: 10
+
+      - name: Upload frontend certification evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: topline-frontend-certification-${{ github.sha }}
+          path: |
+            artifacts/frontend-certification/
+            dist/
+          if-no-files-found: warn
+          retention-days: 14
 
 
       - name: Phase 80–82 verification
@@ -187,6 +233,15 @@ jobs:
 
       - name: Phase 19 order confirmation and delivery reliability
         run: npm run verify:phase-19-order-confirmation-delivery
+
+      - name: G-06 customer communications delivery contract
+        run: npm run verify:g06-customer-communications
+
+      - name: G-07 background automation and worker execution contract
+        run: npm run verify:g07-background-automation
+
+      - name: G-08 security certification source contract
+        run: npm run verify:g08-security-certification
 
       - name: Leads end-to-end schema, intake, CRUD and rendering contract
         run: npm run verify:leads-end-to-end-360

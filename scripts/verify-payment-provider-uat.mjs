@@ -64,7 +64,7 @@ const good = await call(raw, signature);
 if (!good.ok) fail(`Valid signed UAT webhook was rejected with HTTP ${good.status}: ${await good.text()}`);
 const result = await good.json().catch(() => null);
 if (!result?.success) fail(`Valid signed UAT webhook did not return success: ${JSON.stringify(result)}`);
-console.log(`PASS: signed ${provider} payment UAT accepted: ${JSON.stringify(result)}`);
+console.log(`PASS: synthetic signed ${provider} webhook envelope accepted: ${JSON.stringify(result)}`);
 
 const replay = await call(raw, signature);
 if (!replay.ok) fail(`Replay test was rejected with HTTP ${replay.status}.`);
@@ -72,4 +72,4 @@ const replayResult = await replay.json().catch(() => null);
 if (!replayResult?.idempotent_replay) fail(`Replay test did not report idempotent_replay=true: ${JSON.stringify(replayResult)}`);
 console.log('PASS: duplicate provider event is idempotent.');
 
-console.log('Payment provider sandbox/live webhook UAT: PASSED');
+console.log('Synthetic signed webhook boundary test: PASSED (not a provider-originated payment transaction).');

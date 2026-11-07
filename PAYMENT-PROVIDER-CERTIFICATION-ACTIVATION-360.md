@@ -43,6 +43,8 @@ set PAYMENT_UAT_PHONE=2547XXXXXXXX
 set PAYMENT_UAT_GATEWAY_KEY=mpesa
 set PAYMENT_UAT_EXPECTED_AMOUNT=1
 set MPESA_UAT_ENV=sandbox
+set MPESA_UAT_EXPECTED_HOST=<sandbox-project-ref>.supabase.co
+set MPESA_UAT_ALLOW_MUTATION=true
 npm run verify:mpesa-provider-uat
 ```
 

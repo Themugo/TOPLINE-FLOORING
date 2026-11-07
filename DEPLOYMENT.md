@@ -87,17 +87,27 @@ npm run verify:phase-5-hosting
 
 Follow `docs/PHASE_5_PRODUCTION_HOSTING_DOMAIN_RELEASE.md` for the safe DNS/Vercel cutover sequence. Keep existing cPanel MX/mail records unchanged during the web migration.
 
-## Remote database deployment gate
+## G-03 — Linked Supabase certification (read-only)
 
-After local replay and regression validation, inspect the linked migration history and run a dry-run before any real deployment:
+The repository is pinned to Topline project `cvjmfplhdlfvqnnmzqcp`. This phase verifies the linked target, compares local and remote migration history, previews pending migrations, and lints the linked database. It does **not** apply migrations or change remote schema/data.
+
+From Windows CMD, after confirming you are authorised to inspect the intended Topline Supabase project:
 
 ```cmd
 npx supabase login
 npx supabase link --project-ref cvjmfplhdlfvqnnmzqcp
-npx supabase migration list --linked
-npx supabase db push --dry-run --linked
-npx supabase db lint --linked
+set TOPLINE_ALLOW_LINKED_DB_READS=true
+set TOPLINE_EXPECTED_MIGRATION_COUNT=163
+npm run validate:linked-supabase
 ```
+
+The validator refuses to run unless the linked project reference exactly matches `supabase/config.toml`. It runs only:
+
+- `supabase migration list --linked`
+- `supabase db push --dry-run --linked`
+- `supabase db lint --linked --fail-on error`
+
+Evidence is written to `artifacts/linked-supabase-certification/`. Review the complete migration table and dry-run output for missing, extra, or pending versions; a successful CLI exit alone does not approve deployment. Do not run `db push` without `--dry-run`, `migration repair`, `migration up`, `db reset --linked`, or `config push` during G-03. Any actual migration application is a separate, explicitly approved release action after G-02 and G-03 are closed.
 
 Never run `supabase db reset --linked` against the real Topline production project.
 

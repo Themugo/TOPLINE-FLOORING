@@ -168,7 +168,15 @@
     "verify:phase-17-site-visit-execution": "node scripts/verify-phase-17-site-visit-execution.mjs",
     "verify:phase-18-inbound-provider-response": "node scripts/verify-phase-18-inbound-provider-response.mjs",
     "verify:phase-19-order-confirmation-delivery": "node scripts/verify-phase-19-order-confirmation-delivery.mjs",
-    "verify:leads-end-to-end-360": "node scripts/verify-leads-end-to-end-360.mjs"
+    "verify:leads-end-to-end-360": "node scripts/verify-leads-end-to-end-360.mjs",
+    "validate:linked-supabase": "node scripts/validate-linked-supabase.mjs",
+    "verify:g03-linked-supabase": "node scripts/verify-g03-linked-supabase.mjs",
+    "verify:g04-frontend-build": "node scripts/verify-g04-frontend-build.mjs",
+    "verify:g05-payment-provider-uat": "node scripts/verify-g05-payment-provider-uat.mjs",
+    "verify:g06-customer-communications": "node scripts/verify-g06-customer-communications.mjs",
+    "verify:g07-background-automation": "node scripts/verify-g07-background-automation.mjs",
+    "verify:g08-security-certification": "node scripts/verify-g08-security-certification.mjs",
+    "uat:g08-security": "node scripts/run-g08-security-uat.mjs"
   },
   "dependencies": {
     "@fontsource-variable/manrope": "^5.3.0",

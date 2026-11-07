@@ -19,6 +19,7 @@ Known Topline production website and Supabase hosts are rejected unconditionally
 M-Pesa initiation UAT now requires:
 - An isolated initiation endpoint, test order, test email and test phone.
 - `MPESA_UAT_ENV` set to `sandbox`, `staging` or `local`.
+- `MPESA_UAT_EXPECTED_HOST` exactly matching the isolated initiation endpoint host.
 - `MPESA_UAT_EXPECTED_HOST` exactly matching the endpoint host.
 - HTTPS for remote endpoints; loopback only for local endpoints.
 - `MPESA_UAT_ALLOW_MUTATION=true`.
@@ -30,3 +31,5 @@ Missing prerequisites now return exit code 2 and a BLOCKED message. They are not
 The source contains the existing communications worker, Brevo integration and verification scripts. Static verification does not establish provider delivery. A controlled delivery test still requires approved test recipients and authorised provider configuration.
 
 No payment, refund, M-Pesa initiation, webhook UAT request, bulk email or customer notification was sent during this cycle.
+
+The real M-Pesa UAT runner now polls the token-protected payment-status endpoint after STK initiation. It passes only after the provider-originated callback is reconciled. The generic signed webhook harness is synthetic boundary testing and is not provider UAT.
