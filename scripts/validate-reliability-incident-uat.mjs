@@ -1,0 +1,36 @@
+import fs from 'node:fs';
+import path from 'node:path';
+import crypto from 'node:crypto';
+
+const block = (message) => { console.error(`BLOCKED: ${message}`); process.exit(2); };
+const required = (key) => { const value = process.env[key]?.trim(); if (!value) block(`Missing ${key}`); return value; };
+if (process.env.TOPLINE_INCIDENT_UAT_ENV !== 'staging') block('TOPLINE_INCIDENT_UAT_ENV=staging is required.');
+if (process.env.TOPLINE_ALLOW_INCIDENT_UAT !== 'true') block('Explicit TOPLINE_ALLOW_INCIDENT_UAT=true approval is required.');
+const projectRef = required('TOPLINE_INCIDENT_STAGING_PROJECT_REF');
+if (!/^[a-z0-9]{20}$/.test(projectRef)) block('Staging project ref must be 20 lowercase alphanumeric characters.');
+const config = fs.readFileSync('supabase/config.toml', 'utf8');
+const canonical = config.match(/^project_id\s*=\s*"([a-z0-9]+)"/m)?.[1];
+if (!canonical || projectRef === canonical) block('Refusing canonical production project.');
+const file = path.resolve(process.env.TOPLINE_INCIDENT_UAT_EVIDENCE_FILE || 'artifacts/reliability-incident-uat/evidence.json');
+if (!fs.existsSync(file)) block(`Evidence file not found: ${file}`);
+let e; try { e = JSON.parse(fs.readFileSync(file, 'utf8')); } catch { block('Evidence must be valid JSON.'); }
+const strings = ['incident_id','incident_number','tested_commit_sha','synthetic_alert_source','alert_delivery_reference','alert_received_at','incident_created_at','incident_acknowledged_at','incident_mitigated_at','incident_resolved_at','resolution_summary','recovery_drill_reference','recovery_validation_reference','operator','observer'];
+for (const key of strings) if (typeof e[key] !== 'string' || !e[key].trim()) block(`${key} is required.`);
+if (e.project_ref !== projectRef) block('Evidence project_ref does not match staging project.');
+if (!/^[a-f0-9]{40,64}$/i.test(e.tested_commit_sha)) block('tested_commit_sha must be a Git SHA.');
+if (!/^INC-\d+$/.test(e.incident_number)) block('incident_number must use INC-<number> format.');
+if (!/^https?:\/\//i.test(e.alert_delivery_reference) && !/^[A-Za-z0-9._:/-]{6,}$/.test(e.alert_delivery_reference)) block('alert_delivery_reference must be a provider event/message reference, not a secret.');
+const times = ['alert_received_at','incident_created_at','incident_acknowledged_at','incident_mitigated_at','incident_resolved_at'].map(k => Date.parse(e[k]));
+if (times.some(Number.isNaN)) block('All incident lifecycle timestamps must be valid ISO dates.');
+if (times[2] < times[1] || times[3] < times[2] || times[4] < times[3]) block('Incident lifecycle timestamps are out of order.');
+if (e.alert_delivery_confirmed !== true || e.recovery_restore_validated !== true || e.storage_restore_validated !== true || e.business_smoke_test_passed !== true) block('Alert delivery, database recovery, storage recovery and business smoke tests must all be explicitly true.');
+if (!Number.isFinite(e.measured_rto_minutes) || !Number.isFinite(e.measured_rpo_minutes) || !Number.isFinite(e.target_rto_minutes) || !Number.isFinite(e.target_rpo_minutes)) block('Measured and approved RTO/RPO values are required.');
+if ([e.measured_rto_minutes,e.measured_rpo_minutes,e.target_rto_minutes,e.target_rpo_minutes].some(v => v < 0)) block('RTO/RPO values cannot be negative.');
+if (e.measured_rto_minutes > e.target_rto_minutes || e.measured_rpo_minutes > e.target_rpo_minutes) block('Measured RTO/RPO exceeds approved target.');
+const serialized = JSON.stringify(e);
+if (/(service_role|secret|password|access_token|refresh_token|api[_-]?key)\s*["']?\s*[:=]\s*["'][^"']{8,}/i.test(serialized)) block('Evidence appears to contain a secret; remove it before validation.');
+const sha = crypto.createHash('sha256').update(fs.readFileSync(file)).digest('hex');
+const out = path.resolve('artifacts/reliability-incident-uat'); fs.mkdirSync(out, { recursive: true });
+fs.writeFileSync(path.join(out, 'validated-summary.json'), JSON.stringify({ status: 'EVIDENCE_VALIDATED_NOT_INDEPENDENTLY_VERIFIED', project_ref: projectRef, incident_number: e.incident_number, tested_commit_sha: e.tested_commit_sha, alert_delivery_confirmed: true, recovery_restore_validated: true, storage_restore_validated: true, business_smoke_test_passed: true, measured_rto_minutes: e.measured_rto_minutes, target_rto_minutes: e.target_rto_minutes, measured_rpo_minutes: e.measured_rpo_minutes, target_rpo_minutes: e.target_rpo_minutes, evidence_sha256: sha, sanitized: true, note: 'Structural validation only. Independently inspect original provider alert, backup, restore and observer artifacts before closure.' }, null, 2) + '\n');
+console.log(`Incident alert/recovery evidence structurally validated. SHA-256 ${sha}`);
+console.log('STATUS: EVIDENCE_VALIDATED_NOT_INDEPENDENTLY_VERIFIED');

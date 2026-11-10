@@ -1,16 +1,16 @@
 {
-  "audit_date": "2026-11-07",
-  "foundation": "TOPLINE-FLOORING-PHASE-19-COMPLETE-2026-11-07.zip",
-  "execution_status": "PHASE 19 ORDER CONFIRMATION EVENT-TO-OUTBOX HANDOFF RESTORED; TRANSACTIONAL ORDER EMAIL NOT SUPPRESSED BY OPTIONAL EMAIL PREFERENCE; STAFF ORDER DELIVERY EVIDENCE ADDED; 15/15 TARGETED AND 166/166 AGGREGATE STATIC VERIFIERS PASS; STAGING DATABASE REPLAY AND LIVE BREVO DELIVERY UAT PENDING",
+  "audit_date": "2026-11-10",
+  "foundation": "TOPLINE-FLOORING-FINAL-CONSOLIDATED-G13-RELEASE-2026-11-07.zip",
+  "execution_status": "G-19 HSE lifecycle remediation extended: sequential event/action transitions, resolved-to-closed support, accountable owners, site readiness requirements and independent verification. Staging DB replay and competent real-site HSE UAT pending.",
   "static_verification": {
-    "passed": 166,
+    "passed": 193,
     "failed": 0,
     "new_regression_check": "verify-phase-19-order-confirmation-delivery.mjs (12/12)",
     "phase2_regression_check": "verify-phase-2-product-inventory-hardening.mjs (51/51)",
     "phase3_regression_check": "verify-phase-3-cart-quotations-checkout.mjs (16/16)",
     "phase4_regression_check": "verify-phase-4-order-fulfillment-finance.mjs (22/22)",
     "phase4_scope_status": "SOURCE-LEVEL REPAIRS; NOT PRODUCTION-CERTIFIED",
-    "aggregate_command": "node scripts/verify-all.mjs (166/166 passed after Phase 19 hardening)",
+    "aggregate_command": "node scripts/verify-all.mjs (193/193 passed after G-19 HSE lifecycle remediation)",
     "phase5_regression_check": "verify-phase-5-payment-initiation-atomicity.mjs (18/18)",
     "phase5_scope_status": "SOURCE-LEVEL ATOMIC PAYMENT ATTEMPT RESERVATION; NOT PROVIDER OR PRODUCTION CERTIFIED",
     "phase5_callback_hardening": "POST-only callback; 64 KiB payload ceiling; card HMAC over raw body",
@@ -150,9 +150,9 @@
       "workflow_id": "WF-12",
       "workflow_domain": "Database/Supabase/RLS/data integrity",
       "roles": "Anonymous/customer/staff/admin/service role",
-      "entry_points": "158 SQL migrations; Supabase config; local DB test harness",
-      "backend_and_data_dependencies": "167 tables; 274 functions; 290 FK references (repository verifier report)",
-      "phase0_status": "158 ACTIVE MIGRATIONS; MIGRATION INTEGRITY AND SQL STATIC SAFETY PASS; DISPOSABLE/STAGING POSTGRESQL REPLAY AND RLS ROLE-MATRIX TESTS PENDING",
+      "entry_points": "168 active SQL migrations; Supabase config; local DB test harness",
+      "backend_and_data_dependencies": "167 tables; 276 functions; 290 FK references (current repository dependency verifier; source-derived, not remote catalog)",
+      "phase0_status": "168 ACTIVE MIGRATIONS; CURRENT REPOSITORY DEPENDENCY SCAN: 167 TABLES, 276 FUNCTIONS, 290 FK REFERENCES; MIGRATION INTEGRITY AND SQL STATIC SAFETY PASS; DISPOSABLE/STAGING POSTGRESQL REPLAY AND RLS ROLE-MATRIX TESTS PENDING",
       "repair_phase": "Phase 6"
     },
     {
@@ -191,5 +191,16 @@
       "phase0_status": "BLOCKED ON DEPENDENCIES, STAGING DATABASE, PROVIDER CREDENTIALS, DEVICE/BROWSER TESTING AND OWNER AUTHORIZATION",
       "repair_phase": "Phase 16"
     }
-  ]
+  ],
+  "database_inventory": {
+    "measured_at": "2026-11-10",
+    "source": "scripts/verify-database-dependencies.mjs against supabase/migrations/",
+    "active_migration_files": 168,
+    "uniquely_timestamped_migrations": 168,
+    "tables": 167,
+    "functions": 276,
+    "foreign_key_references": 290,
+    "scope": "Repository SQL-source-derived counts; not a live Supabase catalog snapshot.",
+    "runtime_status": "Disposable/staging PostgreSQL migration replay and RLS role-matrix tests remain pending."
+  }
 }

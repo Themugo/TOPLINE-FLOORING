@@ -1,0 +1,151 @@
+{
+  "schema_version": 1,
+  "gap": "G-23",
+  "title": "External production release evidence collection",
+  "release_status": "NOT_CERTIFIED",
+  "canonical": {
+    "supabase_project_ref": "cvjmfplhdlfvqnnmzqcp",
+    "production_site": "https://toplinefloorandwaterproofing.co.ke",
+    "source_migration_count": 168,
+    "node_major": 22
+  },
+  "rules": [
+    "A source verifier passing is not external production evidence.",
+    "A criterion may be marked VERIFIED only when evidence_file points to a non-empty file under this directory and evidence_summary describes what was observed.",
+    "Do not store passwords, API keys, service-role keys, access tokens, payment credentials, customer data, or personal data in this evidence pack.",
+    "Redact account identifiers and customer information from screenshots and logs.",
+    "Keep production migration application, payment activation and DNS cutover approval-controlled."
+  ],
+  "criteria": [
+    {
+      "id": "CI-01",
+      "area": "CI",
+      "requirement": "A successful CI run exists for the exact release commit.",
+      "status": "PENDING",
+      "evidence_file": "",
+      "evidence_summary": "",
+      "verified_by": "",
+      "verified_at_utc": ""
+    },
+    {
+      "id": "BUILD-01",
+      "area": "Build",
+      "requirement": "npm ci, lint, typecheck, production build and responsive browser suite pass on the release candidate.",
+      "status": "PENDING",
+      "evidence_file": "",
+      "evidence_summary": "",
+      "verified_by": "",
+      "verified_at_utc": ""
+    },
+    {
+      "id": "DB-01",
+      "area": "Supabase",
+      "requirement": "Linked migration list is reviewed and remote history is reconciled with 168 source migrations.",
+      "status": "PENDING",
+      "evidence_file": "",
+      "evidence_summary": "",
+      "verified_by": "",
+      "verified_at_utc": ""
+    },
+    {
+      "id": "DB-02",
+      "area": "Supabase",
+      "requirement": "Linked db push dry-run and db lint are reviewed; no unexpected destructive or out-of-scope operation remains.",
+      "status": "PENDING",
+      "evidence_file": "",
+      "evidence_summary": "",
+      "verified_by": "",
+      "verified_at_utc": ""
+    },
+    {
+      "id": "AUTH-01",
+      "area": "Authentication",
+      "requirement": "Production Auth Site URL, redirect allow-list, email verification and recovery flows pass real UAT.",
+      "status": "PENDING",
+      "evidence_file": "",
+      "evidence_summary": "",
+      "verified_by": "",
+      "verified_at_utc": ""
+    },
+    {
+      "id": "VERCEL-01",
+      "area": "Hosting",
+      "requirement": "Exact release commit is deployed; deployment logs, production environment parity and domain attachment are verified.",
+      "status": "PENDING",
+      "evidence_file": "",
+      "evidence_summary": "",
+      "verified_by": "",
+      "verified_at_utc": ""
+    },
+    {
+      "id": "WEB-01",
+      "area": "Hosting",
+      "requirement": "Apex HTTPS, www canonical redirect, SPA deep links, security headers and production smoke tests pass.",
+      "status": "PENDING",
+      "evidence_file": "",
+      "evidence_summary": "",
+      "verified_by": "",
+      "verified_at_utc": ""
+    },
+    {
+      "id": "PAY-01",
+      "area": "Payments",
+      "requirement": "Selected provider sandbox UAT proves success, failure, duplicate callback, invalid signature, reversal and full/partial refund; provider remains disabled if no approved adapter exists.",
+      "status": "PENDING",
+      "evidence_file": "",
+      "evidence_summary": "",
+      "verified_by": "",
+      "verified_at_utc": ""
+    },
+    {
+      "id": "COMMS-01",
+      "area": "Communications",
+      "requirement": "Sender-domain authentication and real email/SMS delivery callbacks are verified without exposing secrets.",
+      "status": "PENDING",
+      "evidence_file": "",
+      "evidence_summary": "",
+      "verified_by": "",
+      "verified_at_utc": ""
+    },
+    {
+      "id": "BUS-01",
+      "area": "Business UAT",
+      "requirement": "Catalogue, checkout, delivery, projects, invoices, customer portal and after-sales workflows are signed off by business owners.",
+      "status": "PENDING",
+      "evidence_file": "",
+      "evidence_summary": "",
+      "verified_by": "",
+      "verified_at_utc": ""
+    },
+    {
+      "id": "DNS-01",
+      "area": "DNS",
+      "requirement": "Approved web DNS records are documented and mail MX/SPF/DKIM/DMARC records are confirmed unchanged.",
+      "status": "PENDING",
+      "evidence_file": "",
+      "evidence_summary": "",
+      "verified_by": "",
+      "verified_at_utc": ""
+    },
+    {
+      "id": "ROLLBACK-01",
+      "area": "Rollback",
+      "requirement": "Rollback to the previous website target is tested or rehearsed; existing cPanel mail and old website remain available until sign-off.",
+      "status": "PENDING",
+      "evidence_file": "",
+      "evidence_summary": "",
+      "verified_by": "",
+      "verified_at_utc": ""
+    },
+    {
+      "id": "APPROVAL-01",
+      "area": "Approval",
+      "requirement": "Named technical and business owners approve production cutover and record the release commit and deployment URL.",
+      "status": "PENDING",
+      "evidence_file": "",
+      "evidence_summary": "",
+      "verified_by": "",
+      "verified_at_utc": ""
+    }
+  ]
+}

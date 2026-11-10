@@ -1,57 +1,59 @@
 # Deployment Guide — Topline Flooring & Waterproofing
 
-> **Infrastructure status:** the application source is ready for the dedicated Supabase infrastructure phase. The repository currently contains historical migrations that must be consolidated and verified before they are used to create the production database.
+> **Canonical infrastructure:** this repository is pinned to the dedicated client-owned Topline Supabase project `cvjmfplhdlfvqnnmzqcp` (`https://cvjmfplhdlfvqnnmzqcp.supabase.co`). This guide describes the current source configuration and safe release sequence. It does not claim that the remote migration history, current schema, provider settings or production deployment have been verified.
 
-## 1. Build the application
+## 1. Build and source validation
 
-Install dependencies and validate the source tree:
+Use Node.js 22.x as declared in `package.json`. From the repository root:
 
-```bash
-npm install
+```cmd
+npm ci
 npm run typecheck
 npm run lint
 npm run build
+npm run verify:remote-deploy-gate
+npm run verify:operation-16-client-owned-supabase
 ```
 
-The normal production build is `npm run build`. `npm run build:all` also generates the sitemap, but sitemap generation can operate without a database and will fall back to the static route set when Supabase is not configured.
+Run the project's focused and aggregate test commands as defined in `package.json` and CI. A successful build or source verifier is not a substitute for database replay, staging UAT or production sign-off.
 
-## 2. Supabase infrastructure prerequisite
+## 2. Canonical Supabase project and migration policy
 
-Create a **new, dedicated Supabase project for Topline Flooring & Waterproofing**. Do not reuse credentials or databases from another application.
+- Project ref: `cvjmfplhdlfvqnnmzqcp`
+- API URL: `https://cvjmfplhdlfvqnnmzqcp.supabase.co`
+- Region recorded in the infrastructure specification: `eu-central-1`
+- PostgreSQL major version configured in `supabase/config.toml`: `17`
+- Ownership: client-owned Topline project
 
-The infrastructure phase must establish and verify:
+Do not create or substitute another project as part of routine deployment, and never reuse another application's Supabase project. `supabase/config.toml`, `.env.example` and the frontend Supabase client pin the canonical identity.
 
-- one canonical database baseline;
-- deterministic migration order;
-- Supabase Auth;
-- staff identity/profile model;
-- roles and permissions;
-- RLS for every business table;
-- storage buckets and storage policies;
-- public quote/order intake RPCs;
-- audit logging;
-- production seed data; and
-- backup/recovery expectations.
+The deployable migration sequence is the uniquely timestamped SQL files in `supabase/migrations/`. At this source snapshot it contains **168 active migrations**. Confirm the current count with:
 
-Until that work is complete, do not apply the existing `supabase/migrations/` directory blindly. It contains historical duplicate and overlapping migration generations.
+```cmd
+node scripts/verify-migration-integrity.mjs
+node scripts/verify-database-dependencies.mjs
+```
+
+The count is repository-source inventory, not proof that all migrations have been applied remotely. See `supabase/MIGRATION_MANIFEST.md` and `supabase/MIGRATION_POLICY.md` for the authoritative sequence and immutable-history rules. Do not delete, renumber, rewrite, squash or manually apply migration history to make local and remote lists appear aligned.
 
 ## 3. Environment variables
 
-Create a local `.env` from `.env.example`:
+Copy `.env.example` to `.env.local` for local development and supply the public publishable key from the dedicated Topline project:
 
-```text
-VITE_SUPABASE_URL=https://<topline-project-ref>.supabase.co
-VITE_SUPABASE_ANON_KEY=<topline-anon-key>
+```cmd
+copy .env.example .env.local
 ```
 
-Optional:
+Required browser-safe values:
 
 ```text
-VITE_SITE_URL=https://<topline-production-domain>
-VITE_LOGGING_API_ENDPOINT=https://<approved-observability-endpoint>
+VITE_SUPABASE_URL=https://cvjmfplhdlfvqnnmzqcp.supabase.co
+VITE_SUPABASE_PUBLISHABLE_KEY=<Topline-publishable-key>
 ```
 
-The browser only receives the Supabase URL and anon/public key. **Never** place a Supabase service-role key in `.env`, Vercel, client code, or Git.
+`VITE_SUPABASE_ANON_KEY` is retained only as a legacy compatibility fallback where required. Optional `VITE_SITE_URL` should use `https://toplinefloorandwaterproofing.co.ke`.
+
+Never put a service-role key, database password, provider secret, SMTP credential or payment private key in a `VITE_*` variable, `.env.example`, browser code or Git. Server-only secrets belong in the appropriate server/Edge Function secret store.
 
 ## 4. Business portal authentication
 
@@ -66,7 +68,7 @@ The existing `scripts/create-admin.mjs` is a developer-machine bootstrap utility
 After the Supabase infrastructure is verified:
 
 1. Import the GitHub repository into Vercel.
-2. Add `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` for the appropriate environments.
+2. Add `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY` for the appropriate Vercel environments (legacy anon-key fallback only where required).
 3. Add `VITE_SITE_URL` with the canonical public Topline domain.
 4. Deploy the Vite application.
 5. Verify public pages, quote capture, checkout, order tracking and every protected portal route.
@@ -97,7 +99,7 @@ From Windows CMD, after confirming you are authorised to inspect the intended To
 npx supabase login
 npx supabase link --project-ref cvjmfplhdlfvqnnmzqcp
 set TOPLINE_ALLOW_LINKED_DB_READS=true
-set TOPLINE_EXPECTED_MIGRATION_COUNT=163
+set TOPLINE_EXPECTED_MIGRATION_COUNT=168
 npm run validate:linked-supabase
 ```
 
@@ -143,3 +145,19 @@ TOPLINE_ALLOW_LOCAL_DB_RESET=true npm run validate:local-db
 
 Only set this variable after confirming the local Supabase instance is disposable. This opt-in is not permission to reset, link, or mutate a remote or production database. Never run `supabase db reset --linked` against production.
 
+
+## G-21 — Release order and evidence boundary
+
+The safe order is:
+
+1. Complete source checks, dependency installation, typecheck, lint and frontend build.
+2. Run the disposable/local Supabase replay only against a confirmed disposable local stack. The reset is local-only and guarded by `TOPLINE_ALLOW_LOCAL_DB_RESET=true`.
+3. Review local replay, SQL tests, lint output and generated type changes.
+4. Obtain explicit owner authorization before linked Supabase reads. Set `TOPLINE_ALLOW_LINKED_DB_READS=true` only after confirming the local CLI link identifies `cvjmfplhdlfvqnnmzqcp`; then run `npm run validate:linked-supabase`.
+5. Manually reconcile the complete remote migration history and dry-run output. Stop on unexplained pending/divergent migrations or lint errors.
+6. Apply migrations only under a separate explicit release approval, after the preceding gates are accepted. This guide and its verification scripts do not authorize production mutation.
+7. Deploy the frontend only after approved infrastructure and environment checks; complete browser, role, payment and communications UAT before production sign-off.
+
+**Never run** `supabase db reset --linked` against the client-owned production project. A linked `db push --dry-run --linked` is a preview, not a migration application and not proof that SQL executes successfully.
+
+At the G-21 source snapshot, the canonical target is configured but linked project identity, remote migration history, remote schema, database lint, deployment state and provider readiness remain unverified in this execution environment.

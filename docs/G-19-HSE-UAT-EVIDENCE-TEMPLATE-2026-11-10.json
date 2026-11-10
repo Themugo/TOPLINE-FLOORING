@@ -1,0 +1,34 @@
+{
+  "workstream": "G-19 HSE Certification",
+  "status": "NOT_STARTED",
+  "environment": {
+    "type": "isolated_staging",
+    "project_ref": "",
+    "migration_version": "20261110130000_g19_hse_transition_and_independent_verification.sql",
+    "migration_applied_at": null,
+    "operator": ""
+  },
+  "staging_cases": [],
+  "real_site_inspection": {
+    "site_name": "",
+    "inspection_date": null,
+    "competent_hse_lead": "",
+    "risk_assessment_reference": "",
+    "method_statement_reference": "",
+    "induction_evidence_reference": "",
+    "toolbox_talk_evidence_reference": "",
+    "ppe_inspection_evidence_reference": "",
+    "equipment_inspection_evidence_reference": "",
+    "emergency_arrangements_evidence_reference": "",
+    "permit_evidence_references": [],
+    "incident_and_near_miss_evidence_references": [],
+    "corrective_action_evidence_references": [],
+    "outstanding_critical_or_high_hazards": [],
+    "restrictions_or_stop_work_decisions": [],
+    "hse_lead_decision": "NOT_SIGNED",
+    "sign_off_reference": ""
+  },
+  "production_changes_performed": false,
+  "git_commit_or_push_performed": false,
+  "notes": "Use synthetic data in staging. Store sensitive worker records and evidence in the approved protected repository; enter references only. Do not claim statutory certification without competent review."
+}

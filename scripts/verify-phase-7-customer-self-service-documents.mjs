@@ -29,7 +29,7 @@ const checks = [
   ['generated database RPC type is present', types.includes('get_customer_project_documents:')],
   ['migration manifest lists new migration', manifest.includes(migrationName)],
   ['migration manifest count is current', manifest.includes(`contains ${fs.readdirSync(path.join(root, 'supabase/migrations')).filter((name) => name.endsWith('.sql')).length} uniquely timestamped active migrations`)],
-  ['workflow register advances to the Phase 19 authoritative foundation', JSON.parse(register).foundation === 'TOPLINE-FLOORING-PHASE-19-COMPLETE-2026-11-07.zip'],
+  ['workflow register advances to the G-13 consolidated authoritative foundation', JSON.parse(register).foundation === 'TOPLINE-FLOORING-FINAL-CONSOLIDATED-G13-RELEASE-2026-11-07.zip'],
   ['workflow register records Phase 7 scope', JSON.parse(register).workflow_register.find(x => x.workflow_id === 'WF-07')?.phase0_status.includes('PHASE 7 CUSTOMER DOCUMENT SELF-SERVICE CONTRACT RETAINED')],
 ];
 let failed = 0;

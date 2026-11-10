@@ -1,0 +1,107 @@
+{
+  "domain": "toplinefloorandwaterproofing.co.ke",
+  "checked_at_utc": "2026-11-07T10:14:04.594Z",
+  "selectors": [],
+  "resolvers": {
+    "Cloudflare": {
+      "MX": {
+        "name": "toplinefloorandwaterproofing.co.ke",
+        "error": "fetch failed"
+      },
+      "SPF": {
+        "name": "toplinefloorandwaterproofing.co.ke",
+        "error": "fetch failed"
+      },
+      "DMARC": {
+        "name": "_dmarc.toplinefloorandwaterproofing.co.ke",
+        "error": "fetch failed"
+      }
+    },
+    "Google": {
+      "MX": {
+        "name": "toplinefloorandwaterproofing.co.ke",
+        "error": "fetch failed"
+      },
+      "SPF": {
+        "name": "toplinefloorandwaterproofing.co.ke",
+        "error": "fetch failed"
+      },
+      "DMARC": {
+        "name": "_dmarc.toplinefloorandwaterproofing.co.ke",
+        "error": "fetch failed"
+      }
+    }
+  },
+  "findings": [
+    {
+      "resolver": "Cloudflare",
+      "check": "MX",
+      "status": "UNKNOWN_NETWORK",
+      "records": []
+    },
+    {
+      "resolver": "Cloudflare",
+      "check": "SPF",
+      "status": "UNKNOWN_NETWORK",
+      "records": []
+    },
+    {
+      "resolver": "Cloudflare",
+      "check": "SPF_TERMINAL_POLICY",
+      "status": "UNKNOWN_NETWORK",
+      "detail": "Do not add a second SPF TXT record. Confirm every legitimate sender before changing the terminal policy."
+    },
+    {
+      "resolver": "Cloudflare",
+      "check": "DMARC",
+      "status": "UNKNOWN_NETWORK",
+      "records": []
+    },
+    {
+      "resolver": "Cloudflare",
+      "check": "DMARC_POLICY",
+      "status": "UNKNOWN_NETWORK"
+    },
+    {
+      "resolver": "Cloudflare",
+      "check": "DKIM",
+      "status": "SELECTOR_REQUIRED",
+      "detail": "Use the exact selector shown in Brevo or in the DKIM-Signature s= header. Selectors cannot be reliably discovered by guessing."
+    },
+    {
+      "resolver": "Google",
+      "check": "MX",
+      "status": "UNKNOWN_NETWORK",
+      "records": []
+    },
+    {
+      "resolver": "Google",
+      "check": "SPF",
+      "status": "UNKNOWN_NETWORK",
+      "records": []
+    },
+    {
+      "resolver": "Google",
+      "check": "SPF_TERMINAL_POLICY",
+      "status": "UNKNOWN_NETWORK",
+      "detail": "Do not add a second SPF TXT record. Confirm every legitimate sender before changing the terminal policy."
+    },
+    {
+      "resolver": "Google",
+      "check": "DMARC",
+      "status": "UNKNOWN_NETWORK",
+      "records": []
+    },
+    {
+      "resolver": "Google",
+      "check": "DMARC_POLICY",
+      "status": "UNKNOWN_NETWORK"
+    },
+    {
+      "resolver": "Google",
+      "check": "DKIM",
+      "status": "SELECTOR_REQUIRED",
+      "detail": "Use the exact selector shown in Brevo or in the DKIM-Signature s= header. Selectors cannot be reliably discovered by guessing."
+    }
+  ]
+}

@@ -1,0 +1,46 @@
+docs/G-02-DATABASE-MIGRATION-REPLAY-EXECUTION-REPORT-2026-11-07.md:3: trailing whitespace.
+[32m+[m[32m**Date:** 2026-11-07[m[41m  [m
+docs/G-02-DATABASE-MIGRATION-REPLAY-EXECUTION-REPORT-2026-11-07.md:4: trailing whitespace.
+[32m+[m[32m**Foundation:** `TOPLINE-FLOORING-PHASE-19-LEADS-REPAIRED-2026-11-07.zip`[m[41m  [m
+docs/G-02-DATABASE-MIGRATION-REPLAY-EXECUTION-REPORT-2026-11-07.md:5: trailing whitespace.
+[32m+[m[32m**Project root:** `TOPLINE-FLOORING-main/`[m[41m  [m
+docs/G-03-LIVE-SUPABASE-CERTIFICATION-REPORT-2026-11-07.md:3: trailing whitespace.
+[32m+[m[32m**Date:** 2026-11-07[m[41m  [m
+docs/G-03-LIVE-SUPABASE-CERTIFICATION-REPORT-2026-11-07.md:4: trailing whitespace.
+[32m+[m[32m**Foundation:** `TOPLINE-FLOORING-G-02-DATABASE-REPLAY-2026-11-07.zip`[m[41m  [m
+docs/G-03-LIVE-SUPABASE-CERTIFICATION-REPORT-2026-11-07.md:5: trailing whitespace.
+[32m+[m[32m**Project root:** `TOPLINE-FLOORING-main/`[m[41m  [m
+docs/G-03-LIVE-SUPABASE-CERTIFICATION-REPORT-2026-11-07.md:6: trailing whitespace.
+[32m+[m[32m**Expected Supabase project:** `cvjmfplhdlfvqnnmzqcp`[m[41m  [m
+docs/G-04-FRONTEND-BUILD-CERTIFICATION-REPORT-2026-11-07.md:3: trailing whitespace.
+[32m+[m[32m**Date:** 2026-11-07[m[41m  [m
+docs/G-04-FRONTEND-BUILD-CERTIFICATION-REPORT-2026-11-07.md:4: trailing whitespace.
+[32m+[m[32m**Foundation:** `TOPLINE-FLOORING-G-03-LIVE-SUPABASE-CERTIFICATION-2026-11-07.zip`[m[41m  [m
+docs/G-04-FRONTEND-BUILD-CERTIFICATION-REPORT-2026-11-07.md:5: trailing whitespace.
+[32m+[m[32m**Project root:** `TOPLINE-FLOORING-main/`[m[41m  [m
+docs/G-05-PAYMENT-PROVIDER-UAT-EXECUTION-REPORT-2026-11-07.md:3: trailing whitespace.
+[32m+[m[32m**Date:** 2026-11-07[m[41m  [m
+docs/G-05-PAYMENT-PROVIDER-UAT-EXECUTION-REPORT-2026-11-07.md:4: trailing whitespace.
+[32m+[m[32m**Foundation:** `TOPLINE-FLOORING-G-04-FRONTEND-BUILD-CERTIFICATION-2026-11-07.zip`[m[41m  [m
+docs/G-05-PAYMENT-PROVIDER-UAT-EXECUTION-REPORT-2026-11-07.md:5: trailing whitespace.
+[32m+[m[32m**Project root:** `TOPLINE-FLOORING-main/`[m[41m  [m
+docs/G-06-CUSTOMER-COMMUNICATIONS-UAT-REPORT-2026-11-07.md:3: trailing whitespace.
+[32m+[m[32m**Date:** 2026-11-07[m[41m  [m
+docs/G-06-CUSTOMER-COMMUNICATIONS-UAT-REPORT-2026-11-07.md:4: trailing whitespace.
+[32m+[m[32m**Foundation:** `TOPLINE-FLOORING-G-05-PAYMENT-PROVIDER-UAT-2026-11-07.zip`[m[41m  [m
+docs/G-06-CUSTOMER-COMMUNICATIONS-UAT-REPORT-2026-11-07.md:5: trailing whitespace.
+[32m+[m[32m**Project root:** `TOPLINE-FLOORING-main/`[m[41m  [m
+docs/G-06-CUSTOMER-COMMUNICATIONS-UAT-RUNBOOK.md:3: trailing whitespace.
+[32m+[m[32m**Status:** OPEN until an actual staging order confirmation is received and provider delivery evidence is reconciled.[m[41m  [m
+docs/G-06-CUSTOMER-COMMUNICATIONS-UAT-RUNBOOK.md:4: trailing whitespace.
+[32m+[m[32m**Provider:** Brevo transactional email.[m[41m  [m
+docs/G-07-BACKGROUND-AUTOMATION-UAT-REPORT-2026-11-07.md:3: trailing whitespace.
+[32m+[m[32m**Date:** 2026-11-07[m[41m  [m
+docs/G-07-BACKGROUND-AUTOMATION-UAT-REPORT-2026-11-07.md:4: trailing whitespace.
+[32m+[m[32m**Foundation:** `TOPLINE-FLOORING-G-06-CUSTOMER-COMMUNICATIONS-2026-11-07.zip`[m[41m  [m
+docs/G-07-BACKGROUND-AUTOMATION-UAT-REPORT-2026-11-07.md:5: trailing whitespace.
+[32m+[m[32m**Project root:** `TOPLINE-FLOORING-main/`[m[41m  [m
+docs/G-08-SECURITY-CERTIFICATION-UAT-RUNBOOK.md:3: trailing whitespace.
+[32m+[m[32m**Scope:** RLS, RPC execute privileges and private Storage role isolation.[m[41m  [m
+docs/G-08-SECURITY-CERTIFICATION-UAT-RUNBOOK.md:4: trailing whitespace.
+[32m+[m[32m**Safety:** Staging-only, read-only SQL, no fixture creation or deletion.[m[41m  [m

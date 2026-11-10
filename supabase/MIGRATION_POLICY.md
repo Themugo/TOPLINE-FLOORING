@@ -6,7 +6,7 @@ Topline Flooring is a single-business application with its own dedicated Supabas
 
 The repository contains historical migrations from the original prototype. They are **frozen history** and must not be renumbered, deleted, or rewritten after a remote Topline project has been connected.
 
-Because the current repository does not yet point at a live Topline Supabase project, Phase 3 establishes the canonical forward architecture without pretending that an unverified remote migration history has been reconciled.
+The repository is now pinned to the dedicated client-owned Topline project (`cvjmfplhdlfvqnnmzqcp`). This source-level pin does not prove that the linked remote migration history has been inspected or reconciled. The first and every subsequent remote deployment must follow the read-only history/dry-run/lint gate and separate owner authorization.
 
 From this phase onward:
 
@@ -14,7 +14,7 @@ From this phase onward:
 2. No numeric migration prefixes such as `001`, `002`, `006`, etc. are reused.
 3. All new migrations are tested against a clean local database before deployment.
 4. Remote schema changes must go through versioned migrations; do not edit the production database manually.
-5. Once the dedicated Topline project exists, its actual migration history must be inspected before the first `db push`.
+5. Before any `db push`, inspect the dedicated Topline project's actual migration history, review the linked dry-run and lint results, and obtain explicit release approval.
 6. If the remote project is empty, the historical prototype chain can be formally squashed into a clean baseline in a dedicated migration-cleanup change. That squash must be tested with `supabase db reset` before deployment.
 7. If the remote project contains any data, do not squash or rewrite history; reconcile the remote migration history first.
 

@@ -16,7 +16,7 @@ if(!init.includes('payment ledger could not be updated')) fail('Provider accepta
 const callback=read('supabase/functions/payment-callback/index.ts');
 if(!callback.includes('rawBody=new TextDecoder().decode(bytes)') || !callback.includes('const raw=rawBody')) fail('Card callback signature verification does not use the exact raw request body.');
 if(!callback.includes('bytes.byteLength>65536') || !callback.includes("req.method!=='POST'")) fail('Provider callback method and payload-size boundaries are missing.');
-if(!callback.includes('merchantRequest&&tx.provider_reference!==merchantRequest')) fail('M-Pesa callback does not bind MerchantRequestID to the initiated transaction.');
+if(!callback.includes('!merchantRequest||!tx.provider_reference||tx.provider_reference!==merchantRequest')) fail('M-Pesa callback does not require a non-empty MerchantRequestID matching the initiated transaction reference.');
 if(!callback.includes("status==='successful'?'payment.success':'payment.failed'") || !callback.includes('if(applyError||data?.success===false)')) fail('M-Pesa failure/success callbacks must reconcile through the atomic payment RPC and fail closed when it rejects.');
 if(callback.includes("payment_attempts').update({status:'failed'")) fail('M-Pesa callback must not bypass atomic payment reconciliation with a direct failure mutation.');
 if(portal.includes('idempotencyKey:`portal-order-payment:${selectedRecord.value.id}:${orderPaymentGatewayKey}`')) fail('Portal order Pay Now still reuses a deterministic retry key.');

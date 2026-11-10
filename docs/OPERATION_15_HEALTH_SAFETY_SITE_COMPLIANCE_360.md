@@ -17,3 +17,11 @@ Site/project control → hazard/near miss/incident/observation/toolbox talk → 
 
 ## Production boundary
 This operation does not claim statutory certification, external HSE accreditation, medical clearance, insurance compliance, regulator approval or a completed site safety audit. Those require real-world evidence and authorized review.
+
+## G-19 lifecycle integrity addendum (2026-11-10)
+- Site controls require a named responsible safety owner, explicit PPE requirements or a documented not-applicable reason, emergency arrangements, and a future review date.
+- Events progress sequentially: `open → investigating → controlled → resolved → closed`; `closed` is terminal. High/critical incidents retain immediate-control evidence requirements.
+- Corrective actions require an owner and due date; actions progress sequentially and cannot be added after the parent event is resolved.
+- Verification is independent: the assigned action owner cannot verify their own completed action. Verification notes are required, and the parent event can close only after every linked corrective action is closed.
+- These are application/database workflow controls. They do not replace an actual site inspection, competent HSE review, or statutory registers.
+- See `G-19-HSE-CERTIFICATION-REMEDIATION-ADDENDUM-2026-11-10.md` and `G-19-HSE-STAGING-AND-REAL-SITE-UAT-RUNBOOK-2026-11-10.md`.

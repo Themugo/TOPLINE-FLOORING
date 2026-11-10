@@ -38,6 +38,13 @@ jobs:
       - name: Phase 14 CI / release-gate contract
         run: npm run verify:phase-14-ci-release-gate
 
+      - name: Verify G-14 commerce regression suite
+
+        run: npm run verify:g14-commerce
+
+      - name: Verify commerce concurrency contracts
+        run: npm run verify:commerce-concurrency
+
       - name: Render smoke test (every public route, empty and failing data)
         run: npm run test:smoke
 
@@ -63,7 +70,7 @@ jobs:
           # This opt-in is scoped to the disposable GitHub Actions Supabase stack only.
           # The validator uses --local for every database operation and never links/pushes.
           TOPLINE_ALLOW_LOCAL_DB_RESET: 'true'
-          TOPLINE_EXPECTED_MIGRATION_COUNT: '163'
+          TOPLINE_EXPECTED_MIGRATION_COUNT: '168'
         run: npm run validate:local-db
 
       - name: Upload disposable database replay evidence
@@ -122,6 +129,15 @@ jobs:
       - name: Brevo email integration contract
         run: npm run verify:brevo-email
 
+      - name: G-23 external release evidence register integrity
+        run: npm run verify:g23-release-evidence
+
+      - name: G-23 disaster recovery evidence validator contract
+        run: node --check scripts/verify-g23-dr-drill-evidence.mjs
+
+      - name: G-22 production release readiness evidence gate
+        run: npm run verify:g22-release-readiness
+
       - name: G-04 frontend build CI contract
         run: npm run verify:g04-frontend-build
 
@@ -146,6 +162,26 @@ jobs:
       - name: Frontend production build (Vite)
         run: npm run build
         timeout-minutes: 10
+
+      - name: Install Chromium for responsive browser certification
+        run: |
+          if ! command -v google-chrome >/dev/null 2>&1 && ! command -v chromium >/dev/null 2>&1; then
+            sudo apt-get update
+            sudo apt-get install -y chromium
+          fi
+
+      - name: G-09 desktop, tablet and mobile browser certification
+        run: npm run test:g09-responsive-browser
+        timeout-minutes: 15
+
+      - name: Upload G-09 responsive browser evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: topline-g09-responsive-browser-${{ github.sha }}
+          path: artifacts/g09-browser/
+          if-no-files-found: warn
+          retention-days: 14
 
       - name: Upload frontend certification evidence
         if: always()
@@ -234,6 +270,9 @@ jobs:
       - name: Phase 19 order confirmation and delivery reliability
         run: npm run verify:phase-19-order-confirmation-delivery
 
+      - name: Project delivery, site visit, installation and support UAT contracts
+        run: npm run verify:project-delivery-uat
+
       - name: G-06 customer communications delivery contract
         run: npm run verify:g06-customer-communications
 
@@ -242,6 +281,28 @@ jobs:
 
       - name: G-08 security certification source contract
         run: npm run verify:g08-security-certification
+
+      - name: G-09 responsive UI source contract
+        run: npm run verify:g09-responsive-certification
+
+      - name: G-10 authentication lifecycle source contract
+        run: npm run verify:g10-auth-certification
+
+      - name: G-11 finance payment/refund/ledger source contract
+        run: npm run verify:g11-finance-uat
+      - name: G-11.1 disaster recovery source contract
+        run: npm run verify:g111-disaster-recovery
+      - name: Reliability incident alert and recovery evidence validator syntax
+        run: node --check scripts/validate-reliability-incident-uat.mjs
+      - name: Reliability incident alert and recovery UAT source contract
+        run: npm run verify:reliability-incident-uat
+      - name: G-13 real DNS and inbox evidence tooling contract
+        run: |
+          node --check scripts/audit-g13-email-dns.mjs
+          node --check scripts/verify-g13-inbox-evidence.mjs
+
+      - name: G-13 email deliverability source contract
+        run: npm run verify:g13-email-deliverability
 
       - name: Leads end-to-end schema, intake, CRUD and rendering contract
         run: npm run verify:leads-end-to-end-360
@@ -254,6 +315,24 @@ jobs:
 
       - name: Operation 18 theme and brand governance verification
         run: npm run verify:operation-18-theme-brand-governance
+
+      - name: Verify G-18 data governance and privacy
+        run: npm run verify:g18-data-governance
+
+      - name: Verify G-19 HSE site safety integrity
+        run: npm run verify:g19-hse
+
+      - name: Verify G-19 HSE lifecycle and independent verification
+        run: npm run verify:g19-hse-lifecycle
+
+      - name: Verify G-20 data-subject identity and privacy workflow
+        run: npm run verify:g20-data-subject-privacy
+
+      - name: Verify G-20 master workflow database counts
+        run: npm run verify:g20-workflow-register
+
+      - name: Verify G-21 deployment and Supabase reconciliation
+        run: npm run verify:g21-deployment-reconciliation
 
       - name: Upload production build
         uses: actions/upload-artifact@v4

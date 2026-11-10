@@ -31,7 +31,7 @@ const checks = [
   ['Migration manifest records Phase 8 migration', manifest.includes('20261107140000_communications_delivery_callback_hardening.sql')],
   ['Package verifier command is registered', pkg.scripts['verify:phase-8-communications-hardening'] === 'node scripts/verify-phase-8-communications-hardening.mjs'],
   ['Workflow register records Phase 8 communications', register.workflow_register.find(x => x.workflow_id === 'WF-08')?.phase0_status.includes('PHASE 8')],
-  ['Workflow register advances to the Phase 19 authoritative foundation', register.foundation === 'TOPLINE-FLOORING-PHASE-19-COMPLETE-2026-11-07.zip'],
+  ['Workflow register advances to the G-13 consolidated authoritative foundation', register.foundation === 'TOPLINE-FLOORING-FINAL-CONSOLIDATED-G13-RELEASE-2026-11-07.zip'],
 ];
 let failed = 0;
 for (const [name, ok] of checks) { console.log(`${ok ? 'PASS' : 'FAIL'} ${name}`); if (!ok) failed++; }

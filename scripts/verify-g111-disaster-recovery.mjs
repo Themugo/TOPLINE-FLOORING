@@ -1,0 +1,40 @@
+import fs from 'node:fs';
+import path from 'node:path';
+
+const checks = [];
+function check(label, condition) {
+  checks.push({ label, passed: Boolean(condition) });
+  if (!condition) throw new Error(`FAIL ${label}`);
+  console.log(`PASS ${label}`);
+}
+const read = (file) => fs.readFileSync(path.resolve(file), 'utf8');
+const pkg = JSON.parse(read('package.json'));
+const ci = read('.github/workflows/ci.yml');
+const runner = read('scripts/run-g111-disaster-recovery-uat.mjs');
+const sql = read('supabase/tests/g111_disaster_recovery_readiness.sql');
+const dr = read('supabase/migrations/20260913100000_083_business_continuity_disaster_recovery_360.sql');
+const exportDoc = read('docs/PHASE_13_BACKUP_EXPORT_OPERATIONS_360.md');
+const runbook = read('docs/G-11.1-DISASTER-RECOVERY-UAT-RUNBOOK.md');
+check('package source verifier command', pkg.scripts['verify:g111-disaster-recovery'] === 'node scripts/verify-g111-disaster-recovery.mjs');
+check('package UAT evidence validator command', pkg.scripts['uat:g111-disaster-recovery'] === 'node scripts/run-g111-disaster-recovery-uat.mjs');
+check('CI static verifier registration', ci.includes('G-11.1 disaster recovery source contract') && ci.includes('npm run verify:g111-disaster-recovery'));
+check('runner requires explicit staging mode', runner.includes('TOPLINE_DR_UAT_ENV') && runner.includes("!== 'staging'"));
+check('runner requires explicit evidence opt-in', runner.includes('TOPLINE_ALLOW_DR_UAT') && runner.includes("!== 'true'"));
+check('runner rejects canonical production project', runner.includes('supabase/config.toml') && runner.includes('production project'));
+check('runner requires staging project reference', runner.includes('TOPLINE_DR_STAGING_PROJECT_REF'));
+check('runner checks measured RTO and RPO', runner.includes('measured_rto_minutes') && runner.includes('measured_rpo_minutes'));
+check('runner requires provider backup and restore evidence', runner.includes('provider_backup_reference') && runner.includes('restore_validation_reference'));
+check('runner requires storage restore evidence', runner.includes('storage_restore_reference'));
+check('runner verifies evidence hashes', runner.includes('sha256') && runner.includes('createHash'));
+check('runner writes sanitized report', runner.includes('artifacts/g111-disaster-recovery-uat') && runner.includes('sanitized'));
+check('SQL test is read-only and rolled back', /BEGIN[\s\S]*SET TRANSACTION READ ONLY[\s\S]*ROLLBACK;/i.test(sql));
+check('SQL checks continuity tables RLS', ['business_continuity_plans','recovery_drills','recovery_checkpoints'].every(t => sql.includes(t)));
+check('SQL checks staff-only RPC grants', sql.includes('create_business_continuity_plan') && sql.includes('record_recovery_drill') && sql.includes('record_recovery_checkpoint'));
+check('SQL checks authenticated read boundary', sql.includes('get_business_continuity_360') && dr.includes("require_staff_permission('reports','select')"));
+check('existing DR migration documents provider boundary', dr.includes('does not represent managed-provider backup completion'));
+check('existing export docs distinguish managed backups', exportDoc.includes('Supabase-managed backup/PITR retention'));
+check('runbook requires isolated restore environment', runbook.includes('isolated') && runbook.includes('restore'));
+check('runbook prohibits production destructive testing', runbook.includes('Never') && runbook.includes('production'));
+const versions = fs.readdirSync('supabase/migrations').filter(f => f.endsWith('.sql')).map(f => f.slice(0,14)).filter(v => /^\d{14}$/.test(v));
+check('migration version uniqueness preserved', new Set(versions).size === versions.length);
+console.log(`G-11.1 source verifier passed: ${checks.length}/${checks.length}`);

@@ -7,7 +7,7 @@ const root = process.cwd();
 const artifactsDir = path.join(root, 'artifacts', 'database-replay');
 const logPath = path.join(artifactsDir, 'database-replay.log');
 const summaryPath = path.join(artifactsDir, 'database-replay-summary.json');
-const expectedCount = Number(process.env.TOPLINE_EXPECTED_MIGRATION_COUNT ?? '163');
+const expectedCount = Number(process.env.TOPLINE_EXPECTED_MIGRATION_COUNT ?? '168');
 const startedAt = new Date().toISOString();
 const results = [];
 fs.mkdirSync(artifactsDir, { recursive: true });

@@ -17,6 +17,7 @@ export default function AdminProjectDelivery360() {
   const [selected, setSelected] = useState('');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [quality, setQuality] = useState<'pending'|'passed'|'failed'|'waived'>('passed');
   const [score, setScore] = useState('100');
   const [findings, setFindings] = useState('');
@@ -24,12 +25,13 @@ export default function AdminProjectDelivery360() {
 
   const load = useCallback(async () => {
     setLoading(true);
+    setLoadError(null);
     try {
       const data = await getProjectDelivery360();
       const next = (Array.isArray(data.projects) ? data.projects : []) as DeliveryRecord[];
       setRows(next);
       if (next[0]?.project?.id) setSelected(currentSelected => currentSelected || next[0].project.id);
-    } catch (e) { toast({ title: 'Unable to load project delivery', description: errorMessage(e, 'Unknown error'), variant: 'destructive' }); }
+    } catch (e) { const message = errorMessage(e, 'Unknown error'); setLoadError(message); toast({ title: 'Unable to load project delivery', description: message, variant: 'destructive' }); }
     finally { setLoading(false); }
   }, [toast]);
   useEffect(() => { void load(); }, [load]);
@@ -40,13 +42,31 @@ export default function AdminProjectDelivery360() {
   const openTasks = tasks.filter(t => !['completed','cancelled'].includes(t.status)).length;
   const latestQuality = qualityRows[0]?.status;
   const latestInstallation = installations[0]?.status;
-  const ready = Number(project.progress_percentage || 0) === 100 && openIssues === 0 && openTasks === 0 && (!latestInstallation || latestInstallation === 'completed') && (!latestQuality || ['passed','waived'].includes(latestQuality)) && !!signoff?.approved;
+  const isReadyToClose = (record: DeliveryRecord) => {
+    const recordIssues = arr(record.issues).filter(i => !['resolved','closed'].includes(i.status)).length;
+    const recordTasks = arr(record.tasks).filter(t => !['completed','cancelled'].includes(t.status)).length;
+    const recordInstallations = arr(record.installations);
+    const recordQuality = arr(record.quality);
+    const latestRecordInstallation = recordInstallations[0]?.status;
+    const latestRecordQuality = recordQuality[0]?.status;
+    return Number(record.project?.progress_percentage || 0) === 100
+      && recordIssues === 0 && recordTasks === 0
+      && (!latestRecordInstallation || latestRecordInstallation === 'completed')
+      && (!latestRecordQuality || ['passed','waived'].includes(latestRecordQuality))
+      && !!record.signoff?.approved;
+  };
+  const ready = current ? isReadyToClose(current) : false;
   const run = async (fn: () => Promise<unknown>, title: string) => { setSaving(true); try { await fn(); toast({ title }); await load(); } catch (e) { toast({ title: 'Operation failed', description: errorMessage(e, 'Unknown error'), variant: 'destructive' }); } finally { setSaving(false); } };
 
   return <AdminLayout title="Project Delivery 360" subtitle="One authoritative control surface from project planning through field execution, cost, quality and customer completion.">
     <div className="space-y-6">
+      {loadError && <div role="alert" className="surface border border-destructive/40 p-4 text-sm">
+        <p className="font-semibold">Project delivery data could not be loaded.</p>
+        <p className="mt-1">{loadError}</p>
+        <button type="button" className="btn-secondary mt-3" onClick={() => void load()}>Try again</button>
+      </div>}
       <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
-        {[["Projects", rows.length], ["In progress", rows.filter(r => ['scheduled','in_progress'].includes(r.project?.status)).length], ["Open issues", rows.reduce((n,r)=>n+arr(r.issues).filter(i=>!['resolved','closed'].includes(i.status)).length,0)], ["Unfinished tasks", rows.reduce((n,r)=>n+arr(r.tasks).filter(t=>!['completed','cancelled'].includes(t.status)).length,0)], ["Ready to close", rows.filter(r=>r.project?.progress_percentage===100).length]].map(([label,value])=><div className="surface p-4" key={label as string}><p className="eyebrow">{label}</p><p className="text-2xl font-bold mt-1">{value}</p></div>)}
+        {[["Projects", rows.length], ["In progress", rows.filter(r => ['scheduled','in_progress'].includes(r.project?.status)).length], ["Open issues", rows.reduce((n,r)=>n+arr(r.issues).filter(i=>!['resolved','closed'].includes(i.status)).length,0)], ["Unfinished tasks", rows.reduce((n,r)=>n+arr(r.tasks).filter(t=>!['completed','cancelled'].includes(t.status)).length,0)], ["Ready to close", rows.filter(isReadyToClose).length]].map(([label,value])=><div className="surface p-4" key={label as string}><p className="eyebrow">{label}</p><p className="text-2xl font-bold mt-1">{value}</p></div>)}
       </div>
       <div className="flex justify-end"><button className="btn-secondary flex items-center gap-2" disabled={saving} onClick={()=>run(()=>reconcileProjectDelivery360(selected),'Delivery reconciliation completed')}><RefreshCw className="w-4 h-4"/>Reconcile Delivery</button></div>
       <div className="grid grid-cols-1 xl:grid-cols-[320px_1fr] gap-6">

@@ -32,16 +32,34 @@ else {
     'concurrency:',
   ];
   for (const token of required) if (!workflow.includes(token)) failures.push(`CI workflow missing required contract: ${token}`);
+  const replayStep = workflow.match(/- name: Local Supabase replay\n([\s\S]*?)(?=\n      - name:|\n\s*-$|$)/);
+  if (!replayStep) failures.push('CI must define a dedicated Local Supabase replay step.');
+  else {
+    if (!/env:\n(?:[ \t]+.*\n)*[ \t]+TOPLINE_ALLOW_LOCAL_DB_RESET: ['\"]true['\"]/m.test(replayStep[1])) {
+      failures.push('Local Supabase replay must explicitly opt in to disposable local reset.');
+    }
+    if (!/run: npm run validate:local-db/.test(replayStep[1])) {
+      failures.push('Local Supabase replay must invoke the guarded local-only validator.');
+    }
+  }
+  const resetOptIns = [...workflow.matchAll(/TOPLINE_ALLOW_LOCAL_DB_RESET\s*:/g)];
+  if (resetOptIns.length !== 1) failures.push('Local reset opt-in must appear exactly once in CI.');
+  if (/^\s{0,6}TOPLINE_ALLOW_LOCAL_DB_RESET\s*:/m.test(workflow)) {
+    failures.push('Local reset opt-in must not be configured at workflow or job scope.');
+  }
   if (/pull_request_target:/i.test(workflow)) failures.push('CI must not use pull_request_target.');
   if (!/permissions:\s*\n\s+contents:\s+read/m.test(workflow)) failures.push('CI must use least-privilege contents: read permissions.');
-  const artifactIndex = workflow.indexOf('uses: actions/upload-artifact@v4');
+  const productionArtifact = workflow.match(/- name: Upload production build\n([\s\S]*?)(?=\n      - name:|$)/);
+  const artifactIndex = productionArtifact ? workflow.indexOf(productionArtifact[0]) : -1;
   const lastVerificationIndex = Math.max(
+    workflow.lastIndexOf('npm run verify:g21-deployment-reconciliation'),
+    workflow.lastIndexOf('npm run verify:g20-workflow-register'),
     workflow.lastIndexOf('npm run verify:operation-18-theme-brand-governance'),
     workflow.lastIndexOf('npm run verify:phases-15-17'),
     workflow.lastIndexOf('npm run build'),
   );
   if (artifactIndex < 0 || artifactIndex < lastVerificationIndex) failures.push('Production build artifact must be uploaded only after all quality and architecture gates pass.');
-  if (workflow.trim().split('\n').slice(-7).join('\n').includes('run: npm run')) failures.push('No verification command may follow the production artifact upload.');
+  if (artifactIndex >= 0 && /\n\s+run: npm run/.test(workflow.slice(artifactIndex))) failures.push('No verification command may follow the production build artifact upload.');
 }
 
 const pkg = JSON.parse(read('package.json'));

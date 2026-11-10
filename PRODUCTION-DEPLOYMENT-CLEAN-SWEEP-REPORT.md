@@ -1,5 +1,7 @@
 # Topline Flooring — Production Deployment Clean Sweep
 
+> **Historical snapshot — superseded.** This report records the 2026-09-14 deployment baseline. Its Supabase project reference (`zmbsskvnzjdaxuxlauyx`), migration/schema counts, and 83/83 verification total are historical evidence only; they are not the current production target or current source inventory. The repository is now pinned to client-owned project `cvjmfplhdlfvqnnmzqcp` with 165 active source migrations. See `DEPLOYMENT.md`, `docs/TOPLINE_RELEASE_CANDIDATE.md`, and the G-21/G-22 reports for current source-level gates. Remote migration history, Vercel deployment state, DNS, provider activation, and business UAT remain external checks unless separately evidenced.
+
 Date: 2026-09-14
 
 ## Root cause fixed
@@ -27,15 +29,15 @@ This preserves the intended www-to-non-www behavior without an invalid source pa
 - Security headers remain enabled.
 - No absolute URL is used as a Vercel redirect source.
 - Canonical redirect is restricted to the www host.
-- Dedicated Supabase target remains `zmbsskvnzjdaxuxlauyx`.
+- Historical Supabase target at the time of this 2026-09-14 report: `zmbsskvnzjdaxuxlauyx` (retired; see superseding G-21/G-22 evidence).
 
 ## Verification
 
 - Vercel deployment verifier: PASSED
 - Phase 5 hosting/release verifier: PASSED
 - Operation 9 production certification structural gate: PASSED
-- Full repository verification: **83/83 passed, 0 failed**
-- Database dependency contract: 80 migrations / 142 tables / 213 static functions / 269 FK references
+- Historical full-repository verification at report date: **83/83 passed, 0 failed**
+- Historical database dependency snapshot: 80 migrations / 142 tables / 213 static functions / 269 FK references (not the current source inventory).
 - Generated database types: not present locally; still requires successful local DB replay before generation
 - External Vercel production deployment/UAT: must be confirmed after the commit is pushed
 

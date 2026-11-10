@@ -173,7 +173,8 @@ INSERT INTO browser_rpc_names (name) VALUES
   ('update_project_delivery_status'),
   ('update_service_case'),
   ('update_supplier'),
-  ('validate_coupon');
+  ('validate_coupon'),
+  ('verify_data_subject_request');
 
 SELECT CASE
   WHEN count(*) = 0 THEN 'ok 1 - every browser RPC exists and is executable by anon or authenticated'

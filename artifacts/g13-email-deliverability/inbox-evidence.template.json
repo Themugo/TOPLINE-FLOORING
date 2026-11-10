@@ -1,0 +1,12 @@
+{
+  "test_id": "",
+  "sent_at_utc": "",
+  "received_at_utc": "",
+  "mailbox_provider": "Gmail / Outlook / other",
+  "folder": "Inbox / Spam / Quarantine",
+  "message_id": "",
+  "from_domain": "toplinefloorandwaterproofing.co.ke",
+  "authentication_results": "spf=pass; dkim=pass; dmarc=pass",
+  "reviewed_by": "",
+  "notes": "Use redacted evidence only. Do not include full recipient address or message body."
+}

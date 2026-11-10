@@ -66,3 +66,8 @@ This G-03 validator does not run `db push` without `--dry-run`, `db reset --link
 ## Closure criteria
 
 G-03 can close only when the linked project identity is verified, the complete local/remote migration history is reviewed and reconciled, the linked dry-run is reviewed with no unexplained changes, linked database lint exits successfully, and the three evidence artifacts are retained with the tested commit SHA.
+
+
+## G-21 current-source count erratum (2026-11-07)
+
+The 163-migration count above records the G-03 baseline at the time that report was authored. The current repository source has since advanced to **165 active migrations**. For a new linked read-only certification run, use `TOPLINE_EXPECTED_MIGRATION_COUNT=165`. The historical 163 count and prior static test results are retained as execution evidence and must not be interpreted as the current source inventory.

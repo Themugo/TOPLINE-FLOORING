@@ -10,7 +10,11 @@ const files = (await readdir(root))
     name.endsWith('.mjs') &&
     name !== 'verify-all.mjs' &&
     name !== 'verify-payment-provider-uat.mjs' &&
-    name !== 'verify-mpesa-provider-uat.mjs'
+    name !== 'verify-mpesa-provider-uat.mjs' &&
+    // Evidence validators require real external artifacts; absence must remain a separate BLOCKED gate,
+    // not make the repository's source/static verification suite fail.
+    name !== 'verify-g13-inbox-evidence.mjs' &&
+    name !== 'verify-g23-dr-drill-evidence.mjs'
   )
   .sort();
 
