@@ -16,6 +16,7 @@ function presentedSecret(req: Request): string | null {
   return headerOrQuery(req, "x-topline-webhook-secret", "secret") ?? bearer;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function handle(body: Record<string, any>): Promise<Response> { // deno-lint-ignore no-explicit-any
   if (body?.event) {
     const event = String(body.event);
@@ -80,6 +81,7 @@ Deno.serve(async (req) => {
   }
   // Brevo may batch events into an array; each is recorded (and de-duplicated downstream) independently.
   // deno-lint-ignore no-explicit-any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const events = (Array.isArray(parsed) ? parsed : [parsed]).filter((e): e is Record<string, any> => typeof e === "object" && e !== null && !Array.isArray(e)).slice(0, 200);
   for (const event of events) {
     const result = await handle(event);

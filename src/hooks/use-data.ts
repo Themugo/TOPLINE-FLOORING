@@ -973,7 +973,7 @@ export function useLeads(options?: { status?: string }) {
   const createLead = async (lead: Partial<Lead>) => {
     const result = await createLeadTransaction({
       name: String(lead.name || lead.customer_name || ''), email: lead.email, phone: lead.phone, company: lead.company ?? lead.company_name,
-      source: lead.source ?? undefined, status: lead.status ?? (lead.lead_stage === 'negotiation' ? 'negotiating' : lead.lead_stage), estimatedValue: lead.estimated_value,
+      source: lead.source ?? undefined, status: lead.status ?? (lead.lead_stage === 'negotiation' ? 'negotiating' : lead.lead_stage) ?? undefined, estimatedValue: lead.estimated_value,
       projectLocation: lead.project_location, projectAddress: lead.project_address, notes: lead.notes,
       assignedTo: lead.assigned_to, followUpDate: lead.follow_up_date, followUpNotes: lead.follow_up_notes,
     });

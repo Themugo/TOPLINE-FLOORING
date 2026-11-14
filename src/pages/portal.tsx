@@ -231,7 +231,7 @@ export default function Portal() {
       const url = await createCustomerProjectDocumentUrl(doc.storage_path);
       if (viewer) viewer.location.href = url;
       else window.location.assign(url);
-    } catch (err) {
+    } catch {
       viewer?.close();
       setError('This document could not be opened. Please refresh the portal and try again.');
     } finally {

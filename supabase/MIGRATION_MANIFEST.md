@@ -76,7 +76,7 @@ Never put a service-role or worker secret in a `VITE_*` variable.
 
 ## Current active chain (Phases 30–32 verification baseline)
 
-The manifest contains 168 uniquely timestamped active migrations. The current source candidate ends with `20261110140000_g19_hse_dashboard_evidence_and_owner_validation.sql`. Run the complete verification suite before any linked database deployment. This source count is not confirmation that the migration has been applied remotely.
+The manifest contains 169 uniquely timestamped active migrations. The current source candidate ends with `20261112090000_payment_attempt_expiry_scheduler.sql`. Run the complete verification suite before any linked database deployment. This source count is not confirmation that the migration has been applied remotely.
 
 Current active chain additions: `20260930170000_service_catalog_and_communications_worker_hardening.sql`, `20260930180000_project_documents_private_storage.sql`, `20260930190000_staff_read_inactive_cms_catalog_rows.sql`, `20260930193000_private_document_policy_overlap_hardening.sql`, `20260930200000_project_templates.sql`, `20260930210000_close_legacy_public_read_policies.sql`, `20260930220000_projects_admin_contract_columns.sql`, `20260930230000_move_product_cost_prices_staff_only.sql`, `20260930240000_coupon_validation_throttle.sql`, `20260930250000_finance_permission_resource.sql`, `20261001090000_project_template_persistence_360.sql`, `20261001100000_admin_notification_state_360.sql`, `20261001110000_catalog_product_service_upload_integrity_360.sql`.
 
@@ -272,3 +272,4 @@ These files were present in `supabase/migrations/` but not yet listed above. App
 - `20261110130000_g19_hse_transition_and_independent_verification.sql` — enforces complete site-readiness capture, required corrective-action owner/due date, sequential event/action transitions, resolved-to-closed progression, terminal closure and verification by a staff member other than the assigned action owner.
 
 - `20261110140000_g19_hse_dashboard_evidence_and_owner_validation.sql` — returns recorded site ownership, emergency/PPE readiness, immediate-control evidence and independent action verification to the authorized HSE dashboard; validates active staff owners and future corrective-action due dates.
+- `20261112090000_payment_attempt_expiry_scheduler.sql` — schedules expiry of stale M-Pesa/card payment attempts (new `expire_payment_attempts` job, every 10 minutes), excludes manually confirmed bank transfers from expiry, and adds the job to the worker allow-list.

@@ -241,6 +241,7 @@ function InvoiceDetail({
   onDownloadPdf: (inv: Invoice) => void;
 }) {
   const { invoices, addInvoiceItem, removeInvoiceItem, recordPayment } = useInvoices();
+  const tax = useTaxSettings();
   const { toast } = useToast();
   const [newItem, setNewItem] = useState({ description: '', quantity: '1', unit_price: '0' });
   const [payment, setPayment] = useState({ amount: '', method: 'cash' as PaymentMethod, reference: '' });

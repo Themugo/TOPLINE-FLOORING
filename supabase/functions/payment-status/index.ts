@@ -76,11 +76,23 @@ Deno.serve(async (req: Request) => {
   const tx = txData as TransactionRow | null;
   if (txError || !tx) return jsonResponse(req, 404, { success: false, error: "Payment transaction not found" });
 
+  // Human-readable order/invoice number so the return page can link to tracking even when the
+  // browser no longer holds the checkout receipt (e.g. the gateway opened a different tab).
+  let targetReference: string | null = null;
+  if (attempt.target_type === "order") {
+    const { data: o } = await db.from("orders").select("order_number").eq("id", attempt.target_id).maybeSingle();
+    targetReference = (o as { order_number?: string | null } | null)?.order_number ?? null;
+  } else if (attempt.target_type === "invoice") {
+    const { data: i } = await db.from("invoices").select("invoice_number").eq("id", attempt.target_id).maybeSingle();
+    targetReference = (i as { invoice_number?: string | null } | null)?.invoice_number ?? null;
+  }
+
   return jsonResponse(req, 200, {
     success: true,
     attempt_id: attempt.id,
     target_type: attempt.target_type,
     target_id: attempt.target_id,
+    target_reference: targetReference,
     status: tx.status,
     amount: tx.amount,
     currency: tx.currency,

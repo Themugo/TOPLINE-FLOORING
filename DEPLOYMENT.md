@@ -27,7 +27,7 @@ Run the project's focused and aggregate test commands as defined in `package.jso
 
 Do not create or substitute another project as part of routine deployment, and never reuse another application's Supabase project. `supabase/config.toml`, `.env.example` and the frontend Supabase client pin the canonical identity.
 
-The deployable migration sequence is the uniquely timestamped SQL files in `supabase/migrations/`. At this source snapshot it contains **168 active migrations**. Confirm the current count with:
+The deployable migration sequence is the uniquely timestamped SQL files in `supabase/migrations/`. At this source snapshot it contains **169 active migrations**. Confirm the current count with:
 
 ```cmd
 node scripts/verify-migration-integrity.mjs
@@ -99,7 +99,7 @@ From Windows CMD, after confirming you are authorised to inspect the intended To
 npx supabase login
 npx supabase link --project-ref cvjmfplhdlfvqnnmzqcp
 set TOPLINE_ALLOW_LINKED_DB_READS=true
-set TOPLINE_EXPECTED_MIGRATION_COUNT=168
+set TOPLINE_EXPECTED_MIGRATION_COUNT=169
 npm run validate:linked-supabase
 ```
 

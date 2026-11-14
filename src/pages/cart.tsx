@@ -245,7 +245,7 @@ export default function Cart() {
       // Manual payment only needs the order: if the payment service is unreachable the order must not be lost,
       // the buyer is taken to the confirmation page, which shows how to pay and the order number.
       let payment: Awaited<ReturnType<typeof initiateCustomerPayment>> | null = null;
-      try { payment = await initiateCustomerPayment({ targetType: 'order', targetId: orderId, email: form.email.trim(), phone: form.phone.trim(), paymentMethod, gatewayKey: paymentGatewayKey, idempotencyKey: `checkout-payment:${checkoutKey}:${paymentGatewayKey}`, returnUrl: `${window.location.origin}/payment-return` }); } catch (paymentError) { if (paymentMethod !== 'bank_transfer') throw paymentError; }
+      try { payment = await initiateCustomerPayment({ targetType: 'order', targetId: orderId, email: form.email.trim(), phone: form.phone.trim(), paymentMethod, gatewayKey: paymentGatewayKey, idempotencyKey: `checkout-payment:${checkoutKey}:${paymentGatewayKey}`, returnUrl: `${window.location.origin}/payment-return` }); } catch (paymentError) { if (paymentMethod !== 'bank_transfer') throw new Error(`Your order was saved, but the payment could not be started: ${paymentError instanceof Error ? paymentError.message : 'please try again'}. Press Place order again to retry — you will not be charged twice or get a duplicate order.`); }
 
       // Stash a summary for the confirmation page to display. We don't
       // grant anon a SELECT policy on `orders` (it would let anyone read
@@ -296,7 +296,7 @@ export default function Cart() {
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Something went wrong. Please try again.';
       toast({
-        title: 'Order Failed',
+        title: message.startsWith('Your order was saved') ? 'Payment not started' : 'Order Failed',
         description: message,
         variant: 'destructive',
       });

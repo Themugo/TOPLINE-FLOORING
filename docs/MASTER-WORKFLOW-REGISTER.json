@@ -150,9 +150,9 @@
       "workflow_id": "WF-12",
       "workflow_domain": "Database/Supabase/RLS/data integrity",
       "roles": "Anonymous/customer/staff/admin/service role",
-      "entry_points": "168 active SQL migrations; Supabase config; local DB test harness",
+      "entry_points": "169 active SQL migrations; Supabase config; local DB test harness",
       "backend_and_data_dependencies": "167 tables; 276 functions; 290 FK references (current repository dependency verifier; source-derived, not remote catalog)",
-      "phase0_status": "168 ACTIVE MIGRATIONS; CURRENT REPOSITORY DEPENDENCY SCAN: 167 TABLES, 276 FUNCTIONS, 290 FK REFERENCES; MIGRATION INTEGRITY AND SQL STATIC SAFETY PASS; DISPOSABLE/STAGING POSTGRESQL REPLAY AND RLS ROLE-MATRIX TESTS PENDING",
+      "phase0_status": "169 ACTIVE MIGRATIONS; CURRENT REPOSITORY DEPENDENCY SCAN: 167 TABLES, 276 FUNCTIONS, 290 FK REFERENCES; MIGRATION INTEGRITY AND SQL STATIC SAFETY PASS; DISPOSABLE/STAGING POSTGRESQL REPLAY AND RLS ROLE-MATRIX TESTS PENDING",
       "repair_phase": "Phase 6"
     },
     {
@@ -195,8 +195,8 @@
   "database_inventory": {
     "measured_at": "2026-11-10",
     "source": "scripts/verify-database-dependencies.mjs against supabase/migrations/",
-    "active_migration_files": 168,
-    "uniquely_timestamped_migrations": 168,
+    "active_migration_files": 169,
+    "uniquely_timestamped_migrations": 169,
     "tables": 167,
     "functions": 276,
     "foreign_key_references": 290,

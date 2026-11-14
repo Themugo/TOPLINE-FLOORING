@@ -309,6 +309,7 @@ export interface ThemeSetting {
 
 export interface HomepageSection {
   id: string;
+  updated_at?: string | null;
   section_type: string;
   section_key: string;
   title: string | null;
@@ -572,6 +573,7 @@ export interface InventoryMovement {
   created_by: string | null;
   created_at: string;
   product?: Product;
+  variant?: { variant_name?: string | null } | null;
   warehouse?: Warehouse;
 }
 

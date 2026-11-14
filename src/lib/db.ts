@@ -52,6 +52,8 @@ export async function dbFailure(
  * (not `Error` instances), so `err instanceof Error` silently dropped the real reason and the
  * admin saw only a generic fallback.
  */
+export function errorMessage(err: unknown, fallback: string): string;
+export function errorMessage(err: unknown, fallback?: string): string | undefined;
 export function errorMessage(err: unknown, fallback?: string): string | undefined {
   if (err && typeof err === 'object' && 'message' in err && typeof (err as { message: unknown }).message === 'string' && (err as { message: string }).message) {
     const e = err as DbErrorLike;

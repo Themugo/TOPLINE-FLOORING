@@ -93,7 +93,7 @@ describe('guest checkout', () => {
     const response = new Response(JSON.stringify({ success: false, error: 'M-Pesa callback URL must include ?secret= matching MPESA_CALLBACK_SECRET' }), { status: 400 });
     state.invokeResult = { data: null, error: { message: 'Edge Function returned a non-2xx status code', context: response } };
     await checkout();
-    await waitFor(() => expect(screen.getByText('Order Failed')).toBeTruthy(), { timeout: 8000 });
+    await waitFor(() => expect(screen.getByText('Payment not started')).toBeTruthy(), { timeout: 8000 });
     expect(screen.getByText(/MPESA_CALLBACK_SECRET/)).toBeTruthy();
     expect(screen.queryByText(/non-2xx/)).toBeNull();
     expect(window.location.pathname).toBe('/cart');

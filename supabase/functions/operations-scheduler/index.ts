@@ -7,7 +7,7 @@ const workerSecret = Deno.env.get('TOPLINE_WORKER_SECRET');
 if (!supabaseUrl || !serviceRoleKey || !workerSecret) throw new Error('Operations scheduler is not configured');
 
 const supabase = createClient(supabaseUrl, serviceRoleKey, { auth: { persistSession: false } });
-const jobs = ['deliver_communications','expire_inventory_reservations','reconcile_payment_provider_events','reconcile_communications','invoice_reminders'] as const;
+const jobs = ['deliver_communications','expire_inventory_reservations','reconcile_payment_provider_events','reconcile_communications','invoice_reminders','expire_payment_attempts'] as const;
 type Job = typeof jobs[number];
 
 function authorized(req: Request) {
@@ -45,6 +45,10 @@ async function runJob(job: Job, source: string) {
       result = { expired: response.data };
     } else if (job === 'reconcile_payment_provider_events') {
       const response = await supabase.rpc('reconcile_payment_provider_events', { p_since: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString() });
+      if (response.error) throw response.error;
+      result = response.data;
+    } else if (job === 'expire_payment_attempts') {
+      const response = await supabase.rpc('expire_stale_payment_attempts_360');
       if (response.error) throw response.error;
       result = response.data;
     } else if (job === 'invoice_reminders') {
