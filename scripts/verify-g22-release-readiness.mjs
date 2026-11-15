@@ -9,7 +9,7 @@ const config=JSON.parse(read('vercel.json')), pkg=JSON.parse(read('package.json'
 const ci=read('.github/workflows/ci.yml'), deployment=read('DEPLOYMENT.md');
 const candidate=read('docs/TOPLINE_RELEASE_CANDIDATE.md'), hosting=read('docs/PHASE_5_PRODUCTION_HOSTING_DOMAIN_RELEASE.md');
 const historical=read('PRODUCTION-DEPLOYMENT-CLEAN-SWEEP-REPORT.md');
-check(migrations.length===169,`Expected 169 active source migrations; found ${migrations.length}.`);
+check(migrations.length===172,`Expected 172 active source migrations; found ${migrations.length}.`);
 check(read('supabase/config.toml').includes(`project_id = "${projectRef}"`),'Supabase config does not match canonical project.');
 check(read('.env.example').includes(`VITE_SUPABASE_URL=${projectUrl}`),'.env.example does not match canonical URL.');
 check(deployment.includes(projectRef)&&deployment.includes(projectUrl),'DEPLOYMENT.md omits canonical identity.');

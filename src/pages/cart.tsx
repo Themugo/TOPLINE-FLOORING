@@ -202,6 +202,13 @@ export default function Cart() {
     if (!items.length) { toast({ title: 'Your cart is empty', description: 'Add products before checking out.', variant: 'destructive' }); return; }
     if (!paymentMethod || !paymentGatewayKey) { toast({ title: 'Choose an available payment method', description: 'Select a payment option that is currently available before placing the order.', variant: 'destructive' }); return; }
 
+    // M-Pesa STK push only accepts whole shillings. Catch this before an order is created, otherwise the buyer
+    // would be left with a saved order whose M-Pesa payment can never start.
+    if (paymentMethod === 'mpesa' && Math.round(finalTotal * 100) % 100 !== 0) {
+      toast({ title: 'M-Pesa needs a whole-shilling total', description: `Your total is ${formatKES(finalTotal)}, which includes cents. Please pay by card or bank transfer, or contact us to adjust the order.`, variant: 'destructive' });
+      return;
+    }
+
     setSubmitting(true);
     try {
       // Reuse the retry key only for an identical checkout (see resolveCheckoutKey): a changed cart,

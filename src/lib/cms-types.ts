@@ -53,6 +53,12 @@ export interface WebsiteSettingsGroup {
     language: string;
     timezone: string;
   };
+  /** Opening hours edited in Admin > Site Settings > Contact. Falls back to the defaults in use-data when unset. */
+  business_hours?: {
+    weekdays?: { open?: string; close?: string };
+    saturday?: { open?: string; close?: string };
+    sunday?: string;
+  };
 }
 
 export interface HomepageSectionContent {

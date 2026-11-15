@@ -13,10 +13,10 @@ const versions = files.map((file) => file.match(/^(\d{14})_/)?.[1]);
 assert(versions.every(Boolean), 'An active migration has an invalid timestamp.');
 assert(new Set(versions).size === versions.length, 'Duplicate migration timestamps detected.');
 assert(versions.every((version, index) => index === 0 || versions[index - 1] < version), 'Migration ordering is not strictly increasing.');
-assert(files.length === 169, `Expected 169 active migrations, found ${files.length}.`);
+assert(files.length === 172, `Expected 172 active migrations, found ${files.length}.`);
 assert(files.includes(migration), 'G-20 identity verification migration must remain in the active source chain.');
 assert(files.includes('20261110140000_g19_hse_dashboard_evidence_and_owner_validation.sql'), 'G-19 HSE dashboard evidence follow-up must remain in the active source chain.');
-assert(files.at(-1) === '20261112090000_payment_attempt_expiry_scheduler.sql', 'Payment attempt expiry scheduler must be the latest source migration.');
+assert(files.at(-1) === '20261114120000_public_site_settings_allowlist.sql', 'Public site settings allow-list must be the latest source migration.');
 
 const sql = read(`supabase/migrations/${migration}`);
 for (const token of [
@@ -56,7 +56,7 @@ assert(pkg.scripts?.['test:g20-data-subject-privacy'], 'G-20 test command missin
 assert(read('.github/workflows/ci.yml').includes('npm run verify:g20-data-subject-privacy'), 'G-20 CI gate missing.');
 const manifest = read('supabase/MIGRATION_MANIFEST.md');
 assert(manifest.includes(migration), 'G-20 migration missing from manifest.');
-assert(manifest.includes('contains 169 uniquely timestamped active migrations'), 'Migration manifest count is stale.');
+assert(manifest.includes('contains 172 uniquely timestamped active migrations'), 'Migration manifest count is stale.');
 
 if (failures.length) {
   console.error('G-20 DATA-SUBJECT PRIVACY FAILED');

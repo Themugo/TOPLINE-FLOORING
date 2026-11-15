@@ -26,7 +26,7 @@ export default function AdminSiteSettings() {
       logo_url: '', favicon_url: '', brand_wordmark: '', brand_descriptor: '', brand_promise: undefined as string | undefined, show_brand_text: true,
     },
     contact: { email: '', phone: '', phone_alt: '', whatsapp: '', address: '' },
-    business_hours: { weekdays: { open: '08:00', close: '17:00' }, saturday: { open: '09:00', close: '13:00' }, sunday: 'Closed' },
+    business_hours: { weekdays: { open: '08:00', close: '18:00' }, saturday: { open: '09:00', close: '14:00' }, sunday: 'Closed' },
     social_links: { facebook: '', instagram: '', linkedin: '', twitter: '' },
     footer: { copyright: '', show_social: true },
     seo_defaults: { meta_title: '', meta_description: '', og_image: '' },
@@ -80,7 +80,7 @@ export default function AdminSiteSettings() {
       };
       newSettings.contact = {
         ...newSettings.contact,
-        email: fill(newSettings.contact.email, 'support@toplinefloorandwaterproofing.co.ke'),
+        email: fill(newSettings.contact.email, starter.contact.email),
         phone: fill(newSettings.contact.phone, starter.contact.phone),
         whatsapp: fill(newSettings.contact.whatsapp, starter.contact.whatsapp),
         address: fill(newSettings.contact.address, starter.contact.address),

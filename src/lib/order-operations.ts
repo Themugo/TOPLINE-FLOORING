@@ -29,3 +29,20 @@ export async function resendPaymentReceipt(paymentId: string): Promise<void> {
   const { error } = await supabase.rpc('resend_payment_receipt', { p_payment_id: paymentId });
   if (error) throw error;
 }
+
+export async function requestOrderRefund(input: { orderId: string; amount: number; reason: string; idempotencyKey: string }): Promise<{ success: boolean; refund_id: string; status: string }> {
+  const { data, error } = await supabase.rpc('create_order_refund_request', { p_order_id: input.orderId, p_amount: input.amount, p_reason: input.reason, p_idempotency_key: input.idempotencyKey });
+  if (error) throw error;
+  return data as unknown as { success: boolean; refund_id: string; status: string };
+}
+
+export async function completeOrderRefund(input: { refundId: string; success: boolean; provider?: string; providerRefundId?: string; notes?: string }): Promise<void> {
+  const { error } = await supabase.rpc('complete_order_refund', { p_refund_id: input.refundId, p_success: input.success, p_provider_refund_id: input.providerRefundId?.trim() || null, p_provider: input.provider?.trim() || null, p_notes: input.notes?.trim() || null });
+  if (error) throw error;
+}
+
+export async function updateOrderDeliveryAddress(orderId: string, address: string): Promise<void> {
+  const { error } = await supabase.rpc('update_order_delivery_address', { p_order_id: orderId, p_delivery_address: address });
+  if (error) throw error;
+}
+

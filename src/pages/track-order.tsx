@@ -140,7 +140,13 @@ export default function TrackOrder() {
     } finally { setStartingPayment(false); }
   };
 
-  const status = (result?.status || "pending").toLowerCase();
+  // Dispatch / in-transit / delivered only change the delivery record (the order stays "processing" until completion),
+  // so surface the delivery stage here or the customer keeps seeing "Being prepared" while the order is on the road.
+  const orderStatus = (result?.status || "pending").toLowerCase();
+  const deliveryStage = (result?.delivery?.status || "").toLowerCase();
+  const status = !["completed", "cancelled"].includes(orderStatus) && ["dispatched", "in_transit", "delivered"].includes(deliveryStage)
+    ? deliveryStage
+    : orderStatus;
   const currentStage = status === "shipped" ? "dispatched" : status;
   const stageIndex = orderStages.indexOf(currentStage);
   const cancelled = ["cancelled", "failed"].includes(status);

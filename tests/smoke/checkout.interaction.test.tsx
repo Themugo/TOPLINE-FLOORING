@@ -33,8 +33,8 @@ vi.mock('@/lib/supabase', () => {
 
 const orderArgs = () => state.calls.find((c) => c.kind === 'rpc' && c.name === 'create_secure_customer_order')?.ops[0].args[0] as Record<string, unknown> | undefined;
 
-async function checkout(selectGateway = false) {
-  localStorage.setItem('flooring_app_cart', JSON.stringify([{ product: PRODUCT, quantity: 2 }]));
+async function checkout(selectGateway = false, product: typeof PRODUCT = PRODUCT, quantity = 2) {
+  localStorage.setItem('flooring_app_cart', JSON.stringify([{ product, quantity }]));
   window.history.pushState({}, '', '/cart');
   const { default: App } = await import('@/App');
   render(<App />);
@@ -81,6 +81,14 @@ describe('guest checkout', () => {
     expect(state.invoked[0].body).toMatchObject({ target_type: 'order', target_id: 'o-1', payment_method: 'mpesa', gateway_key: 'mpesa-main' });
     await waitFor(() => expect(window.location.pathname).toBe('/payment-return'));
     expect(JSON.parse(localStorage.getItem('flooring_app_cart') || '[]')).toEqual([]);
+  });
+
+  it('blocks M-Pesa before any order is created when the total has cents (STK push needs whole shillings)', async () => {
+    await checkout(false, { ...PRODUCT, price: 2500.5 }, 1);
+    await waitFor(() => expect(screen.getByText('M-Pesa needs a whole-shilling total')).toBeTruthy(), { timeout: 8000 });
+    expect(orderArgs()).toBeUndefined();
+    expect(state.invoked).toHaveLength(0);
+    expect(JSON.parse(localStorage.getItem('flooring_app_cart') || '[]')).toHaveLength(1);
   });
 
   it('uses the exact gateway selected when multiple gateways share one payment method', async () => {

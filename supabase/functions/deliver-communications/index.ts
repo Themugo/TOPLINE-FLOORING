@@ -342,7 +342,11 @@ Deno.serve(async (req) => {
     const { data, error } = await admin.rpc("claim_communication_outbox_worker", { p_limit: limit, p_channels: channels });
     if (error) throw error;
     const results = [];
-    for (const item of (data ?? []) as OutboxMessage[]) results.push(await processItem(item));
+    for (const item of (data ?? []) as OutboxMessage[]) {
+      // One message failing to be recorded must not strand the rest of the claimed batch.
+      try { results.push(await processItem(item)); }
+      catch (itemError) { results.push({ id: item.id, status: "worker_error", error: itemError instanceof Error ? itemError.message : String(itemError) }); }
+    }
     let marketingSync: unknown;
     try {
       marketingSync = await processBrevoMarketingSync(limit);

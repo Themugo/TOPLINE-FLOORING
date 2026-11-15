@@ -76,6 +76,7 @@ export function useSiteSettings() {
       weekdays: { open: '08:00', close: '18:00' },
       saturday: { open: '09:00', close: '14:00' },
       sunday: 'Closed',
+      ...(cms.website_settings.business_hours ?? {}),
     },
     footer: {
       copyright: cms.footer.copyright,
