@@ -42,7 +42,14 @@ export async function getCustomerPortalPreferences(): Promise<CustomerPortalPref
 }
 
 export async function updateCustomerNotificationPreferences(input: Omit<CustomerNotificationPreferences, 'customer_id' | 'updated_at'>) {
-  const { data, error } = await supabase.rpc('update_customer_notification_preferences', input);
+  // The database function's parameters are prefixed p_; sending the bare field names fails with "function not found".
+  const { data, error } = await supabase.rpc('update_customer_notification_preferences', {
+    p_email_enabled: input.email_enabled,
+    p_sms_enabled: input.sms_enabled,
+    p_whatsapp_enabled: input.whatsapp_enabled,
+    p_marketing_email_enabled: input.marketing_email_enabled,
+    p_marketing_sms_enabled: input.marketing_sms_enabled,
+  });
   if (error) throw error;
   return data as CustomerNotificationPreferences;
 }

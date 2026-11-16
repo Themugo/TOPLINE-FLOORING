@@ -1,18 +1,20 @@
 import { createClient } from 'npm:@supabase/supabase-js@2';
+import { handlePreflight, jsonResponse } from '../_shared/cors.ts';
 
-const allowedOrigin = Deno.env.get('TOPLINE_WEB_ORIGIN') || 'https://toplinefloorandwaterproofing.co.ke';
-const cors = { 'Access-Control-Allow-Origin': allowedOrigin, 'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type', Vary: 'Origin' };
-
+// Staff-only operational export. Authorisation, auditing and the integrity hash live in the
+// create_operational_data_export RPC, which runs as the signed-in user. CORS uses the shared helper so the apex and
+// www domains and any TOPLINE_WEB_ORIGIN extras (comma separated) all work.
 Deno.serve(async (req) => {
-  if (req.method === 'OPTIONS') return new Response('ok', { headers: cors });
-  if (req.method !== 'POST') return new Response(JSON.stringify({ error: 'POST required' }), { status: 405, headers: { ...cors, 'Content-Type': 'application/json' } });
+  const preflight = handlePreflight(req);
+  if (preflight) return preflight;
+  if (req.method !== 'POST') return jsonResponse(req, 405, { error: 'POST required' });
 
   const authHeader = req.headers.get('Authorization');
-  if (!authHeader) return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: { ...cors, 'Content-Type': 'application/json' } });
+  if (!authHeader) return jsonResponse(req, 401, { error: 'Unauthorized' });
 
   const supabase = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_ANON_KEY')!, { global: { headers: { Authorization: authHeader } } });
   const { data, error } = await supabase.rpc('create_operational_data_export');
-  if (error) return new Response(JSON.stringify({ error: error.message }), { status: error.message.includes('permission') ? 403 : 500, headers: { ...cors, 'Content-Type': 'application/json' } });
+  if (error) return jsonResponse(req, error.message.includes('permission') ? 403 : 500, { error: error.message });
 
-  return new Response(JSON.stringify(data), { headers: { ...cors, 'Content-Type': 'application/json' } });
+  return jsonResponse(req, 200, data as Record<string, unknown>);
 });
