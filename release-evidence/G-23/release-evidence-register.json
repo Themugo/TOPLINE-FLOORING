@@ -6,7 +6,7 @@
   "canonical": {
     "supabase_project_ref": "cvjmfplhdlfvqnnmzqcp",
     "production_site": "https://toplinefloorandwaterproofing.co.ke",
-    "source_migration_count": 172,
+    "source_migration_count": 173,
     "node_major": 22
   },
   "rules": [
@@ -40,7 +40,7 @@
     {
       "id": "DB-01",
       "area": "Supabase",
-      "requirement": "Linked migration list is reviewed and remote history is reconciled with 172 source migrations.",
+      "requirement": "Linked migration list is reviewed and remote history is reconciled with 173 source migrations.",
       "status": "PENDING",
       "evidence_file": "",
       "evidence_summary": "",

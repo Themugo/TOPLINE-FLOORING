@@ -21,7 +21,8 @@ export function describeDbError(error: DbErrorLike | null | undefined): string {
   if (error.code === '23514') return 'A value is outside the allowed range or format.';
   if (error.code === '42501' || message.includes('row-level security') || message.includes('permission denied'))
     return 'You do not have permission to do this.';
-  if (message.includes('jwt') || message.includes('expired')) return 'Your session has expired. Sign in again.';
+  // Only an expired *session* means "sign in again"; business rules can also say "expired" (a quotation, a reservation).
+  if (message.includes('jwt') || (message.includes('expired') && /(token|session|refresh|credential)/.test(message))) return 'Your session has expired. Sign in again.';
   if (message.includes('failed to fetch') || message.includes('network')) return 'Network error. Check your connection and retry.';
   return error.message || 'Unexpected error';
 }

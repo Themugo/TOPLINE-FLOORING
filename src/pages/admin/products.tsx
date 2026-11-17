@@ -435,7 +435,7 @@ function ProductGalleryModal({ product, onClose, onChanged }: { product: Product
       is_primary: images.length === 0,
     });
     if (error) {
-      toast({ title: 'Failed to add photo', variant: 'destructive' });
+      toast({ title: 'Failed to add photo', description: describeDbError(error), variant: 'destructive' });
       return;
     }
     setNewImageUrl('');
@@ -459,7 +459,7 @@ function ProductGalleryModal({ product, onClose, onChanged }: { product: Product
     if (!confirm('Remove this photo from the product gallery?')) return;
     const { error } = await supabase.from('product_images').delete().eq('id', id);
     if (error) {
-      toast({ title: 'Failed to remove photo', variant: 'destructive' });
+      toast({ title: 'Failed to remove photo', description: describeDbError(error), variant: 'destructive' });
       return;
     }
     await fetchImages();

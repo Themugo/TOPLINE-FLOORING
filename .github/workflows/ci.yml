@@ -70,7 +70,7 @@ jobs:
           # This opt-in is scoped to the disposable GitHub Actions Supabase stack only.
           # The validator uses --local for every database operation and never links/pushes.
           TOPLINE_ALLOW_LOCAL_DB_RESET: 'true'
-          TOPLINE_EXPECTED_MIGRATION_COUNT: '172'
+          TOPLINE_EXPECTED_MIGRATION_COUNT: '173'
         run: npm run validate:local-db
 
       - name: Upload disposable database replay evidence

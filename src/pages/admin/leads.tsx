@@ -1,3 +1,4 @@
+import { describeDbError } from '@/lib/db';
 import { useState } from 'react';
 import { AdminLayout } from '@/pages/admin/dashboard';
 import { LeadForm } from '@/components/leads/LeadForm';
@@ -33,7 +34,7 @@ export default function AdminLeads() {
       setEditingLead(null);
     } catch (error) {
       console.error('Failed to save lead:', error);
-      toast({ title: 'Failed to save lead. Please try again.', variant: 'destructive' });
+      toast({ title: 'Failed to save lead', description: describeDbError(error as { message?: string; code?: string }), variant: 'destructive' });
     }
   };
 
@@ -42,7 +43,7 @@ export default function AdminLeads() {
       await deleteLead(leadId);
     } catch (error) {
       console.error('Failed to delete lead:', error);
-      toast({ title: 'Failed to delete lead. Please try again.', variant: 'destructive' });
+      toast({ title: 'Failed to delete lead', description: describeDbError(error as { message?: string; code?: string }), variant: 'destructive' });
     }
   };
 

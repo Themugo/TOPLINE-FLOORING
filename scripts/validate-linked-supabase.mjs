@@ -5,7 +5,7 @@ import { createHash } from 'node:crypto';
 
 const root = process.cwd();
 const expectedRef = 'cvjmfplhdlfvqnnmzqcp';
-const expectedCount = Number(process.env.TOPLINE_EXPECTED_MIGRATION_COUNT || 172);
+const expectedCount = Number(process.env.TOPLINE_EXPECTED_MIGRATION_COUNT || 173);
 const artifactDir = path.join(root, 'artifacts', 'linked-supabase-certification');
 const linkedRefPath = path.join(root, 'supabase', '.temp', 'project-ref');
 const configPath = path.join(root, 'supabase', 'config.toml');

@@ -1,3 +1,4 @@
+import { describeDbError } from '@/lib/db';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { Search, RefreshCw, ShieldCheck, Truck, CreditCard, PackageCheck, MailCheck } from 'lucide-react';
 import { AdminLayout } from './dashboard';
@@ -108,7 +109,7 @@ export default function AdminOrders() {
       p_status: status,
     });
     if (error) {
-      toast({ title: 'Failed to update order status', variant: 'destructive' });
+      toast({ title: 'Failed to update order status', description: describeDbError(error), variant: 'destructive' });
       return;
     }
     toast({ title: 'Order status updated', description: 'The order details have been refreshed.' });

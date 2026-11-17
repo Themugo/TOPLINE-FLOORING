@@ -209,19 +209,28 @@ function LeadDetailDrawer({
   const [reminderDate, setReminderDate] = useState('');
   const [reminderNote, setReminderNote] = useState('');
 
+  const { toast } = useToast();
+  // These calls throw when the database refuses them (permissions, a lead that was just deleted, a lost connection).
+  // Show that instead of leaving the form looking as if nothing happened.
+  const attempt = async (action: () => Promise<void>, failureTitle: string) => {
+    try { await action(); }
+    catch (err) { toast({ title: failureTitle, description: describeDbError(err as { message?: string; code?: string }), variant: 'destructive' }); }
+  };
+
   const handleAddNote = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!noteText.trim()) return;
-    await addNote(noteText);
-    setNoteText('');
+    await attempt(async () => { await addNote(noteText); setNoteText(''); }, 'Note not saved');
   };
 
   const handleAddReminder = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!reminderDate) return;
-    await addReminder(new Date(reminderDate).toISOString(), reminderNote);
-    setReminderDate('');
-    setReminderNote('');
+    await attempt(async () => {
+      await addReminder(new Date(reminderDate).toISOString(), reminderNote);
+      setReminderDate('');
+      setReminderNote('');
+    }, 'Reminder not saved');
   };
 
   return (
@@ -270,7 +279,7 @@ function LeadDetailDrawer({
                   {r.note && <p className="text-xs">{r.note}</p>}
                 </div>
                 {!r.completed && (
-                  <button onClick={() => completeReminder(r.id)} title="Mark done">
+                  <button onClick={() => void attempt(() => completeReminder(r.id), 'Reminder not updated')} title="Mark done">
                     <CheckCircle2 className="w-4 h-4 text-green-600" />
                   </button>
                 )}

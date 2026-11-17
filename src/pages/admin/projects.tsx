@@ -1,3 +1,4 @@
+import { describeDbError } from '@/lib/db';
 import { uniqueSlug } from '@/lib/slug';
 import { useState, useEffect } from 'react';
 import { dbFailure } from '@/lib/db';
@@ -228,7 +229,12 @@ export default function AdminProjects() {
     const updates = updatedProjects.map((p, index) =>
       supabase.from('projects').update({ display_order: index + 1 }).eq('id', p.id)
     );
-    await Promise.all(updates);
+    const results = await Promise.all(updates);
+    const failed = results.find((r) => r.error);
+    if (failed?.error) {
+      toast({ title: 'Display order not saved', description: describeDbError(failed.error), variant: 'destructive' });
+      return;
+    }
     setOrderChanged(false);
     toast({
       title: 'Display order updated!',
@@ -710,7 +716,7 @@ function ProjectGalleryModal({ project, onClose }: { project: Project; onClose: 
       display_order: images.length,
     });
     if (error) {
-      toast({ title: 'Failed to add photo', variant: 'destructive' });
+      toast({ title: 'Failed to add photo', description: describeDbError(error), variant: 'destructive' });
       return;
     }
     setNewImageUrl('');
@@ -722,7 +728,7 @@ function ProjectGalleryModal({ project, onClose }: { project: Project; onClose: 
   const handleRemove = async (id: string) => {
     const { error } = await supabase.from('project_images').delete().eq('id', id);
     if (error) {
-      toast({ title: 'Failed to remove photo', variant: 'destructive' });
+      toast({ title: 'Failed to remove photo', description: describeDbError(error), variant: 'destructive' });
       return;
     }
     await fetchImages();

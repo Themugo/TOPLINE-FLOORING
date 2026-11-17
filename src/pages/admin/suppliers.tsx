@@ -164,6 +164,17 @@ function PurchaseOrdersTab() {
   const [showForm, setShowForm] = useState(false);
   const [selected, setSelected] = useState<PurchaseOrder | null>(null);
   const [saving, setSaving] = useState(false);
+
+  // The database enforces the lifecycle (for example a PO must have line items before it is sent). Always tell the
+  // user when a change is refused; the controlled dropdown would otherwise just snap back with no explanation.
+  const changeStatus = async (po: PurchaseOrder, nextStatus: string) => {
+    try {
+      await updatePurchaseOrderStatus(po.id, nextStatus);
+      toast({ title: `Purchase order ${po.po_number} is now ${nextStatus}` });
+    } catch (err) {
+      toast({ title: 'Status not changed', description: describeDbError(err as { message?: string; code?: string }), variant: 'destructive' });
+    }
+  };
   const { warehouses } = useWarehouses();
   const [form, setForm] = useState({ supplier_id: '', warehouse_id: '', expected_date: '', notes: '' });
 
@@ -227,7 +238,7 @@ function PurchaseOrdersTab() {
                       <select
                         value={po.status}
                         disabled={['received', 'cancelled'].includes(po.status)}
-                        onChange={(e) => updatePurchaseOrderStatus(po.id, e.target.value)}
+                        onChange={(e) => void changeStatus(po, e.target.value)}
                         className={`text-xs font-medium px-2 py-1 rounded-full border-0 ${PO_STATUS_STYLES[po.status]}`}
                         aria-label={`Purchase order ${po.po_number} status`}
                       >
@@ -339,6 +350,14 @@ function PurchaseOrderDetail({ po, onClose }: { po: PurchaseOrder; onClose: () =
     }
   };
 
+  const handleRemove = async (itemId: string) => {
+    try {
+      await removePurchaseOrderItem(itemId);
+    } catch (err) {
+      toast({ title: 'Failed to remove line', description: describeDbError(err as { message?: string; code?: string }), variant: 'destructive' });
+    }
+  };
+
   const totalCost = items.reduce((sum, i) => sum + i.quantity_ordered * i.unit_cost, 0);
 
   return (
@@ -365,7 +384,7 @@ function PurchaseOrderDetail({ po, onClose }: { po: PurchaseOrder; onClose: () =
                   <button onClick={() => handleReceive(item.id, item.quantity_ordered, item.quantity_received)} className="text-xs font-medium text-primary-600 hover:underline">
                     Receive
                   </button>
-                  <button onClick={() => removePurchaseOrderItem(item.id)}><Trash2 className="w-4 h-4 text-red-500" /></button>
+                  <button aria-label="Remove line" onClick={() => void handleRemove(item.id)}><Trash2 className="w-4 h-4 text-red-500" /></button>
                 </div>
               </div>
             ))}

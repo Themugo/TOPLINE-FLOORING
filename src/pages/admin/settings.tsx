@@ -93,7 +93,12 @@ export default function AdminSettings() {
           </div>
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Sign-in email</label>
+              <p className="text-xs text-gray-500 mb-2">
+                This is the email <strong>you log in with</strong>. It is not the company contact email shown on the website
+                (change that in <Link href="/admin/site-settings" className="underline">Site Settings</Link>) and it does not
+                control where enquiry alerts go (<Link href="/admin/site-control" className="underline">Site Control</Link>).
+              </p>
               <input
                 type="email"
                 value={newEmail}
