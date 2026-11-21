@@ -856,7 +856,9 @@ BEGIN
 
   RETURN jsonb_build_object('success',true,'purchase_order_id',v_item.purchase_order_id);
 END;
-$$;Phase 2 inventory hardening: exact stock counts, variant audit trail and
+$$;
+
+-- Phase 2 inventory hardening: exact stock counts, variant audit trail and
 -- correct global/warehouse quantity reconciliation.
 --
 -- `adjustment` with a warehouse means "set this warehouse's counted quantity";

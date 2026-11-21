@@ -27,7 +27,7 @@ Run the project's focused and aggregate test commands as defined in `package.jso
 
 Do not create or substitute another project as part of routine deployment, and never reuse another application's Supabase project. `supabase/config.toml`, `.env.example` and the frontend Supabase client pin the canonical identity.
 
-The deployable migration sequence is the uniquely timestamped SQL files in `supabase/migrations/`. At this source snapshot it contains **173 active migrations**. Confirm the current count with:
+The deployable migration sequence is the uniquely timestamped SQL files in `supabase/migrations/`. At this source snapshot it contains **175 active migrations**. Confirm the current count with:
 
 ```cmd
 node scripts/verify-migration-integrity.mjs
@@ -99,7 +99,7 @@ From Windows CMD, after confirming you are authorised to inspect the intended To
 npx supabase login
 npx supabase link --project-ref cvjmfplhdlfvqnnmzqcp
 set TOPLINE_ALLOW_LINKED_DB_READS=true
-set TOPLINE_EXPECTED_MIGRATION_COUNT=173
+set TOPLINE_EXPECTED_MIGRATION_COUNT=175
 npm run validate:linked-supabase
 ```
 
@@ -161,3 +161,21 @@ The safe order is:
 **Never run** `supabase db reset --linked` against the client-owned production project. A linked `db push --dry-run --linked` is a preview, not a migration application and not proof that SQL executes successfully.
 
 At the G-21 source snapshot, the canonical target is configured but linked project identity, remote migration history, remote schema, database lint, deployment state and provider readiness remain unverified in this execution environment.
+
+## Before taking real payments (M-Pesa and card)
+
+M-Pesa and card are **disabled by default** and the payment function refuses them until all of the following are true.
+Bank transfer works without this because staff confirm it manually.
+
+1. Supabase function secrets are set: `MPESA_CONSUMER_KEY`, `MPESA_CONSUMER_SECRET`, `MPESA_SHORTCODE`, `MPESA_PASSKEY`,
+   `MPESA_CALLBACK_URL` (must include `?secret=` followed by the value of `MPESA_CALLBACK_SECRET`), `MPESA_CALLBACK_SECRET`,
+   and for production `MPESA_BASE_URL=https://api.safaricom.co.ke`. For card payments set `PAYMENT_CARD_WEBHOOK_SECRET`
+   (or `PAYMENT_WEBHOOK_SECRET`); the card callback is refused when no secret is configured.
+2. In **Admin -> Site Control -> payment gateways**, enable the gateway and use **Certify** once you have completed the
+   provider test checklist (successful payment, failed payment, duplicate callback, amount/reference validation, customer return,
+   reconciliation). Until this is recorded, customers see "This payment provider is not production-certified".
+3. `TOPLINE_WORKER_SECRET` is set and the scheduled jobs exist (`operations-scheduler`, including `expire_payment_attempts`).
+4. `BREVO_API_KEY`, `BREVO_SENDER_EMAIL` and `BREVO_REPLY_TO_EMAIL` are set; the reply-to address is what customers see in
+   "reply to this email". It must be a real mailbox you read.
+
+The M-Pesa prompt needs a **whole-shilling** total; checkout blocks M-Pesa when the total has cents.

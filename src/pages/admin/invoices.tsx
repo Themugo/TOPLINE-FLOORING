@@ -21,6 +21,15 @@ const STATUS_STYLES: Record<InvoiceStatus, string> = {
   cancelled: 'bg-gray-100 text-gray-600',
 };
 
+// Mirrors transition_invoice_lifecycle in the database, so staff are only offered moves it will accept.
+const INVOICE_NEXT_STATUSES: Record<string, InvoiceStatus[]> = {
+  draft: ['sent', 'cancelled'],
+  sent: ['partial', 'paid', 'overdue', 'cancelled'],
+  partial: ['paid', 'overdue', 'cancelled'],
+  overdue: ['partial', 'paid', 'cancelled'],
+  paid: [],
+  cancelled: [],
+};
 const STATUS_OPTIONS: InvoiceStatus[] = ['draft', 'sent', 'paid', 'partial', 'overdue', 'cancelled'];
 
 export default function AdminInvoices() {
@@ -169,7 +178,7 @@ export default function AdminInvoices() {
                           onChange={async (e) => { try { await transitionInvoiceLifecycle(inv.id, e.target.value); await refetch(); toast({ title: 'Invoice status updated' }); } catch (err) { toast({ title: 'Status change rejected', description: errorMessage(err, 'Invalid invoice transition'), variant: 'destructive' }); } }}
                           className={`text-xs font-medium px-2 py-1 rounded-full border-0 ${STATUS_STYLES[inv.status]}`}
                         >
-                          {STATUS_OPTIONS.map((s) => <option key={s} value={s}>{s}</option>)}
+                          {STATUS_OPTIONS.filter((s) => s === inv.status || (INVOICE_NEXT_STATUSES[inv.status] ?? []).includes(s)).map((s) => <option key={s} value={s}>{s}</option>)}
                         </select>
                       </td>
                       <td className="px-6 py-4 text-sm text-gray-600">{formatDateTime(inv.created_at)}</td>

@@ -76,7 +76,7 @@ Never put a service-role or worker secret in a `VITE_*` variable.
 
 ## Current active chain (Phases 30–32 verification baseline)
 
-The manifest contains 173 uniquely timestamped active migrations. The current source candidate ends with `20261116100000_refund_paid_customer_notification.sql`. Run the complete verification suite before any linked database deployment. This source count is not confirmation that the migration has been applied remotely.
+The manifest contains 175 uniquely timestamped active migrations. The current source candidate ends with `20261120100000_customer_delivery_emails_plain_language.sql`. Run the complete verification suite before any linked database deployment. This source count is not confirmation that the migration has been applied remotely.
 
 Current active chain additions: `20260930170000_service_catalog_and_communications_worker_hardening.sql`, `20260930180000_project_documents_private_storage.sql`, `20260930190000_staff_read_inactive_cms_catalog_rows.sql`, `20260930193000_private_document_policy_overlap_hardening.sql`, `20260930200000_project_templates.sql`, `20260930210000_close_legacy_public_read_policies.sql`, `20260930220000_projects_admin_contract_columns.sql`, `20260930230000_move_product_cost_prices_staff_only.sql`, `20260930240000_coupon_validation_throttle.sql`, `20260930250000_finance_permission_resource.sql`, `20261001090000_project_template_persistence_360.sql`, `20261001100000_admin_notification_state_360.sql`, `20261001110000_catalog_product_service_upload_integrity_360.sql`.
 
@@ -277,3 +277,5 @@ These files were present in `supabase/migrations/` but not yet listed above. App
 - `20261114110000_reconcile_order_payment_totals_partial_refund.sql` — aligns the staff "Reconcile payments" rule with refund completion: a fully paid order stays `paid` after a partial refund instead of being relabelled `partial`.
 - `20261114120000_public_site_settings_allowlist.sql` — adds the public-by-nature `site_settings` keys (contact, brand, social links, hours, footer and public CMS page content) to the anonymous read allow-list, so visitors see what staff save instead of built-in defaults.
 - `20261116100000_refund_paid_customer_notification.sql` — notifies the customer when a refund is paid out (new `refund.status` rule and trigger on `payment_refunds`), de-duplicated by the existing event-key mechanism.
+- `20261118100000_orders_always_get_an_order_number.sql` — assigns an order number to every inserted order (quotation-converted orders had none) and backfills existing blanks.
+- `20261120100000_customer_delivery_emails_plain_language.sql` — delivery emails only at meaningful moments (out for delivery, on its way, delivered, delayed) in plain language instead of five emails quoting raw status values.

@@ -6,6 +6,18 @@ export interface LifecycleResult {
   [key: string]: unknown;
 }
 
+/**
+ * Many database functions refuse a request by RETURNING {"success": false, "error": "..."} instead of raising. A caller that
+ * only awaits the call would then report success for a change that was never made. Use this to turn a refusal into an error.
+ */
+export function assertLifecycleSuccess<T>(result: T): T {
+  if (result && typeof result === 'object' && (result as { success?: unknown }).success === false) {
+    const reason = (result as { error?: unknown }).error;
+    throw new Error(typeof reason === 'string' && reason ? reason : 'The change was not accepted');
+  }
+  return result;
+}
+
 async function callLifecycle(functionName: string, args: Record<string, unknown>): Promise<LifecycleResult> {
   const { data, error } = await supabase.rpc(functionName, args);
   if (error) throw error;

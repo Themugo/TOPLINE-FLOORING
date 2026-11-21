@@ -15,6 +15,16 @@ import { ManualPaymentPanel } from '@/components/admin/ManualPaymentPanel';
 import { RefundPanel } from '@/components/admin/RefundPanel';
 import { DeliveryAddressEditor } from '@/components/admin/DeliveryAddressEditor';
 
+// Mirrors update_order_status_transaction in the database: only forward moves, nothing out of a terminal status.
+const ORDER_STATUS_LABELS: Array<[string, string]> = [['pending', 'Pending'], ['confirmed', 'Confirmed'], ['processing', 'Processing'], ['completed', 'Completed'], ['cancelled', 'Cancelled']];
+const ORDER_NEXT_STATUSES: Record<string, string[]> = {
+  pending: ['confirmed', 'processing', 'cancelled'],
+  confirmed: ['processing', 'completed', 'cancelled'],
+  processing: ['completed', 'cancelled'],
+  completed: [],
+  cancelled: [],
+};
+
 export default function AdminOrders() {
   const latestRequest = useRef(0);
   const { toast } = useToast();
@@ -198,11 +208,9 @@ export default function AdminOrders() {
                         onChange={(e) => updateStatus(order.id, e.target.value)}
                         className={`text-xs font-medium px-2 py-1 rounded-full border-0 ${statusColors[order.status]}`}
                       >
-                        <option value="pending">Pending</option>
-                        <option value="confirmed">Confirmed</option>
-                        <option value="processing">Processing</option>
-                        <option value="completed">Completed</option>
-                        <option value="cancelled">Cancelled</option>
+                        {ORDER_STATUS_LABELS.filter(([value]) => value === order.status || (ORDER_NEXT_STATUSES[order.status] ?? []).includes(value)).map(([value, label]) => (
+                          <option key={value} value={value}>{label}</option>
+                        ))}
                       </select>
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-500">{formatDateTime(order.created_at)}</td>

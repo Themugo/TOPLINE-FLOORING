@@ -1,0 +1,7 @@
+import sys,json; sys.path.insert(0,'/tmp/dbtest')
+exec(open('/tmp/dbtest/e2e_full.py').read().split("# ---------- seed")[0])
+VIS=q1("select id from public.maintenance_plan_visits order by created_at desc limit 1")
+sch=q1(f"select scheduled_for from public.maintenance_plan_visits where id='{VIS}'")
+ok,r=call('authenticated',f"select public.complete_maintenance_visit_360('{VIS}','{sch}','All good')",sub=OWNER); check('maintenance visit completed on its scheduled date', ok, r); print('  ->',str(r)[:160])
+ok,e=call('authenticated',f"select public.complete_maintenance_visit_360('{VIS}','{sch}','again')",sub=OWNER); print('  completing twice ->',ok,str(e)[:120])
+print(f"{sum(1 for _,c in results if c)}/{len(results)}")

@@ -425,6 +425,10 @@ Deno.serve(async (req: Request) => {
       });
       const result = (await response.json()) as ProviderResponse;
       if (!response.ok || (result.ResponseCode && String(result.ResponseCode) !== "0")) {
+        // Safaricom answering 4xx (bad phone number, bad amount, bad token) or a non-zero ResponseCode means the request was
+        // explicitly NOT accepted and no prompt reached the customer. That is a definite failure they can correct and retry,
+        // not an "uncertain" payment. Timeouts, network errors and 5xx stay uncertain (they may already have been charged).
+        if (response.ok || (response.status >= 400 && response.status < 500)) providerRequestDispatched = false;
         throw new Error(result.errorMessage || result.ResponseDescription || "M-Pesa STK request failed");
       }
 

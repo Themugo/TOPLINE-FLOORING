@@ -28,6 +28,9 @@ const STATUS_FLOW: { value: QuotationStatus; label: string; color: string }[] = 
   { value: 'lost', label: 'Lost (legacy)', color: 'bg-gray-100 text-gray-500' },
 ];
 
+// transition_quotation_status only accepts the current flow. Legacy statuses are shown for records that already carry
+// one (so they are not blank) but must never be offered as a target: picking one fails with "Invalid quotation status".
+const LEGACY_STATUSES = new Set<string>(['new', 'contacted', 'quoted', 'won', 'lost']);
 const statusMeta = (status: string) => STATUS_FLOW.find((s) => s.value === status) || STATUS_FLOW[0];
 
 export default function AdminQuotations() {
@@ -138,7 +141,7 @@ export default function AdminQuotations() {
                       onChange={(e) => updateStatus(q.id, e.target.value)}
                       className={`text-xs font-medium px-2 py-1 rounded-full border-0 ${statusMeta(q.status).color}`}
                     >
-                      {STATUS_FLOW.map((s) => (
+                      {STATUS_FLOW.filter((s) => !LEGACY_STATUSES.has(s.value) || s.value === q.status).map((s) => (
                         <option key={s.value} value={s.value}>{s.label}</option>
                       ))}
                     </select>
